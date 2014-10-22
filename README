@@ -1,0 +1,96 @@
+*************************************
+* Wfuzz  1.4c - The web bruteforcer  *
+* Coded by:                         *
+* Christian Martorella              *
+*   - cmartorella@edge-security.com *
+* Carlos del ojo                    *
+*   - deepbit@gmail.com             *
+*************************************
+
+What is this?
+-------------
+
+Wfuzz is a tool designed to  brutefore web applications, it's very flexible, it supports:
+	
+	-Recursion (When doing directory discovery)
+	-Post data bruteforcing
+	-Header bruteforcing
+	-Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
+	-Colored output 
+	-Hide results by return code, word numbers, line numbers, etc.
+	-Url encoding
+	-Cookies
+	-Multithreading
+	-Proxy support 
+	-All parameter fuzzing
+
+It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
+
+How does it works?
+------------------
+
+The tool is based on dictionaries or ranges, then you choose where you want to bruteforce just by replacing the value by the word FUZZ.
+
+Examples:
+
+	-  wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html http://www.mysite.com/FUZZ 2> results.html
+
+	 This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources i
+	 (directories, scripts, files,etc), it will hide from the output the return code 404 
+	 (for easy reading results), it will use the dictionary commons.txt for the bruteforce
+	 , and also will output the results to the results.html file (with a cool format to work).
+
+
+	-  wfuzz.py -c -z range -r 1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
+	  In this example instead of using a file as dictionary, it will use a range from 1-100,
+	  and will bruteforce the parameter "id".
+
+	-  wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html -d "id=1&catalogue=FUZZ" 
+	   http://www.mysite.com/check.asp 2> results.html 
+	   Here you can see the use of POST data, with the option "-d".
+
+	- wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
+	  Example of path discovery, using a recursive level of 2 paths.
+
+Platforms:
+----------
+
+wfuzz was tested on Linux, Os X and Windows.
+On windows the colored output, it doesn't work, we are working towards fixing this problem.
+
+
+Dependencies:
+------------
+
+On *nix systems, need pycurl to work.
+On Windows just run the wfuzz.exe
+
+Thanks:
+-------
+
+Shouts goes to: Trompeti an all the S21sec Team. (www.s21sec.com)
+
+Special thanks to DarkRaver for the tool Dirb, part of wfuzz  is based on the functionallity of dirb. (www.open-labs.org) and most of the wordlist are from his tool.
+
+Andres Andreu, all Injection payloads are taken from wsFuzzer (www.neurofuzz.com)
+Stay tunned for the GUI it rocks..
+
+Changelog 1.4c:
+==============
+-Fixed Headers parsing, thanks to Osama
+-Fixed encoding naming problems, thanks to Osama
+-Added support to Hexa-Random payload (hexa-rand), thanks to Kaerast
+
+Changelog 1.4:
+==============
+-More encodings:
+-Performance improving
+-Some bugs fixed
+
+Changelog 1.3:
+=========
+-Creada funcion select_encoding
+-Multiple encoding, it's possible to encode both dictionries with different encodings.
+-Hidecode XXX (cuando da muchos errores, pero puede servir)
+-Word count fixed
+-More encoders (binascii,md5,sha1)

