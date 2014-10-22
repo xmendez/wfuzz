@@ -1,0 +1,52 @@
+# wfuzz bash completion file
+# by Xavier Mendez (xavi.mendez@gmail.com) aka Javi
+
+_wfuzz() {
+    
+    COMPREPLY=()
+    local cur prev
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    # Change to your wordlists' base directory
+    WLDIR=~/fuzzdb-read-only/
+    
+    common_options="-z[PAYLOAD] -f[WORDLIST] --hc[HIDE_HTTP_CODES] -d[POST_DATA] "
+
+    case "$prev" in
+	-z)
+	    COMPREPLY=( $( compgen -W "file range hexa-range hexa-rand" -- $cur ))
+	    ;;
+	-f)
+	    [ -z "$WLDIR" ] && exit 1
+
+	    if [[ "$cur" == "$WLDIR" ]]; then
+		local names=$(find $WLDIR -type d | grep -v '\/\(\.svn\|docs\|web-backdoors\|regex\)')
+	    else
+		local names=$(find $WLDIR -type f -iname "*.txt")
+	    fi
+
+	    COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
+	    ;;
+	file)
+	    COMPREPLY=( $(compgen -W "-f" -- ${cur}) )
+	    ;;
+	range|hexa-range|hexa-rand)
+	    COMPREPLY=( $(compgen -W "-r" -- ${cur}) )
+	    ;;
+	--digest|--ntlm|--basic)
+	    COMPREPLY=( $(compgen -W "FUZZ:FUZZ" -- ${cur}) )
+	    ;;
+	--hc)
+	    COMPREPLY=( $( compgen -W "400 401 301 302 500 404 200" -- $cur ) )
+	    ;;
+	-e)
+	    COMPREPLY=( $( compgen -W "help urlencode double_nibble_hexa mssql_char binary_ascii html_encoder_hexa utf8 base64 uri_hexadecimal double_urlencode utf8_binary uri_unicode sha1 mysql_char random_uppercase html_encoder oracle_char html_encoder_decimal md5" -- $cur ) )
+	    ;;
+	*)
+	    COMPREPLY=( $( compgen -W "-I -v -z -f -c -x -d -H -r -t -e -b -R -V --basic --ntlm --digest --hc --hl --hw --hh --hs --html --magictree" -- $cur ) )
+	    ;;
+    esac
+}
+
+complete -F _wfuzz -o default wfuzz.py
