@@ -10,7 +10,9 @@ import StringIO
 import string
 import re
 import threading
+import copy
 from time import localtime, strftime
+from datetime import date
 
 from xml.dom.minidom import Document
 
@@ -22,6 +24,127 @@ except:
 mutex=1
 Semaphore_Mutex=threading.BoundedSemaphore(value=mutex)
 REQLOG=False
+
+class Variable:
+	def __init__(self,name,value="",extraInfo=""):
+		self.name=name
+		self.value=value
+		self.initValue=value
+		self.extraInfo=extraInfo
+
+	def restore(self):
+		self.value=self.initValue
+
+	def change(self,newval):
+		self.initValue=self.value=newval
+
+	def update(self,val):
+		self.value=val
+
+	def append(self,val):
+		self.value+=val
+
+	def __str__(self):
+		return "[ %s : %s ]" % (self.name,self.value)
+
+class VariablesSet:
+	def __init__(self):
+		self.variables=[]
+		self.boundary=None
+
+	def names(self):
+		dicc=[]
+		for i in self.variables:
+			dicc.append(i.name)
+
+		return dicc
+
+	def existsVar(self,name):
+		return name in self.names()
+
+	def addVariable(self,name,value="",extraInfo=""):
+		self.variables.append(Variable(name,value,extraInfo))
+
+
+	def getVariable(self,name):
+		dicc=[]
+		for i in self.variables:
+			if i.name==name:
+				dicc.append(i)
+
+		if len(dicc)>1:
+			raise Exception, "Variable exists more than one time!!! :D" % (name)
+
+		if not dicc:
+			var=Variable(name)
+			self.variables.append(var)
+			return var
+
+		return dicc[0]
+
+	
+	def urlEncoded(self):
+		return "&".join(["=".join([i.name,i.value]) for i in self.variables])
+
+	def parseUrlEncoded(self,cad):
+		dicc=[]
+
+		for i in cad.split("&"):
+			if i:
+				list=i.split("=",1)
+				if len (list)==1:
+					dicc.append(Variable(list[0],""))
+				elif len (list)==2:
+					dicc.append(Variable(list[0],list[1]))
+
+		self.variables=dicc
+
+	def multipartEncoded(self):
+		if not self.boundary:
+			self.boundary="---------------------------D33PB1T0R3QR3SP0B0UND4RY2203"
+		pd=""
+		pos=0
+		for i in self.variables:
+			pd+="--"+self.boundary+"\r\n"
+			pd+="%s\r\n\r\n%s\r\n" % ("\r\n".join(i.extraInfo),i.value)
+		pd+="--"+self.boundary+"--\r\n"
+		return pd
+
+	def parseMultipart(self,cad,boundary):
+		self.boundary=boundary
+		dicc=[]
+		tp=TextParser()
+		tp.setSource("string",cad)
+
+		while True:
+			headers=[]
+			if not tp.readUntil("name=\"([^\"]+)\""):
+				break
+			var=tp[0][0]
+			headers.append(tp.lastFull_line.strip())
+			while True:
+				tp.readLine()
+				if tp.search("^([^:]+): (.*)$"):
+					headers.append(tp.lastFull_line.strip())
+				else:
+					break
+
+			value=""
+			while True:
+				tp.readLine()
+				if not tp.search(boundary):
+					value+=tp.lastFull_line
+				else:
+					break
+
+			if value[-2:]=="\r\n":
+				value=value[:-2]
+
+
+			dicc.append(Variable(var,value,headers))
+
+		self.variables=dicc
+		
 
 
 class Request:
@@ -38,17 +161,16 @@ class Request:
 		# self.pathWithVariables    	         	# /index.php?a=b&c=d
 		# self.urlWithoutVariables=None 	 		# http://www.google.es/index.php
 		# self.completeUrl=""					# http://www.google.es/index.php?a=b
+		# self.finalUrl=""					# Url despues de hacer el FollowLocation
 		# self.postdata=""		# Datos por POST, toto el string
 		################
 
 		self.ContentType="application/x-www-form-urlencoded"      # None es normal encoding 
-		self.boundary="---------------------------D33PB1T0R3QR3SP0B0UND4RY2203"
 		self.multiPOSThead={}
 
-		self.__variablesGET={}
-		self.__GETorder=[]
+		self.__variablesGET=VariablesSet()
+		self.__variablesPOST=VariablesSet()
 
-		self.__variablesPOST={}
 		self.__headers={}		# diccionario, por ejemplo headers["Cookie"]
 		
 		self.response=None		# Apunta a la response que produce dicha request
@@ -70,8 +192,10 @@ class Request:
 		self.__proxy=None
 		self.__timeout=None
 		self.__totaltimeout=None
+		self.__finalurl=""
 
 		self.followLocation=False
+		self.follow_url=""
 
 	def __str__(self):
 		str="[ URL: %s" % (self.completeUrl)
@@ -81,6 +205,9 @@ class Request:
 			str+=" - COOKIE: \"%s\"" % self.__headers["Cookie"]
 		str+=" ]"
 		return str
+
+	def getHost(self):
+		return self.__host
 
 	def getXML(self,obj):
 		r=obj.createElement("request")
@@ -98,87 +225,56 @@ class Request:
 			r.appendChild(ck)
 
 		return r
-		
+
 	
 	def __getattr__ (self,name):
 		if name=="urlWithoutVariables":
 			return urlunparse((self.schema,self.__host,self.__path,'','',''))
 		elif name=="pathWithVariables":
-			return urlunparse(('','',self.__path,'',self.getVARIABLESstring(self.__variablesGET,self.__GETorder),''))
+			return urlunparse(('','',self.__path,'',self.__variablesGET.urlEncoded(),''))
 		elif name=="completeUrl":
-			return urlunparse((self.schema,self.__host,self.__path,self.__params,self.getVARIABLESstring(self.__variablesGET,self.__GETorder),''))
+			return urlunparse((self.schema,self.__host,self.__path,self.__params,self.__variablesGET.urlEncoded(),''))
+		elif name=="finalUrl":
+			if self.__finalurl:
+				return self.__finalurl
+			return self.completeUrl
 		elif name=="urlWithoutPath":
 			return "%s://%s" % (self.schema,self.__headers["Host"])
 		elif name=="path":
 			return self.__path
 		elif name=="postdata":
 			if self.ContentType=="application/x-www-form-urlencoded":
-				return self.getVARIABLESstring(self.__variablesPOST,None)
+				return self.__variablesPOST.urlEncoded()
 			elif self.ContentType=="multipart/form-data":
-				pd=""
-				for i,j in self.__variablesPOST.items():
-					pd+="--"+self.boundary+"\r\n"
-					pd+="%s\r\n\r\n%s\r\n" % ("\r\n".join(self.multiPOSThead[i]),j)
-				pd+="--"+self.boundary+"--\r\n"
-				return pd
+				return self.__variablesPOST.multipartEncoded()
 			else:
 				return self.__uknPostData
 		else:
 			raise AttributeError
 
-	def getVARIABLESstring(self,vars,sort):
-		str=[]
-
-		if not sort:
-			for i,j in vars.items():
-				str.append(i+"="+j)
-		else:
-			for i in sort:
-				str.append(i+"="+vars[i])
-
-		return "&".join(str)
-
-
-	def readUrlEncodedVariables(self,str):
-		dicc=[]
-
-		for i in str.split("&"):
-			if i:
-				list=i.split("=",1)
-				if len (list)==1:
-					dicc.append([list[0],""])
-				elif len (list)==2:
-					dicc.append([list[0],list[1]])
-
-
-
-		return dicc
-
 	def setUrl (self, urltmp):
-
-		self.__variablesGET={}
-
+		self.__variablesGET=VariablesSet()
 		self.schema,self.__host,self.__path,self.__params,variables,f=urlparse(urltmp)
+		self.__headers["Host"]=self.__host
 
-		self.__headers["Host"]=self.__host.lstrip()
-
-		if len(variables)>0:
-			dicc=self.readUrlEncodedVariables(variables)
-			[self.addVariableGET(i,j) for i,j in dicc]
+		if variables:
+			self.__variablesGET.parseUrlEncoded(variables)
 			
-
+############### PROXY ##################################
 	def setProxy (self,prox):
 		self.__proxy=prox
 
+############### FOLLOW LOCATION ########################
 	def setFollowLocation(self,value):
 		self.followLocation=value
 
-
+############## TIMEOUTS ################################
 	def setConnTimeout (self,time):
 		self.__timeout=time
 
 	def setTotalTimeout (self,time):
 		self.__totaltimeout=time
+
 ############## Autenticacion ###########################
 	def setAuth (self,method,string):
 		self.__authMethod=method
@@ -189,64 +285,53 @@ class Request:
 
 ############## TRATAMIENTO VARIABLES GET & POST #########################
 
-	def variablesGET(self):
-		return self.__variablesGET.keys()
+	def existsGETVar(self,key):
+		return self.__variablesGET.existsVar(key)
 
-	def variablesPOST(self):
-		return self.__variablesPOST.keys()
+	def existPOSTVar(self):
+		return self.__variablesPOST.existsVar(key)
 
-	def addVariablePOST (self,key,value):
+
+	def setVariablePOST (self,key,value):
 		self.method="POST"
-		self.__variablesPOST[key]=value
-		self.__headers["Content-Length"]=str(len(self.postdata))
+		v=self.__variablesPOST.getVariable(key)
+		v.update(value)
+#		self.__headers["Content-Length"]=str(len(self.postdata))
 
-	def addVariableGET (self,key,value):
-		if not key in self.__variablesGET:
-			self.__GETorder.append(key)
-		self.__variablesGET[key]=value
+	def setVariableGET (self,key,value):
+		v=self.__variablesGET.getVariable(key)
+		v.update(value)
 
-	def getVariableGET (self,key):
-		if self.__variablesGET.has_key(str(key)):
-			return self.__variablesGET[str(key)]
+	def getGETVars(self):
+		return self.__variablesGET.variables
+
+	def getPOSTVars(self):
+		return self.__variablesPOST.variables
+
+	def setPostData (self,pd,boundary=None):
+		self.__variablesPOST=VariablesSet()
+		self.method="POST"
+		if self.ContentType=="application/x-www-form-urlencoded":
+			self.__variablesPOST.parseUrlEncoded(pd)
+		elif self.ContentType=="multipart/form-data":
+			self.__variablesPOST.parseMultipart(pd,boundary)
 		else:
-			return None
-
-	def getVariablePOST (self,key):
-		if self.__variablesPOST.has_key(str(key)):
-			return self.__variablesPOST[str(key)]
-		else:
-			return None
-
-	def setPostData (self,pd):
-		self.__variablesPOST={}
-		self.method="POST"
-		self.parsePOSTDATA(pd)
-
-	def addPostdata (self,str):
-		self.method="POST"
-		self.postdata=self.postdata+str
-		variables=str.split("&")
-		for i in variables:
-			tmp=i.split("=",1)
-			if len(tmp)==2:
-				self.addVariablePOST(tmp[0],tmp[1])
-			else:
-				self.addVariablePOST(tmp[0],'')
-
-
-
+			self.__uknPostData=pd
 
 ############################################################################
 
 	def addHeader (self,key,value):
 		k=string.capwords(key,"-")
-		if k!="Accept-Encoding":
-			self.__headers[k]=value.strip()
-	
+		if k.lower() not in ["accept-encoding","content-length","if-modified-since","if-none-match"]:
+			self.__headers[k]=value
+
+	def delHeader (self,key):
+		k=string.capwords(key,"-")
+		del self.__headers[k]
 
 	def __getitem__ (self,key):
 		k=string.capwords(key,"-")
-		if self.__headers.has_key(k):
+		if k in self.__headers:
 			return self.__headers[k]
 		else:
 			return ""
@@ -256,20 +341,39 @@ class Request:
 		for i,j in self.__headers.items():
 			list+=["%s: %s" % (i,j)]
 		return list
-	
-	def getHeaders (self):
-		list=[]
-		for i,j in self.__headers.items():
-			list+=["%s: %s" % (i,j)]
-		return list
 
+	def head(self):
+		conn=pycurl.Curl()
+		conn.setopt(pycurl.SSL_VERIFYPEER,False)
+		conn.setopt(pycurl.SSL_VERIFYHOST,1)
+		conn.setopt(pycurl.URL,self.completeUrl)
 
+		conn.setopt(pycurl.HEADER, True) # estas dos lineas son las que importan
+		conn.setopt(pycurl.NOBODY, True) # para hacer un pedido HEAD
+
+		conn.setopt(pycurl.WRITEFUNCTION, self.header_callback)
+		conn.perform()
+
+		rp=Response()
+		rp.parseResponse(self.__performHead)
+		self.response=rp
+
+	def createPath(self,newpath):
+		'''Creates new url from a location header || Hecho para el followLocation=true'''
+		if "http" in newpath[:4].lower():
+			return newpath
+
+		parts=urlparse(self.completeUrl)
+		if "/" != newpath[0]:
+			newpath="/".join(parts[2].split("/")[:-1])+"/"+newpath
+
+		return urlunparse([parts[0],parts[1],newpath,'','',''])
 
 	def perform(self):
 		global REQLOG
 		if REQLOG:
 			Semaphore_Mutex.acquire()
-			f=open("/tmp/REQLOG","a")
+			f=open("/tmp/REQLOG-%d-%d" % (date.today().day,date.today().month) ,"a")
 			f.write( strftime("\r\n\r\n############################ %a, %d %b %Y %H:%M:%S\r\n", localtime()))
 			f.write(self.getAll())
 			f.close()
@@ -304,8 +408,6 @@ class Request:
 
 		conn.setopt(pycurl.WRITEFUNCTION, self.body_callback)
 		conn.setopt(pycurl.HEADERFUNCTION, self.header_callback)
-		#conn.setopt(pycurl.DEBUGFUNCTION, self.sent_header_callback)
-		#conn.setopt(pycurl.VERBOSE, 1)
 
 		if self.__proxy!=None:
 			conn.setopt(pycurl.PROXY,self.__proxy)
@@ -315,6 +417,11 @@ class Request:
 		conn.setopt(pycurl.HTTPHEADER,self.__getHeaders())
 		if self.method=="POST":
 			conn.setopt(pycurl.POSTFIELDS,self.postdata)
+
+		conn.setopt(pycurl.CUSTOMREQUEST, self.method)
+		if self.method == "HEAD":
+		    conn.setopt(pycurl.NOBODY, True)
+
 		conn.perform()
 
 		rp=Response()
@@ -331,18 +438,23 @@ class Request:
 
 		if self.followLocation:
 			if self.response.getLocation():
-				a=Request()
-				url=urlparse(self.response.getLocation())
-				if not url[0] or not url[1]:
-					sc=url[0]
-					h=url[1]
-					if not sc:
-						sc=self.schema
-					if not h:
-						h=self.__host
-					a.setUrl(urlunparse((sc,h)+url[2:]))
-				else:
-					a.setUrl(self.response.getLocation())
+				#a=Request()
+				a=copy.deepcopy(self)
+				newurl=self.createPath(self.response.getLocation())
+				a.setUrl(newurl)
+				#url=urlparse(self.response.getLocation())
+				#if not url[0] or not url[1]:
+				#	sc=url[0]
+				#	h=url[1]
+				#	if not sc:
+				#		sc=self.schema
+				#	if not h:
+				#		h=self.__host
+				#	a.setUrl(urlunparse((sc,h)+url[2:]))
+				#	self.__finalurl=urlunparse((sc,h)+url[2:])
+				#else:
+				#	a.setUrl(self.response.getLocation())
+				#	self.__finalurl=self.response.getLocation()
 				a.setProxy(self.__proxy)
 
 				ck=""
@@ -358,19 +470,15 @@ class Request:
 				if ck:
 					self.addHeader("Cookie",ck)
 
-
 				a.perform()
+				self.follow_url = a.completeUrl
 				self.response=a.response
 
 
 
 	######### ESTE conjunto de funciones no es necesario para el uso habitual de la clase
 
-	def getPostData (self):
-		return self.postdata
-
 	def getAll (self):
-		"Devuelve el texto de la request completa (lo que escrbirias por telnet"
 		pd=self.postdata
 		string=str(self.method)+" "+str(self.pathWithVariables)+" "+str(self.protocol)+"\n"
 		for i,j in self.__headers.items():
@@ -380,16 +488,6 @@ class Request:
 		return string
 
 	##########################################################################
-
-	def sent_header_callback(self,type,data):
-		if type==pycurl.INFOTYPE_HEADER_OUT:
-			tp=TextParser()
-			tp.setSource("string",data)
-
-			while (tp.readUntil("^([^:]+): (.*)$")):
-				self.addHeader(tp[0][0],tp[0][1])
-		
-		
 
 	def header_callback(self,data):
 		self.__performHead+=data
@@ -409,25 +507,21 @@ class Request:
 		tp=TextParser()
 		tp.setSource("string",rawRequest)
 
-		self.__variablesPOST={}
+		self.__variablesPOST=VariablesSet()
 		self.__headers={}		# diccionario, por ejemplo headers["Cookie"]
-
 
 		tp.readLine()
 		try:
-			tp.search("(\w+) (.*) (HTTP\S*)")
+			tp.search("^(\w+) (.*) (HTTP\S*)$")
 			self.method=tp[0][0]
 			self.protocol=tp[0][2]
 		except Exception,a:
 			print rawRequest
 			raise a
 
-		pathTMP=tp[0][1]
+		pathTMP=tp[0][1].replace(" ","%20")
 		pathTMP=('','')+urlparse(pathTMP)[2:]
 		pathTMP=urlunparse(pathTMP)
-	#	print pathTMP
-	#	pathTMP=pathTMP.replace("//","/")
-		self.time=strftime("%H:%M:%S", gmtime())
 
 		while True:
 			tp.readLine()
@@ -444,71 +538,15 @@ class Request:
 			while tp.readLine(): 
 				pd+=tp.lastFull_line
 
-
+			boundary=None
 			if "Content-Type" in self.__headers:
 				values=self.__headers["Content-Type"].split(";")
-				if values[0].strip().lower()=="application/x-www-form-urlencoded":
-					self.ContentType=values[0]
-				elif values[0].strip().lower()=="multipart/form-data":
-					self.ContentType=values[0]
-					self.boundary=values[1].split("=")[1].strip()
+				self.ContentType=values[0].strip().lower()
+				if self.ContentType=="multipart/form-data":
+					boundary=values[1].split("=")[1].strip()
 
-			self.parsePOSTDATA(pd)
+			self.setPostData(pd,boundary)
 
-
-	def parsePOSTDATA(self,pd):
-
-		if self.ContentType=="application/x-www-form-urlencoded":
-			dicc=self.readUrlEncodedVariables(pd)
-			[self.addVariablePOST(i,j) for i,j in dicc]
-
-		elif self.ContentType=="multipart/form-data":
-			self.multiPOSThead={}
-			dicc={}
-			tp=TextParser()
-			tp.setSource("string",pd)
-		#	print self.boundary
-		#	print tp.readUntil("%s$" % (self.boundary))
-
-			while True:
-				headers=[]
-				if not tp.readUntil("name=\"([^\"]+)\""):
-					break
-				var=tp[0][0]
-				headers.append(tp.lastFull_line.strip())
-				while True:
-					tp.readLine()
-					if tp.search("^([^:]+): (.*)$"):
-						headers.append(tp.lastFull_line.strip())
-					else:
-						break
-
-				value=""
-				while True:
-					tp.readLine()
-					if not tp.search(self.boundary):
-						value+=tp.lastFull_line
-					else:
-						break
-
-				if value[-2:]=="\r\n":
-					value=value[:-2]
-
-
-				dicc[var]=value
-				self.multiPOSThead[var]=headers
-
-				if tp.search(self.boundary+"--"):
-					break
-
-			
-			self.__variablesPOST.update(dicc)
-#			print pd
-#			print dicc
-#			print self.__variablesPOST
-
-		else:
-			self.__uknPostData=pd
 
 class Response:
 
@@ -573,11 +611,15 @@ class Response:
 	def getContent (self):
 		return self.__content
 
-	def getAll (self):
+	def getTextHeaders(self):
 		string=str(self.protocol)+" "+str(self.code)+" "+str(self.message)+"\r\n"
 		for i,j in self.__headers:
 			string+=i+": "+j+"\r\n"
-		string+="\r\n"+self.getContent()
+
+		return string
+
+	def getAll (self):
+		string=self.getTextHeaders()+"\r\n"+self.getContent()
 		return string
 
 	def Substitute(self,src,dst):

@@ -1,5 +1,5 @@
 *************************************
-* Wfuzz  1.4c - The web bruteforcer  *
+* Wfuzz  1.4d - The web bruteforcer  *
 * Coded by:                         *
 * Christian Martorella              *
 *   - cmartorella@edge-security.com *
@@ -33,30 +33,41 @@ The tool is based on dictionaries or ranges, then you choose where you want to b
 
 Examples:
 
-	-  wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html http://www.mysite.com/FUZZ 2> results.html
+	- wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html http://www.mysite.com/FUZZ 2> results.html
 
 	 This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources i
 	 (directories, scripts, files,etc), it will hide from the output the return code 404 
 	 (for easy reading results), it will use the dictionary commons.txt for the bruteforce
 	 , and also will output the results to the results.html file (with a cool format to work).
 
-
-	-  wfuzz.py -c -z range -r 1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
+	- wfuzz.py -c -z range -r 1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
 	  In this example instead of using a file as dictionary, it will use a range from 1-100,
 	  and will bruteforce the parameter "id".
 
-	-  wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html -d "id=1&catalogue=FUZZ" 
+	- wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 --html -d "id=1&catalogue=FUZZ" 
 	   http://www.mysite.com/check.asp 2> results.html 
 	   Here you can see the use of POST data, with the option "-d".
 
 	- wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
 	  Example of path discovery, using a recursive level of 2 paths.
 
+	- wfuzz.py -z file -f wordlists/http_methods.txt -X http://testphp.vulnweb.com/
+	  HTTP method scanning example
+
+	- wfuzz.py -z file -f wordlists/http_methods.txt,wordlists/commons.txt -X http://testphp.vulnweb.com/FUZ2Z/
+	  HTTP method scanning example in several paths
+
+	- wfuzz.py -c -z file -f  wordlists/methods.txt --hc 404 -v --follow http://www.mysite.com/FUZZ
+	  Bruteforce following HTTP redirects
+
+	- wfuzz.py -c -z file -f wordlists/commons.txt --hc 404 -I http://www.mysite.com/FUZZ
+	  Bruteforce using HEAD HTTP method 
+
 Platforms:
 ----------
 
 wfuzz was tested on Linux, Os X and Windows.
-On windows the colored output, it doesn't work, we are working towards fixing this problem.
+On windows the colored output doesn't work, we are working towards fixing this problem.
 
 
 Dependencies:
@@ -70,10 +81,23 @@ Thanks:
 
 Shouts goes to: Trompeti an all the S21sec Team. (www.s21sec.com)
 
-Special thanks to DarkRaver for the tool Dirb, part of wfuzz  is based on the functionallity of dirb. (www.open-labs.org) and most of the wordlist are from his tool.
+Special thanks to DarkRaver for the tool Dirb, part of wfuzz is based on the functionallity of dirb. (www.open-labs.org) and most of the wordlist are from his tool.
 
 Andres Andreu, all Injection payloads are taken from wsFuzzer (www.neurofuzz.com)
 Stay tunned for the GUI it rocks..
+
+Changelog 1.4d:
+==============
+-Using _ in encoders names
+-Added HEAD method scanning
+-Added magictree support
+-Fuzzing in HTTP methods
+-Hide responses by regex
+-Bash auto completion script (modify and then copy wfuzz_bash_completion into /etc/bash_completion.d)
+-Verbose output including server header and redirect location
+-Added follow HTTP redirects option (this functionality was already provided by reqresp)
+-Fixed HTML output, thanks to Christophe De La Fuente
+-Fixed terminal colour, thanks to opensource@till.name
 
 Changelog 1.4c:
 ==============

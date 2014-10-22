@@ -15,17 +15,20 @@ from payloads import *
 from dictio import dictionary
 import re
 import hashlib
+import socket
+
+from xml.dom import minidom
+from urlparse import urlunparse
 
 ENCODERS={}
 encs=dir(encoders)
 for i in encs:
 	try:
 		if i[:8]=='encoder_':
-			ENCODERS[getattr(encoders,i).text.lower()]=i
+			ENCODERS[getattr(encoders,i).text.lower().replace(" ","_")]=i
 	except:
 		pass
 
-# Generate_fuzz evolution
 class requestGenerator:
 	def __init__(self,reqresp,varsSet,dictio,dictio2=None,proxy=None):
 
@@ -172,12 +175,16 @@ class requestGenerator:
 			return copycat
 
 		else:
+			if fuzzmethods:
+			    req.method="FUZZ"
+
 			rawReq=req.getAll()
 			schema=req.schema
 			method,userpass=req.getAuth()
 
 			if rawReq.count('FUZZ'):
 				a=Request()
+				a.followLocation = self.request.followLocation
 				res=rawReq.replace("FUZZ",payload1)
 				if rawReq.count('FUZ2Z'):
 					res=res.replace("FUZ2Z",payload2)
@@ -198,6 +205,8 @@ class requestGenerator:
 				if method != 'None':
 					a.setAuth(method,userpass)
 				a.setProxy(self.proxy)
+				if fuzzmethods:
+				    a.method = payload1
 				return a
 
 			elif method and (userpass.count('FUZZ') ):
@@ -219,6 +228,7 @@ class FuzzResult:
 	def __init__(self,request,saveMemory=True):
 
 		global OS
+		global node_service
 
 		#######################################
 		self.len=0
@@ -281,31 +291,37 @@ class FuzzResult:
 		self.cookie=request.response.getCookie()
 		if request.response.has_header('Location'):
 			self.location=request.response['Location']
+		elif request.followLocation and request.follow_url:
+			self.location="(*) %s" % request.follow_url
 		else:
 			self.location=""
+
+		if request.response.has_header("Server"):
+			self.server = request.response["Server"]
+		else:
+			self.server = ""
+
 		m=hashlib.md5()
 		m.update(request.response.getContent())
 
 		self.md5=m.hexdigest()
 
-
 		if __name__=="__main__":
-
-
-			if str(self.code) in hidecodes or str(self.lines) in hidelines or str(self.words) in hidewords or str(self.len) in hidechars:
+			if str(self.code) in hidecodes or str(self.lines) in hidelines or str(self.words) in hidewords or str(self.len) in hidechars \
+			    or (hideregex and hideregex.search(request.response.getContent())):
 				fl=""
 			else:
 				fl="\r\n"
+
+				if html:
+				    self.imprimeResultHtml(nreq,request)
+				elif magictree:
+				    self.imprimeResultMagicTree(request)
+
 			nreq+=1
-			
-			imprimeResult (nreq,self.code,self.lines,self.words,request.description[-50:],fl,self.len)
+			self.imprimeResult(nreq,request.description[-50:],fl)
+
 			del request
-
-			if html:
-				if str(self.code) in hidecodes or str(self.lines) in hidelines or str(self.words) in hidewords or str(self.len) in hidechars:
-					return
-				imprimeResultHtml (nreq,self.code,self.lines,self.words,request,self.len)
-
 
 	def __getitem__ (self,key):
 		for i,j in self.respHeaders:
@@ -320,6 +336,100 @@ class FuzzResult:
 				return True
 		return False
 
+
+	def imprimeResult(self, nreq,fuzzs,finalLine):
+		global printMutex
+
+		printMutex.acquire()
+		
+		limpialinea()
+		sys.stdout.write ("%05d:  C=" % (nreq) ) 
+
+		cc=""
+		wc=8
+		if self.code>=400 and self.code<500:
+			if color:
+				cc="\x1b[31m"
+				wc=12
+		elif self.code>=300 and self.code<400:
+			if color:
+				cc="\x1b[36m"
+				wc=11
+		elif self.code>=200 and self.code<300:
+			if color:
+				cc="\x1b[32m"
+				wc=10
+		else:
+			if color:
+				cc="\x1b[35m"
+				wc=1
+		if OS!='nt':
+			sys.stdout.write (cc)
+		else:
+			WConio.textcolor(wc)
+
+
+		sys.stdout.write ("%03d" % (self.code)) 
+		
+		if color:
+		    if OS!='nt':
+			    sys.stdout.write ("\x1b[37m")
+		    else:
+			    WConio.textcolor(8)
+			
+		if verbose:
+		    sys.stdout.write ("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"%s" % (self.lines,self.words,self.len,self.server[:17],self.location[:48],fuzzs,finalLine))
+		else:
+		    sys.stdout.write ("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" %(self.lines,self.words,self.len,fuzzs,finalLine))
+		
+		sys.stdout.flush()
+
+
+		printMutex.release()
+
+	def imprimeResultMagicTree(self, request):
+		def create_xml_element(parent, caption, text):
+		    # Create a <xxx> element
+		    doc = minidom.Document()
+		    el = doc.createElement(caption)
+		    parent.appendChild(el)
+
+		    # Give the <xxx> element some text
+		    ptext = doc.createTextNode(text)
+
+		    el.appendChild(ptext)
+		    return el
+
+		node_url = create_xml_element(node_service, "url", str(request.completeUrl))
+
+		if self.server:
+		    create_xml_element(node_url, "HTTPServer", self.server)
+
+		if self.code == 301 or self.code == 302 and self.location:
+		    create_xml_element(node_url, "RedirectLocation", self.location)
+
+		create_xml_element(node_url, "ResponseCode", str(self.code))
+		create_xml_element(node_url, "source", "WFuzz")
+
+	def imprimeResultHtml(self, nreq,req):
+		
+		htmlc="<font>"
+		if self.code>=400 and self.code<500:
+				htmlc="<font color=#FF0000>"
+		elif self.code>=300 and self.code<400:
+				htmlc="<font color=#8888FF>"
+		elif self.code>=200 and self.code<300:
+				htmlc="<font color=#00aa00>"
+
+		if req.method.lower()=="get":
+			sys.stderr.write ("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(nreq,htmlc,self.code,self.lines,self.words,req.completeUrl,req.completeUrl))
+		else:
+			inputs=""
+			postvars=req.variablesPOST()
+			for i in postvars:
+				inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (i,req.getVariablePOST(i))
+
+			sys.stderr.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(nreq,htmlc,self.code,self.lines,self.words,req.description,req.completeUrl,inputs))
 
 
 #####################################################################################################
@@ -420,80 +530,12 @@ mutex=1
 printMutex=threading.BoundedSemaphore(value=mutex)
 
 
-def imprimeResult (nreq,code,lines,words,fuzzs,finalLine,len):
-	global printMutex
-
-	printMutex.acquire()
-	
-	limpialinea()
-	sys.stdout.write ("%05d:  C=" % (nreq) ) 
-
-	cc=""
-	wc=8
-	if code>=400 and code<500:
-		if color:
-			cc="\x1b[31m"
-			wc=12
-	elif code>=300 and code<400:
-		if color:
-			cc="\x1b[36m"
-			wc=11
-	elif code>=200 and code<300:
-		if color:
-			cc="\x1b[32m"
-			wc=10
-	else:
-		if color:
-			cc="\x1b[35m"
-			wc=1
-	if OS!='nt':
-		sys.stdout.write (cc)
-	else:
-		WConio.textcolor(wc)
-
-
-	sys.stdout.write ("%03d" % (code)) 
-	
-	if OS!='nt':
-		sys.stdout.write ("\x1b[37m")
-	else:
-		WConio.textcolor(8)
-		
-	sys.stdout.write ("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" %(lines,words,len,fuzzs,finalLine))
-	
-	sys.stdout.flush()
-
-
-	printMutex.release()
-
 def limpialinea():
 	sys.stdout.write ("\r")
 	if OS!='nt':
 		sys.stdout.write ("\x1b[0K")
 	else:
 		WConio.clreol()
-
-def imprimeResultHtml (nreq,code,lines,words,req):
-	
-	htmlc="<font>"
-	if code>=400 and code<500:
-			htmlc="<font color=#FF0000>"
-	elif code>=300 and code<400:
-			htmlc="<font color=#8888FF>"
-	elif code>=200 and code<300:
-			htmlc="<font color=#00aa00>"
-
-	if req.method.lower()=="get":
-		sys.stderr.write ("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(nreq,htmlc,code,lines,words,req.completeUrl,req.completeUrl))
-	else:
-		inputs=""
-		postvars=req.variablesPOST()
-		for i in postvars:
-			inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (i,req.getVariablePOST(i))
-
-		sys.stderr.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(nreq,htmlc,code,lines,words,req.description,req.completeUrl,inputs))
-
-
 
 def select_encoding(typ):
 	typ=typ.lower()
@@ -508,13 +550,17 @@ def select_encoding(typ):
 if __name__=="__main__":
 
 	color=False
+	verbose=False
+	fuzzmethods=False
 	hidecodes=[]
 	hidewords=[]
 	hidelines=[]
 	hidechars=[]
+	hideregex=None
 	ths=20
 	postdata=False
 	html=False
+	magictree=False
 	postdata_data=""
 	nreq=0
 
@@ -522,50 +568,57 @@ if __name__=="__main__":
 	current_depth=0
 
 	banner='''
-*************************************
-* Wfuzz  1.4c - The Web Bruteforcer *
-* Coded by:                         *
-* Christian Martorella              *
-*   - cmartorella@edge-security.com *
-* Carlos del ojo                    *
-*   - deepbit@gmail.com             *
-*************************************
+********************************************************
+* Wfuzz  1.4d - The Web Bruteforcer                    *
+* Coded by:                                            *
+* Christian Martorella (cmartorella@edge-security.com) *
+* Carlos del ojo (deepbit@gmail.com)                   *
+* Project contributor:                                 *
+* Xavier Mendez aka Javi (xmendez@edge-security.com)   *
+********************************************************
 '''
-	usage='''
-Usage: %s [options] <url>\r\n
+	usage='''Usage: %s [options] <url>\r\n
 Options:
--c	    : Output with colors
--x addr		: use Proxy (ip:port)
--d postdata 	: Use post data (ex: "id=FUZZ&catalogue=1")
--H headers  	: Use headers (ex:"Host:www.mysite.com,Cookie:id=1312321&user=FUZZ")
--z payload type : Specify type of payload (file,range,hexa-range,hexa-rand)
--r N1-N2    	: Specify range limits
--f path     	: Specify file path (comma sepparated, if multiple FUZZ vars)
--t N        	: Specify the number of threads (20 default)
--e encoding 	: Encoding for payload (-e help for a list of encodings)
--b cookie	: Specify a cookie for the requests
--R depth    	: Recursive path discovery
--V alltype  	: All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
+-c			    : Output with colors
+-v			    : Verbose information
 
---basic auth  	: in format "user:pass" or "FUZZ:FUZZ"
---ntlm auth   	: in format "domain\user:pass" or "domain\FUZ2Z:FUZZ"
---digest auth 	: in format "user:pass" or "FUZZ:FUZZ"
+-x addr			    : use Proxy (ip:port)
+-t N			    : Specify the number of threads (20 default)
 
---hc N[,N]+ 	: Hide resposnes with the specified[s] code
---hl N[,N]+ 	: Hide responses with the specified[s] number of lines
---hw N[,N]+ 	: Hide responses with the specified[s] number of words
---hh N[,N]+     : Hide responses with the specified[s] number of chars
---html      : Output in HTML format by stderr \r\n
+-e encoding		    : Encoding for payload (-e help for a list of encodings)
+-R depth		    : Recursive path discovery
+-I			    : Use HTTP HEAD instead of GET method (No HTML body responses). 
+--follow		    : Follow redirections
+
+-z payload type 	    : Specify type of payload (file,range,hexa-range,hexa-rand)
+-r N1-N2		    : Specify range limits
+-f path			    : Specify file path (comma sepparated, if multiple FUZZ vars)
+-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
+
+-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
+-b cookie		    : Specify a cookie for the requests
+-d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
+-H headers  		    : Use headers (ex:"Host:www.mysite.com,Cookie:id=1312321&user=FUZZ")
+
+--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
+
+--hc/hl/hw/hh N[,N]+	    : Hide resposnes with the specified[s] code/lines/words/chars
+--hs regex		    : Hide responses with the specified regex within the response
+
+--html/magictree	    : Output in HTML/Magictree format by stderr
 
 Keyword: FUZZ,FUZ2Z  wherever you put these words wfuzz will replace them by the payload selected. 
 
-Examples in the README.
+Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.com/FUZZ 2> res.html
+	 - wfuzz.py -c -z file -f users.txt,pass.txt --hc 404 --html http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z 2> res.html
+
+	   More examples in the README.
 ''' % (sys.argv[0])
 
 
 
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "cx:b:e:R:d:z:r:f:t:w:V:H:",['hc=','hh=','hl=','hw=','ntlm=','basic=','digest=','html'])
+		opts, args = getopt.getopt(sys.argv[1:], "IXvcx:b:e:R:d:z:r:f:t:w:V:H:",['hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','html','magictree','follow'])
 		optsd=dict(opts)
 		if "-e" in optsd:
 			if optsd["-e"] == "help":
@@ -583,9 +636,17 @@ Examples in the README.
 		print usage
 		sys.exit(-1)
 	
+	if "-X" in optsd:
+		fuzzmethods=True
+
+	if "-v" in optsd:
+		verbose=True
+
 	if "-c" in optsd:
 		color=True
 
+	if "--magictree" in optsd:
+		magictree=True
 	if "--html" in optsd:
 		html=True
 	if "--hc" in optsd:
@@ -596,6 +657,8 @@ Examples in the README.
 		hidelines=optsd["--hl"].split(",")
 	if "--hh" in optsd:
 		hidechars=optsd["--hh"].split(",")
+	if "--hs" in optsd:
+		hideregex=re.compile(optsd["--hs"],re.MULTILINE|re.DOTALL)
 
 	payloadtype=optsd ["-z"]
 	d2=None
@@ -652,6 +715,9 @@ Examples in the README.
 	a=Request()
 	a.setUrl(url)
 
+	if "-I" in optsd:
+	    a.method="HEAD"
+
 	if "--basic" in optsd:
 		a.setAuth("basic",optsd["--basic"])
 
@@ -662,8 +728,10 @@ Examples in the README.
 		a.setAuth("ntlm",optsd["--ntlm"])
 
 	if "-d" in optsd:
-		a.addPostdata(optsd["-d"])
-		print "test"
+		a.setPostData(optsd["-d"])
+
+	if "--follow" in optsd:
+		a.followLocation = True
 
 	if "-b" in optsd:
 		a.addHeader("Cookie",optsd["-b"])
@@ -694,6 +762,55 @@ Examples in the README.
 	if html:
 		sys.stderr.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url) )
 
+	elif magictree:
+	    def create_xml_element(parent, caption, text):
+		# Create a <xxx> element
+		doc = minidom.Document()
+		el = doc.createElement(caption)
+		parent.appendChild(el)
+
+		# Give the <xxx> element some text
+		ptext = doc.createTextNode(text)
+
+		el.appendChild(ptext)
+		return el
+	    doc = minidom.Document()
+
+	    #<magictree class="MtBranchObject">
+	    node_mt = doc.createElement("magictree") 
+	    node_mt.setAttribute("class", "MtBranchObject")
+
+	    #<testdata class="MtBranchObject">
+	    node_td = doc.createElement("testdata") 
+	    node_td.setAttribute("class", "MtBranchObject")
+	    node_mt.appendChild(node_td)
+
+	    #<host>209.85.146.105
+	    host = a["Host"]
+	    if host.find(":") > 0:
+		host, port = host.split(":")
+	    else:
+		port = 80
+		if a.schema.lower() == "https":
+		    port = 443
+
+	    try:
+		resolving = socket.gethostbyname(host)
+		node_h = create_xml_element(node_td, "host", str(resolving))
+	    except socket.gaierror:
+		node_h = create_xml_element(node_td, "host", str(host))
+
+	    #<ipproto>tcp
+	    node_ipr = create_xml_element(node_h, "ipproto", "tcp")
+
+	    #<port>80<state>open</state><service>http
+	    node_port = create_xml_element(node_ipr, "port", str(port))
+	    create_xml_element(node_port, "state", "open")
+	    if a.schema.lower() == "https":
+		node_port = create_xml_element(node_port, "tunnel", "ssl")
+
+	    node_service = create_xml_element(node_port, "service", "http")
+
 	fz=Fuzzer(rh,hidecodes,ths)
 
 	print banner
@@ -701,9 +818,14 @@ Examples in the README.
 	print "Payload type: " + payloadtype + "\n"
 	print "Total requests: " + str(rh.count())
 
-	print "=================================================================="
-	print "ID	Response   Lines      Word         Chars          Request    "
-	print "==================================================================\r\n"
+	if verbose:
+	    print "========================================================================================================================================="
+	    print "ID	Response   Lines      Word         Chars                  Server                                             Redirect   Request    "
+	    print "=========================================================================================================================================\r\n"
+	else:
+	    print "=================================================================="
+	    print "ID	Response   Lines      Word         Chars          Request    "
+	    print "==================================================================\r\n"
 	fz.Launch()
 	try:
 		while True:
@@ -724,10 +846,13 @@ Examples in the README.
 							i.req.setUrl(i.req.completeUrl+"FUZZ")
 							rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
 							rh2.append(rhtemp)
+						if i.code==200 and i.req.followLocation and i.req.follow_url and i.req.follow_url[-1]=='/':
+							i.req.setUrl(i.req.follow_url+"FUZZ")
+							rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
+							rh2.append(rhtemp)
 						elif i.code>=300 and i.code<400:
 							if i.has_header("Location") and i["Location"][-1]=='/':
 								i.req.setUrl(i["Location"]+"FUZZ")
-								print i.req
 								rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
 								rh2.append(rhtemp)
 						elif i.code==401:
@@ -751,6 +876,9 @@ Examples in the README.
 	
 				if html:
 					sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
+				elif magictree:
+					sys.stderr.write(node_mt.toxml())
+
 				sys.exit(0)
 	
 				
@@ -763,7 +891,8 @@ Examples in the README.
 
 	if html:
 		sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
-
+	elif magictree:
+		sys.stderr.write(node_mt.toxml())
 
 	limpialinea()
 	sys.stdout.write("\r\n")
