@@ -11,18 +11,18 @@ In 2011 after the code being unchanged for various years, Xavier Mendez took ove
 
 Wfuzz is a tool designed to  brutefore web applications, it's very flexible, it supports:
 	
-	- Recursion (When doing directory discovery)
-	- Post data bruteforcing
-	- Header bruteforcing
-	- Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
-	- Colored output 
-	- Hide results by return code, word numbers, line numbers, etc.
-	- Url encoding
-	- Cookies
-	- Multithreading
-	- Proxy support 
-	- All parameter fuzzing
-  - etc
+- Recursion (When doing directory discovery)
+- Post data bruteforcing
+- Header bruteforcing
+- Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
+- Colored output 
+- Hide results by return code, word numbers, line numbers, etc.
+- Url encoding
+- Cookies
+- Multithreading
+- Proxy support 
+- All parameter fuzzing
+- etc
 
 It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
 
