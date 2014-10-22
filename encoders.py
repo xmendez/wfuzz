@@ -22,6 +22,14 @@ class encoder:
 #######################################################
 ######################################################
 
+class encoder_none:
+	text="none"
+	def __init__(self):
+		pass
+	
+	def encode (self,string):
+		return string
+
 class encoder_urlencode (encoder):
 	text="urlencode"
 	def __init__(self):
@@ -61,6 +69,22 @@ class encoder_base64 (encoder):
 		except:
 			return 1
 
+class encoder_uri_double_hex (encoder):
+	text="uri double hexadecimal"
+	def __init__(self):
+		encoder.__init__(self)
+	
+	def encode(self,string):
+		strt = ""
+		con = "%%25%02x"
+		s=re.compile(r"/|;|=|:|&|@|\\|\?")	
+		for c in string:
+			if s.search(c):
+				strt += c
+				continue
+			strt += con % ord(c)
+		return strt
+
 class encoder_uri_hex (encoder):
 	text="uri hexadecimal"
 	def __init__(self):
@@ -95,6 +119,40 @@ class encoder_random_upper (encoder):
 		return strt   
 
 
+class encoder_second_nibble_hex (encoder):
+	text="second nibble Hexa"
+	def __init__(self):
+		encoder.__init__(self)
+	
+	def encode(self,string):
+		strt = ""
+		con = "%%%02x"
+		s=re.compile(r"/|;|=|:|&|@|\\|\?")	
+		for c in string:
+			if s.search(c):
+				strt += c
+				continue
+			temp = hex(ord(c))[2:]
+			strt += "%%%s%%%02x" % (str(temp[:1]), ord(temp[1:]))
+		return strt
+
+class encoder_first_nibble_hex (encoder):
+	text="first nibble Hexa"
+	def __init__(self):
+		encoder.__init__(self)
+	
+	def encode(self,string):
+		strt = ""
+		con = "%%%02x"
+		s=re.compile(r"/|;|=|:|&|@|\\|\?")	
+		for c in string:
+			if s.search(c):
+				strt += c
+				continue
+			temp = hex(ord(c))[2:]
+			strt += "%%%%%02x%s" % (ord(temp[:1]), str(temp[1:]))
+		return strt
+
 class encoder_doble_nibble_hex (encoder):
 	text="double nibble Hexa"
 	def __init__(self):
@@ -104,7 +162,6 @@ class encoder_doble_nibble_hex (encoder):
 		strt = ""
 		fin = ""
 		con = "%%%02x"
-# first get it in straight hex
 		s=re.compile(r"/|;|=|:|&|@|\\|\?")	
 		enc=encoder_uri_hex()
 		strt = enc.encode(string)

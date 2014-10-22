@@ -9,15 +9,15 @@ _wfuzz() {
     prev=${COMP_WORDS[COMP_CWORD-1]}
 
     # Change to your wordlists' base directory
-    WLDIR=~/fuzzdb-read-only/
+    WLDIR=~/herramientas/fuzzdb-read-only/
     
     common_options="-z[PAYLOAD] -f[WORDLIST] --hc[HIDE_HTTP_CODES] -d[POST_DATA] "
 
     case "$prev" in
 	-z)
-	    COMPREPLY=( $( compgen -W "file range hexa-range hexa-rand" -- $cur ))
+	    COMPREPLY=( $( compgen -W "file, range, hexa-range, hexa-rand, list," -- $cur ))
 	    ;;
-	-f)
+	file,)
 	    [ -z "$WLDIR" ] && exit 1
 
 	    if [[ "$cur" == "$WLDIR" ]]; then
@@ -27,9 +27,6 @@ _wfuzz() {
 	    fi
 
 	    COMPREPLY=( $(compgen -W "${names}" -- ${cur}) )
-	    ;;
-	file)
-	    COMPREPLY=( $(compgen -W "-f" -- ${cur}) )
 	    ;;
 	range|hexa-range|hexa-rand)
 	    COMPREPLY=( $(compgen -W "-r" -- ${cur}) )

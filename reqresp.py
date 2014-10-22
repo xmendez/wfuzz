@@ -261,8 +261,9 @@ class Request:
 			self.__variablesGET.parseUrlEncoded(variables)
 			
 ############### PROXY ##################################
-	def setProxy (self,prox):
+	def setProxy (self,prox,type):
 		self.__proxy=prox
+		self.proxytype=type
 
 ############### FOLLOW LOCATION ########################
 	def setFollowLocation(self,value):
@@ -411,6 +412,10 @@ class Request:
 
 		if self.__proxy!=None:
 			conn.setopt(pycurl.PROXY,self.__proxy)
+			if self.proxytype=="SOCK5":
+				conn.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS5)
+			elif self.proxytype=="SOCK4":
+				conn.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS4)
 			if self.__headers.has_key("Proxy-Connection"):
 				del self.__headers["Proxy-Connection"]
 

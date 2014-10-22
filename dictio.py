@@ -13,18 +13,19 @@ class dictionary:
 			self.__encoder=dicc.getencoder()
 		else:	
 			self.__payload=payload()
-			self.__encoder=encoder()
-		self.iter=self.__payload.__iter__()
+			self.__encoder = [lambda x: encoder().encode(x)]
+		self.restart()
 
 	def count (self):
-		return self.__payload.count()
+		return self.__payload.count() * len(self.__encoder)
 
 	def setpayload(self,payl):
-		self.__payload=payl
-		self.iter=self.__payload.__iter__()
+		self.__payload = payl
+		self.restart()
 
 	def setencoder(self,encd):
 		self.__encoder=encd
+		self.generator = self.gen()
 
 	def getpayload (self):
 		return self.__payload
@@ -42,10 +43,16 @@ class dictionary:
 		self.restart()
 		return self
 
-	def next(self):
+	def gen(self):
+	    while 1:
 		pl=self.iter.next()
-		return self.__encoder.encode(pl)
+		for encode in self.__encoder:
+		    yield encode(pl)
+
+	def next(self):
+		return self.generator.next()
 
 	def restart(self):
 		self.iter=self.__payload.__iter__()
+		self.generator = self.gen()
 

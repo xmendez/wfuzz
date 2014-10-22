@@ -10,37 +10,68 @@ import threading
 import getopt
 import time
 import os
-from encoders import *
-from payloads import *
+import iterations
+import encoders
+import payloads
+import printers
 from dictio import dictionary
 import re
 import hashlib
-import socket
+import random
 
-from xml.dom import minidom
-from urlparse import urlunparse
+from collections import defaultdict
 
-ENCODERS={}
-encs=dir(encoders)
-for i in encs:
+ENCODERS_LIST={}
+for i in dir(encoders):
 	try:
 		if i[:8]=='encoder_':
-			ENCODERS[getattr(encoders,i).text.lower().replace(" ","_")]=i
+			ENCODERS_LIST[getattr(encoders,i).text.lower().replace(" ","_")] = i
+	except:
+		pass
+
+ITERATORS_LIST={}
+itera=dir(iterations)
+for i in itera:
+	try:
+		if i[:9]=='iterator_':
+			ITERATORS_LIST[getattr(iterations,i).text.lower().replace(" ","_")] = i
+	except:
+		pass
+
+PAYLOADS_LIST={}
+for i in dir(payloads):
+	try:
+		if i[:8]=='payload_':
+			PAYLOADS_LIST[getattr(payloads,i).text.lower().replace(" ","_")] = i
+	except:
+		pass
+
+PRINTER_LIST={}
+for i in dir(printers):
+	try:
+		if i[:8]=='printer_':
+			PRINTER_LIST[getattr(printers,i).text.lower().replace(" ","_")] = i
 	except:
 		pass
 
 class requestGenerator:
-	def __init__(self,reqresp,varsSet,dictio,dictio2=None,proxy=None):
-
+	def __init__(self,reqresp,varsSet,dictio,proxy=None,proxytype=None):
 		self.reqsgenerated=0
 
 		self.request=reqresp
 		self.proxy=proxy
+		if self.proxy!=None:
+			if proxy.count("-"):
+				self.proxy=proxy.split("-")
+			else:
+				self.proxy=[proxy]
+		self.proxytype=proxytype
 		self.allvars=False
 		self.allpost=False
 		self.allheaders=False
 		self.final=False
 		self.child=None
+		self.request, self.baseline = self.generate_baseline_request(reqresp)
 
 		self.kk=varsSet
 		if varsSet=="allvars":
@@ -61,11 +92,9 @@ class requestGenerator:
 		# todos el mismo :D
 		####################
 
-		self.dictio=dictionary(dictio)
-		if dictio2:
-			self.dictio2=dictionary(dictio2)
-		else:
-			self.dictio2=None
+		#REPASAR
+		#self.dictio = dictionary(dictio)
+		self.dictio = dictio
 
 		self.currentDictio1=None
 
@@ -77,10 +106,8 @@ class requestGenerator:
 			sr=self.child.count()
 		if self.allvars or self.allpost or self.allheaders:
 			return self.dictio.count()*len( self.varSET)+sr
-		elif not self.dictio2:
-			return self.dictio.count()+sr
 		else:
-			return self.dictio.count()*self.dictio2.count()+sr
+		    return self.dictio.count()+sr
 
 	def append (self,rg):
 		if self.child:
@@ -94,8 +121,6 @@ class requestGenerator:
 
 	def restart (self):
 		self.dictio.restart()
-		if self.dictio2:
-			self.dictio2.restart()
 		self.final=False
 
 		if self.child:
@@ -112,19 +137,7 @@ class requestGenerator:
 
 	def next (self):
 		try :
-			if self.dictio2:
-				if not self.currentDictio1:
-					self.currentDictio1=self.dictio.next()
-				try:
-					self.currentDictio2=self.dictio2.next()
-				except :
-					self.currentDictio1=self.dictio.next()
-					self.dictio2.restart()
-					self.currentDictio2=self.dictio2.next()
-				self.reqsgenerated+=1
-				return self.generate_request(self.request,self.currentDictio1,self.currentDictio2)
-	
-			elif self.allvars or self.allpost or self.allheaders:
+			if self.allvars or self.allpost or self.allheaders:
 				if not self.varSET:
 					raise StopIteration
 			
@@ -139,7 +152,7 @@ class requestGenerator:
 				self.currentVarSet+=1
 
 				self.reqsgenerated+=1
-				return self.generate_request(self.request,self.currentDictio1,"",var)
+				return self.generate_request(self.request,self.currentDictio1,var)
 				
 			else:
 				self.reqsgenerated+=1
@@ -150,85 +163,115 @@ class requestGenerator:
 			else:
 				self.final=True
 				raise e
+
+	def generate_baseline_request(self, req):
+	    schema = req.schema
+	    rawReq = req.getAll()
+
+	    baseline_marker = re.compile("FUZ\d*Z{(.*?)}",re.MULTILINE|re.DOTALL)
+	    payload = baseline_marker.findall(rawReq)
+
+	    if len(payload) == 0:
+		return (req, None)
+
+	    # it is not possible to specify baseline value for HTTP method!
+	    if fuzzmethods:
+		payload = ['GET'] + payload
+
+	    for i in payload:
+		rawReq = rawReq.replace("{" + i + "}", '')
+
+	    base_req = Request()
+	    base_req.parseRequest(rawReq,schema)
+	    base_req.followLocation = req.followLocation
+	    base_req.setProxy(self.proxy,self.proxytype)
+	    method,userpass=req.getAuth()
+	    if fuzzmethods:
+		base_req.method = "FUZZ"
+	    if method != 'None': base_req.setAuth(method,userpass)
+
+	    return (base_req, self.generate_request(base_req, payload))
+
 		
 
-	def generate_request(self,req,payload1,payload2="",variable=""):
+	def generate_request(self,req,payload,variable=""):
 		if self.allvars==True:
 			copycat=copy.deepcopy(req)
-			copycat.setProxy(self.proxy)
-			copycat.addVariableGET(variable,payload1)
-			copycat.description=variable + "=" + payload1
+			copycat.setProxy(self.proxy,self.proxytype)
+			copycat.addVariableGET(variable,payload)
+			copycat.description=variable + "=" + payload
 			return copycat
 			
 		elif self.allpost==True:
 			copycat=copy.deepcopy(req)
-			copycat.setProxy(self.proxy)
-			copycat.addVariablePOST(variable,payload1)
-			copycat.description=variable + "=" + payload1
+			copycat.setProxy(self.proxy,self.proxytype)
+			copycat.addVariablePOST(variable,payload)
+			copycat.description=variable + "=" + payload
 			return copycat
 
 		elif self.allheaders==True:
 			copycat=copy.deepcopy(req)
-			copycat.setProxy(self.proxy)
-			copycat.addHeader(variable,payload1)
-			copycat.description=variable + "=" + payload1
+			copycat.setProxy(self.proxy,self.proxytype)
+			copycat.addHeader(variable,payload)
+			copycat.description=variable + "=" + payload
 			return copycat
 
 		else:
-			if fuzzmethods:
-			    req.method="FUZZ"
-
-			rawReq=req.getAll()
-			schema=req.schema
+			rawReq = req.getAll()
+			schema = req.schema
 			method,userpass=req.getAuth()
+			http_method = None
 
-			if rawReq.count('FUZZ'):
-				a=Request()
-				a.followLocation = self.request.followLocation
-				res=rawReq.replace("FUZZ",payload1)
-				if rawReq.count('FUZ2Z'):
-					res=res.replace("FUZ2Z",payload2)
-				a.parseRequest(res,schema)
-				temp=a.completeUrl
-				#a.setUrl(temp.replace("FUZZ",payload1))
-			#	a.completeUrl=self.request.completeUrl.replace("FUZZ",payload1)
-				if self.request.completeUrl.count("FUZ2Z"):
-					a.setUrl(temp.replace("FUZ2Z",payload2))
-					#a.completeUrl=a.completeUrl.replace("FUZ2Z",payload2)
+			newreq=Request()
+			newreq.setUrl(req.completeUrl)
+			newreq.setPostData(req.postdata)
 
-				if self.request.description:
-					a.description=self.request.description+"/"+payload1
-				else:
-					a.description=payload1
-				if rawReq.count('FUZ2Z'):
-					a.description+=" - "+payload2
-				if method != 'None':
-					a.setAuth(method,userpass)
-				a.setProxy(self.proxy)
-				if fuzzmethods:
-				    a.method = payload1
-				return a
+			rawUrl = newreq.completeUrl
 
-			elif method and (userpass.count('FUZZ') ):
-				copycat=copy.deepcopy(req)
-				userpass=userpass.replace("FUZZ",payload1)
-				if userpass.count('FUZ2Z'):
-						userpass=userpass.replace("FUZ2Z",payload2)
-				copycat.setAuth(method,userpass)
-				copycat.description=userpass
-				copycat.setProxy(self.proxy)
-				return copycat
-				
+			if self.request.description:
+			    newreq.description = self.request.description
 			else:
+			    newreq.description = ""
+
+			for i, payload1 in enumerate(payload, start=1):
+			    fuzz_word = "FUZZ"
+			    if i > 1:
+				fuzz_word = "FUZ" + str(i) + "Z"
+
+			    if fuzzmethods and fuzz_word == "FUZZ":
+				http_method = payload1
+				newreq.description += " - " + payload1
+			    elif method and (userpass.count(fuzz_word)):
+				userpass=userpass.replace(fuzz_word,payload1)
+				newreq.description += " - " + payload1
+			    elif newreq.completeUrl.count(fuzz_word):
+				rawUrl = rawUrl.replace(fuzz_word,payload1)
+				newreq.description += " - " + payload1
+			    elif rawReq.count(fuzz_word):
+				rawReq=rawReq.replace(fuzz_word,payload1)
+				newreq.description += " - " + payload1
+			    else:
+				req.description = "No %s word!" % fuzz_word
 				return req
+
+			newreq.parseRequest(rawReq,schema)
+			newreq.setUrl(rawUrl)
+			newreq.followLocation = req.followLocation
+			if self.proxy!=None:
+				random.shuffle(self.proxy)
+				newreq.setProxy(self.proxy[0],self.proxytype)
+			if http_method: newreq.method = http_method
+			if method != 'None': newreq.setAuth(method,userpass)
+			return newreq
+
+				
 
 
 class FuzzResult:
 
-	def __init__(self,request,saveMemory=True):
+	def __init__(self,request,sleeper,saveMemory=True):
 
 		global OS
-		global node_service
 
 		#######################################
 		self.len=0
@@ -236,6 +279,7 @@ class FuzzResult:
 		self.words=0
 		self.code=0
 		self.md5=""
+		self.sleeper=sleeper
 		
 		### Used only when saveMemory = False
 		self.respHeaders=[]
@@ -248,17 +292,16 @@ class FuzzResult:
 		request.setTotalTimeout(10)
 		i=5
 		x=True
-		import time
 		while i:
 			try:
-			
-				#time.sleep(0.1)
+				time.sleep(self.sleeper)
 				starttime=time.time()	
 				request.perform()
 				stoptime=time.time()	
 				diff=stoptime-starttime	
 				break
-			except :
+			except Exception,e:
+				#print e
 				i-=1
 				x=False
 		if not i:
@@ -272,8 +315,7 @@ class FuzzResult:
 					sys.stdout.write ("%05d: C=XXX %4d L\t   %5d W\t %s\r\n" %(nreq,0,0,"Error in "+request.description[-50:]))
 					sys.stdout.flush()
 
-				if html:
-					sys.stderr.write ("\r\n<tr><td>%05d</td><td>XXX</td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(nreq,0,0,request.completeUrl,"Error in "+request.completeUrl))
+				if printer_tool: printer_tool.error(nreq, request)
 				raise a
 			return 
 
@@ -312,11 +354,7 @@ class FuzzResult:
 				fl=""
 			else:
 				fl="\r\n"
-
-				if html:
-				    self.imprimeResultHtml(nreq,request)
-				elif magictree:
-				    self.imprimeResultMagicTree(request)
+				if printer_tool: printer_tool.result(nreq, self, request)
 
 			nreq+=1
 			self.imprimeResult(nreq,request.description[-50:],fl)
@@ -387,58 +425,13 @@ class FuzzResult:
 
 		printMutex.release()
 
-	def imprimeResultMagicTree(self, request):
-		def create_xml_element(parent, caption, text):
-		    # Create a <xxx> element
-		    doc = minidom.Document()
-		    el = doc.createElement(caption)
-		    parent.appendChild(el)
-
-		    # Give the <xxx> element some text
-		    ptext = doc.createTextNode(text)
-
-		    el.appendChild(ptext)
-		    return el
-
-		node_url = create_xml_element(node_service, "url", str(request.completeUrl))
-
-		if self.server:
-		    create_xml_element(node_url, "HTTPServer", self.server)
-
-		if self.code == 301 or self.code == 302 and self.location:
-		    create_xml_element(node_url, "RedirectLocation", self.location)
-
-		create_xml_element(node_url, "ResponseCode", str(self.code))
-		create_xml_element(node_url, "source", "WFuzz")
-
-	def imprimeResultHtml(self, nreq,req):
-		
-		htmlc="<font>"
-		if self.code>=400 and self.code<500:
-				htmlc="<font color=#FF0000>"
-		elif self.code>=300 and self.code<400:
-				htmlc="<font color=#8888FF>"
-		elif self.code>=200 and self.code<300:
-				htmlc="<font color=#00aa00>"
-
-		if req.method.lower()=="get":
-			sys.stderr.write ("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(nreq,htmlc,self.code,self.lines,self.words,req.completeUrl,req.completeUrl))
-		else:
-			inputs=""
-			postvars=req.variablesPOST()
-			for i in postvars:
-				inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (i,req.getVariablePOST(i))
-
-			sys.stderr.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(nreq,htmlc,self.code,self.lines,self.words,req.description,req.completeUrl,inputs))
-
-
 #####################################################################################################
 #####################################################################################################
 #####################################################################################################
 
 
 class Fuzzer:
-	def __init__(self,genreq,ignore,threads=20):
+	def __init__(self,genreq,ignore,sleeper,threads=20):
 		self.genReq=genreq
 		self.results=[]
 		self.threads=threads
@@ -448,11 +441,30 @@ class Fuzzer:
 		self.mutex=1
 		self.Semaphore_Mutex=threading.BoundedSemaphore(value=self.mutex)
 		self.ignore=ignore
+		self.sleeper=sleeper
 
 	def count (self):
 		return self.genReq.count()
 
 	def Launch (self):
+		# baseline request
+		rq=self.genReq.baseline
+		if rq:
+		    try:
+			res=FuzzResult(rq,False)
+
+			if "BBB" in hidelines:
+			    hidelines.append(str(res.lines))
+			if "BBB" in hidecodes:
+			    hidecodes.append(str(res.code))
+			if "BBB" in hidewords:
+			    hidewords.append(str(res.words))
+			if "BBB" in hidechars:
+			    hidechars.append(str(res.len))
+			self.agregaresultado(res)
+		    except :
+			    pass
+
 		for i in range (0,self.threads):
 			th=threading.Thread(target=self.attack, kwargs={})
 			th.start()
@@ -462,7 +474,7 @@ class Fuzzer:
 		rq=self.getNewReq()
 		while rq and self.run:
 			try :
-				res=FuzzResult(rq,False)
+				res=FuzzResult(rq,self.sleeper,False)
 				#if (str(res.code) not in self.ignore):
 				self.agregaresultado(res)
 			except :
@@ -537,14 +549,41 @@ def limpialinea():
 	else:
 		WConio.clreol()
 
+def select_payload(typ):
+	typ=typ.lower()
+
+	if not typ in PAYLOADS_LIST:
+		print typ+" payload does not exists (-e payloads for a list of available payloads)" 
+		sys.exit(-1)
+
+	return getattr(payloads,PAYLOADS_LIST[typ])
+
+def select_iteration(typ):
+	typ=typ.lower()
+
+	if not typ in ITERATORS_LIST:
+		print typ+" iterator does not exists (-m iterators for a list of available iterators)" 
+		sys.exit(-1)
+
+	return getattr(iterations,ITERATORS_LIST[typ])
+
 def select_encoding(typ):
 	typ=typ.lower()
 
-	if not typ in ENCODERS:
-		print typ+" encoding does not exists (-e help for a list of available encodings)" 
+	if not typ in ENCODERS_LIST:
+		print typ+" encoding does not exists (-e encodings for a list of available encodings)" 
 		sys.exit(-1)
 
-	return getattr (encoders,ENCODERS[typ])()
+	return getattr(encoders,ENCODERS_LIST[typ])()
+
+def select_printer(typ):
+	typ=typ.lower()
+
+	if not typ in PRINTER_LIST:
+		print typ+" printer does not exists (-e printers for a list of available encodings)" 
+		sys.exit(-1)
+
+	return getattr(printers,PRINTER_LIST[typ])()
 
 
 if __name__=="__main__":
@@ -559,40 +598,37 @@ if __name__=="__main__":
 	hideregex=None
 	ths=20
 	postdata=False
-	html=False
-	magictree=False
 	postdata_data=""
 	nreq=0
+	sleeper=0
 
 	rlevel=0
 	current_depth=0
 
 	banner='''
 ********************************************************
-* Wfuzz  1.4d - The Web Bruteforcer                    *
-* Coded by:                                            *
-* Christian Martorella (cmartorella@edge-security.com) *
-* Carlos del ojo (deepbit@gmail.com)                   *
-* Project contributor:                                 *
-* Xavier Mendez aka Javi (xmendez@edge-security.com)   *
+* Wfuzz  2.0 - The Web Bruteforcer                     *
+* Blackhat Arsenal Release                             *
 ********************************************************
 '''
 	usage='''Usage: %s [options] <url>\r\n
 Options:
 -c			    : Output with colors
 -v			    : Verbose information
+-o printer		    : Output format by stderr
 
--x addr			    : use Proxy (ip:port)
+-p addr			    : use Proxy (ip:port or ip:port-ip:port-ip:port)
+-x type			    : use SOCK proxy (SOCKS4,SOCKS5)
 -t N			    : Specify the number of threads (20 default)
+-s N			    : Specify time delay between requests (0 default)
 
--e encoding		    : Encoding for payload (-e help for a list of encodings)
+-e <type>		    : List of available encodings/payloads/iterators/printers
 -R depth		    : Recursive path discovery
 -I			    : Use HTTP HEAD instead of GET method (No HTML body responses). 
 --follow		    : Follow redirections
 
--z payload type 	    : Specify type of payload (file,range,hexa-range,hexa-rand)
--r N1-N2		    : Specify range limits
--f path			    : Specify file path (comma sepparated, if multiple FUZZ vars)
+-m iterator		    : Specify iterator (product by default)
+-z payload		    : Specify payload (type,parameters,encoding)
 -V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 
 -X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
@@ -602,15 +638,14 @@ Options:
 
 --basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
 
---hc/hl/hw/hh N[,N]+	    : Hide resposnes with the specified[s] code/lines/words/chars
+--hc/hl/hw/hh N[,N]+	    : Hide resposnes with the specified[s] code/lines/words/chars (Use BBB for taking values from baseline)
 --hs regex		    : Hide responses with the specified regex within the response
-
---html/magictree	    : Output in HTML/Magictree format by stderr
 
 Keyword: FUZZ,FUZ2Z  wherever you put these words wfuzz will replace them by the payload selected. 
 
-Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.com/FUZZ 2> res.html
-	 - wfuzz.py -c -z file -f users.txt,pass.txt --hc 404 --html http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z 2> res.html
+Example: - wfuzz.py -c -z file,commons.txt --hc 404 -o html http://www.site.com/FUZZ 2> res.html
+	 - wfuzz.py -c -z file,users.txt -z file,pass.txt --hc 404 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+	 - wfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something}
 
 	   More examples in the README.
 ''' % (sys.argv[0])
@@ -618,16 +653,42 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 
 
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "IXvcx:b:e:R:d:z:r:f:t:w:V:H:",['hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','html','magictree','follow'])
-		optsd=dict(opts)
+		opts, args = getopt.getopt(sys.argv[1:], "IXvcx:b:e:R:d:z:r:f:t:w:V:H:m:o:s:p:",['hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow'])
+		optsd=defaultdict(list)
+		for i,j in opts:
+			optsd[i].append(j)
+
 		if "-e" in optsd:
-			if optsd["-e"] == "help":
-				print "Available encodings:"
-				for i in ENCODERS.keys():
+			if "payloads" in optsd["-e"]:
+				print "Available payloads:"
+				for i in PAYLOADS_LIST.keys():
 					print " - "+i
 				sys.exit(0)
+			if "encodings" in optsd["-e"]:
+				print "Available encodings:"
+				for i in ENCODERS_LIST.keys():
+					print " - "+i
+				sys.exit(0)
+			if "iterators" in optsd["-e"]:
+				print "Available iterators:"
+				for i in ITERATORS_LIST.keys():
+					print " - "+i
+				sys.exit(0)
+			if "printers" in optsd["-e"]:
+				print "Available printers:"
+				for i in PRINTER_LIST.keys():
+					print " - "+i
+				sys.exit(0)
+			else:
+			    raise Exception
+		if "-m" in optsd:
+			if "help" in optsd["-m"]:
+				print "Available iterators:"
+				for i in ITERATORS_LIST.keys():
+					print " - " + i
+				sys.exit(0)
 		url=args[0]
-		if not "-z" in optsd:
+		if not "-z" in optsd.keys():
 			raise Exception
 	except Exception,qw: 
 		if str(qw) == "0":
@@ -644,74 +705,51 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 
 	if "-c" in optsd:
 		color=True
-
+	if "-s" in optsd:
+		sleeper=float(optsd["-s"][0])
 	if "--magictree" in optsd:
 		magictree=True
 	if "--html" in optsd:
 		html=True
 	if "--hc" in optsd:
-		hidecodes=optsd["--hc"].split(",")
+		hidecodes=optsd["--hc"][0].split(",")
 	if "--hw" in optsd:
-		hidewords=optsd["--hw"].split(",")
+		hidewords=optsd["--hw"][0].split(",")
 	if "--hl" in optsd:
-		hidelines=optsd["--hl"].split(",")
+		hidelines=optsd["--hl"][0].split(",")
 	if "--hh" in optsd:
-		hidechars=optsd["--hh"].split(",")
+		hidechars=optsd["--hh"][0].split(",")
 	if "--hs" in optsd:
-		hideregex=re.compile(optsd["--hs"],re.MULTILINE|re.DOTALL)
+		hideregex=re.compile(optsd["--hs"][0],re.MULTILINE|re.DOTALL)
 
-	payloadtype=optsd ["-z"]
-	d2=None
+	payloadtype='; '.join(optsd["-z"])
 
-	if optsd ["-z"].lower()=="file":
-		try:
-			list=optsd["-f"].split(",")
-		except:
-			print banner
-			print usage
-			print"You need to set the \"-f\" option"
-			sys.exit()
-		dic1=payload_file(list[0])
-		if len (list)==2:
-			dic2=payload_file(list[1])
-			d2=dictionary()
-			d2.setpayload(dic2)
-			
-	elif optsd ["-z"].lower()=="range":
-		dic1=payload_range(optsd["-r"],len(optsd["-r"].split("-")[1]))
-	elif optsd ["-z"].lower()=="hexa-range":
-		dic1=payload_hexrange(optsd["-r"])
-	elif optsd ["-z"].lower()=="hexa-rand":
-		dic1=payload_hexrand(optsd["-r"])
-	
+	selected_dic = []
+	if "-z" in optsd:
+	    for i in optsd["-z"]:
+		vals = i.split(",")
+		t, par = vals[:2]
+		p = select_payload(t)(par)
+
+		d = dictionary()
+		d.setpayload(p)
+		if len(vals) == 3:
+		    encoding = vals[2]
+		    d.setencoder([select_encoding(i).encode for i in encoding.split("@")])
+
+		selected_dic.append(d)
+
+	printer_tool = None
+	if "-o" in optsd:
+	    printer_tool = select_printer(optsd['-o'][0])
+
+	if "-m" in optsd:
+	    iterat_tool = select_iteration(optsd['-m'][0])
 	else:
-		print "Bad argument: -z dicttype : Specify type od dictionary (file,range,hexa-range,hexa-rand)"
-		sys.exit (-1)
-
-	d1=dictionary()
-	d1.setpayload(dic1)
-
+	    iterat_tool = select_iteration('product')
+	    
+	dic = iterat_tool(*selected_dic)
 		
-	if "-e" in optsd:
-		encodings=optsd["-e"].split(",")
-		if len(encodings) == 2:
-			
-			if len(optsd["-f"].split(",")) == 2:	
-				enc=select_encoding(encodings[0])
-				print encodings[0] + list[0]
-				d1.setencoder(enc)			
-				enc=select_encoding(encodings[1])
-				print encodings[1] + list[1]
-				d2.setencoder(enc)			
-			else:
-				enc=select_encoding(encodings[0])
-				d1.setencoder(enc)			
-		elif len(encodings) ==1:	
-			enc=select_encoding(encodings[0])
-			d1.setencoder(enc)
-
-
-
 	a=Request()
 	a.setUrl(url)
 
@@ -719,99 +757,55 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 	    a.method="HEAD"
 
 	if "--basic" in optsd:
-		a.setAuth("basic",optsd["--basic"])
+		a.setAuth("basic",optsd["--basic"][0])
 
 	if "--digest" in optsd:
-		a.setAuth("digest",optsd["--digest"])
+		a.setAuth("digest",optsd["--digest"][0])
 
 	if "--ntlm" in optsd:
-		a.setAuth("ntlm",optsd["--ntlm"])
+		a.setAuth("ntlm",optsd["--ntlm"][0])
 
 	if "-d" in optsd:
-		a.setPostData(optsd["-d"])
+		a.setPostData(optsd["-d"][0])
 
 	if "--follow" in optsd:
 		a.followLocation = True
 
 	if "-b" in optsd:
-		a.addHeader("Cookie",optsd["-b"])
+		a.addHeader("Cookie",optsd["-b"][0])
 
 
 	proxy=None
+	proxytype=None
+	if "-p" in optsd:
+		proxy=optsd["-p"][0]
 	if "-x" in optsd:
-		proxy=optsd["-x"]
-
+		proxytype=optsd["-x"][0]	
+		if proxytype not in ("SOCKS5","SOCKS4"):
+			print usage
+			sys.exit()
 	if "-t" in optsd:
-		ths=int(optsd["-t"])
+		ths=int(optsd["-t"][0])
 
 	if "-R" in optsd:
-		rlevel=int(optsd["-R"])
+		rlevel=int(optsd["-R"][0])
 	
 	if "-V" in optsd:
-		varset=str(optsd["-V"])
+		varset=str(optsd["-V"][0])
 	else:
 		varset="None"
 	if "-H" in optsd:
-		headers=str(optsd["-H"]).split(",")
+		headers=str(optsd["-H"][0]).split(",")
 		for x in headers:
 			splitted=x.partition(":")
 			a.addHeader(splitted[0],splitted[2])
 
-	rh=requestGenerator(a,varset,d1,d2,proxy)
+	rh=requestGenerator(a,varset,dic,proxy,proxytype)
 	
-	if html:
-		sys.stderr.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url) )
+	if printer_tool:
+	    printer_tool.header(a)
 
-	elif magictree:
-	    def create_xml_element(parent, caption, text):
-		# Create a <xxx> element
-		doc = minidom.Document()
-		el = doc.createElement(caption)
-		parent.appendChild(el)
-
-		# Give the <xxx> element some text
-		ptext = doc.createTextNode(text)
-
-		el.appendChild(ptext)
-		return el
-	    doc = minidom.Document()
-
-	    #<magictree class="MtBranchObject">
-	    node_mt = doc.createElement("magictree") 
-	    node_mt.setAttribute("class", "MtBranchObject")
-
-	    #<testdata class="MtBranchObject">
-	    node_td = doc.createElement("testdata") 
-	    node_td.setAttribute("class", "MtBranchObject")
-	    node_mt.appendChild(node_td)
-
-	    #<host>209.85.146.105
-	    host = a["Host"]
-	    if host.find(":") > 0:
-		host, port = host.split(":")
-	    else:
-		port = 80
-		if a.schema.lower() == "https":
-		    port = 443
-
-	    try:
-		resolving = socket.gethostbyname(host)
-		node_h = create_xml_element(node_td, "host", str(resolving))
-	    except socket.gaierror:
-		node_h = create_xml_element(node_td, "host", str(host))
-
-	    #<ipproto>tcp
-	    node_ipr = create_xml_element(node_h, "ipproto", "tcp")
-
-	    #<port>80<state>open</state><service>http
-	    node_port = create_xml_element(node_ipr, "port", str(port))
-	    create_xml_element(node_port, "state", "open")
-	    if a.schema.lower() == "https":
-		node_port = create_xml_element(node_port, "tunnel", "ssl")
-
-	    node_service = create_xml_element(node_port, "service", "http")
-
-	fz=Fuzzer(rh,hidecodes,ths)
+	fz=Fuzzer(rh,hidecodes,sleeper,ths)
 
 	print banner
 	print "Target: " + url
@@ -840,32 +834,37 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 
 					voidDicc=dictionary()
 					rh2=requestGenerator(Request(),"None",voidDicc)
-	
+
+					# REPASAR
+					for i in selected_dic:
+					    i.restart() # pq no se llama iter() automaticamente
+					dic=iterat_tool(*selected_dic)#dictionary()
+
 					for i in results:
 						if i.code==200 and i.req.completeUrl[-1]=='/':
 							i.req.setUrl(i.req.completeUrl+"FUZZ")
-							rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
+							rhtemp=requestGenerator(i.req,"None",dic,proxy,proxytype)
 							rh2.append(rhtemp)
 						if i.code==200 and i.req.followLocation and i.req.follow_url and i.req.follow_url[-1]=='/':
 							i.req.setUrl(i.req.follow_url+"FUZZ")
-							rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
+							rhtemp=requestGenerator(i.req,"None",dic,proxy,proxytype)
 							rh2.append(rhtemp)
 						elif i.code>=300 and i.code<400:
 							if i.has_header("Location") and i["Location"][-1]=='/':
 								i.req.setUrl(i["Location"]+"FUZZ")
-								rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
+								rhtemp=requestGenerator(i.req,"None",dic,proxy,proxytype)
 								rh2.append(rhtemp)
 						elif i.code==401:
 							if i.req.completeUrl[-1]=='/':
 								i.req.setUrl(i.req.completeUrl+"FUZZ")
 							else:
 								i.req.setUrl(i.req.completeUrl+"/FUZZ")
-							rhtemp=requestGenerator(i.req,"None",d1,None,proxy)
+							rhtemp=requestGenerator(i.req,"None",dic,None,proxy,proxytype)
 							rh2.append(rhtemp)
 	
 	
 					if rh2.moreRequests:
-						fz=Fuzzer(rh2,ths)
+						fz=Fuzzer(rh,hidecodes,sleeper,ths)
 						print "-------------- Recursion level",current_depth,"---------------"
 						print
 						fz.Launch()
@@ -874,14 +873,9 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 					
 					continue
 	
-				if html:
-					sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
-				elif magictree:
-					sys.stderr.write(node_mt.toxml())
-
+				if printer_tool: printer_tool.footer()
 				sys.exit(0)
 	
-				
 			time.sleep(1)
 	except KeyboardInterrupt:
 		limpialinea()
@@ -889,10 +883,6 @@ Example: - wfuzz.py -c -z file -f commons.txt --hc 404 --html http://www.site.co
 		
 		fz.stop()
 
-	if html:
-		sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
-	elif magictree:
-		sys.stderr.write(node_mt.toxml())
-
+	if printer_tool: printer_tool.footer()
 	limpialinea()
 	sys.stdout.write("\r\n")
