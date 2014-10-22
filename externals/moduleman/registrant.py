@@ -1,0 +1,118 @@
+import operator
+from modulefilter import Filter
+from collections import defaultdict
+from threading import Lock
+
+
+class IRegistrant():
+    def __init__(self, loader, plg_filter):
+	self.plg_filter = plg_filter
+	self.loader = loader
+
+	self.start_loading()
+	self.load()
+	self.end_loading()
+
+    def register(self, identifier, module):
+	raise NotImplemented	
+
+    def start_loading(self):
+	raise NotImplemented	
+
+    def load(self):
+	raise NotImplemented	
+
+    def end_loading(self):
+	raise NotImplemented	
+
+class KnowledgeBase:
+    def __init__(self):
+	self.__data = defaultdict(list)
+	self.mutex = Lock()
+
+    def get(self, key):
+	with self.mutex:
+	    return self.__data[key]
+
+    def add(self, key, value):
+	with self.mutex:
+	    self.__data[key].append(value)
+
+    def has(self, key):
+	with self.mutex:
+	    return key in self.__data
+
+class BRegistrant(IRegistrant):
+    def __init__(self, loader, plg_filter = Filter()):
+	self.__plugins = {}
+	self.__active_plugins = {}
+	self.kbase = KnowledgeBase()
+
+	IRegistrant.__init__(self, loader, plg_filter)
+
+    def register(self, identifier, module):
+	self.__plugins[identifier] = self._modify_instance(module)
+	self.__active_plugins[identifier] = True
+
+    def load(self):
+	self.loader.load(self)
+
+    def start_loading(self):
+	pass
+
+    def end_loading(self):
+	pass
+
+    def _modify_instance(self, module):
+	module.kbase = self.kbase
+
+	return module
+	
+    # ------------------------------------------------
+    # plugin management functions
+    # ------------------------------------------------
+    def plugin_state(self, identifier, state):
+	self.__active_plugins[identifier] = state
+
+    def __get_plugins(self, category, sorting):
+	def plugin_filter(x):
+	    plgid, plg = x
+
+	    if category == "$all$":
+		return True
+	    elif not self.__active_plugins[plgid]:
+		return False
+	    else:
+		return self.plg_filter.is_visible(plg, category)
+
+	def plugin_sort(x, y):
+	    return x[1].priority - y[1].priority
+	    
+	l = filter(plugin_filter, self.__plugins.items())
+
+	if sorting:
+	    l.sort(plugin_sort)
+
+	return l
+
+    def get_plugin(self, identifier):
+	return self.__plugins[identifier]
+
+    def get_plugins(self, category="$all$", sorting="true"):
+	return [plg for plg_id, plg in self.__get_plugins(category, sorting)]
+
+    def get_plugins_ext(self, category="$all$", sorting="true"):
+	l = [['Id', 'Priority', 'Category', 'Name', 'Description']]
+
+	for plg_id, plg in self.__get_plugins(category, sorting):
+	    l.append([plg_id, str(plg.priority), ', '.join(plg.category), str(plg.name), str(plg.description) ])
+
+	return l
+
+    def get_plugins_names(self, category="$all$", sorting="true"):
+	return [plg.name for plg_id, plg in self.__get_plugins(category, sorting)]
+
+    def get_plugins_ids(self, category="$all$", sorting="true"):
+	return [plg_id for plg_id, plg in self.__get_plugins(category, sorting)]
+
+

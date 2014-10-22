@@ -13,11 +13,30 @@ class TextParser:
 		self.type=""
 		self.lastFull_line=None
 		self.lastline = None
-		pass
+
+		self.actualIndex=0
+
+	
 
 	def __del__ (self):
 		if self.type=="file":
 			self.fd.close()
+
+	def __str__(self):
+		return str( self.matches)
+
+	def __iter__(self):
+		self.actualIndex=0
+		return self
+
+	def next(self):
+		try:
+			value=self.matches[self.actualIndex]
+			self.actualIndex+=1
+			return value
+		except:
+			raise StopIteration
+		
 
 	def setSource (self,t,*args):
 		'''Se especifica el tipo de entrada. Puede ser fichero o entrada estandard
