@@ -1,27 +1,32 @@
 ********************************************************
-* Wfuzz  2.0 - The Web Bruteforcer                     *
-* Coded by:                                            *
-* Christian Martorella (cmartorella@edge-security.com) *
-* Carlos del ojo (deepbit@gmail.com)                   *
-* Xavier Mendez aka Javi (xmendez@edge-security.com)   *
+* Wfuzz - The Web Bruteforcer                          *
 ********************************************************
+
+Bit of history
+--------------
+
+This project was started by Carlos del Ojo and Christian Martorella back in 2006, and it was in actively development until version 1.4c.
+In 2011 after the code being unchanged for various years, Xavier Mendez took over the project and became the maintainer and main 
+developer of the tool, releasing versions 1.4d to 2.1. Christian Martorella has remained in the project as a collaborator, actively supporting new
+versions with suggestions, beta testing and minor code changes.
 
 What is this?
 -------------
 
 Wfuzz is a tool designed to  brutefore web applications, it's very flexible, it supports:
 	
-	-Recursion (When doing directory discovery)
-	-Post data bruteforcing
-	-Header bruteforcing
-	-Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
-	-Colored output 
-	-Hide results by return code, word numbers, line numbers, etc.
-	-Url encoding
-	-Cookies
-	-Multithreading
-	-Proxy support 
-	-All parameter fuzzing
+	- Recursion (When doing directory discovery)
+	- Post data bruteforcing
+	- Header bruteforcing
+	- Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
+	- Colored output 
+	- Hide results by return code, word numbers, line numbers, etc.
+	- Url encoding
+	- Cookies
+	- Multithreading
+	- Proxy support 
+	- All parameter fuzzing
+        - etc.
 
 It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
 
@@ -32,112 +37,172 @@ The tool is based on dictionaries or ranges, then you choose where you want to b
 
 Examples:
 
-	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -o html http://www.mysite.com/FUZZ 2> results.html
+	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -o html http://www.mysite.com/FUZZ > results.html
 
-	 This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources i
-	 (directories, scripts, files,etc), it will hide from the output the return code 404 
-	 (for easy reading results), it will use the dictionary commons.txt for the bruteforce
-	 , and also will output the results to the results.html file (with a cool format to work).
+	  This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources 
+	  (directories, scripts, files,etc), it will hide from the output the return code 404 
+	  (for easy reading results), it will use the dictionary commons.txt for the bruteforce
+	  , and also will output the results to the results.html file (with a cool format to work).
 
 	- wfuzz.py -c -z range,1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
+
 	  In this example instead of using a file as dictionary, it will use a range from 1-100,
 	  and will bruteforce the parameter "id".
 
-	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 --html -d "id=1&catalogue=FUZZ" 
-	   http://www.mysite.com/check.asp 2> results.html 
-	   Here you can see the use of POST data, with the option "-d".
+	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -d "id=1&catalogue=FUZZ" http://www.mysite.com/check.asp
+
+	  Here you can see the use of POST data, with the option "-d".
 
 	- wfuzz.py -c -z file, wordlists/commons.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
-	  Example of path discovery, using a recursive level of 2 paths.
+
+	  Example of path discovery, using 2 levels deep of recursivity.
 
 	- wfuzz.py -z file,wordlists/http_methods.txt -X http://testphp.vulnweb.com/
-	  HTTP method scanning example
+
+	  HTTP method scanning example (find supported methods)
 
 	- wfuzz.py -z file,wordlists/http_methods.txt -z file,wordlists/commons.txt -X http://testphp.vulnweb.com/FUZ2Z/
-	  HTTP method scanning example in several paths
 
-	- wfuzz.py -z list,TRACE -X http://testphp.vulnweb.com/
-	  Scanning for TRACE method using a list payload
+	  HTTP method scanning example in different paths
+
+	- wfuzz.py -z list,TRACE -z file,urls.txt -X http://FUZZ
+
+	  Scanning for TRACE method using a list payload in different hosts
 
 	- wfuzz.py -c -z file,wordlists/methods.txt --hc 404 -v --follow http://www.mysite.com/FUZZ
+
 	  Bruteforce following HTTP redirects
 
 	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -I http://www.mysite.com/FUZZ
+
 	  Bruteforce using HEAD HTTP method 
 
 	- wfuzz.py -z list,http://mysite.com -z list,dir-dir2-dir3  FUZZ/FUZ2Z
+
 	  Bruteforce using URL as payload and a list of directories.
 
-	- wfuzz.py -z list,..,double_nibble_hexa@second_nibble_hexa@uri_double_hexadecimal@uri_hexadecimal@first_nibble_hexa@none http://mysite.com/FUZZ/jmx-console
-	  Bruteforce using multiple encodings per payload.
+	- Combining/chaining multiples encodings per payload
+
+	    - wfuzz.py -z list,uno,uri_hexadecimal-md5 http://localhost/FUZZ
+
+		00001: C=XXX    0 L            0 W       Error in  - %75%6e%6f
+		00002: C=XXX    0 L            0 W       Error in  - 1eaa8bb195869a23f081acbb5bf08527
+
+	    - wfuzz.py -z list,uno,uri_hexadecimal@md5 http://localhost/FUZZ
+
+		00001: C=XXX    0 L            0 W       Error in 33%66%30%38%31%61%63%62%62%35%62%66%30%38%35%32%37
+	    
+	- Encoders can be selected by category
+
+	    $ python wfuzz.py -e encoders | grep url
+	    url           | utf8_binary       | Replaces ALL characters in string using the \uxx escape                           
+	    url           | first_nibble_hex  | Replaces ALL characters in string using the %%dd? escape                          
+	    ...
+	    url           | utf8              | Replaces ALL characters in string using the \u00xx escape                         
+	    url           | uri_triple_hex    | Encodes ALL charachers using the %25%xx%xx escape.                                
+	    url           | uri_hex           | Encodes ALL charachers using the %xx escape.   
+
+    
+	    $ python wfuzz.py -c -z list,..,url --sc 200 http://www.webscantest.com/FUZZ/jmx-console/
+
+	    00000:  C=200     30 L       120 W         1382 Ch        "\x2e\x2e"
+	    00006:  C=200     30 L       120 W         1382 Ch        "%252e%252e"
+	    00007:  C=200     30 L       120 W         1382 Ch        "%25%32%65%25%32%65"
+	    00010:  C=200     30 L       120 W         1382 Ch        "\u002e\u002e"
 
 	- wfuzz.py -z list,dir1-dir2 -z file,wordlist/general/common.txt -z list,jsp-php-asp -z range,1-40  http://localhost/FUZZ/FUZ2Z.FUZ3Z?id=FUZ4Z
+
 	  Fuzzing using 4 payloads
 
-	- wfuzz.py -z -c -z range,1-10 --hc=BBB http://mysite.com/FUZZ{directory}
-	  Baseline support, Bruteforcing and hiding the response codes that are equal to http://mysite.com/directory
+	- wfuzz.py -w ~/wordslist/plataformas/apache.txt -A --hh=BBB --hc 404 http://www.webscantest.com/FUZZ{notthere}
+	  
+	  Several filters flags could be used.
+
+	- wfuzz.py -z -c -z range,1-10 --hh=BBB http://mysite.com/FUZZ{directory not there}
+
+	  Baseline support, Bruteforcing and hiding the response codes that are equal to http://mysite.com/directory%20not%20there
+
+	- crunch 2 2 | python wfuzz.py -z stdin, http://localhost/FUZZ
+
+	  Reading wordlist from stdin.
 
 	- Combining payloads using iterators:
 
-	zip
+            zip
 
-	    - wfuzz.py -z list,a-b-c -z list,1-2-3 -m zip http://mysite.com/FUZZ/FUZ2Z
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m zip http://mysite.com/FUZZ/FUZ2Z
 
-	    Target: http://mysite.com/FUZZ/FUZ2Z
-	    Payload type: list,a-b-c; list,1-2-3
+                00001:  C=404      9 L        32 W          276 Ch        "a - 1"
+                00002:  C=404      9 L        32 W          276 Ch        "c - 3"
+                00003:  C=404      9 L        32 W          276 Ch        "b - 2"
 
-	    Total requests: 3
-	    ==================================================================
-	    ID      Response   Lines      Word         Chars          Request    
-	    ==================================================================
+            chain
 
-	    00001:  C=404      9 L        32 W          276 Ch        "a - 1"
-	    00002:  C=404      9 L        32 W          276 Ch        "c - 3"
-	    00003:  C=404      9 L        32 W          276 Ch        "b - 2"
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m chain http://mysite.com/FUZZ/FUZ2Z
 
-
-	chain
-
-	    - wfuzz.py -z list,a-b-c -z list,1-2-3 -m chain http://mysite.com/FUZZ/FUZ2Z
-
-	    Target: http://mysite.com/FUZZ/FUZ2Z
-	    Payload type: list,a-b-c; list,1-2-3
-
-	    Total requests: 6
-	    ==================================================================
-	    ID      Response   Lines      Word         Chars          Request    
-	    ==================================================================
-
-	    00001:  C=404      9 L        32 W          280 Ch        "b"
-	    00002:  C=404      9 L        32 W          280 Ch        "a"
-	    00003:  C=404      9 L        32 W          280 Ch        "c"
-	    00004:  C=404      9 L        32 W          280 Ch        "1"
-	    00006:  C=404      9 L        32 W          280 Ch        "3"
-	    00005:  C=404      9 L        32 W          280 Ch        "2"
+                00001:  C=404      9 L        32 W          280 Ch        "b"
+                00002:  C=404      9 L        32 W          280 Ch        "a"
+                00003:  C=404      9 L        32 W          280 Ch        "c"
+                00004:  C=404      9 L        32 W          280 Ch        "1"
+                00006:  C=404      9 L        32 W          280 Ch        "3"
+                00005:  C=404      9 L        32 W          280 Ch        "2"
 
 
-	product
+            product
 
-	    - wfuzz.py -z list,a-b-c -z list,1-2-3 http://mysite.com/FUZZ/FUZ2Z
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 http://mysite.com/FUZZ/FUZ2Z
 
-	    Target: http://mysite.com/FUZZ/FUZ2Z
-	    Payload type: list,a-b-c; list,1-2-3
+                00001:  C=404      9 L        32 W          276 Ch        "a - 2"
+                00002:  C=404      9 L        32 W          276 Ch        "a - 1"
+                00005:  C=404      9 L        32 W          276 Ch        "b - 2"
+                00004:  C=404      9 L        32 W          276 Ch        "a - 3"
+                00008:  C=404      9 L        32 W          276 Ch        "c - 2"
+                00003:  C=404      9 L        32 W          276 Ch        "b - 1"
+                00007:  C=404      9 L        32 W          276 Ch        "c - 1"
+                00006:  C=404      9 L        32 W          276 Ch        "b - 3"
+                00009:  C=404      9 L        32 W          276 Ch        "c - 3"
 
-	    Total requests: 9
-	    ==================================================================
-	    ID      Response   Lines      Word         Chars          Request    
-	    ==================================================================
 
-	    00001:  C=404      9 L        32 W          276 Ch        "a - 2"
-	    00002:  C=404      9 L        32 W          276 Ch        "a - 1"
-	    00005:  C=404      9 L        32 W          276 Ch        "b - 2"
-	    00004:  C=404      9 L        32 W          276 Ch        "a - 3"
-	    00008:  C=404      9 L        32 W          276 Ch        "c - 2"
-	    00003:  C=404      9 L        32 W          276 Ch        "b - 1"
-	    00007:  C=404      9 L        32 W          276 Ch        "c - 1"
-	    00006:  C=404      9 L        32 W          276 Ch        "b - 3"
-	    00009:  C=404      9 L        32 W          276 Ch        "c - 3"
+	- Script scanning
 
+            - wfuzz.py -z list,robots.txt --script=robots http://www.webscantest.com/FUZZ
+
+            00000:  C=200      6 L        10 W          101 Ch        "robots.txt"
+            |_ Plugin robots enqueued 4 more requests (rlevel=1)
+            00001:  C=200     32 L       116 W         1424 Ch        "/osrun/"
+            00002:  C=200     47 L       131 W         1745 Ch        "/cal_endar/"
+            00003:  C=200     32 L       122 W         1507 Ch        "/crawlsnags/"
+            00004:  C=200     77 L       196 W         3382 Ch        "/static/"
+
+        - Advanced filter
+
+            - wfuzz.py -z list,robots.txt --filter "(c=200 and h!=3382)" --script=robots http://www.webscantest.com/FUZZ
+
+            00000:  C=200      6 L        10 W          101 Ch        "robots.txt"
+            |_ Plugin robots enqueued 4 more requests (rlevel=1)
+            00001:  C=200     32 L       116 W         1424 Ch        "/osrun/"
+            00002:  C=200     47 L       131 W         1745 Ch        "/cal_endar/"
+            00003:  C=200     32 L       122 W         1507 Ch        "/crawlsnags/"
+
+	- Scan mode
+
+	    Ignore connection exceptions, ie. scanning through proxies, range sweeping, port scanning
+
+	    $ python wfuzz.py -z range,0-9 -Z http://localhost:800FUZZ/
+
+	    00003:  0.000s   C=XXX      0 L        0 W            0 Ch     "Pycurl error 7: Failed connect to localhost:8009; Connection refused..."
+	    ...
+	    00006:  0.000s   C=XXX      0 L        0 W            0 Ch     "Pycurl error 7: Failed connect to localhost:8004; Connection refused..."
+	    00007:  0.003s   C=200      4 L       25 W          177 Ch     "0"
+
+	- Passing parameters to scripts
+
+	    $ python wfuzz.py -c --script-args grep.regex="<A href=\"(.*?)\">" -z list, --script=grep http://lists.gnupg.org/pipermail/gnupg-users/FUZZ                            
+
+	    00000:  C=200   2207 L      5205 W        77159 Ch        ""
+	    |_ Pattern match 2014-March/thread.html
+	    ....
+	    |_ Pattern match 2014-February/thread.html
 
 Platforms:
 ----------
@@ -145,47 +210,53 @@ Platforms:
 wfuzz was tested on Linux, Os X and Windows.
 On windows the colored output doesn't work, we are working towards fixing this problem.
 
-
 Dependencies:
 ------------
 
 On *nix systems, need pycurl to work.
 On Windows just run the wfuzz.exe
 
+
 Thanks:
 -------
 
 Shouts goes to: Trompeti an all the S21sec Team. (www.s21sec.com)
-
 Special thanks to DarkRaver for the tool Dirb, part of wfuzz is based on the functionallity of dirb. (www.open-labs.org) and most of the wordlist are from his tool.
-
 Andres Andreu, all Injection payloads are taken from wsFuzzer (www.neurofuzz.com)
 
-FuzzDB project, the all database is included in the wordlist directory.
+Changelog 2.1:
+==============
 
-Stay tunned for the GUI it rocks..
-
-FuzzDB
-------
-
-The wordlist directory includes FuzzDB project:
-
-Attack and Discovery Pattern Database for Application Fuzz Testing
-
-http://code.google.com/p/fuzzdb/
-
-Copyright (c) 2010, Adam Muntner
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-Neither the name of fuzzdb  nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Licensed under Creative Commons - By Attribution
+- Massive code rewriting, reorganisation and bug fixing
+- Selection of encoders by categories
+- Chaining encoders
+- Improved reqresp library performance (pycurl multi)
+- Enhanced exception handling and error management
+- Interactive keyboard (pause, stats).
+  This feature has some known issues as wfuzz "eating" first keystroke, ie. you need to press ctrl+c twice to cancel.
+  The need to press a key to leave the app after finishing.
+- Advanced filter expression
+- Filter responses by regex 
+- Combine regex and simple filters
+- Show responses filter switches
+- Alias -w for "-z file,xx". Thanks to Daniel García <dani@estotengoqueprobarlo.es>
+- Fixed reqresp bug. thanks to nicolas.gereone@ngco.fr
+- Extended help/description for plugins (printers, scripts, payloads, iterators)
+- Improved multiple proxy specification (ip:port:type)
+- Scan mode ignoring connection errors.
+- Configuration ini file for common settings
+- Plugin support:
+- Plugin: Directory listing identification
+- Plugin: Response link parser
+- Plugin: Robots parser
+- Plugin: New cookies
+- Plugin: Grep
+- Plugin: SVN Extractor
+- Plugin: wc.db extractor
+- New payloads:
+- Payload: Overflow string
+- Payload: Stdin
+- Payload: Bing API search
 
 Changelog 2.0:
 ==============
@@ -194,16 +265,15 @@ Changelog 2.0:
 - Dynamic payloads
 - Multiple payload support (FUZZ, FUZ2Z, ... , FUZnZ)
 - Combine payloads using dynamic iterators (zip, chain, product)
-- Added list payload
-- Added encoder_uri_double_hex
-- Added encoder_first_nibble_hex
-- Added encoder_second_nibble_hex
-- Added encoder_none
 - Multiple encodings per payload
+- Added baseline request
 - Fixed to FUZZ completely in the URL without hostname or IP or schema (i.e. FUZZ/FUZ2Z)
 - Fixed to FUZZ mixing all payload's positions (auth, http method, URL, data)
-- Added baseline request functionality
-- Added fuzzdb (Attack and Discovery Pattern Database for Application Fuzz Testing)
+- Payload: Word list
+- Encoder: encoder_uri_double_hex
+- Encoder: encoder_first_nibble_hex
+- Encoder: encoder_second_nibble_hex
+- Encoder: encoder_none
 
 Changelog 1.4d:
 ==============
