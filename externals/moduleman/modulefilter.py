@@ -22,7 +22,11 @@
 
 
 from types import ListType
-from pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, alphanums
+PYPARSING = True
+try:
+    from pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, alphanums
+except ImportError:
+    PYPARSING = False
     
 class IFilter:
     def is_visible(self, plugin, filter_string):
@@ -30,19 +34,20 @@ class IFilter:
 
 class Filter(IFilter):
     def __init__(self):
-	category = Word( alphas + "_-*", alphanums + "_-*" )
-	operator = oneOf("and or ,")
-	neg_operator = "not"
-	elementRef = category
-	definition = elementRef + ZeroOrMore( operator + elementRef)
-	nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
-	neg_nestedformula = Optional(neg_operator) + nestedformula
-	self.finalformula = neg_nestedformula + ZeroOrMore( operator + neg_nestedformula)
+	if PYPARSING:
+	    category = Word( alphas + "_-*", alphanums + "_-*" )
+	    operator = oneOf("and or ,")
+	    neg_operator = "not"
+	    elementRef = category
+	    definition = elementRef + ZeroOrMore( operator + elementRef)
+	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
+	    neg_nestedformula = Optional(neg_operator) + nestedformula
+	    self.finalformula = neg_nestedformula + ZeroOrMore( operator + neg_nestedformula)
 
-	elementRef.setParseAction(self.__compute_element)
-	neg_nestedformula.setParseAction(self.__compute_neg_formula)
-	nestedformula.setParseAction(self.__compute_formula)
-	self.finalformula.setParseAction(self.__myreduce)
+	    elementRef.setParseAction(self.__compute_element)
+	    neg_nestedformula.setParseAction(self.__compute_neg_formula)
+	    nestedformula.setParseAction(self.__compute_formula)
+	    self.finalformula.setParseAction(self.__myreduce)
 
     def __compute_neg_formula(self, tokens):
 	if len(tokens) > 1 and tokens[0] == 'not':
@@ -75,9 +80,37 @@ class Filter(IFilter):
     def __compute_formula(self, tokens):
 	return self.__myreduce(tokens[0])
 
+    def simple_filter(self, plugin, filter_string):
+	ret = False
+
+	for item in filter_string.split(","):
+	    wildc_index = item.find("*")
+	    if wildc_index > 0:
+		ret = (item in plugin.category or plugin.name.startswith(item[:wildc_index]))
+	    else:
+		ret = (item in plugin.category or plugin.name == item)
+
+	return ret
+
+    def simple_filter_banned_keywords(self, filter_string):
+	    if filter_string.find("(") >=0:
+		return True
+	    elif filter_string.find(")") >=0:
+		return True
+	    elif len(filter(lambda x: x in ["or", "not", "and"], filter_string.split(" "))) > 0:
+		return True
+	    else: 
+		return False
+
     def is_visible(self, plugin, filter_string):
 	self.plugin = plugin
-	return self.finalformula.parseString(filter_string)[0]
+	if PYPARSING:
+	    return self.finalformula.parseString(filter_string)[0]
+	else:
+	    if self.simple_filter_banned_keywords(filter_string):
+		raise Exception("Pyparsing missing, complex filters not allowed.")
+	    else:
+		return self.simple_filter(plugin, filter_string)
 
 if __name__ == "__main__":
     tests = []
@@ -101,12 +134,12 @@ if __name__ == "__main__":
     tests.append("not safe")
 
     class t:
-	def category(self): return "safe"
-	def name(self): return "http-test"
+	category = ["safe"]
+	name = "http-test"
 
     res = t()
 
-    print "cat = %s, name = %s\n\n" % (res.category(), res.name())
+    print "cat = %s, name = %s\n\n" % (res.category, res.name)
     for i in tests:
 	f = Filter()
 	print "%s := %s" % (str(i), f.is_visible(res, i))

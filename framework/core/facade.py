@@ -91,4 +91,7 @@ class Facade:
 	    raise FuzzException(FuzzException.FATAL, name + " encoder does not exists (-e encodings for a list of available encoders)")
 
     def get_parsers(self, filterstr):
-	return self.__plugins.get_plugins(filterstr)
+	try:
+	    return self.__plugins.get_plugins(filterstr)
+	except Exception, e:
+	    raise FuzzException(FuzzException.FATAL, "Error selecting scripts: %s" % str(e))

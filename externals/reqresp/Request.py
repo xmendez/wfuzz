@@ -295,7 +295,8 @@ class Request:
 	    if req.method == "POST":
 		c.setopt(pycurl.POSTFIELDS, req.postdata)
 
-	    c.setopt(pycurl.CUSTOMREQUEST, req.method)
+	    if req.method != "GET" and req.method != "POST":
+		c.setopt(pycurl.CUSTOMREQUEST, req.method)
 	    if req.method == "HEAD":
 		c.setopt(pycurl.NOBODY, True)
 
