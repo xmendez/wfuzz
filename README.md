@@ -2,9 +2,9 @@
 
 ## What is this?
 
-Wfuzz is a tool designed to  brutefore web applications, it's very flexible, it supports:
+Wfuzz is a tool designed to brutefore web applications, it's very flexible, it supports:
 	
-- Recursion (When doing directory discovery)
+- Recursion (when doing directory discovery)
 - Post data bruteforcing
 - Header bruteforcing
 - Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
