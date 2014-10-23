@@ -1,12 +1,5 @@
 # Wfuzz - The Web Bruteforcer
 
-
-## Bit of history
-
-This project was started by Carlos del Ojo and Christian Martorella back in 2006, and it was in active development until version 1.4c.
-
-In 2011 after the code being unchanged for various years, Xavier Mendez took over the project and became the maintainer and main developer of the tool, releasing versions 1.4d to 2.1. Christian Martorella has remained in the project as a collaborator, actively supporting new versions with suggestions, beta testing and minor code changes.
-
 ## What is this?
 
 Wfuzz is a tool designed to  brutefore web applications, it's very flexible, it supports:
