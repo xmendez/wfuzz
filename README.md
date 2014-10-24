@@ -19,9 +19,14 @@ Wfuzz is a tool designed to brutefore web applications, it's very flexible, it s
 
 It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
 
-How does it works?
-------------------
+## How does it works?
 
 The tool is based on dictionaries or ranges, then you choose where you want to bruteforce just by replacing the value by the word FUZZ.
 
 Check the README file for usage examples.
+
+## Download 
+
+Check github releases. Latest:
+
+- https://github.com/xmendez/wfuzz/releases/download/v2.1/wfuzz-2.1.tar.gz
