@@ -29,4 +29,4 @@ Check the README file for usage examples.
 
 Check github releases. Latest:
 
-- https://github.com/xmendez/wfuzz/releases/download/v2.1/wfuzz-2.1.tar.gz
+- https://github.com/xmendez/wfuzz/releases/download/v2.1-beta/wfuzz-2.1.beta.tar.gz
