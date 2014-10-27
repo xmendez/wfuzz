@@ -2,6 +2,10 @@ import socket
 import sys
 from xml.dom import minidom
 
+import os
+if os.name == "nt":
+    import WConio
+
 from externals.moduleman.plugin import moduleman_plugin
 from framework.ui.console.output import getTerminalSize
 from framework.ui.console.common import exec_banner, term_colors
@@ -144,10 +148,7 @@ class default:
 	self.sizex, sizey = getTerminalSize()
 	self.written_x = 0
 
-	import os
 	self.OS = os.name
-	if self.OS == "nt":
-	    import WConio
 
     def _erase(self):
 	self.written_x = 0

@@ -1,5 +1,3 @@
-from framework.utils.myqueue import memory_usage_resource
-
 usage='''\r\n
 Interactive keyboard commands:\r\n
 ?: Show this help
@@ -48,7 +46,6 @@ class Controller:
     def on_stats(self, **event):
 	if self._debug:
 	    fzstats = self.fuzzer.stats()
-	    mem = memory_usage_resource()
 
 	    print "\nTotal items %d, Backfed items %d, HTTP reqs: %d, Fuzzed items: %d, Pending: %d (Wait HTTP: %d, Wait pre HTTP: %d, Wait Workers: %d, Wait processed: %d). (MEM: %d)" % \
 		(fzstats['total'], \
@@ -60,7 +57,6 @@ class Controller:
 		fzstats['http_queue'], \
 		fzstats['plugins_queue'], \
 		fzstats['results_queue'],
-		mem
 		)
 	else:
 	    pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed
