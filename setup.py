@@ -28,4 +28,4 @@ setup( name='wfuzz', options=opts,console=['wfuzz.py'])
 # copying plugins directory
 import shutil, errno
 shutil.copytree("plugins", "wfuzz_windows//plugins")
-
+shutil.copytree("wordlist", "wfuzz_windows//wordlist")
