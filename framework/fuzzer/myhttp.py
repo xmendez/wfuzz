@@ -77,27 +77,36 @@ class HttpQueue(FuzzQueue):
 	    i += 1
 	    i = i % len(proxy_list)
 
-    def _set_proxy(self, c, freq):
-	ip, port, ptype = self._proxies.next()
+    def _set_extra_options(self, c, freq):
+	if self._proxies:
+	    ip, port, ptype = self._proxies.next()
 
-	freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
+	    freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
-	c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
-	if ptype == "SOCKS5":
-	    c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
-	elif ptype == "SOCKS4":
-	    c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
-	elif ptype == "HTML":
-	    pass
-	else:
-	    raise FuzzException(FuzzException.FATAL, "Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+	    c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
+	    if ptype == "SOCKS5":
+		c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
+	    elif ptype == "SOCKS4":
+		c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
+	    elif ptype == "HTML":
+		pass
+	    else:
+		raise FuzzException(FuzzException.FATAL, "Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+
+	mdelay = self.options.get("max_req_delay")
+	if mdelay is not None:
+	    c.setopt(pycurl.TIMEOUT, mdelay)
+
+	cdelay = self.options.get("max_conn_delay")
+	if cdelay is not None:
+	    c.setopt(pycurl.CONNECTTIMEOUT, cdelay)
 
 	return c
 
     def process(self, prio, obj):
 	self.pause.wait()
 	c = obj.to_http_object(self.freelist.get())
-	if self._proxies: c = self._set_proxy(c, obj)
+	c = self._set_extra_options(c, obj)
 
 	c.response_queue = ((StringIO(), StringIO(), obj))
 	c.setopt(pycurl.WRITEFUNCTION, c.response_queue[0].write)

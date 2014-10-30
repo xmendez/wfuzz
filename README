@@ -224,6 +224,12 @@ Shouts goes to: Trompeti an all the S21sec Team. (www.s21sec.com)
 Special thanks to DarkRaver for the tool Dirb, part of wfuzz is based on the functionallity of dirb. (www.open-labs.org) and most of the wordlist are from his tool.
 Andres Andreu, all Injection payloads are taken from wsFuzzer (www.neurofuzz.com)
 
+Changelog 2.2:
+==============
+
+- --req-delay switch. Handy when expecting connection timeouts, ie. scanning behind a proxy.
+- --conn-delay switch. Handy when expecting connection timeouts, ie. scanning.
+
 Changelog 2.1:
 ==============
 
