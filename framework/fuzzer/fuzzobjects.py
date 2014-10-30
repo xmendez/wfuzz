@@ -535,7 +535,7 @@ class FuzzResult:
 	if exception:
 	    fr.code = 0
 	    fr.exception = exception
-	    fr.description = exception.msg
+	    fr.description = fr.description + "! " + exception.msg
 
 	return fr
 
