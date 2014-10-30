@@ -37,11 +37,11 @@ The tool is based on dictionaries or ranges, then you choose where you want to b
 
 Examples:
 
-	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -o html http://www.mysite.com/FUZZ > results.html
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -o html http://www.mysite.com/FUZZ > results.html
 
 	  This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources 
 	  (directories, scripts, files,etc), it will hide from the output the return code 404 
-	  (for easy reading results), it will use the dictionary commons.txt for the bruteforce
+	  (for easy reading results), it will use the dictionary common.txt for the bruteforce
 	  , and also will output the results to the results.html file (with a cool format to work).
 
 	- wfuzz.py -c -z range,1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
@@ -49,19 +49,19 @@ Examples:
 	  In this example instead of using a file as dictionary, it will use a range from 1-100,
 	  and will bruteforce the parameter "id".
 
-	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -d "id=1&catalogue=FUZZ" http://www.mysite.com/check.asp
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -d "id=1&catalogue=FUZZ" http://www.mysite.com/check.asp
 
 	  Here you can see the use of POST data, with the option "-d".
 
-	- wfuzz.py -c -z file, wordlists/commons.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
 
 	  Example of path discovery, using 2 levels deep of recursivity.
 
-	- wfuzz.py -z file,wordlists/http_methods.txt -X http://testphp.vulnweb.com/
+	- wfuzz.py -z file,wordlist/general/http_methods.txt -X http://testphp.vulnweb.com/
 
 	  HTTP method scanning example (find supported methods)
 
-	- wfuzz.py -z file,wordlists/http_methods.txt -z file,wordlists/commons.txt -X http://testphp.vulnweb.com/FUZ2Z/
+	- wfuzz.py -z file,wordlists/http_methods.txt -z file,wordlist/general/common.txt -X http://testphp.vulnweb.com/FUZ2Z/
 
 	  HTTP method scanning example in different paths
 
@@ -73,7 +73,7 @@ Examples:
 
 	  Bruteforce following HTTP redirects
 
-	- wfuzz.py -c -z file,wordlists/commons.txt --hc 404 -I http://www.mysite.com/FUZZ
+	- wfuzz.py -c -z file,wordlists/wordlist/general/common.txt-I http://www.mysite.com/FUZZ
 
 	  Bruteforce using HEAD HTTP method 
 
