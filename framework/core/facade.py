@@ -28,6 +28,8 @@ class FuzzSessionOptions:
 	    "scanmode": False,
 	    "interactive": False,
 	    "max_concurrent": 10,
+	    "max_req_delay": None,
+	    "max_conn_delay": 90,
 	    "genreq": None,
 	    }
 

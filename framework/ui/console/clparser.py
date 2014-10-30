@@ -43,7 +43,7 @@ class CLParser:
 
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -313,6 +313,12 @@ class CLParser:
 		    raise FuzzException(FuzzException.FATAL, "Bad proxy parameter specified.")
 
 	    options.set('proxy_list', proxy)
+
+	if "--conn-delay" in optsd:
+	    options.set("max_conn_delay", int(optsd["--conn-delay"][0]))
+
+	if "--req-delay" in optsd:
+	    options.set("max_req_delay", int(optsd["--req-delay"][0]))
 
 	if "-R" in optsd:
 	    options.set("rlevel", int(optsd["-R"][0]))
