@@ -204,6 +204,14 @@ Examples:
 	    ....
 	    |_ Pattern match 2014-February/thread.html
 
+	- Scanning ports behind a proxy
+
+	    $ python wfuzz.py -p 192.168.1.254:3128 -z list,21-80-443-22 -Z --req-delay 1 -I -v http://localhost:FUZZ/
+
+	    00000:  0.016s   C=403      0 L        0 W            0 Ch          squid/3.1.22                                                        "22"
+	    00001:  0.031s   C=200      0 L        0 W            0 Ch       lighttpd/1.4.35                                                        "80"
+	    00002:  0.000s   C=XXX      0 L        0 W            0 Ch                                                                              "21! Pycurl error 28: Operation timed out after 1000 milliseconds wit..."
+
 Platforms:
 ----------
 
