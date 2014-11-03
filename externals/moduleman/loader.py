@@ -57,15 +57,19 @@ class FileLoader(IModuleLoader):
 	    exten_file, filename, description = imp.find_module(fn, [dirname])
 	    module = imp.load_module(fn, exten_file, filename, description)
 	except ImportError, msg:
-	    self.__logger.critical('__load_py_from_file. Exception, msg=%s' % (msg,))
-	    raise msg
+	    self.__logger.critical('__load_py_from_file. Filename: %s Exception, msg=%s' % (filename, msg))
+	    #raise msg
+	    pass
 	except SyntaxError, msg:
 	    # incorrect python syntax in file
-	    self.__logger.critical('__load_py_from_file. Exception, msg=%s' % (msg,))
-	    raise msg
+	    self.__logger.critical('__load_py_from_file. Filename: %s Exception, msg=%s' % (filename, msg))
+	    #raise msg
+	    pass
 	finally:
 	    if exten_file: exten_file.close()
 
+	if module is None:
+	    return
 
 	for objname in dir(module):
 	    obj = getattr(module, objname)

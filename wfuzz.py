@@ -3,6 +3,8 @@
 #Covered by GPL V2.0
 
 import sys
+import logging
+
 from framework.fuzzer.Fuzzer import Fuzzer
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
@@ -14,6 +16,13 @@ from framework.ui.console.clparser import CLParser
 kb = None
 fz = None
 printer = None
+
+# define a logging Handler
+console = logging.StreamHandler()
+console.setLevel(logging.WARNING)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
 
 try:
     # parse command line 
