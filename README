@@ -237,6 +237,7 @@ Changelog 2.2:
 
 - --req-delay switch. Handy when expecting connection timeouts, ie. scanning behind a proxy.
 - --conn-delay switch. Handy when expecting connection timeouts, ie. scanning.
+- Plugin loading continues if error not blocking wfuzz execution
 
 Changelog 2.1:
 ==============
