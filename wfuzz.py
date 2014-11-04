@@ -7,6 +7,7 @@ import logging
 
 from framework.fuzzer.Fuzzer import Fuzzer
 from framework.core.facade import Facade
+from framework.core.facade import FuzzSessionOptions
 from framework.core.myexception import FuzzException
 
 from framework.ui.console.keystroke import KeyPress
@@ -26,7 +27,7 @@ logging.getLogger('').addHandler(console)
 
 try:
     # parse command line 
-    session_options = CLParser(sys.argv).parse_cl()
+    session_options = FuzzSessionOptions.from_options(CLParser(sys.argv).parse_cl())
 
     # Create fuzzer's engine
     fz = Fuzzer(session_options)

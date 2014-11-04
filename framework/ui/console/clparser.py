@@ -4,22 +4,14 @@ import time
 import re
 from collections import defaultdict
 
-from framework.fuzzer.dictio import dictionary
-from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.fuzzer.filter import PYPARSING
 from framework.core.facade import Facade
-from framework.core.facade import FuzzSessionOptions
-from framework.fuzzer.dictio import requestGenerator
 from framework.core.myexception import FuzzException
 from framework.ui.console.common import help_banner
 from framework.ui.console.common import usage
 from framework.ui.console.common import brief_usage
 from framework.ui.console.common import version
 from framework.ui.console.output import table_print
-
-import plugins.encoders
-import plugins.iterations
-
 
 class CLParser:
     def __init__(self, argv):
@@ -39,8 +31,6 @@ class CLParser:
 	sys.exit(0)
 
     def parse_cl(self):
-	options = FuzzSessionOptions()
-
 	# Usage and command line help
 	try:
 	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
@@ -56,9 +46,15 @@ class CLParser:
 	    url = args[0]
 
 	    self._check_options(optsd)
-	    self._parse_options(optsd, options)
-	    options.set("filter_params", self._parse_filters(optsd))
-	    options.set("genreq",  requestGenerator(self._parse_seed(url, optsd), self._parse_payload(optsd)))
+
+	    options = dict(
+		conn_options = self._parse_conn_options(optsd),
+		filter_options = self._parse_filters(optsd),
+		seed_options = self._parse_seed(url, optsd),
+		payload_options = self._parse_payload(optsd),
+		grl_options = self._parse_options(optsd),
+		script_options = self._parse_scripts(optsd),
+	    )
 
 	    return options
 	except FuzzException, e:
@@ -193,58 +189,45 @@ class CLParser:
 	return filter_params
 
     def _parse_payload(self, optsd):
-	selected_dic = []
+	options = dict(
+	    payloads = [],
+	    iterator = None,
+	)
+
 	if "-z" in optsd:
 	    for i in optsd["-z"]:
 		vals = i.split(",")
-		t, par = vals[:2]
-		p = Facade().get_payload(t)(par)
+		name, params = vals[:2]
 
-		l = []
+		encoders = None
 		if len(vals) == 3:
-		    encoding = vals[2]
-		    for i in encoding.split("-"):
-			if i.find('@') > 0:
-			    l.append(plugins.encoders.pencoder_multiple([Facade().get_encoder(ii) for ii in i.split("@")]).encode)
-			else:
-			    l += map(lambda x: x().encode, Facade().proxy("encoders").get_plugins(i))
-		else:
-		    l = [Facade().get_encoder('none').encode]
+		    encoders = vals[2].split("-")
 
-		d = dictionary(p, l)
-		selected_dic.append(d)
+		options["payloads"].append((name, params, encoders))
 
 	# Alias por "-z file,Wordlist"
 	if "-w" in optsd:
 	    for i in optsd["-w"]:
 		vals = i.split(",")
 		f, = vals[:1]
-		p = Facade().get_payload("file")(f)
 
-		l = []
+		encoders = None
 		if len(vals) == 2:
-		    encoding = vals[1]
-		    for i in encoding.split("-"):
-			if i.find('@') > 0:
-			    l.append(plugins.encoders.pencoder_multiple([Facade().get_encoder(ii) for ii in i.split("@")]).encode)
-			else:
-			    l += map(lambda x: x().encode, Facade().proxy("encoders").get_plugins(i))
-		else:
-		    l = [Facade().get_encoder('none').encode]
+		    encoders = vals[1].split("-")
 
-		d = dictionary(p, l)
-		selected_dic.append(d)
+		options["payloads"].append(("file", f, encoders))
 
-	iterat_tool = plugins.iterations.piterator_void
 	if "-m" in optsd:
-	    iterat_tool = Facade().get_iterator(optsd['-m'][0])
-	elif len(selected_dic) > 0:
-	    iterat_tool = Facade().get_iterator("product")
+	    options["iterator"] = optsd['-m'][0]
+	elif len(options["payloads"]) > 1:
+	    options["iterator"] = "product"
+	else:
+	    options["iterator"] = None
 
-	return iterat_tool(*selected_dic)
+	return options
+
 
     def _parse_seed(self, url, optsd):
-
 	options = dict(
 	    url = url,
 	    fuzz_methods = False,
@@ -293,10 +276,19 @@ class CLParser:
 
 	    options['allvars'] = varset
 
-	return FuzzRequest.from_parse_options(options)
+	return options
 
-    def _parse_options(self, optsd, options):
-
+    def _parse_conn_options(self, optsd):
+	conn_options = dict(
+	    proxy_list = None,
+	    max_conn_delay = 90,
+	    max_req_delay = None,
+	    rlevel = 0,
+	    scanmode = False,
+	    sleeper = None,
+	    max_concurrent = 10,
+	)
+	
 	if "-p" in optsd:
 	    proxy = []
 
@@ -312,53 +304,63 @@ class CLParser:
 		else:
 		    raise FuzzException(FuzzException.FATAL, "Bad proxy parameter specified.")
 
-	    options.set('proxy_list', proxy)
+	    conn_options['proxy_list'] = proxy
 
 	if "--conn-delay" in optsd:
-	    options.set("max_conn_delay", int(optsd["--conn-delay"][0]))
+	    conn_options['max_conn_delay'] = int(optsd["--conn-delay"][0])
 
 	if "--req-delay" in optsd:
-	    options.set("max_req_delay", int(optsd["--req-delay"][0]))
+	    conn_options["max_req_delay"] = int(optsd["--req-delay"][0])
 
 	if "-R" in optsd:
-	    options.set("rlevel", int(optsd["-R"][0]))
+	    conn_options["rlevel"] = int(optsd["-R"][0])
 
-	options.set("printer_tool", "default")
-
-	if "-v" in optsd:
-	    options.set("printer_tool", "verbose")
-
-	if "-c" in optsd:
-	    Facade().proxy("printers").kbase.add("colour", True)
-
-	if "-A" in optsd:
-	    options.set("printer_tool", "verbose")
-	    Facade().proxy("printers").kbase.add("colour", True)
-
-	    options.set("script_string", "default")
-
-	options.set("scanmode", "-Z" in optsd)
-
-	if "-o" in optsd:
-	    options.set("printer_tool", optsd['-o'][0])
-
-	if "--script" in optsd:
-	    options.set("script_string", "default" if optsd["--script"][0] == "" else optsd["--script"][0])
-
-	if "--script-args" in optsd:
-	    vals = optsd["--script-args"][0].split(",")
-	    for i in vals:
-		k, v  = i.split("=", 1)
-		Facade().proxy("parsers").kbase.add(k, v)
-
-	options.set("interactive", "--interact" in optsd)
-
-	# HTTP options
+	conn_options["scanmode"] = "-Z" in optsd
 
 	if "-s" in optsd:
-	    options.set("sleeper", float(optsd["-s"][0]))
+	    conn_options["sleeper"] = float(optsd["-s"][0])
 
 	if "-t" in optsd:
-	    options.set("max_concurrent", int(optsd["-t"][0]))
+	    conn_options["max_concurrent"] = int(optsd["-t"][0])
 
+	return conn_options
 
+    def _parse_options(self, optsd):
+	options = dict(
+	    printer_tool = "default",
+	    colour = False,
+	    interactive = False,
+	)
+	
+	if "-v" in optsd:
+	    options["printer_tool"] = "verbose"
+
+	options["colour"] = "-c" in optsd
+
+	if "-A" in optsd:
+	    options["printer_tool"] = "verbose"
+	    options["colour"] = True
+
+	if "-o" in optsd:
+	    options["printer_tool"] = optsd['-o'][0]
+
+	options["interactive"] = "--interact" in optsd
+
+	return options
+
+    def _parse_scripts(self, optsd):
+	options = dict(
+	    script_string = "",
+	    script_args = [],
+	)
+
+	if "-A" in optsd:
+	    options["script_string"] = "default"
+
+	if "--script" in optsd:
+	    options["script_string"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]
+
+	if "--script-args" in optsd:
+	    options['script_args'] = map(lambda x: x.split("=", 1), optsd["--script-args"][0].split(","))
+
+	return options
