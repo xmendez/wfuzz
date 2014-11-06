@@ -83,6 +83,9 @@ class FuzzOptions(UserDict):
 	)
 
     def validate(self):
+	if not self.data['seed_options']['url']:
+	    return "Bad usage: You must specify an URL."
+
 	if len(self.data['payload_options']['payloads']) == 0:
 	    return "Bad usage: You must specify a payload."
 
