@@ -11,7 +11,12 @@ from framework.fuzzer.dictio import requestGenerator
 import plugins.encoders
 import plugins.iterations
 
-version = "2.1"
+from UserDict import UserDict
+from collections import defaultdict
+import json
+import re
+
+version = "2.2"
 
 class Settings(SettingsBase):
     def get_config_file(self):
@@ -22,7 +27,120 @@ class Settings(SettingsBase):
 	    plugins=[("file_bl", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
 	)
 
-class FuzzSessionOptions:
+class FuzzOptions(UserDict):
+    def __init__(self):
+	self.data = self._defaults()
+
+    def _defaults(self):
+	return dict(
+	    filter_options = dict(
+		hs = None,
+		hc = [],
+		hw = [],
+		hl = [],
+		hh = [],
+		ss = None,
+		sc = [],
+		sw = [],
+		sl = [],
+		sh = [],
+		filterstr = "",
+		),
+	    payload_options = dict(
+		payloads = [],
+		iterator = 'product',
+	    ),
+	    grl_options = dict(
+		    printer_tool = "default",
+		    colour = False,
+		    interactive = False,
+		    recipe = "",
+	    ),
+	    conn_options = dict(
+		proxy_list = None,
+		max_conn_delay = 90,
+		max_req_delay = None,
+		rlevel = 0,
+		scanmode = False,
+		sleeper = None,
+		max_concurrent = 10,
+	    ),
+	    seed_options = dict(
+		url = "",
+		fuzz_methods = False,
+		auth = (None, None),
+		follow = False,
+		head = False,
+		postdata = None,
+		extraheaders = None,
+		cookie = None,
+		allvars = None,
+	    ),
+	    script_options = dict(
+		script_string = "",
+		script_args = [],
+	    ),
+	)
+
+    def validate(self):
+	if len(self.data['payload_options']['payloads']) == 0:
+	    return "Bad usage: You must specify a payload."
+
+	if self.data['seed_options']['head'] and self.data['seed_options']['postdata']:
+	    return "Bad usage: HEAD with POST parameters? Does it makes sense?"
+
+	if filter(lambda x: len(self.data["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]) and \
+	 filter(lambda x: len(self.data["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"]): 
+	    return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
+
+	if (filter(lambda x: len(self.data["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]) or \
+	 filter(lambda x: len(self.data["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"])) and \
+	 self.data['filter_options']['filterstr']:
+	    return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
+
+    def import_json(self, data):
+	js = json.loads(data)
+
+	try:
+	    if js['version'] == "0.1" and js.has_key('wfuzz_recipe'):
+		for section in js['wfuzz_recipe'].keys():
+		    if section in ['grl_options', 'conn_options', 'seed_options', 'payload_options', 'script_options', 'filter_options']:
+			for k, v in js['wfuzz_recipe'][section].items():
+			    self.data[section][k] = v
+
+			# fix pycurl error when using unicode url
+			if section == 'seed_options':
+			    if js['wfuzz_recipe']['seed_options'].has_key('url'):
+				self.data['seed_options']['url'] = str(js['wfuzz_recipe']['seed_options']['url'])
+		    else:
+			raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
+	    else:
+		raise FuzzException(FuzzException.FATAL, "Unsupported recipe version.")
+	except KeyError:
+	    raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
+
+    def export_json(self):
+	tmp = dict(
+	    version = "0.1",
+	    wfuzz_recipe = defaultdict(dict)
+	)
+	defaults = self._defaults()
+
+	# Only dump the non-default options
+	for section, d in self.data.items():
+	    for k, v in d.items():
+		if v != defaults[section][k]:
+		    tmp['wfuzz_recipe'][section][k] = self.data[section][k]
+
+	# don't dump recipe
+	if tmp['wfuzz_recipe']["grl_options"].has_key("recipe"):
+	    del(tmp['wfuzz_recipe']["grl_options"]["recipe"])
+	    if len(tmp['wfuzz_recipe']["grl_options"]) == 0:
+		del(tmp['wfuzz_recipe']["grl_options"])
+	    
+	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
+
+class FuzzSession:
     def __init__(self):
 	self._values = {
 	    "filter_params": None,
@@ -47,61 +165,48 @@ class FuzzSessionOptions:
 
     @staticmethod
     def from_options(options):
-	'''
-	Options is a dictionary containing all wfuzz options in the form of:
-
-	    options = dict(
-		conn_options = dict(
-		    proxy_list = [(ip, port, type), ...]
-		    max_conn_delay = 90,
-		    max_req_delay = int/None,
-		    rlevel = 0,
-		    scanmode = False,
-		    sleeper = int/None,
-		    max_concurrent = 10,
-		),
-		filter_options = dict(
-		    active = False,
-		    regex_show = True/False,
-		    codes_show = True/False,
-		    codes = [int, ...],
-		    words = [int, ...],
-		    lines = [int, ...],
-		    chars = [int, ...],
-		    regex = re.compile/None,
-		    filter_string = "filter_exp"
-		),
-		seed_options = dict(
-		    url = url,
-		    fuzz_methods = False,
-		    auth = ("ntlm/basic...", "user:pass"),
-		    follow = False,
-		    head = False,
-		    postdata = ""/None,
-		    extraheaders = "name: value, ..."/None,
-		    cookie = "value"/None,
-		    allvars = "allpost/..."/None,
-		),
-		payload_options = dict(
-		    payloads = [(name, args, encoders),...],
-		    iterator = "name"/,
-		),
-		grl_options = dict(
-		    printer_tool = "default",
-		    colour = False,
-		    interactive = False,
-		),
-		script_options = dict(
-		    script_string = "default",
-		    script_args = [(param, value),...],
-		),
-	    )
-	'''
-
-	fuzz_options = FuzzSessionOptions()
+	fuzz_options = FuzzSession()
 
 	# filter
-	fuzz_options.set("filter_params", options["filter_options"])
+	filter_params = dict(
+	    active = False,
+	    regex_show = None,
+	    codes_show = None,
+	    codes = [],
+	    words = [],
+	    lines = [],
+	    chars = [],
+	    regex = None,
+	    filter_string = ""
+	    )
+
+	filter_params["filter_string"] = options["filter_options"]["filterstr"]
+
+	if options["filter_options"]["ss"] is not None:
+	    filter_params['regex_show'] = True
+	    filter_params['regex'] = re.compile(options["filter_options"]['ss'], re.MULTILINE|re.DOTALL)
+
+	elif options["filter_options"]["hs"] is not None:
+	    filter_params['regex_show'] = False
+	    filter_params['regex'] = re.compile(options["filter_options"]['hs'], re.MULTILINE|re.DOTALL)
+
+	if filter(lambda x: len(options["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]):
+	    filter_params['codes_show'] = True
+	    filter_params['codes'] = options["filter_options"]["sc"]
+	    filter_params['words'] = options["filter_options"]["sw"]
+	    filter_params['lines'] = options["filter_options"]["sl"]
+	    filter_params['chars'] = options["filter_options"]["sh"]
+	elif filter(lambda x: len(options["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"]):
+	    filter_params['codes_show'] = False
+	    filter_params['codes'] = options["filter_options"]["hc"]
+	    filter_params['words'] = options["filter_options"]["hw"]
+	    filter_params['lines'] = options["filter_options"]["hl"]
+	    filter_params['chars'] = options["filter_options"]["hh"]
+
+	if filter_params['regex_show'] is not None or filter_params['codes_show'] is not None or filter_params['filter_string'] != "":
+	    filter_params['active'] = True
+
+	fuzz_options.set("filter_params", filter_params)
 
 	# conn options
 	fuzz_options.set('proxy_list', options["conn_options"]["proxy_list"])
@@ -132,7 +237,6 @@ class FuzzSessionOptions:
 	    selected_dic.append(d)
 
 	#iterat_tool = plugins.iterations.piterator_void
-	iterat_tool = Facade().get_iterator("product")
 	if options["payload_options"]["iterator"]:
 	    iterat_tool = Facade().get_iterator(options["payload_options"]["iterator"])
 
@@ -158,6 +262,7 @@ class FuzzSessionOptions:
 
 class Facade:
     __metaclass__ = Singleton 
+
     def __init__(self):
 	self.__printers = None
 	self.__plugins = None

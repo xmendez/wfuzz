@@ -26,6 +26,9 @@ Options:
 --version		    : Wfuzz version details
 -e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 
+--recipe <filename>	    : Reads options from a recipe
+--dump-recipe		    : Prints current options as a recipe
+
 -c			    : Output with colors
 -v			    : Verbose information. Alias for -o verbose
 -o printer		    : Format output using the specified printer (default printer if omitted).

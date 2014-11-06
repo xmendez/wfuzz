@@ -212,6 +212,50 @@ Examples:
 	    00001:  0.031s   C=200      0 L        0 W            0 Ch       lighttpd/1.4.35                                                        "80"
 	    00002:  0.000s   C=XXX      0 L        0 W            0 Ch                                                                              "21! Pycurl error 28: Operation timed out after 1000 milliseconds wit..."
 
+	- Command line options can be saved to disk.  This file can be used later to execute wfuzz with predefined parameters.
+
+	    $ python wfuzz.py  -z range,0-10 --hc 404 --dump-recipe http://www.webscantest.com/FUZZ 
+	    {
+		"version": "0.1",
+		"wfuzz_recipe": {
+		    "filter_options": {
+			"hc": [
+			    "404"
+			]
+		    },
+		    "grl_options": {},
+		    "payload_options": {
+			"payloads": [
+			    [
+				"range",
+				"0-10",
+				null
+			    ]
+			]
+		    },
+		    "seed_options": {
+			"url": "http://www.webscantest.com/FUZZ"
+		    }
+		}
+	    }
+
+	    $ python wfuzz.py  -z range,0-10 --hc 404 --dump-recipe http://www.webscantest.com/FUZZ > test.json 
+	    $ python wfuzz.py  --recipe test.json 
+
+	    Target: http://www.webscantest.com/FUZZ
+	    Total requests: 11
+
+	    00000:  C=200     38 L       121 W         1486 Ch        "3"
+	    ...
+	    00010:  C=200     38 L       121 W         1486 Ch        "10"
+
+	- Command line options have preference over recipes and can be mixed
+
+	    $ python wfuzz.py  --recipe test.json http://www.google.com/FUZZ                                                                                                                      
+
+	    Target: http://www.google.com/FUZZ
+	    Total requests: 11
+
 Platforms:
 ----------
 
@@ -235,9 +279,9 @@ Andres Andreu, all Injection payloads are taken from wsFuzzer (www.neurofuzz.com
 Changelog 2.2:
 ==============
 
-- --req-delay switch. Handy when expecting connection timeouts, ie. scanning behind a proxy.
-- --conn-delay switch. Handy when expecting connection timeouts, ie. scanning.
+- req-delay and conn-delay switches. Handy when expecting connection timeouts, ie. scanning behind a proxy.
 - Plugin loading continues if error not blocking wfuzz execution
+- Recipe support
 
 Changelog 2.1:
 ==============

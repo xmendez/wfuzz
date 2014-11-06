@@ -1,11 +1,10 @@
 import sys
 import getopt
-import time
-import re
 from collections import defaultdict
 
 from framework.fuzzer.filter import PYPARSING
 from framework.core.facade import Facade
+from framework.core.facade import FuzzOptions
 from framework.core.myexception import FuzzException
 from framework.ui.console.common import help_banner
 from framework.ui.console.common import usage
@@ -33,28 +32,53 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
 
+
+
 	    self._parse_help_opt(optsd)
 
-	    if len(args) == 0:
+	    url = None
+	    if len(args) == 0 and "--recipe" not in optsd:
 		raise FuzzException(FuzzException.FATAL, "You must specify a payload and a URL")
+	    elif len(args) == 1:
+		url = args[0]
+	    elif len(args) > 1:
+		raise FuzzException(FuzzException.FATAL, "Too many arguments.")
 
-	    url = args[0]
+	    options = FuzzOptions()
 
+	    # check command line options correctness
 	    self._check_options(optsd)
 
-	    options = dict(
-		conn_options = self._parse_conn_options(optsd),
-		filter_options = self._parse_filters(optsd),
-		seed_options = self._parse_seed(url, optsd),
-		payload_options = self._parse_payload(optsd),
-		grl_options = self._parse_options(optsd),
-		script_options = self._parse_scripts(optsd),
-	    )
+	    # parse options from recipe first
+	    if "--recipe" in optsd:
+		try:
+		    f = open(optsd["--recipe"][0],'r')
+		except Exception:
+		    raise FuzzException(FuzzException.FATAL, "Error loading recipe file.")
+
+		options.import_json(f.read())
+		
+	    # command line has priority over recipe
+	    self._parse_options(optsd, options['grl_options'])
+	    self._parse_conn_options(optsd, options['conn_options'])
+	    self._parse_filters(optsd, options['filter_options'])
+	    self._parse_seed(url, optsd, options['seed_options'])
+	    self._parse_payload(optsd, options['payload_options'])
+	    self._parse_scripts(optsd, options['script_options'])
+
+	    # Validate options
+	    error = options.validate()
+	    if error:
+		raise FuzzException(FuzzException.FATAL, error)
+
+	    if "--dump-recipe" in optsd:
+		print options.export_json()
+		sys.exit(0)
 
 	    return options
 	except FuzzException, e:
@@ -112,87 +136,66 @@ class CLParser:
 
 
     def _check_options(self, optsd):
-	if not "-z" in optsd.keys() and not "-w" in optsd.keys():
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: You must specify a payload.")
-
-	if "--filter" in optsd.keys() and filter(lambda x: x in optsd.keys(), ["--sc","--ss","--sh","--sl","--sw","--hc","--hs","--hh","--hl","--hw"]):
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified.")
-
 	# Check for repeated flags
 	l = ["--hc", "--hw", "--hl", "--hh", "--hs", "--sc", "--sw", "--sl", "--sh", "--ss", "--script", "--script-args"]
 	if [i for i in l if i in optsd and len(optsd[i]) > 1]:
 	    raise FuzzException(FuzzException.FATAL, "Bad usage: Only one filter could be specified at the same time.")
 
-	#HEAD with POST parameters
-	if "-d" in optsd.keys() and "-I" in optsd.keys():
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: HEAD with POST parameters? Does it makes sense?")
-
 	#-A and script not allowed at the same time
 	if "--script" in optsd.keys() and "-A" in optsd.keys():
 	    raise FuzzException(FuzzException.FATAL, "Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
 
-
-    def _parse_filters(self, optsd):
+    def _parse_filters(self, optsd, filter_params):
+	'''
 	filter_params = dict(
-	    active = False,
-	    regex_show = None,
-	    codes_show = None,
-	    codes = [],
-	    words = [],
-	    lines = [],
-	    chars = [],
-	    regex = None,
-	    filter_string = ""
-	    )
-
+	    hs = None,
+	    hc = [],
+	    hw = [],
+	    hl = [],
+	    hh = [],
+	    ss = None,
+	    sc = [],
+	    sw = [],
+	    sl = [],
+	    sh = [],
+	    filterstr = "",
+	    ),
+	'''
 
 	if "--filter" in optsd:
 	    if not PYPARSING:
 		raise FuzzException(FuzzException.FATAL, "--filter switch needs pyparsing module.")
-	    filter_params['filter_string'] = optsd["--filter"][0]
+	    filter_params['filterstr'] = optsd["--filter"][0]
 
 	if "--hc" in optsd:
-	    filter_params['codes'] = optsd["--hc"][0].split(",")
+	    filter_params['hc'] = optsd["--hc"][0].split(",")
 	if "--hw" in optsd:
-	    filter_params['words'] = optsd["--hw"][0].split(",")
+	    filter_params['hw'] = optsd["--hw"][0].split(",")
 	if "--hl" in optsd:
-	    filter_params['lines'] = optsd["--hl"][0].split(",")
+	    filter_params['hl'] = optsd["--hl"][0].split(",")
 	if "--hh" in optsd:
-	    filter_params['chars'] = optsd["--hh"][0].split(",")
+	    filter_params['hh'] = optsd["--hh"][0].split(",")
 	if "--hs" in optsd:
-	    filter_params['regex'] = re.compile(optsd["--hs"][0], re.MULTILINE|re.DOTALL)
-
-	if filter(lambda x: x in optsd, ["--ss"]):
-	    filter_params['regex_show'] = True
-	elif filter(lambda x: x in optsd, ["--hs"]):
-	    filter_params['regex_show'] = False
-
-	if filter(lambda x: x in optsd, ["--sc", "--sw", "--sh", "--sl"]):
-	    filter_params['codes_show'] = True
-	elif filter(lambda x: x in optsd, ["--hc", "--hw", "--hh", "--hl"]):
-	    filter_params['codes_show'] = False
+	    filter_params['hs'] = optsd["--hs"][0]
 
 	if "--sc" in optsd:
-	    filter_params['codes'] = optsd["--sc"][0].split(",")
+	    filter_params['sc'] = optsd["--sc"][0].split(",")
 	if "--sw" in optsd:
-	    filter_params['words'] = optsd["--sw"][0].split(",")
+	    filter_params['sw'] = optsd["--sw"][0].split(",")
 	if "--sl" in optsd:
-	    filter_params['lines'] = optsd["--sl"][0].split(",")
+	    filter_params['sl'] = optsd["--sl"][0].split(",")
 	if "--sh" in optsd:
-	    filter_params['chars'] = optsd["--sh"][0].split(",")
+	    filter_params['sh'] = optsd["--sh"][0].split(",")
 	if "--ss" in optsd:
-	    filter_params['regex'] = re.compile(optsd["--ss"][0], re.MULTILINE|re.DOTALL)
+	    filter_params['ss'] = optsd["--ss"][0]
 
-	if filter_params['regex_show'] is not None or filter_params['codes_show'] is not None or filter_params['filter_string'] != "":
-	    filter_params['active'] = True
-
-	return filter_params
-
-    def _parse_payload(self, optsd):
+    def _parse_payload(self, optsd, options):
+	'''
 	options = dict(
 	    payloads = [],
 	    iterator = None,
 	)
+	'''
 
 	if "-z" in optsd:
 	    for i in optsd["-z"]:
@@ -219,15 +222,9 @@ class CLParser:
 
 	if "-m" in optsd:
 	    options["iterator"] = optsd['-m'][0]
-	elif len(options["payloads"]) > 1:
-	    options["iterator"] = "product"
-	else:
-	    options["iterator"] = None
 
-	return options
-
-
-    def _parse_seed(self, url, optsd):
+    def _parse_seed(self, url, optsd, options):
+	'''
 	options = dict(
 	    url = url,
 	    fuzz_methods = False,
@@ -239,8 +236,10 @@ class CLParser:
 	    cookie = None,
 	    allvars = None,
 	)
+	'''
 
-	options['url'] = url
+	if url:
+	    options['url'] = url
 
 	if "-X" in optsd:
 	    options['fuzz_methods'] = True
@@ -258,7 +257,7 @@ class CLParser:
 	    options['follow'] = True
 
 	if "-I" in optsd:
-	    options['head'] = "HEAD"
+	    options['head'] = True
 
 	if "-d" in optsd:
 	    options['postdata'] = optsd["-d"][0]
@@ -276,9 +275,8 @@ class CLParser:
 
 	    options['allvars'] = varset
 
-	return options
-
-    def _parse_conn_options(self, optsd):
+    def _parse_conn_options(self, optsd, conn_options):
+	'''
 	conn_options = dict(
 	    proxy_list = None,
 	    max_conn_delay = 90,
@@ -288,7 +286,8 @@ class CLParser:
 	    sleeper = None,
 	    max_concurrent = 10,
 	)
-	
+	'''
+
 	if "-p" in optsd:
 	    proxy = []
 
@@ -315,7 +314,8 @@ class CLParser:
 	if "-R" in optsd:
 	    conn_options["rlevel"] = int(optsd["-R"][0])
 
-	conn_options["scanmode"] = "-Z" in optsd
+	if "-Z" in optsd:
+	    conn_options["scanmode"] = True
 
 	if "-s" in optsd:
 	    conn_options["sleeper"] = float(optsd["-s"][0])
@@ -323,19 +323,21 @@ class CLParser:
 	if "-t" in optsd:
 	    conn_options["max_concurrent"] = int(optsd["-t"][0])
 
-	return conn_options
-
-    def _parse_options(self, optsd):
+    def _parse_options(self, optsd, options):
+	'''
 	options = dict(
 	    printer_tool = "default",
 	    colour = False,
 	    interactive = False,
+	    recipe = "",
 	)
+	'''
 	
 	if "-v" in optsd:
 	    options["printer_tool"] = "verbose"
 
-	options["colour"] = "-c" in optsd
+	if "-c" in optsd:
+	    options["colour"] = True
 
 	if "-A" in optsd:
 	    options["printer_tool"] = "verbose"
@@ -344,15 +346,19 @@ class CLParser:
 	if "-o" in optsd:
 	    options["printer_tool"] = optsd['-o'][0]
 
-	options["interactive"] = "--interact" in optsd
+	if "--recipe" in optsd:
+	    options["recipe"] = optsd['--recipe'][0]
 
-	return options
+	if "--interact" in optsd:
+	    options["interactive"] = True
 
-    def _parse_scripts(self, optsd):
+    def _parse_scripts(self, optsd, options):
+	'''
 	options = dict(
 	    script_string = "",
 	    script_args = [],
 	)
+	'''
 
 	if "-A" in optsd:
 	    options["script_string"] = "default"
@@ -362,5 +368,3 @@ class CLParser:
 
 	if "--script-args" in optsd:
 	    options['script_args'] = map(lambda x: x.split("=", 1), optsd["--script-args"][0].split(","))
-
-	return options
