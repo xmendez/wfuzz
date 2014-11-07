@@ -28,6 +28,7 @@ Options:
 
 --recipe <filename>	    : Reads options from a recipe
 --dump-recipe		    : Prints current options as a recipe
+--oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 
 -c			    : Output with colors
 -v			    : Verbose information. Alias for -o verbose

@@ -1,6 +1,8 @@
 import threading
 import time
 from Queue import Queue
+import pickle
+import gzip
 
 from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.fuzzer.fuzzobjects import FuzzRequest
@@ -96,6 +98,10 @@ class Fuzzer:
     def __init__(self, options):
 	self.genReq = options.get("genreq")
 
+	# save results
+	self.output_fn = options.get("output_filename")
+	self.stored_res = []
+
 	# Get active plugins
 	lplugins = None
 	if options.get("script_string"):
@@ -169,6 +175,9 @@ class Fuzzer:
 	# check if we are done. If so, send None to everyone so the can stop nicely
 	if self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
 	    self.seed_queue.put_last(None)
+
+	# Save results?
+	if res and self.output_fn: self.stored_res.append(res)
 	   
 	return res
 
@@ -212,3 +221,15 @@ class Fuzzer:
 
     def resume_job(self):
 	self.http_queue.pause.set()
+
+    def save_results(self):
+	if not self.output_fn:
+	    return
+
+	try:
+	    with gzip.open(self.output_fn, 'w+b') as output:
+	    #with open(self.output_fn, 'w+b') as output:
+		pickle.dump(self.stored_res, output)
+	except Exception, e:
+	    raise FuzzException(FuzzException.FATAL, "Error writing fuzz results: %s " % (str(e)))
+

@@ -1,6 +1,8 @@
 import random
 import sys
 import __builtin__
+import pickle
+import gzip
 
 from externals.moduleman.plugin import moduleman_plugin
 from framework.core.myexception import FuzzException
@@ -395,3 +397,34 @@ class bing:
 	    elem = self.l[self.current]['Url']
 	    self.current += 1
 	    return str(elem.strip())
+
+@wfuzz_iterator
+@moduleman_plugin("count", "next", "__iter__")
+class wfuzz:
+    name = "wfuzz"
+    description = "Returns fuzz results' URL from a previous stored wfuzz session."
+    category = ["default"]
+    priority = 99
+
+    def __init__(self, path):   
+	pkl_file = None
+	try:
+	    pkl_file = gzip.open(path, 'r+b')
+	    #pkl_file = open(path, 'r+b')
+	    self.fuzz_results = pickle.load(pkl_file)
+	except Exception,e:
+	    raise FuzzException(FuzzException.FATAL, "Error opening wfuzz results file: %s" % str(e))
+	finally:
+	    if pkl_file: pkl_file.close()
+
+	self.__count = len(self.fuzz_results)
+	self.fuzz_results = iter(self.fuzz_results)
+
+    def __iter__ (self):
+	return self
+
+    def count(self):
+	return self.__count
+
+    def next (self):
+	return self.fuzz_results.next().url

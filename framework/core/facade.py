@@ -56,6 +56,7 @@ class FuzzOptions(UserDict):
 		    colour = False,
 		    interactive = False,
 		    recipe = "",
+		    output_filename = "",
 	    ),
 	    conn_options = dict(
 		proxy_list = None,
@@ -170,6 +171,7 @@ class FuzzSession:
 	    "max_req_delay": None,
 	    "max_conn_delay": 90,
 	    "genreq": None,
+	    "output_filename": "",
 	    }
 
     def set(self, name, value):
@@ -270,6 +272,8 @@ class FuzzSession:
 	    Facade().proxy("parsers").kbase.add(k, v)
 
 	# grl options
+	if options["grl_options"]["output_filename"]:
+	    fuzz_options.set("output_filename", options["grl_options"]["output_filename"])
 	if options["grl_options"]["colour"]:
 	    Facade().proxy("printers").kbase.add("colour", True)
 
