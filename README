@@ -290,6 +290,7 @@ Changelog 2.2:
 - req-delay and conn-delay switches. Handy when expecting connection timeouts, ie. scanning behind a proxy.
 - Plugin loading continues if error not blocking wfuzz execution
 - Recipe support
+- write fuzz results to file and wfuzz payload
 
 Changelog 2.1:
 ==============
