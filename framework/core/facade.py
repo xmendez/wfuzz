@@ -101,6 +101,17 @@ class FuzzOptions(UserDict):
 	 self.data['filter_options']['filterstr']:
 	    return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
 
+    # pycurl does not like unicode strings
+    def _convert_from_unicode(self, input):
+	if isinstance(input, dict):
+	    return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in input.iteritems()}
+	elif isinstance(input, list):
+	    return [self._convert_from_unicode(element) for element in input]
+	elif isinstance(input, unicode):
+	    return input.encode('utf-8')
+	else:
+	    return input
+
     def import_json(self, data):
 	js = json.loads(data)
 
@@ -109,12 +120,12 @@ class FuzzOptions(UserDict):
 		for section in js['wfuzz_recipe'].keys():
 		    if section in ['grl_options', 'conn_options', 'seed_options', 'payload_options', 'script_options', 'filter_options']:
 			for k, v in js['wfuzz_recipe'][section].items():
-			    self.data[section][k] = v
+			    self.data[section][k] = self._convert_from_unicode(v)
 
 			# fix pycurl error when using unicode url
 			if section == 'seed_options':
 			    if js['wfuzz_recipe']['seed_options'].has_key('url'):
-				self.data['seed_options']['url'] = str(js['wfuzz_recipe']['seed_options']['url'])
+				self.data['seed_options']['url'] = self._convert_from_unicode(js['wfuzz_recipe']['seed_options']['url'])
 		    else:
 			raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
 	    else:
