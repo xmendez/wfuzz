@@ -145,6 +145,9 @@ class CLParser:
 	if "--script" in optsd.keys() and "-A" in optsd.keys():
 	    raise FuzzException(FuzzException.FATAL, "Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
 
+	if "-s" in optsd.keys() and "-t" in optsd.keys():
+	    print "WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored."
+
     def _parse_filters(self, optsd, filter_params):
 	'''
 	filter_params = dict(
