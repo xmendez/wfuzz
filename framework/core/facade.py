@@ -8,6 +8,7 @@ from externals.settings.settings import SettingsBase
 from framework.fuzzer.dictio import dictionary
 from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.fuzzer.dictio import requestGenerator
+from framework.utils.minify_json import json_minify
 import plugins.encoders
 import plugins.iterations
 
@@ -113,7 +114,7 @@ class FuzzOptions(UserDict):
 	    return input
 
     def import_json(self, data):
-	js = json.loads(data)
+	js = json.loads(json_minify(data))
 
 	try:
 	    if js['version'] == "0.1" and js.has_key('wfuzz_recipe'):

@@ -260,14 +260,22 @@ Platforms:
 ----------
 
 wfuzz was tested on Linux, Os X and Windows.
-On windows the colored output doesn't work, we are working towards fixing this problem.
 
 Dependencies:
 ------------
 
-On *nix systems, need pycurl to work.
+On *nix systems, needs pycurl to work. 
 On Windows just run the wfuzz.exe
 
+3rd party code
+--------------
+
+Wfuzz is using the following 3rd party libraries:
+
+- JSON.miniy v0.2 (C) Gerald Storer
+https://github.com/getify/JSON.minify/blob/master/minify_json.py
+
+- http://pyparsing.wikispaces.com/
 
 Thanks:
 -------
