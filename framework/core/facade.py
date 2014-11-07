@@ -196,13 +196,16 @@ class FuzzSession:
 
 	filter_params["filter_string"] = options["filter_options"]["filterstr"]
 
-	if options["filter_options"]["ss"] is not None:
-	    filter_params['regex_show'] = True
-	    filter_params['regex'] = re.compile(options["filter_options"]['ss'], re.MULTILINE|re.DOTALL)
+	try:
+	    if options["filter_options"]["ss"] is not None:
+		filter_params['regex_show'] = True
+		filter_params['regex'] = re.compile(options["filter_options"]['ss'], re.MULTILINE|re.DOTALL)
 
-	elif options["filter_options"]["hs"] is not None:
-	    filter_params['regex_show'] = False
-	    filter_params['regex'] = re.compile(options["filter_options"]['hs'], re.MULTILINE|re.DOTALL)
+	    elif options["filter_options"]["hs"] is not None:
+		filter_params['regex_show'] = False
+		filter_params['regex'] = re.compile(options["filter_options"]['hs'], re.MULTILINE|re.DOTALL)
+	except Exception, e:
+	    raise FuzzException(FuzzException.FATAL, "Invalied regex expression: %s" % str(e))
 
 	if filter(lambda x: len(options["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]):
 	    filter_params['codes_show'] = True
