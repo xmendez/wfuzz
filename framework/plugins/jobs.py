@@ -84,10 +84,11 @@ class JobMan(FuzzQueue):
 	self.send(res)
 
 class ProcessorQ(FuzzQueue):
-    def __init__(self, max_rlevel, stats, queue_out):
+    def __init__(self, max_rlevel, stats, cache, queue_out):
         FuzzQueue.__init__(self, queue_out)
 
 	self.stats = stats
+	self.cache = cache
 	self.max_rlevel = max_rlevel
 
     def get_name(self):
@@ -119,7 +120,8 @@ class ProcessorQ(FuzzQueue):
 
 	# check if recursion is needed
 	if self.max_rlevel >= fuzz_res.rlevel and fuzz_res.is_path():
-	    self.send_new_seed(fuzz_res)
+	    if self.cache.update_cache(fuzz_res.history, "recursion"):
+		self.send_new_seed(fuzz_res)
 
 	# send new result
 	self.send(fuzz_res)

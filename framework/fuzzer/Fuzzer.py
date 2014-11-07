@@ -112,10 +112,11 @@ class Fuzzer:
 	self.results_queue = MyPriorityQueue()
 	self.filter_queue = FilterQ(options.get("filter_params"), self.results_queue) if filtering else None
 	self.routing_queue = RoutingQ(None, self.filter_queue if filtering else self.results_queue) if recursive else None
-	self.process_queue = ProcessorQ(options.get("rlevel"), self.genReq.stats, self.routing_queue if recursive else self.filter_queue if filtering else self.results_queue)
+
+	cache = HttpCache()
+	self.process_queue = ProcessorQ(options.get("rlevel"), self.genReq.stats, cache, self.routing_queue if recursive else self.filter_queue if filtering else self.results_queue)
 	self.plugins_queue = None
 	if lplugins:
-	    cache = HttpCache()
 	    self.plugins_queue = RoundRobin([JobMan(lplugins, cache, self.process_queue), JobMan(lplugins, cache, self.process_queue), JobMan(lplugins, cache, self.process_queue)])
 	self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.process_queue)
 	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.http_queue)
