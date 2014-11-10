@@ -17,7 +17,7 @@ class file:
     category = ["default"]
     priority = 99
 
-    def __init__(self, filename):
+    def __init__(self, filename, extra):
 	try:
 	    self.f = open(filename,"r")
 	except IOError:
@@ -43,7 +43,7 @@ class range:
     category = ["default"]
     priority = 99
 
-    def __init__(self, whatrange):    ## range example --> "23-56"
+    def __init__(self, whatrange, extra):    ## range example --> "23-56"
 	try:
 	    ran = whatrange.split("-")
 	    self.minimum = int(ran[0])
@@ -81,7 +81,7 @@ class hexrange:
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange):    ## range example --> "0-ffa"
+    def __init__(self, prange, extra):    ## range example --> "0-ffa"
 	try:
 	    ran = prange.split("-")
 	    self.minimum = int(ran[0],16)
@@ -119,7 +119,7 @@ class hexrand:
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange):    ## range example --> "0-ffa"
+    def __init__(self, prange, extra):    ## range example --> "0-ffa"
 	try:
 	    ran = prange.split("-")
 	    self.minimum=int(ran[0],16)
@@ -154,7 +154,7 @@ class buffer_overflow:
     category = ["default"]
     priority = 99
 
-    def __init__(self, n):   
+    def __init__(self, n, extra):   
 	self.l = ['A' * int(n)]
 	self.current = 0
 
@@ -180,7 +180,7 @@ class list:
     category = ["default"]
     priority = 99
 
-    def __init__(self, l):   
+    def __init__(self, l, extra):   
 	if l.find("\\") >= 0:
 	    l = l.replace("\\-", "$SEP$")
 	    l = l.replace("\\\\", "$SCAP$")
@@ -218,7 +218,7 @@ class stdin:
     category = ["default"]
     priority = 99
 
-    def __init__(self, deprecated):
+    def __init__(self, deprecated, extra):
 	# stdin is unseekable
 	self.__count = -1
 	#self.__count=len(sys.stdin.readlines())
@@ -244,7 +244,7 @@ class names:
     category = ["default"]
     priority = 99
 
-    def __init__(self, startnames):
+    def __init__(self, startnames, extra):
 	self.startnames = startnames
 	from sets import Set
 	possibleusernames = []
@@ -321,7 +321,7 @@ class permutation:
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange):    ## range example --> "abcdef-4"
+    def __init__(self, prange, extra):    ## range example --> "abcdef-4"
 	self.charset = []
 
 	try:
@@ -379,7 +379,7 @@ class bing:
     category = ["default"]
     priority = 99
 
-    def __init__(self, dork):   
+    def __init__(self, dork, extra):   
 	self.l = search_bing(dork)
 	self.__count = len(self.l)
 	self.current = 0
@@ -406,7 +406,7 @@ class wfuzz:
     category = ["default"]
     priority = 99
 
-    def __init__(self, path):   
+    def __init__(self, path, extra):   
 	pkl_file = None
 	try:
 	    pkl_file = gzip.open(path, 'r+b')

@@ -240,8 +240,8 @@ class FuzzSession:
 	# payload
 	selected_dic = []
 
-	for name, params, encoders in options["payload_options"]["payloads"]:
-	    p = Facade().get_payload(name)(params)
+	for name, params, extra, encoders in options["payload_options"]["payloads"]:
+	    p = Facade().get_payload(name)(params, extra)
 
 	    if encoders:
 		l = []

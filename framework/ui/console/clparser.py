@@ -1,6 +1,7 @@
 import sys
 import getopt
 from collections import defaultdict
+import itertools
 
 from framework.fuzzer.filter import PYPARSING
 from framework.core.facade import Facade
@@ -32,7 +33,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -200,28 +201,30 @@ class CLParser:
 	)
 	'''
 
-	if "-z" in optsd:
-	    for i in optsd["-z"]:
-		vals = i.split(",")
-		name, params = vals[:2]
+	if len(optsd["--zE"]) > len(optsd["-z"]):
+	    raise FuzzException(FuzzException.FATAL, "zE must be preceded by a -z swith.")
 
-		encoders = None
-		if len(vals) == 3:
-		    encoders = vals[2].split("-")
+	for zpayl, extraparams in itertools.izip_longest(optsd["-z"], optsd["--zE"]):
+	    vals = zpayl.split(",")
+	    name, params = vals[:2]
 
-		options["payloads"].append((name, params, encoders))
+	    encoders = None
+	    if len(vals) == 3:
+		encoders = vals[2].split("-")
+
+	    options["payloads"].append((name, params, extraparams, encoders))
 
 	# Alias por "-z file,Wordlist"
 	if "-w" in optsd:
 	    for i in optsd["-w"]:
-		vals = i.split(",")
+		vals = i.split(",", 1)
 		f, = vals[:1]
 
 		encoders = None
 		if len(vals) == 2:
 		    encoders = vals[1].split("-")
 
-		options["payloads"].append(("file", f, encoders))
+		options["payloads"].append(("file", f, None, encoders))
 
 	if "-m" in optsd:
 	    options["iterator"] = optsd['-m'][0]

@@ -57,6 +57,7 @@ Options:
 -z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 			      Encoders category can be used. ie. url
+--zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
 -w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 -V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 -X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
