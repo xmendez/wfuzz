@@ -212,6 +212,9 @@ class CLParser:
 	    if len(vals) == 3:
 		encoders = vals[2].split("-")
 
+	    if extraparams:
+		extraparams = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
+
 	    options["payloads"].append((name, params, extraparams, encoders))
 
 	# Alias por "-z file,Wordlist"
