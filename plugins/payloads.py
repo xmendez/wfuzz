@@ -7,33 +7,35 @@ import gzip
 from externals.moduleman.plugin import moduleman_plugin
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
-from framework.plugins.api import search_bing
+from framework.plugins.api import BingIter
+from framework.plugins.api import OffsetPayload
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
-class file:
+class file(OffsetPayload):
     name = "file"
     description = "Returns each word from a file."
     category = ["default"]
     priority = 99
 
-    def __init__(self, filename, extra):
+
+    def __init__(self, default_param, extra):
+	OffsetPayload.__init__(self, default_param, extra)
+
+    def my_max_count(self):
+	return self.__max
+
+    def my_slice_iter(self, default_param, offset, limit):
+	maxl = 0
+
 	try:
-	    self.f = open(filename,"r")
+	    f = open(default_param, "r")
+	    self.__max = len(f.readlines())
+	    f.seek(0)
 	except IOError:
 	    raise FuzzException(FuzzException.FATAL, "Error opening file")
-
-	self.__count = len(self.f.readlines())
-	self.f.seek(0)
-
-    def next (self):
-	return self.f.next().strip()
-
-    def count(self):
-	return self.__count
-
-    def __iter__ (self):
-	return self
+    
+	return False, f
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
@@ -369,7 +371,7 @@ class permutation:
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
-class bing:
+class bing(OffsetPayload):
     '''
     Some examples of bing hacking:
     - http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html
@@ -378,53 +380,47 @@ class bing:
     description = "Returns URL results of a given bing API search (needs api key). ie, intitle:\"JBoss JMX Management Console\"-10"
     category = ["default"]
     priority = 99
+    def __init__(self, default_param, extra):
+	OffsetPayload.__init__(self, default_param, extra)
 
-    def __init__(self, dork, extra):   
-	self.l = search_bing(dork)
-	self.__count = len(self.l)
-	self.current = 0
+    def my_slice_iter(self, default_param, offset, limit):
+	itera = BingIter(default_param, offset, limit)
+	self.__max = itera.max_count
 
-    def __iter__ (self):
-	return self
+	return True, itera
 
-    def count(self):
-	return self.__count
-
-    def next (self):
-	if self.current >= self.__count:
-	    raise StopIteration
-	else:
-	    elem = self.l[self.current]['Url']
-	    self.current += 1
-	    return str(elem.strip())
+    def my_max_count(self):
+	return self.__max
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
-class wfuzz:
+class wfuzz(OffsetPayload):
     name = "wfuzz"
     description = "Returns fuzz results' URL from a previous stored wfuzz session."
     category = ["default"]
     priority = 99
 
-    def __init__(self, path, extra):   
+    def __init__(self, default_param, extra):   
+	OffsetPayload.__init__(self, default_param, extra)
+	self.__max = 0
+
+    def my_max_count(self):
+	return self.__max
+
+    def my_slice_iter(self, default_param, offset, limit):
 	pkl_file = None
 	try:
-	    pkl_file = gzip.open(path, 'r+b')
+	    pkl_file = gzip.open(default_param, 'r+b')
 	    #pkl_file = open(path, 'r+b')
-	    self.fuzz_results = pickle.load(pkl_file)
+	    fuzz_results = pickle.load(pkl_file)
 	except Exception,e:
 	    raise FuzzException(FuzzException.FATAL, "Error opening wfuzz results file: %s" % str(e))
 	finally:
 	    if pkl_file: pkl_file.close()
 
-	self.__count = len(self.fuzz_results)
-	self.fuzz_results = iter(self.fuzz_results)
+	self.__max = len(fuzz_results)
 
-    def __iter__ (self):
-	return self
-
-    def count(self):
-	return self.__count
+	return False, fuzz_results
 
     def next (self):
-	return self.fuzz_results.next().url
+	return self._iterator.next().url
