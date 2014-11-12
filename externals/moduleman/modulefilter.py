@@ -97,7 +97,7 @@ class Filter(IFilter):
 		return True
 	    elif filter_string.find(")") >=0:
 		return True
-	    elif len(filter(lambda x: x in ["or", "not", "and"], filter_string.split(" "))) > 0:
+	    elif any(x in ["or", "not", "and"] for x in filter_string.split(" ")):
 		return True
 	    else: 
 		return False
