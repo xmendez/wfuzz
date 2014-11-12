@@ -256,6 +256,30 @@ Examples:
 	    Target: http://www.google.com/FUZZ
 	    Total requests: 11
 
+	- Additional parameters to payloads can be specified using the --zE argument.
+
+	    $ cat /tmp/numbers
+	    1
+	    2
+	    3
+	    4
+	    5
+	    6
+	    7
+	    8
+	    9
+	    0
+
+	    $ python wfuzz.py -z file,/tmp/numbers --zE offset=5,limit=3 http://localhost:9000/FUZZ
+
+	    Target: http://localhost:9000/FUZZ
+	    Total requests: 3
+
+	    00000:  C=404      9 L        32 W          275 Ch        "8"
+	    00001:  C=404      9 L        32 W          275 Ch        "6"
+	    00002:  C=404      9 L        32 W          275 Ch        "7"
+
+
 Platforms:
 ----------
 
@@ -290,7 +314,10 @@ Changelog 2.2:
 - req-delay and conn-delay switches. Handy when expecting connection timeouts, ie. scanning behind a proxy.
 - Plugin loading continues if error not blocking wfuzz execution
 - Recipe support
-- write fuzz results to file and wfuzz payload
+- Write fuzz results to file and wfuzz payload
+- Extra parameters to payloads (--zE)
+- Added offset, limit to payloads where applies
+- Backups plugin
 
 Changelog 2.1:
 ==============
