@@ -13,6 +13,11 @@ import itertools
 # Util methods when processing fuzz results 
 
 def url_filename(fuzzresult):
+    '''
+    Returns script plus extension from an URL. ie. http://www.localhost.com/kk/index.html?id=1
+    will return index.html
+    '''
+
     u = urlparse.urlsplit(fuzzresult.url).path.split('/')[-1:][0]
 
     return u
@@ -28,6 +33,12 @@ def url_filename_ext(url):
     ext = os.path.splitext(path)[1]
 
     return ext
+
+def url_filename_name(url):
+    path = urlparse.urlparse(url).path
+    name = os.path.splitext(path)[0]
+
+    return name
 
 # Util methods for accessing search results
 class BingIter:
