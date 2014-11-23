@@ -26,6 +26,8 @@ class Settings(SettingsBase):
     def set_defaults(self):
 	return dict(
 	    plugins=[("file_bl", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
+	    connection=[("concurrent", '10'), ("conn_delay", '90')],
+	    general=[("default_printer", 'default')],
 	)
 
 class FuzzOptions(UserDict):
@@ -52,7 +54,7 @@ class FuzzOptions(UserDict):
 		iterator = 'product',
 	    ),
 	    grl_options = dict(
-		    printer_tool = "default",
+		    printer_tool = Facade().sett.get('general', 'default_printer'),
 		    colour = False,
 		    interactive = False,
 		    recipe = "",
@@ -60,12 +62,12 @@ class FuzzOptions(UserDict):
 	    ),
 	    conn_options = dict(
 		proxy_list = None,
-		max_conn_delay = 90,
+		max_conn_delay = int(Facade().sett.get('connection', 'conn_delay')),
 		max_req_delay = None,
 		rlevel = 0,
 		scanmode = False,
 		sleeper = None,
-		max_concurrent = 10,
+		max_concurrent = int(Facade().sett.get('connection', 'concurrent')),
 	    ),
 	    seed_options = dict(
 		url = "",
@@ -160,16 +162,16 @@ class FuzzSession:
     def __init__(self):
 	self._values = {
 	    "filter_params": None,
-	    "printer_tool": "default",
+	    "printer_tool": Facade().sett.get('general', 'default_printer'),
 	    "rlevel": 0,
 	    "script_string": "",
 	    "sleeper": None,
 	    "proxy_list": None,
 	    "scanmode": False,
 	    "interactive": False,
-	    "max_concurrent": 10,
+	    "max_concurrent": int(Facade().sett.get('connection', 'concurrent')),
 	    "max_req_delay": None,
-	    "max_conn_delay": 90,
+	    "max_conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
 	    "genreq": None,
 	    "output_filename": "",
 	    }
