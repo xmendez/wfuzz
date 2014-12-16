@@ -142,6 +142,9 @@ class FuzzRequest(BaseFuzzRequest, Request):
     wf_description = property( _get_description, _set_description )
 
     def _set_proxies(self, l):
+	if l:
+	    prox, ptype = l
+	    self.setProxy("%s" % prox, ptype if ptype else "HTML")
 	self._proxy = l
 	
     def _get_proxies(self):
