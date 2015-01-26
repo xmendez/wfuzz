@@ -24,7 +24,8 @@ It was created to facilitate the task in web applications assessments, it's a to
 The tool is based on dictionaries or ranges, then you choose where you want to bruteforce just by replacing the value by the word FUZZ.
 
 For further information check the wiki at https://github.com/xmendez/wfuzz/wiki.
-Check the README file for usage examples.
+
+Or check the README file for usage examples.
 
 
 ## Download 
