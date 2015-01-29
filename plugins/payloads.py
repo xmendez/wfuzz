@@ -1,7 +1,7 @@
 import random
 import sys
 import __builtin__
-import pickle
+import cPickle as pickle
 import gzip
 
 from externals.moduleman.plugin import moduleman_plugin
@@ -408,19 +408,18 @@ class wfuzz(OffsetPayload):
 	return self.__max
 
     def my_slice_iter(self, default_param, offset, limit):
-	pkl_file = None
+	self.__max = -1
+
+	return False, self.gen_wfuzz(default_param)
+
+    def gen_wfuzz(self, output_fn):
 	try:
-	    pkl_file = gzip.open(default_param, 'r+b')
-	    #pkl_file = open(path, 'r+b')
-	    fuzz_results = pickle.load(pkl_file)
-	except Exception,e:
-	    raise FuzzException(FuzzException.FATAL, "Error opening wfuzz results file: %s" % str(e))
-	finally:
-	    if pkl_file: pkl_file.close()
-
-	self.__max = len(fuzz_results)
-
-	return False, fuzz_results
+	    with gzip.open(output_fn, 'r+b') as output:
+	    #with open(self.output_fn, 'r+b') as output:
+		while 1:
+		    yield pickle.load(output)
+	except EOFError:
+	    raise StopIteration
 
     def next (self):
 	return self._iterator.next().url

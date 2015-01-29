@@ -61,6 +61,3 @@ except NotImplementedError, e:
 finally:
     if kb: kb.cancel_job()
     Facade().sett.save()
-    if session_options and session_options.get("output_filename"): 
-	print "\nPlease wait, writing fuzz results to file: %s..." % session_options.get("output_filename")
-	fz.save_results()

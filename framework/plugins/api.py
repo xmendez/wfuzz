@@ -227,18 +227,24 @@ class OffsetPayload:
 	is_sliced, self._iterator = self.my_slice_iter(default_param, offset, limit)
 	self._slice_it(is_sliced, offset, limit)
 
-	if self._count <= 0:
-	    raise FuzzException(FuzzException.FATAL, "Number of elements is negative.")
+	#if self._count <= 0:
+	    #raise FuzzException(FuzzException.FATAL, "Number of elements is negative.")
 
     def _slice_it(self, is_sliced, offset, limit):
 	maxc = self.my_max_count()
 
 	if not is_sliced:
-	    if offset > maxc: offset = maxc
+	    if offset > maxc and maxc > 0: offset = maxc
 	    if limit == 0: limit = maxc
 
-	    self._iterator = itertools.islice(self._iterator, offset, min(offset + limit, maxc))
-	    self._count = min(offset + limit, maxc) - offset
+	    if not limit or limit < 0: 
+		limit = None
+		self._count = -1
+	    else:
+		limit = min(offset + limit, maxc)
+		self._count = limit - offset
+
+	    self._iterator = itertools.islice(self._iterator, offset, limit)
 	else:
 	    self._count = maxc
 
