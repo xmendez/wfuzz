@@ -10,15 +10,10 @@ try:
     from  pyparsing import ParseException
 except ImportError:
     PYPARSING = False
-    
-class FilterQ(FuzzQueue):
-    def __init__(self, ffilter, queue_out):
-	FuzzQueue.__init__(self, queue_out)
-	Thread.__init__(self)
-	self.setName('filter_thread')
 
-	self.queue_out = queue_out
 
+class FuzzResFilter:
+    def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
 	    digits = "XB0123456789"
@@ -41,19 +36,7 @@ class FilterQ(FuzzQueue):
 
 	self.baseline = None
 
-    def get_name(self):
-	return 'filter_thread'
-
-    def _cleanup(self):
-	pass
-
-    def process(self, prio, item):
-	if item.is_baseline:
-	    self.baseline = self._set_baseline_fuzz(item)
-	item.is_visible = self.is_visible(item)
-	self.send(item)
-
-    def _set_baseline_fuzz(self, res):
+    def set_baseline(self, res):
 	if "BBB" in self.hideparams['lines']:
 	    self.hideparams['lines'].append(str(res.lines))
 	if "BBB" in self.hideparams['codes']:
@@ -63,7 +46,7 @@ class FilterQ(FuzzQueue):
 	if "BBB" in self.hideparams['chars']:
 	    self.hideparams['chars'].append(str(res.chars))
 
-	return res
+	self.baseline = res
 
     def __convertIntegers(self, tokens):
 	return int(tokens[0])
@@ -156,6 +139,28 @@ class FilterQ(FuzzQueue):
 		    cond2 = self.hideparams['regex_show']
 
 	    return (cond1 and cond2)
+
+class FilterQ(FuzzQueue):
+    def __init__(self, ffilter, queue_out):
+	FuzzQueue.__init__(self, queue_out)
+	Thread.__init__(self)
+
+	self.setName('filter_thread')
+
+	self.queue_out = queue_out
+	self.ffilter = FuzzResFilter(ffilter)
+
+    def get_name(self):
+	return 'filter_thread'
+
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	if item.is_baseline:
+	    self.ffilter.set_baseline(item)
+	item.is_visible = self.ffilter.is_visible(item)
+	self.send(item)
 
 if __name__ == "__main__":
     tests = []

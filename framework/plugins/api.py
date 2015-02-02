@@ -2,6 +2,7 @@ from framework.plugins.pluginobjects import PluginResult
 from framework.plugins.pluginobjects import PluginRequest
 from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
+from framework.fuzzer.filter import FuzzResFilter
 
 import os
 import urlparse
@@ -209,14 +210,37 @@ class DiscoveryPlugin(BasePlugin):
     def blacklisted_extension(self, url):
 	return url_filename_ext(url) in self.black_list
 
-# Payloads specializations with common methods useful for their own type
+# Payloads helpers
 
-class OffsetPayload:
-    __metaclass__ = abc.ABCMeta 
+class PayloadTools:
+    @staticmethod
+    def filter_results(extra_params, itera):
+	ffilter = None
 
-    def __init__(self, default_param, extra_params):
-	offset = 0
-	limit = 0
+	if extra_params and extra_params.has_key("filter"):
+	    filter_params = dict(
+		active = True,
+		regex_show = None,
+		codes_show = None,
+		codes = [],
+		words = [],
+		lines = [],
+		chars = [],
+		regex = None,
+		filter_string = extra_params["filter"]
+		)
+	    ffilter = FuzzResFilter(filter_params)
+
+	    return itertools.ifilter(lambda x:ffilter.is_visible(x), itera)
+	else:
+	    #raise FuzzException(FuzzException.FATAL, "Missing filter parameter in payload")
+	    return itera
+
+    @staticmethod
+    def range_results(extra_params, itera):
+	offset = None
+	limit = None
+
 	if extra_params:
 	    if extra_params.has_key("offset"):
 		offset = int(extra_params["offset"])
@@ -224,43 +248,7 @@ class OffsetPayload:
 	    if extra_params.has_key("limit"):
 		limit = int(extra_params["limit"])
 
-	is_sliced, self._iterator = self.my_slice_iter(default_param, offset, limit)
-	self._slice_it(is_sliced, offset, limit)
-
-	#if self._count <= 0:
-	    #raise FuzzException(FuzzException.FATAL, "Number of elements is negative.")
-
-    def _slice_it(self, is_sliced, offset, limit):
-	maxc = self.my_max_count()
-
-	if not is_sliced:
-	    if offset > maxc and maxc > 0: offset = maxc
-	    if limit == 0: limit = maxc
-
-	    if not limit or limit < 0: 
-		limit = None
-		self._count = -1
-	    else:
-		limit = min(offset + limit, maxc)
-		self._count = limit - offset
-
-	    self._iterator = itertools.islice(self._iterator, offset, limit)
+	if offset is None and limit is None:
+	    return itera
 	else:
-	    self._count = maxc
-
-    @abc.abstractmethod
-    def my_max_count(self):
-	return
-
-    @abc.abstractmethod
-    def my_slice_iter(self, param, offset, limit):
-	return
-
-    def next (self):
-	return self._iterator.next().strip()
-
-    def count(self):
-	return self._count
-
-    def __iter__ (self):
-	return self
+	    return itertools.islice(itera, offset, limit)

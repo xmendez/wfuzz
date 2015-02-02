@@ -8,11 +8,11 @@ from externals.moduleman.plugin import moduleman_plugin
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api import BingIter
-from framework.plugins.api import OffsetPayload
+from framework.plugins.api import PayloadTools
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
-class file(OffsetPayload):
+class file:
     name = "file"
     description = "Returns each word from a file."
     category = ["default"]
@@ -20,22 +20,30 @@ class file(OffsetPayload):
 
 
     def __init__(self, default_param, extra):
-	OffsetPayload.__init__(self, default_param, extra)
+	self.__max = -1
+	self.f = PayloadTools.range_results(extra, self._my_gen(default_param))
 
-    def my_max_count(self):
-	return self.__max
+    def __iter__(self):
+	return self
 
-    def my_slice_iter(self, default_param, offset, limit):
+    def _my_gen(self, filename):
 	maxl = 0
 
 	try:
-	    f = open(default_param, "r")
+	    f = open(filename, "r")
 	    self.__max = len(f.readlines())
 	    f.seek(0)
 	except IOError:
 	    raise FuzzException(FuzzException.FATAL, "Error opening file")
     
-	return False, f
+	return f
+
+    def count(self):
+	return self.__max
+
+    def next(self):
+	return self.f.next().strip()
+
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
@@ -371,7 +379,7 @@ class permutation:
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
-class bing(OffsetPayload):
+class bing:
     '''
     Some examples of bing hacking:
     - http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html
@@ -381,38 +389,49 @@ class bing(OffsetPayload):
     category = ["default"]
     priority = 99
     def __init__(self, default_param, extra):
-	OffsetPayload.__init__(self, default_param, extra)
+	offset = 0
+	limit = 0
 
-    def my_slice_iter(self, default_param, offset, limit):
-	itera = BingIter(default_param, offset, limit)
-	self.__max = itera.max_count
+	if extra:
+	    if extra.has_key("offset"):
+		offset = int(extra["offset"])
 
-	return True, itera
+	    if extra.has_key("limit"):
+		limit = int(extra["limit"])
 
-    def my_max_count(self):
-	return self.__max
+	self._it = BingIter(default_param, offset, limit)
+
+    def __iter__(self):
+	return self
+
+    def count(self):
+	return self._it.max_count
+
+    def next(self):
+	return self._it.next()
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
-class wfuzz(OffsetPayload):
+@moduleman_plugin("count", "next",  "__iter__")
+class wfuzz:
     name = "wfuzz"
     description = "Returns fuzz results' URL from a previous stored wfuzz session."
     category = ["default"]
     priority = 99
 
-    def __init__(self, default_param, extra):   
-	OffsetPayload.__init__(self, default_param, extra)
-	self.__max = 0
+    def __init__(self, default_param, extra_params):
+	self.__max = -1
+	self._it = PayloadTools.range_results(extra_params, PayloadTools.filter_results(extra_params, self._gen_wfuzz(default_param)))
 
-    def my_max_count(self):
+    def __iter__(self, default_param, extra):   
+	return self
+
+    def count(self):
 	return self.__max
 
-    def my_slice_iter(self, default_param, offset, limit):
-	self.__max = -1
+    def next(self):
+	return self._it.next().url
 
-	return False, self.gen_wfuzz(default_param)
-
-    def gen_wfuzz(self, output_fn):
+    def _gen_wfuzz(self, output_fn):
 	try:
 	    with gzip.open(output_fn, 'r+b') as output:
 	    #with open(self.output_fn, 'r+b') as output:
@@ -421,5 +440,3 @@ class wfuzz(OffsetPayload):
 	except EOFError:
 	    raise StopIteration
 
-    def next (self):
-	return self._iterator.next().url
