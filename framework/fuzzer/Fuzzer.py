@@ -74,7 +74,6 @@ class SeedQ(FuzzQueue):
 		self.send(rq)
 		rq = self.genReq.next()
 	except StopIteration:
-	    print "hey"
 	    pass
 
 	self.genReq.stats.pending_seeds -= 1
