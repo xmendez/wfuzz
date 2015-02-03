@@ -60,15 +60,21 @@ class SeedQ(FuzzQueue):
 	else:
 	    raise FuzzException(FuzzException.FATAL, "SeedQ: Unknown item type in queue!")
 
-	# Enqueue requests
+	# Empty dictionary?
 	try:
 	    rq = self.genReq.next()
+	except StopIteration:
+	    raise FuzzException(FuzzException.FATAL, "Empty dictionary! Please check payload or filter.")
+
+	# Enqueue requests
+	try:
 	    while rq:
 		self.genReq.stats.pending_fuzz += 1
 		if self.delay: time.sleep(self.delay)
 		self.send(rq)
 		rq = self.genReq.next()
 	except StopIteration:
+	    print "hey"
 	    pass
 
 	self.genReq.stats.pending_seeds -= 1

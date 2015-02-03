@@ -253,7 +253,7 @@ class FuzzSession:
 		    else:
 			l += map(lambda x: x().encode, Facade().proxy("encoders").get_plugins(i))
 	    else:
-		l = [Facade().get_encoder('none').encode]
+		l = None
 
 	    d = dictionary(p, l)
 	    selected_dic.append(d)

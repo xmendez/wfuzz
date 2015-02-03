@@ -8,11 +8,12 @@ class dictionary:
 	    self.__generator = None
 
 	def count (self):
-	    return self.__payload.count() * len(self.__encoder)
+	    return (self.__payload.count() * len(self.__encoder)) if self.__encoder else self.__payload.count()
 
 	def restart(self):
 	    self.__payload.restart()
-	    self.__generator = self.gen()
+	    if self.__encoder:
+		self.__generator = self.gen()
 
 	def __iter__(self):
 	    self.restart()
@@ -25,7 +26,7 @@ class dictionary:
 		    yield encode(pl)
 
 	def next(self):
-	    return self.__generator.next()
+	    return self.__generator.next() if self.__encoder else self.__payload.next()
 
 class requestGenerator:
 	def __init__(self, seed, dictio):
