@@ -9,7 +9,7 @@ import urlparse
 
 PYPARSING = True
 try:
-    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphanums, Or, OneOrMore
+    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphanums, Or, OneOrMore, QuotedString, printables
     from  pyparsing import ParseException
 except ImportError:
     PYPARSING = False
@@ -19,11 +19,11 @@ class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
-	    adv_element = oneOf("intext inurl site")
+	    adv_element = oneOf("intext inurl site inheader")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
-	    adv_elementRef = Group(adv_element + oneOf("= !=") + Word(alphanums))
+	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    operator = oneOf("and or")
 	    definition = adv_elementRef ^ elementRef + ZeroOrMore( operator + adv_elementRef ^ elementRef)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
@@ -73,6 +73,11 @@ class FuzzResFilter:
 	elif adv_element == 'site':
 	    if urlparse.urlparse(self.res.url).netloc.rfind(value) >= 0:
 		cond = True
+	elif adv_element == 'inheader':
+	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
+	    cond = False
+	    
+	    if regex.search("\n".join([': '.join(k) for k in self.res.history.fr_headers()['response'].items()])): cond = True
 
 	return cond if operator == "=" else not cond
 
