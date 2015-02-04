@@ -2,7 +2,7 @@ import re
 from urlparse import urlparse, urljoin
 
 from framework.plugins.api import DiscoveryPlugin
-from framework.plugins.api import url_same_domain
+from framework.plugins.api import FuzzResParse
 from externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
@@ -38,15 +38,15 @@ class links(DiscoveryPlugin):
 
 	for r in self.regex:
 	    for i in r.findall(fuzzresult.history.fr_content()):
-		schema, host, path, params, variables, f = urlparse(i)
+		parsed_link = FuzzResParse.parse_url(i)
 
-		if (not schema or schema == "http" or schema == "https") and \
-		    (url_same_domain(i, fuzzresult.url) or (not host and path)):
+		if (not parsed_link.scheme or parsed_link.scheme == "http" or parsed_link.scheme == "https") and \
+		    (parsed_link.domain == FuzzResParse.parse_res(fuzzresult).domain or (not parsed_link.netloc and parsed_link.path)):
 		    if i not in l:
 			l.append(i)
 
 			# dir path
-			split_path = path.split("/")
+			split_path = parsed_link.path.split("/")
 			newpath = '/'.join(split_path[:-1]) + "/"
 			self.queue_url(urljoin(fuzzresult.url, newpath))
 
