@@ -4,9 +4,11 @@ from threading import Thread
 from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.utils.myqueue import FuzzQueue
 
+import re
+
 PYPARSING = True
 try:
-    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal
+    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphanums, Or, OneOrMore
     from  pyparsing import ParseException
 except ImportError:
     PYPARSING = False
@@ -16,15 +18,18 @@ class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
+	    adv_element = oneOf("intext")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
+	    adv_elementRef = Group(adv_element + oneOf("= !=") + Word(alphanums))
 	    operator = oneOf("and or")
-	    definition = elementRef + ZeroOrMore( operator + elementRef)
+	    definition = adv_elementRef ^ elementRef + ZeroOrMore( operator + adv_elementRef ^ elementRef)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
 	    elementRef.setParseAction(self.__compute_element)
+	    adv_elementRef.setParseAction(self.__compute_adv_element)
 	    nestedformula.setParseAction(self.__compute_formula)
 	    self.finalformula.setParseAction(self.__myreduce)
 
@@ -50,6 +55,17 @@ class FuzzResFilter:
 
     def __convertIntegers(self, tokens):
 	return int(tokens[0])
+
+    def __compute_adv_element(self, tokens):
+	adv_element, operator, value = tokens[0]
+
+	if adv_element == 'intext':
+	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
+	    cond = False
+	    if regex.search(self.res.history.fr_content()):
+		cond = True
+
+	    return cond if operator == "=" else not cond
 
     def __compute_element(self, tokens):
 	element, operator, value = tokens[0]
@@ -110,7 +126,7 @@ class FuzzResFilter:
 	    try:
 		return self.finalformula.parseString(filter_string)[0]
 	    except ParseException, e:
-		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=")
+		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,intext;and,or;=,<,>,!=,<=,>=")
 	else:
 	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
 		    or 'BBB' in self.hideparams['lines'] \
