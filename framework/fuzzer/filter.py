@@ -18,7 +18,7 @@ class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
-	    adv_element = oneOf("intext")
+	    adv_element = oneOf("intext inurl")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
@@ -59,13 +59,18 @@ class FuzzResFilter:
     def __compute_adv_element(self, tokens):
 	adv_element, operator, value = tokens[0]
 
+	cond = False
+
 	if adv_element == 'intext':
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
-	    if regex.search(self.res.history.fr_content()):
-		cond = True
+	    if regex.search(self.res.history.fr_content()): cond = True
+	elif adv_element == 'inurl':
+	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
+	    cond = False
+	    if regex.search(self.res.url): cond = True
 
-	    return cond if operator == "=" else not cond
+	return cond if operator == "=" else not cond
 
     def __compute_element(self, tokens):
 	element, operator, value = tokens[0]
