@@ -5,6 +5,7 @@ from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.utils.myqueue import FuzzQueue
 
 import re
+import urlparse
 
 PYPARSING = True
 try:
@@ -18,7 +19,7 @@ class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
-	    adv_element = oneOf("intext inurl")
+	    adv_element = oneOf("intext inurl site")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
@@ -69,6 +70,9 @@ class FuzzResFilter:
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
 	    if regex.search(self.res.url): cond = True
+	elif adv_element == 'site':
+	    if urlparse.urlparse(self.res.url).netloc.rfind(value) >= 0:
+		cond = True
 
 	return cond if operator == "=" else not cond
 
