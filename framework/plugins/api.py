@@ -269,4 +269,5 @@ class PayloadTools:
 	if offset is None and limit is None:
 	    return itera
 	else:
+	    if offset is not None and limit is not None: limit += offset
 	    return itertools.islice(itera, offset, limit)
