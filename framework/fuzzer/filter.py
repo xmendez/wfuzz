@@ -3,6 +3,7 @@ from threading import Thread
 
 from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.utils.myqueue import FuzzQueue
+from framework.plugins.api.urlutils import parse_res, parse_url
 
 import re
 import urlparse
@@ -19,7 +20,7 @@ class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
 	    element = oneOf("c l w h")
-	    adv_element = oneOf("intext inurl site inheader")
+	    adv_element = oneOf("intext inurl site inheader filetype")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
@@ -70,6 +71,9 @@ class FuzzResFilter:
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
 	    if regex.search(self.res.url): cond = True
+	elif adv_element == 'filetype':
+	    if parse_res(self.res).file_extension == value:
+		cond = True
 	elif adv_element == 'site':
 	    if urlparse.urlparse(self.res.url).netloc.rfind(value) >= 0:
 		cond = True
