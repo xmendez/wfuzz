@@ -21,17 +21,21 @@ class FuzzResFilter:
 	if PYPARSING:
 	    element = oneOf("c l w h")
 	    adv_element = oneOf("intext inurl site inheader filetype")
+	    adv_element_bool = oneOf("hasquery ispath")
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
 	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    operator = oneOf("and or")
-	    definition = adv_elementRef ^ elementRef + ZeroOrMore( operator + adv_elementRef ^ elementRef)
+	    not_operator = oneOf("not")
+	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
+	    definition = adv_elementRef ^ elementRef ^ adv_elementRef_bool + ZeroOrMore( operator + adv_elementRef ^ adv_elementRef_bool ^ elementRef)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
 	    elementRef.setParseAction(self.__compute_element)
 	    adv_elementRef.setParseAction(self.__compute_adv_element)
+	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
 	    nestedformula.setParseAction(self.__compute_formula)
 	    self.finalformula.setParseAction(self.__myreduce)
 
@@ -57,6 +61,22 @@ class FuzzResFilter:
 
     def __convertIntegers(self, tokens):
 	return int(tokens[0])
+
+    def __compute_adv_element_bool(self, tokens):
+	operator, adv_element = tokens[0]
+
+	cond = False
+
+	if adv_element == 'hasquery':
+	    if urlparse.urlparse(self.res.url).query:
+		cond = True
+	elif adv_element == 'ispath':
+	    scheme, netloc, path, params, query, fragment = urlparse.urlparse(self.res.url)
+
+	    if not query and path and path[-1] == '/':
+		cond = True
+
+	return cond if operator == "notpresent" else not cond
 
     def __compute_adv_element(self, tokens):
 	adv_element, operator, value = tokens[0]
