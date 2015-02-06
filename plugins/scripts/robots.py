@@ -2,8 +2,8 @@ import re
 from urlparse import urlparse, urljoin
 
 
-from framework.plugins.api import DiscoveryPlugin
-from framework.plugins.api import FuzzResParse
+from framework.plugins.base import DiscoveryPlugin
+from framework.plugins.api.urlutils import parse_res
 from externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
@@ -14,7 +14,7 @@ class robots(DiscoveryPlugin):
     priority = 99
 
     def validate(self, fuzzresult):
-	return FuzzResParse.parse_res(fuzzresult).file_fullname == "robots.txt" and fuzzresult.code == 200
+	return parse_res(fuzzresult).file_fullname == "robots.txt" and fuzzresult.code == 200
 
     def process(self, fuzzresult):
 	# Shamelessly (partially) copied from w3af's plugins/discovery/robotsReader.py

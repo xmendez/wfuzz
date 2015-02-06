@@ -7,8 +7,8 @@ import gzip
 from externals.moduleman.plugin import moduleman_plugin
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
-from framework.plugins.api import BingIter
-from framework.plugins.api import PayloadTools
+from framework.plugins.api.payloadtools import BingIter
+from framework.plugins.api.payloadtools import range_results, filter_results
 
 @wfuzz_iterator
 @moduleman_plugin("count", "next", "__iter__")
@@ -21,7 +21,7 @@ class file:
 
     def __init__(self, default_param, extra):
 	self.__max = -1
-	self.f = PayloadTools.range_results(extra, self._my_gen(default_param))
+	self.f = range_results(extra, self._my_gen(default_param))
 
     def __iter__(self):
 	return self
@@ -420,7 +420,7 @@ class wfuzz:
 
     def __init__(self, default_param, extra_params):
 	self.__max = -1
-	self._it = PayloadTools.range_results(extra_params, PayloadTools.filter_results(extra_params, self._gen_wfuzz(default_param)))
+	self._it = range_results(extra_params, filter_results(extra_params, self._gen_wfuzz(default_param)))
 
     def __iter__(self, default_param, extra):   
 	return self

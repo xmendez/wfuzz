@@ -1,6 +1,6 @@
 from urlparse import urlparse, urljoin
 
-from framework.plugins.api import DiscoveryPlugin
+from framework.plugins.base import DiscoveryPlugin
 from framework.core.myexception import FuzzException
 from externals.moduleman.plugin import moduleman_plugin
 

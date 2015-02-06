@@ -1,6 +1,6 @@
 import re
 
-from framework.plugins.api import BasePlugin
+from framework.plugins.base import BasePlugin
 from framework.core.myexception import FuzzException
 from externals.moduleman.plugin import moduleman_plugin
 
