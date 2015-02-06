@@ -164,7 +164,7 @@ class FuzzResFilter:
 	    try:
 		return self.finalformula.parseString(filter_string)[0]
 	    except ParseException, e:
-		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,intext;and,or;=,<,>,!=,<=,>=")
+		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 	else:
 	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
 		    or 'BBB' in self.hideparams['lines'] \

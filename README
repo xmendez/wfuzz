@@ -317,7 +317,9 @@ Changelog 2.2:
 - Write fuzz results to file and wfuzz payload
 - Extra parameters to payloads (--zE)
 - Added offset, limit to payloads where applies
+- Advanced filter operators: intext inurl site inheader filetype hasquery ispath
 - Backups plugin
+- wfuzz.ini for general and plugin options
 
 Changelog 2.1:
 ==============
