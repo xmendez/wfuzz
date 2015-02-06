@@ -224,7 +224,11 @@ class default:
 	print exec_banner
 	print "Target: %s\r" % summary.url
 	#print "Payload type: " + payloadtype + "\n"
-	print "Total requests: %d\r\n" % summary.total_req
+	#print "Total requests:aaaaaaa %d\r\n" % summary.total_req
+	if summary.total_req > 0:
+	    print "Total requests: %d\r\n" % summary.total_req
+	else:
+		print "Total requests: <<unknown>>\r\n"
 	print "==================================================================\r"
 	print "ID	Response   Lines      Word         Chars          Request    \r"
 	print "==================================================================\r\n"
@@ -262,7 +266,10 @@ class verbose(default):
 	print exec_banner
 	print "Target: %s\r" % summary.url
 	#print "Payload type: " + payloadtype + "\n"
-	print "Total requests: %d\r\n" % summary.total_req
+	if summary.total_req > 0:
+	    print "Total requests: %d\r\n" % summary.total_req
+	else:
+		print "Total requests: <<unknown>>\r\n"
 	print
 
 	print "==============================================================================================================================================\r"
