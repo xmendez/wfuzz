@@ -8,6 +8,7 @@ from framework.plugins.pluginobjects import PluginRequest
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
 from framework.utils.myqueue import FuzzListQueue
+from framework.core.facade import Facade
 
 class RoundRobin(FuzzListQueue):
     def __init__(self, queue_out):
@@ -73,7 +74,7 @@ class JobMan(FuzzQueue):
 		while not plugins_res_queue.empty():
 		    item = plugins_res_queue.get()
 		    if isinstance(item, PluginResult):
-			if item.source == "$$exception$$":
+			if Facade().sett.get("general","cancel_on_plugin_except") == "1" and item.source == "$$exception$$":
 			    self._throw(FuzzException(FuzzException.FATAL, item.issue))
 			res.plugins_res.append(item)
 		    elif isinstance(item, PluginRequest):

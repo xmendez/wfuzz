@@ -27,7 +27,7 @@ class Settings(SettingsBase):
 	return dict(
 	    plugins=[("file_bl", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
 	    connection=[("concurrent", '10'), ("conn_delay", '90')],
-	    general=[("default_printer", 'default')],
+	    general=[("default_printer", 'default'),("cancel_on_plugin_except","1")],
 	)
 
 class FuzzOptions(UserDict):
