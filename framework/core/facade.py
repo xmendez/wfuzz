@@ -51,7 +51,7 @@ class FuzzOptions(UserDict):
 		),
 	    payload_options = dict(
 		payloads = [],
-		iterator = 'product',
+		iterator = None,
 	    ),
 	    grl_options = dict(
 		    printer_tool = Facade().sett.get('general', 'default_printer'),
@@ -258,9 +258,10 @@ class FuzzSession:
 	    d = dictionary(p, l)
 	    selected_dic.append(d)
 
-	#iterat_tool = plugins.iterations.piterator_void
 	if options["payload_options"]["iterator"]:
 	    iterat_tool = Facade().get_iterator(options["payload_options"]["iterator"])
+	else:
+	    iterat_tool = plugins.iterations.piterator_void
 
 	payload = iterat_tool(*selected_dic)
 
