@@ -1,4 +1,5 @@
 from framework.fuzzer.filter import FuzzResFilter
+from framework.core.myexception import FuzzException
 
 import itertools
 import urllib2
@@ -31,12 +32,15 @@ def range_results(extra_params, itera):
     offset = None
     limit = None
 
-    if extra_params:
-	if extra_params.has_key("offset"):
-	    offset = int(extra_params["offset"])
+    try:
+	if extra_params:
+	    if extra_params.has_key("offset"):
+		offset = int(extra_params["offset"])
 
-	if extra_params.has_key("limit"):
-	    limit = int(extra_params["limit"])
+	    if extra_params.has_key("limit"):
+		limit = int(extra_params["limit"])
+    except ValueError:
+	raise FuzzException(FuzzException.FATAL, "Invalid parameters, limit and offset should be numeric values.")
 
     if offset is None and limit is None:
 	return itera
