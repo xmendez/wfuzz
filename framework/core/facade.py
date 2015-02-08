@@ -260,8 +260,10 @@ class FuzzSession:
 
 	if options["payload_options"]["iterator"]:
 	    iterat_tool = Facade().get_iterator(options["payload_options"]["iterator"])
-	else:
+	elif not options["payload_options"]["iterator"] and len(options["payload_options"]["payloads"]) == 1:
 	    iterat_tool = plugins.iterations.piterator_void
+	else:
+	    iterat_tool = Facade().get_iterator("product")
 
 	payload = iterat_tool(*selected_dic)
 
