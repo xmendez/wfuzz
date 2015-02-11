@@ -13,6 +13,7 @@ class MyPriorityQueue(PriorityQueue):
 
 	self.max_prio = 0
 	self.none_send = False
+	self.end_send = False
 
     def put_priority(self, prio, item):
 	if self.should_sent(item):
@@ -37,9 +38,13 @@ class MyPriorityQueue(PriorityQueue):
 	'''
 	Little hack to avoid sending more than one None as it breaks sync (due to roundrobin queue)
 	'''
-	if (item is None and not self.none_send) \
-	or (item is not None):
-	    self.none_send = True if item is None else False
+	if (item is None and not self.none_send):
+	    self.none_send = True
+	    return True
+	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED and not self.end_send:
+	    self.end_send = True
+	    return True
+	elif item is not None and not (isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED):
 	    return True
 
 	return False
@@ -109,6 +114,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
 		    self.task_done()
 		    break
 		elif cancelling:
+		    self.task_done()
+		    continue
+		elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED:
+		    self.send_last(item)
 		    self.task_done()
 		    continue
 		elif isinstance(item, Exception):

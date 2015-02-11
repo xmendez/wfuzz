@@ -76,7 +76,7 @@ class SeedQ(FuzzQueue):
 	except StopIteration:
 	    pass
 
-	self.genReq.stats.pending_seeds -= 1
+	self.send_last(FuzzException(FuzzException.SIG_ENDSEED, "end of seed"))
 
 
 class RoutingQ(FuzzQueue):
@@ -153,43 +153,39 @@ class Fuzzer:
 	# http://bugs.python.org/issue1360
 	prio, item = self.results_queue.get(True, 365 * 24 * 60 * 60)
 
-	# Return new result
+	self.results_queue.task_done()
+
 	if isinstance(item, FuzzResult):
 	    item.nres = self.genReq.stats.processed
 	    self.genReq.stats.processed += 1
 	    self.genReq.stats.pending_fuzz -= 1
 	    if not item.is_visible: self.genReq.stats.filtered += 1 
-
-	    self.results_queue.task_done()
-	    return item
-	# raise exceptions originated on other queues (not sigcancel which is to cancel the whole proces)
-	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIGCANCEL:
-	    self.results_queue.task_done()
+	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED:
+	    self.genReq.stats.pending_seeds -= 1
 	elif isinstance(item, Exception):
-	    self.results_queue.task_done()
 	    raise item
-	# We are done if a None arrives
-	elif item == None:
-	    self.results_queue.task_done()
-	    self.genReq.stats.mark_end()
-	    return None
+
+	# check if we are done. If so, send None to everyone so they can stop nicely
+	if item and self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
+	    self.seed_queue.put_last(None)
+
+	return item
 
     def next(self):
 	res = self.process()
+	if isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED):
+	    res = self.process()
 
 	# done! (None sent has gone through all queues).
 	if not res:
+	    self.genReq.stats.mark_end()
+	    if self.output_fn: self.output_fn.close()
 	    raise StopIteration
 
 	# Save results?
 	if res and self.output_fn: 
 	    pickle.dump(res, self.output_fn)
 	   
-	# check if we are done. If so, send None to everyone so the can stop nicely
-	if self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
-	    if self.output_fn: self.output_fn.close()
-	    self.seed_queue.put_last(None)
-
 	return res
 
     def stats(self):

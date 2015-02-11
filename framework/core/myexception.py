@@ -1,6 +1,6 @@
 
 class FuzzException(Exception):
-    FATAL, SIGCANCEL = range(2)
+    FATAL, SIGCANCEL, SIG_ENDSEED = range(3)
 
     def __init__(self, etype, msg):
 	self.etype = etype
