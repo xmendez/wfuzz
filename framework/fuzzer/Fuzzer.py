@@ -173,7 +173,7 @@ class Fuzzer:
 
     def next(self):
 	res = self.process()
-	if isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED):
+	if isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED:
 	    res = self.process()
 
 	# done! (None sent has gone through all queues).
