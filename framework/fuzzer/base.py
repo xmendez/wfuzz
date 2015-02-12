@@ -2,6 +2,8 @@ import abc
 
 # decorator for iterator plugins
 def wfuzz_iterator(gen_func):
+    method_args = ["count", "next", "__iter__"]
+
     class _reiterator:
 	name = gen_func.name
 	description = gen_func.description
@@ -23,7 +25,12 @@ def wfuzz_iterator(gen_func):
 	    else:
 		return self.restart
 
+    for method in method_args:
+	if (not (method in dir(gen_func))):
+	    raise Exception("Required method %s not implemented" % method)
+
     _reiterator.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
+
     return _reiterator
 
 class BaseFuzzRequest:

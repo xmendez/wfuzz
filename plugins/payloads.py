@@ -4,14 +4,12 @@ import __builtin__
 import cPickle as pickle
 import gzip
 
-from externals.moduleman.plugin import moduleman_plugin
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
 from framework.plugins.api.payloadtools import range_results, filter_results
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class file:
     name = "file"
     description = "Returns each word from a file."
@@ -46,7 +44,6 @@ class file:
 
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class range:
     name = "range"
     description = "Returns each number of the given range. ie. 0-10"
@@ -84,7 +81,6 @@ class range:
 	return self
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class hexrange:
     name = "hexrange"
     description = "Returns each hex number of the given hex range. ie. 00-ff"
@@ -122,7 +118,6 @@ class hexrange:
 	return payl
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class hexrand:
     name = "hexrand"
     description = "Returns random hex numbers."
@@ -157,7 +152,6 @@ class hexrand:
 
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class buffer_overflow:
     name = "buffer_overflow"
     description = "Returns a string using the following pattern A * given number."
@@ -183,7 +177,6 @@ class buffer_overflow:
 	    raise StopIteration
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class list:
     name = "list"
     description = "Returns each element of the given word list separated by -. ie word1-word2"
@@ -221,7 +214,6 @@ class list:
 	    return elem
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class stdin:
     name = "stdin"
     description = "Returns each item read from stdin."
@@ -247,7 +239,6 @@ class stdin:
 	return line
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class names:
     name = "names"
     description = "Returns possible usernames by mixing the given words, separated by -, using known typical constructions. ie. jon-smith"
@@ -324,7 +315,6 @@ class names:
 	    raise StopIteration
 		
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class permutation:
     name = "permutation"
     description = "Returns permutations of the given charset and length. ie. abc-2"
@@ -378,7 +368,6 @@ class permutation:
 		sys.exit()
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next", "__iter__")
 class bing:
     '''
     Some examples of bing hacking:
@@ -411,7 +400,6 @@ class bing:
 	return self._it.next()
 
 @wfuzz_iterator
-@moduleman_plugin("count", "next",  "__iter__")
 class wfuzz:
     name = "wfuzz"
     description = "Returns fuzz results' URL from a previous stored wfuzz session."
