@@ -49,12 +49,9 @@ class SeedQ(FuzzQueue):
 
     def process(self, prio, item):
 	if isinstance(item, requestGenerator):
-	    if self.genReq.stats.pending_seeds == 0:
-		self.genReq.stats.mark_start()
-		self.genReq.stats.pending_seeds += 1
+	    self.genReq.stats.pending_seeds += 1
+	    if self.genReq.stats.pending_seeds == 1:
 		self.do_baseline()
-	    else:
-		self.genReq.stats.pending_seeds += 1
 	elif isinstance(item, FuzzRequest):
 	    self.genReq.restart(item)
 	else:
@@ -143,7 +140,8 @@ class Fuzzer:
 		"framework.plugins.pluginobjects.PluginRequest": self.http_queue,
 		"framework.fuzzer.fuzzobjects.FuzzResult": self.filter_queue if filtering else self.results_queue})
 
-	## initial seed request
+	# initial seed request
+	self.genReq.stats.mark_start()
 	self.seed_queue.put_priority(1, self.genReq)
 
     def __iter__(self):
