@@ -44,7 +44,7 @@ class SeedQ(FuzzQueue):
 	    self.queue_out.put_first(bl)
 
 	    # wait for BBB to be completed before generating more items
-	    while(self.genReq.stats.processed == 0):
+	    while(self.genReq.stats.processed == 0 and not self.genReq.stats.cancelled):
 		time.sleep(0.0001)
 
     def process(self, prio, item):
