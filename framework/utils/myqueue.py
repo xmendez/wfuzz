@@ -51,12 +51,11 @@ class MyPriorityQueue(PriorityQueue):
 	
 
 class FuzzQueue(MyPriorityQueue, Thread):
-    def __init__(self, queue_out, limit = 0, wait_qout = True):
+    def __init__(self, queue_out, limit = 0):
 	Thread.__init__(self)
         MyPriorityQueue.__init__(self, limit)
 
 	self.queue_out = queue_out
-	self.wait_qout = wait_qout
 
 	self.setName(self.get_name())
 
@@ -104,9 +103,8 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
 	    try:
 		if item == None and not cancelling:
-		    if self.wait_qout:
-			self.send_last(None)
-			self.qout_join()
+		    self.send_last(None)
+		    self.qout_join()
 		    self.task_done()
 		    break
 		elif item == None and cancelling:
@@ -135,8 +133,8 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self._cleanup()
 
 class FuzzListQueue(FuzzQueue):
-    def __init__(self, queue_out, limit = 0, wait_qout = True):
-        FuzzQueue.__init__(self, queue_out, limit, wait_qout)
+    def __init__(self, queue_out, limit = 0):
+        FuzzQueue.__init__(self, queue_out, limit)
 
     def send_first(self, item):
 	for q in self.queue_out:
