@@ -349,16 +349,11 @@ class FuzzRequest(BaseFuzzRequest, Request):
         if options['head']:
             fr.method="HEAD"
 
-        if options['cookie']:
-            fr.addHeader("Cookie", options['cookie'])
+	if options['cookie']:
+            fr.addHeader("Cookie", "; ".join(options['cookie']))
 
-        if options['extraheaders']:
-            hh = options['extraheaders'].split(",")
-            for x in hh:
-                splitted = x.partition(":")
-		if splitted[1] != ":":
-		    raise FuzzException(FuzzException.FATAL, "Wrong header specified, it should be in the format \"name: value\".")
-                fr.addHeader(splitted[0], splitted[2])
+	for h,v in options['extraheaders']:
+	    fr.addHeader(h, v)
 
         if options['allvars']:
 	    fr.wf_allvars = options['allvars']
