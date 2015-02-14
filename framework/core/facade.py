@@ -76,8 +76,8 @@ class FuzzOptions(UserDict):
 		follow = False,
 		head = False,
 		postdata = None,
-		extraheaders = None,
-		cookie = None,
+		extraheaders = [],
+		cookie = [],
 		allvars = None,
 	    ),
 	    script_options = dict(

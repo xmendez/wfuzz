@@ -241,8 +241,8 @@ class CLParser:
 	    follow = False,
 	    head = False,
 	    postdata = None,
-	    extraheaders = None,
-	    cookie = None,
+	    extraheaders = [(header, value)],
+	    cookie = [],
 	    allvars = None,
 	)
 	'''
@@ -271,11 +271,14 @@ class CLParser:
 	if "-d" in optsd:
 	    options['postdata'] = optsd["-d"][0]
 
-	if "-b" in optsd:
-	    options['cookie'] = optsd["-b"][0]
+	for bb in optsd["-b"]:
+	    options['cookie'].append(bb)
 
-	if "-H" in optsd:
-	    options['extraheaders'] = str(optsd["-H"][0])
+	for x in optsd["-H"]:
+	    splitted = x.partition(":")
+	    if splitted[1] != ":":
+		raise FuzzException(FuzzException.FATAL, "Wrong header specified, it should be in the format \"name: value\".")
+	    options['extraheaders'].append((splitted[0], splitted[2].strip()))
 
 	if "-V" in optsd:
 	    varset = str(optsd["-V"][0])
