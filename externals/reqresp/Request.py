@@ -306,9 +306,9 @@ class Request:
 	    proxy = req.getProxy()
 	    if proxy != None:
 		    c.setopt(pycurl.PROXY, proxy)
-		    if req.proxytype=="SOCK5":
+		    if req.proxytype=="SOCKS5":
 			    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS5)
-		    elif req.proxytype=="SOCK4":
+		    elif req.proxytype=="SOCKS4":
 			    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS4)
 		    req.delHeader("Proxy-Connection")
 
