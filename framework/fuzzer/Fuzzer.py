@@ -14,6 +14,7 @@ from framework.core.myexception import FuzzException
 from framework.utils.myqueue import MyPriorityQueue
 from framework.utils.myqueue import FuzzQueue
 from framework.fuzzer.myhttp import HttpQueue
+from framework.fuzzer.myhttp import DryRunQ
 from framework.plugins.jobs import JobMan
 from framework.plugins.jobs import ProcessorQ
 from framework.plugins.jobs import RoundRobin
@@ -21,19 +22,6 @@ from framework.fuzzer.filter import FilterQ
 
 from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
-
-class DryRunQ(FuzzQueue):
-    def __init__(self, queue_out):
-	FuzzQueue.__init__(self, queue_out)
-
-    def get_name(self):
-	return ' DryRunQ'
-
-    def _cleanup(self):
-	pass
-
-    def process(self, prio, item):
-	self.send(FuzzResult.from_fuzzReq(item))
 
 class SeedQ(FuzzQueue):
     def __init__(self, genReq, delay, queue_out):

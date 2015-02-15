@@ -12,6 +12,20 @@ from framework.fuzzer.fuzzobjects import FuzzResult
 
 import pycurl
 
+class DryRunQ(FuzzQueue):
+    def __init__(self, queue_out):
+	FuzzQueue.__init__(self, queue_out)
+	self.pause = Event()
+
+    def get_name(self):
+	return ' DryRunQ'
+
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	self.send(FuzzResult.from_fuzzReq(item))
+
 class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
 
