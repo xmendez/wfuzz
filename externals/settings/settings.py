@@ -33,6 +33,9 @@ class SettingsBase:
 	'''
 	raise NotImplemented
 
+    def has_option(self, section, setting):
+	return self.cparser.has_option(section, setting)
+
     def set(self, section, setting, value):
         if type(value) == type(u''):
             value = value.encode('utf-8')

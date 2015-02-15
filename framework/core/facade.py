@@ -25,7 +25,7 @@ class Settings(SettingsBase):
 
     def set_defaults(self):
 	return dict(
-	    plugins=[("file_bl", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
+	    plugins=[("discovery.blacklist", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
 	    connection=[("concurrent", '10'), ("conn_delay", '90')],
 	    general=[("default_printer", 'default'),("cancel_on_plugin_except","1")],
 	)
@@ -273,8 +273,17 @@ class FuzzSession:
 
 	# scripts
 	fuzz_options.set("script_string", options["script_options"]["script_string"])
-	for k, v in options["script_options"]["script_args"]:
-	    Facade().proxy("parsers").kbase.add(k, v)
+	script_args = options["script_options"]['script_args']
+	if script_args:
+	    add = False
+	    if script_args[0] == "+":
+		script_args = script_args[1:]
+		add = True
+		
+	    for k, v in map(lambda x: x.split("=", 1), script_args.split(",")):
+		if add and Facade().sett.has_option("plugins", k):
+		    Facade().proxy("parsers").kbase.add(k, Facade().sett.get("plugins", "discovery.blacklist"))
+		Facade().proxy("parsers").kbase.add(k, v)
 
 	# grl options
 	if options["grl_options"]["output_filename"]:

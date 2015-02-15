@@ -382,4 +382,4 @@ class CLParser:
 	    options["script_string"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]
 
 	if "--script-args" in optsd:
-	    options['script_args'] = map(lambda x: x.split("=", 1), optsd["--script-args"][0].split(","))
+	    options['script_args'] = optsd["--script-args"][0]

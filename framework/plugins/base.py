@@ -64,10 +64,7 @@ class BasePlugin():
 
 class DiscoveryPlugin(BasePlugin):
     def __init__(self):
-	self.black_list = Facade().sett.get('plugins', 'file_bl').split(",")
-
-	if self.has_kbase("discovery.bl"):
-	    self.black_list = self.get_kbase("discovery.bl")[0].split("-")
+	self.black_list = "-".join(self.get_kbase("discovery.blacklist")).split("-")
 
     def blacklisted_extension(self, url):
 	return parse_url(url).file_extension in self.black_list
