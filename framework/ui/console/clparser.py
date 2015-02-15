@@ -33,7 +33,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -341,6 +341,7 @@ class CLParser:
 	    printer_tool = "default",
 	    colour = False,
 	    interactive = False,
+	    dryrun = False,
 	    recipe = "",
 	)
 	'''
@@ -363,6 +364,9 @@ class CLParser:
 
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]
+
+	if "--dry-run" in optsd:
+	    options["dryrun"] = True
 
 	if "--interact" in optsd:
 	    options["interactive"] = True

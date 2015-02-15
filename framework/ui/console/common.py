@@ -34,6 +34,7 @@ Options:
 -v			    : Verbose information. Alias for -o verbose
 -o printer		    : Format output using the specified printer (default printer if omitted).
 --interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
+--dry-run		    : Print the results of applying the requests without actually making any HTTP request.
 
 -p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
 			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
@@ -64,7 +65,7 @@ Options:
 
 -b cookie		    : Specify a cookie for the requests
 -d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
--H headers  		    : Use headers (ex:"Host:www.mysite.com,Cookie:id=1312321&user=FUZZ")
+-H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ")
 --basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
 
 --hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)

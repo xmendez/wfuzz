@@ -22,7 +22,18 @@ from framework.fuzzer.filter import FilterQ
 from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
 
+class DryRunQ(FuzzQueue):
+    def __init__(self, queue_out):
+	FuzzQueue.__init__(self, queue_out)
 
+    def get_name(self):
+	return ' DryRunQ'
+
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	self.send(FuzzResult.from_fuzzReq(item))
 
 class SeedQ(FuzzQueue):
     def __init__(self, genReq, delay, queue_out):
@@ -130,7 +141,10 @@ class Fuzzer:
 	self.plugins_queue = None
 	if lplugins:
 	    self.plugins_queue = RoundRobin([JobMan(lplugins, cache, self.process_queue) for i in range(3)])
-	self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.process_queue)
+	if options.get("dryrun"):
+	    self.http_queue = DryRunQ(self.plugins_queue if lplugins else self.process_queue)
+	else:
+	    self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.process_queue)
 	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.http_queue)
 
 	# recursion routes

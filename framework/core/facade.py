@@ -57,6 +57,7 @@ class FuzzOptions(UserDict):
 		    printer_tool = Facade().sett.get('general', 'default_printer'),
 		    colour = False,
 		    interactive = False,
+		    dryrun = False,
 		    recipe = "",
 		    output_filename = "",
 	    ),
@@ -169,6 +170,7 @@ class FuzzSession:
 	    "proxy_list": None,
 	    "scanmode": False,
 	    "interactive": False,
+	    "dryrun": False,
 	    "max_concurrent": int(Facade().sett.get('connection', 'concurrent')),
 	    "max_req_delay": None,
 	    "max_conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
@@ -293,6 +295,7 @@ class FuzzSession:
 
 	fuzz_options.set("printer_tool", options["grl_options"]["printer_tool"])
 	fuzz_options.set("interactive", options["grl_options"]["interactive"])
+	fuzz_options.set("dryrun", options["grl_options"]["dryrun"])
 
 	return fuzz_options
 
