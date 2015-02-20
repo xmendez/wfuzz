@@ -88,6 +88,9 @@ class FuzzOptions(UserDict):
 	)
 
     def validate(self):
+	if self.data['script_options']['script_string'] and self.data['grl_options']['dryrun']:
+	    return "Bad usage: Plugins cannot work without making any HTTP request."
+
 	if not self.data['seed_options']['url']:
 	    return "Bad usage: You must specify an URL."
 
