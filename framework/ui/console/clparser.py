@@ -10,6 +10,7 @@ from framework.core.myexception import FuzzException
 from framework.ui.console.common import help_banner
 from framework.ui.console.common import usage
 from framework.ui.console.common import brief_usage
+from framework.ui.console.common import verbose_usage
 from framework.ui.console.common import version
 from framework.ui.console.output import table_print
 
@@ -20,6 +21,10 @@ class CLParser:
     def show_brief_usage(self):
 	print help_banner
 	print brief_usage
+
+    def show_verbose_usage(self):
+	print help_banner
+	print verbose_usage
 
     def show_usage(self):
 	print help_banner
@@ -33,7 +38,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['hh','zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -101,6 +106,10 @@ class CLParser:
 
 	if "--help" in optsd or "-h" in optsd:
 	    self.show_usage()
+	    sys.exit(0)
+
+	if "--hh" in optsd:
+	    self.show_verbose_usage()
 	    sys.exit(0)
 
 	# Extensions help
