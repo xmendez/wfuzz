@@ -19,7 +19,7 @@ except ImportError:
 class FuzzResFilter:
     def __init__(self, ffilter):
 	if PYPARSING:
-	    element = oneOf("c l w h")
+	    element = oneOf("c l w h index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
 	    digits = "XB0123456789"
@@ -123,8 +123,10 @@ class FuzzResFilter:
 		value = self.baseline.words
 	    elif element == 'h':
 		value = self.baseline.chars
+	    elif element == 'index':
+		value = self.baseline.nres
 
-	test = dict(w=self.res.words, c=self.res.code, l=self.res.lines, h=self.res.chars)
+	test = dict(w=self.res.words, c=self.res.code, l=self.res.lines, h=self.res.chars, index=self.res.nres)
 	value = int(value)
 
 	if operator == "=":
