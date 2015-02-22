@@ -8,6 +8,7 @@ from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
 from framework.plugins.api.payloadtools import range_results, filter_results
+from framework.plugins.api.payloadtools import FuzzResPayload
 
 @wfuzz_iterator
 class file:
@@ -400,13 +401,14 @@ class bing:
 	return self._it.next()
 
 @wfuzz_iterator
-class wfuzz:
+class wfuzz(FuzzResPayload):
     name = "wfuzz"
     description = "Returns fuzz results' URL from a previous stored wfuzz session."
     category = ["default"]
     priority = 99
 
     def __init__(self, default_param, extra_params):
+	FuzzResPayload.__init__(self, default_param, extra_params)
 	self.__max = -1
 	self._it = range_results(extra_params, filter_results(extra_params, self._gen_wfuzz(default_param)))
 
@@ -415,9 +417,6 @@ class wfuzz:
 
     def count(self):
 	return self.__max
-
-    def next(self):
-	return self._it.next().url
 
     def _gen_wfuzz(self, output_fn):
 	try:

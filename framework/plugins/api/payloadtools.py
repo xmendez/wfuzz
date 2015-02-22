@@ -5,6 +5,31 @@ import itertools
 import urllib2
 import json
 
+class FuzzResPayload:
+    def __init__(self, default_param, extra_params):
+	self._it = None
+
+	if extra_params:
+	    self._attr = "url" if not extra_params.has_key('attr') else extra_params['attr']
+	    self._params = extra_params['attr_params'].split("-") if extra_params.has_key('attr_params') else []
+	else:
+	    self._attr = "url"
+	    self._params = []
+
+    def next(self):
+	try:
+	    attr = reduce(lambda x, y: getattr(x, y), self._attr.split("."), self._it.next())
+	except AttributeError:
+	    raise FuzzException(FuzzException.FATAL, "Unknown fuzz result attribute.")
+
+	try:
+	    if callable(attr):
+		attr = attr(*self._params)
+ 
+	except TypeError:
+	    raise FuzzException(FuzzException.FATAL, "Incorrect paramaters specified for Fuzz result attribute.")
+
+	return str(attr)
 
 def filter_results(extra_params, itera):
     ffilter = None

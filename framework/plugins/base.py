@@ -64,6 +64,7 @@ class BasePlugin():
 
 class DiscoveryPlugin(BasePlugin):
     def __init__(self):
+	BasePlugin.__init__(self)
 	self.black_list = self.get_kbase("discovery.blacklist")[0].split("-")
 
     def blacklisted_extension(self, url):
