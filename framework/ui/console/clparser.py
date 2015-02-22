@@ -147,9 +147,9 @@ class CLParser:
 
     def _check_options(self, optsd):
 	# Check for repeated flags
-	l = ["--hc", "--hw", "--hl", "--hh", "--hs", "--sc", "--sw", "--sl", "--sh", "--ss", "--script", "--script-args"]
-	if [i for i in l if i in optsd and len(optsd[i]) > 1]:
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: Only one filter could be specified at the same time.")
+	l = [i for i in optsd if i not in ["-z", "--zE", "-w", "-b", "-H"] and len(optsd[i]) > 1]
+	if l:
+	    raise FuzzException(FuzzException.FATAL, "Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
 
 	#-A and script not allowed at the same time
 	if "--script" in optsd.keys() and "-A" in optsd.keys():
