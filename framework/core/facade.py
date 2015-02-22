@@ -89,6 +89,9 @@ class FuzzOptions(UserDict):
 	)
 
     def validate(self):
+	if self.data['conn_options']['rlevel'] > 0 and self.data['grl_options']['dryrun']:
+	    return "Bad usage: Recursion cannot work without making any HTTP request."
+
 	if self.data['script_options']['script_string'] and self.data['grl_options']['dryrun']:
 	    return "Bad usage: Plugins cannot work without making any HTTP request."
 
