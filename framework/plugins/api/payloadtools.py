@@ -9,16 +9,31 @@ class FuzzResPayload:
     def __init__(self, default_param, extra_params):
 	self._it = None
 
-	if extra_params:
-	    self._attr = "url" if not extra_params.has_key('attr') else extra_params['attr']
-	    self._params = extra_params['attr_params'].split("-") if extra_params.has_key('attr_params') else []
-	else:
-	    self._attr = "url"
-	    self._params = []
+	self._attr = "url"
+	self._params = []
+
+	if extra_params: 
+	    if extra_params.has_key('attr'):
+		self._attr = extra_params['attr']
+
+		first_index = self._attr.find("(")
+		sec_index = self._attr.find(")")
+
+		if first_index > 0:
+		    if sec_index != len(self._attr) - 1:
+			raise FuzzException(FuzzException.FATAL, "Wrong expression.")
+
+		    if sec_index < 0 or first_index > sec_index:
+			raise FuzzException(FuzzException.FATAL, "Wrong expression, Unbalanced parenthesis.")
+
+		    self._params = self._attr[first_index + 1:sec_index].split("-")
+		    self._attr = self._attr[:first_index]
 
     def next(self):
+	next_item = self._it.next()
+
 	try:
-	    attr = reduce(lambda x, y: getattr(x, y), self._attr.split("."), self._it.next())
+	    attr = reduce(lambda x, y: getattr(x, y), self._attr.split("."), next_item)
 	except AttributeError:
 	    raise FuzzException(FuzzException.FATAL, "Unknown fuzz result attribute.")
 
