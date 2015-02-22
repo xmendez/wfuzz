@@ -45,6 +45,9 @@ class SettingsBase:
         value = self.cparser.get(section, setting)
         return value.decode('utf-8')
 
+    def get_section(self, section):
+        return  self.cparser.items(section)
+
     def get_options(self, section):
     	return self.cparser.options(section)
 

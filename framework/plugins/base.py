@@ -64,7 +64,7 @@ class BasePlugin():
 
 class DiscoveryPlugin(BasePlugin):
     def __init__(self):
-	self.black_list = "-".join(self.get_kbase("discovery.blacklist")).split("-")
+	self.black_list = self.get_kbase("discovery.blacklist")[0].split("-")
 
     def blacklisted_extension(self, url):
 	return parse_url(url).file_extension in self.black_list

@@ -25,7 +25,8 @@ class Settings(SettingsBase):
 
     def set_defaults(self):
 	return dict(
-	    plugins=[("discovery.blacklist", '.jpg,.gif,.png,.jpeg,.mov,.avi,.flv,.ico'), ("bing_apikey", '')],
+	    plugins=[("bing_apikey", '')],
+	    kbase=[("discovery.blacklist", '.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
 	    connection=[("concurrent", '10'), ("conn_delay", '90')],
 	    general=[("default_printer", 'default'),("cancel_on_plugin_except","1")],
 	)
@@ -277,18 +278,30 @@ class FuzzSession:
 	fuzz_options.set("genreq", requestGenerator(seed, payload))
 
 	# scripts
-	fuzz_options.set("script_string", options["script_options"]["script_string"])
-	script_args = options["script_options"]['script_args']
-	if script_args:
-	    add = False
-	    if script_args[0] == "+":
-		script_args = script_args[1:]
-		add = True
-		
-	    for k, v in map(lambda x: x.split("=", 1), script_args.split(",")):
-		if add and Facade().sett.has_option("plugins", k):
-		    Facade().proxy("parsers").kbase.add(k, Facade().sett.get("plugins", "discovery.blacklist"))
-		Facade().proxy("parsers").kbase.add(k, v)
+	script_string = options["script_options"]["script_string"]
+	fuzz_options.set("script_string", script_string)
+
+	try:
+	    script_args = {}
+	    if options["script_options"]['script_args']:
+		script_args = dict(map(lambda x: x.split("=", 1), options["script_options"]['script_args'].split(",")))
+	except ValueError:
+	    raise FuzzException(FuzzException.FATAL, "Incorrect arguments format supplied.")
+
+	if script_string:
+	    for k, v in Facade().sett.get_section("kbase"):
+		if script_args.has_key(k):
+		    value = script_args[k]
+
+		    if value[0] == "+":
+			value = value[1:]
+
+			Facade().proxy("parsers").kbase.add(k, v + "-" + value)
+		    else:
+			Facade().proxy("parsers").kbase.add(k, value)
+
+		else:
+		    Facade().proxy("parsers").kbase.add(k, v)
 
 	# grl options
 	if options["grl_options"]["output_filename"]:
