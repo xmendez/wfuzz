@@ -395,3 +395,27 @@ class bing:
 	    elem = self.l[self.current]['Url']
 	    self.current += 1
 	    return str(elem.strip())
+
+try:
+	import rexgen
+	@wfuzz_iterator
+	@moduleman_plugin("next", "count", "__iter__")
+	class regex:
+		name = "regex"
+		description = "Returns all values mathing a given regular expression"
+		category = ["default"]
+		priority = 99
+
+		def __init__(self, regex):
+			self.iterator = rexgen.Iterator(regex)
+		
+		def __iter__(self):
+			return self
+		
+		def count(self):
+			return 1
+		
+		def next(self):
+			return self.iterator.next()
+except ImportError:
+	pass
