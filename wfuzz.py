@@ -7,7 +7,7 @@ import logging
 
 from framework.fuzzer.Fuzzer import Fuzzer
 from framework.core.facade import Facade
-from framework.core.facade import FuzzSession
+from framework.core.options import FuzzSession
 from framework.core.myexception import FuzzException
 
 from framework.ui.console.keystroke import KeyPress
