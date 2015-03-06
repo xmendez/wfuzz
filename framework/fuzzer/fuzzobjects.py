@@ -164,21 +164,24 @@ class FuzzRequest(BaseFuzzRequest, Request):
 
     @staticmethod
     def from_seed(seed, payload):
-	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	fuzz_words = len(marker_regex.findall(seed.getAll()))
-	if seed.wf_fuzz_methods:
-	    fuzz_words += 1
-
-	if len(payload) != fuzz_words:
-	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
-
 	rawReq = seed.getAll()
 	schema = seed.schema
 	method, userpass = seed.getAuth()
 	http_method = None
 
-	newreq = seed.from_copy()
+	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
+	fuzz_words = len(marker_regex.findall(rawReq))
 
+	if seed.wf_fuzz_methods:
+	    fuzz_words += 1
+
+	if method:
+	    fuzz_words += len(marker_regex.findall(userpass))
+
+	if len(payload) != fuzz_words:
+	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
+
+	newreq = seed.from_copy()
 	rawUrl = newreq.completeUrl
 
 	for payload_pos, payload_content in enumerate(payload, start=1):
