@@ -3,26 +3,23 @@ from externals.moduleman.plugin import moduleman_plugin
 import itertools
 
 class piterator_void:
-    text="void"
-
     def count(self):
 	return self.__count
 
     def __init__(self, *i):
 	self._dic = i
-	self.__count = max(map(lambda x:x.count(), i))
-	self.it = self._dic[0]
+	self.restart()
 
     def next(self):
 	return (self.it.next(),)
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
+	self.__count = self._dic[0].count()
+
+	self._dic[0].restart()
 	self.it = self._dic[0]
 
     def __iter__(self):
-	self.restart()
 	return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
@@ -34,22 +31,19 @@ class zip:
 
     def __init__(self, *i):
 	self._dic = i
-	self.it = itertools.izip(*self._dic)
-	self.__count = max(map(lambda x:x.count(), i))
+	self.restart()
 
     def count(self):
 	return self.__count
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
-	self.it = itertools.izip.__init__(self, *self._dic)
+	self.__count = max(map(lambda x:x.count(), self._dic))
+	self.it = itertools.izip(*self._dic)
 
     def next(self):
 	return self.it.next()
 
     def __iter__(self):
-	self.restart()
 	return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
@@ -61,13 +55,11 @@ class product:
 
     def __init__(self, *i):
 	self._dic = i
-	self.it = itertools.product(*self._dic)
-	self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
+	self.restart()
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
 	self.it = itertools.product(*self._dic)
+	self.__count = reduce(lambda x,y:x*y.count(), self._dic[1:], self._dic[0].count())
 
     def count(self):
 	return self.__count
@@ -76,7 +68,6 @@ class product:
 	return self.it.next()
 
     def __iter__(self):
-	self.restart()
 	return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
@@ -90,18 +81,15 @@ class chain:
 	return self.__count
 
     def __init__(self, *i):
-	self.__count = sum(map(lambda x:x.count(), i))
 	self._dic = i
-	self.it = itertools.chain(*i)
+	self.restart()
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
+	self.__count = sum(map(lambda x:x.count(), self._dic))
 	self.it = itertools.chain(*self._dic)
 
     def next(self):
 	return (self.it.next(),)
 
     def __iter__(self):
-	self.restart()
 	return self
