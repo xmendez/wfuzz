@@ -5,7 +5,7 @@ from externals.moduleman.loader import FileLoader
 from externals.moduleman.loader import DirLoader
 from externals.settings.settings import SettingsBase
 
-version = "2.1"
+version = "2.1.3"
 
 class Settings(SettingsBase):
     def get_config_file(self):
