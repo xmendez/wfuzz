@@ -7,29 +7,18 @@ from framework.plugins.pluginobjects import PluginResult
 from framework.plugins.pluginobjects import PluginRequest
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
-from framework.utils.myqueue import FuzzListQueue
+from framework.utils.myqueue import FuzzRRQueue
 from framework.core.facade import Facade
 
-class RoundRobin(FuzzListQueue):
+class RoundRobin(FuzzRRQueue):
     def __init__(self, queue_out):
-        FuzzListQueue.__init__(self, queue_out)
-	self.next_route = self._get_next_route()
+        FuzzRRQueue.__init__(self, queue_out)
 
     def get_name(self):
 	return 'RoundRobin'
 
     def _cleanup(self):
 	pass
-
-    def send(self, item):
-	self.next_route.next().put(item)
-
-    def _get_next_route(self):
-	i = 0
-	while 1:
-	    yield self.queue_out[i]
-	    i += 1
-	    i = i % len(self.queue_out)
 
     def process(self, prio, item):
 	self.send(item)

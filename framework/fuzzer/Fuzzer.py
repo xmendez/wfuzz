@@ -172,8 +172,9 @@ class Fuzzer:
 	return item
 
     def next(self):
+	# ignore end seed marks
 	res = self.process()
-	if isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED:
+	while isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED:
 	    res = self.process()
 
 	# done! (None sent has gone through all queues).

@@ -11,53 +11,30 @@ class MyPriorityQueue(PriorityQueue):
         PriorityQueue.__init__(self, limit)
 
 	self.max_prio = 0
-	self.none_send = False
-	self.end_send = False
 
     def put_priority(self, prio, item):
-	if self.should_sent(item):
-	    self.max_prio = max(prio, self.max_prio)
-	    PriorityQueue.put(self, (prio, item))
+	self.max_prio = max(prio, self.max_prio)
+	PriorityQueue.put(self, (prio, item))
 
     def put(self, item):
-	if self.should_sent(item):
-	    self.max_prio = max(item.rlevel, self.max_prio)
-	    PriorityQueue.put(self, (item.rlevel, item))
+	self.max_prio = max(item.rlevel, self.max_prio)
+	PriorityQueue.put(self, (item.rlevel, item))
 
     def put_first(self, item):
-	if self.should_sent(item):
-	    PriorityQueue.put(self, (0, item))
+	PriorityQueue.put(self, (0, item))
 
     def put_last(self, item):
-	if self.should_sent(item):
-	    self.max_prio += 1
-	    PriorityQueue.put(self, (self.max_prio, item))
+	self.max_prio += 1
+	PriorityQueue.put(self, (self.max_prio, item))
 	
-    def should_sent(self, item):
-	'''
-	Little hack to avoid sending more than one None as it breaks sync (due to roundrobin queue)
-	'''
-	if (item is None and not self.none_send):
-	    self.none_send = True
-	    return True
-	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED and not self.end_send:
-	    self.end_send = True
-	    return True
-	elif item is not None and not (isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED):
-	    return True
-
-	return False
-	
-
 class FuzzQueue(MyPriorityQueue, Thread):
     def __init__(self, queue_out, limit = 0):
-	Thread.__init__(self)
         MyPriorityQueue.__init__(self, limit)
-
 	self.queue_out = queue_out
+	self.propagate = True
 
+	Thread.__init__(self)
 	self.setName(self.get_name())
-
 	self.start()
 
     def process(self, prio, item):
@@ -70,7 +47,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self.queue_out.put_first(item)
 
     def send_last(self, item):
-	self.queue_out.put_last(item)
+	if not self.propagate and (item is None or (isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED)):
+	    return
+	else:
+	    self.queue_out.put_last(item)
 
     def qout_join(self):
 	self.queue_out.join()
@@ -135,6 +115,11 @@ class FuzzListQueue(FuzzQueue):
     def __init__(self, queue_out, limit = 0):
         FuzzQueue.__init__(self, queue_out, limit)
 
+	# not to convert a None/Exception to various elements, thus only propagate in one queue
+	for q in queue_out:
+	    q.propagate = False
+	queue_out[0].propagate = True
+
     def send_first(self, item):
 	for q in self.queue_out:
 	    q.put_first(item)
@@ -150,3 +135,18 @@ class FuzzListQueue(FuzzQueue):
     def qout_join(self):
 	for q in self.queue_out:
 	    q.join()
+
+class FuzzRRQueue(FuzzListQueue):
+    def __init__(self, queue_out, limit = 0):
+        FuzzListQueue.__init__(self, queue_out, limit)
+	self._next_queue = self._get_next_route()
+
+    def send(self, item):
+	self._next_queue.next().put(item)
+
+    def _get_next_route(self):
+	i = 0
+	while 1:
+	    yield self.queue_out[i]
+	    i += 1
+	    i = i % len(self.queue_out)
