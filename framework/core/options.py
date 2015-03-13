@@ -1,12 +1,9 @@
 from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
 
-from framework.fuzzer.dictio import dictionary
 from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.fuzzer.dictio import requestGenerator
 from framework.utils.minify_json import json_minify
-import plugins.encoders
-import plugins.iterations
 
 from UserDict import UserDict
 from collections import defaultdict
@@ -230,37 +227,9 @@ class FuzzSession:
 	fuzz_options.set("sleeper", options["conn_options"]["sleeper"])
 	fuzz_options.set("max_concurrent", options["conn_options"]["max_concurrent"])
 
-	# payload
-	selected_dic = []
-
-	for name, params, extra, encoders in options["payload_options"]["payloads"]:
-	    p = Facade().get_payload(name)(params, extra)
-
-	    if encoders:
-		l = []
-		for i in encoders:
-		    if i.find('@') > 0:
-			l.append(plugins.encoders.pencoder_multiple([Facade().get_encoder(ii) for ii in i.split("@")]).encode)
-		    else:
-			l += map(lambda x: x().encode, Facade().proxy("encoders").get_plugins(i))
-	    else:
-		l = None
-
-	    d = dictionary(p, l)
-	    selected_dic.append(d)
-
-	if options["payload_options"]["iterator"]:
-	    iterat_tool = Facade().get_iterator(options["payload_options"]["iterator"])
-	elif not options["payload_options"]["iterator"] and len(options["payload_options"]["payloads"]) == 1:
-	    iterat_tool = plugins.iterations.piterator_void
-	else:
-	    iterat_tool = Facade().get_iterator("product")
-
-	payload = iterat_tool(*selected_dic)
-
 	# seed
 	seed = FuzzRequest.from_parse_options(options["seed_options"])
-	fuzz_options.set("genreq", requestGenerator(seed, payload))
+	fuzz_options.set("genreq", requestGenerator(seed, options["payload_options"]))
 
 	# scripts
 	script_string = options["script_options"]["script_string"]

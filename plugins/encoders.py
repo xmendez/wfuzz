@@ -8,22 +8,6 @@ import random
 import hashlib
 import cgi
 
-class pencoder_multiple:
-    text="internal multiple encoder"
-
-    def __init__(self, l):
-	self.l = l
-
-    def encode(self, string):
-	for i in reversed(self.l):
-	    string = i.encode(string)
-	return string
-
-    def decode(self, string):
-	for i in reversed(self.l):
-	    string = i.decode(string)
-	return string
-
 @moduleman_plugin("encode")
 class none:
     name = "none"

@@ -1,28 +1,9 @@
 from externals.moduleman.plugin import moduleman_plugin
+from framework.fuzzer.base import wfuzz_iterator
 
 import itertools
 
-class piterator_void:
-    def count(self):
-	return self.__count
-
-    def __init__(self, *i):
-	self._dic = i
-	self.restart()
-
-    def next(self):
-	return (self.it.next(),)
-
-    def restart(self):
-	self.__count = self._dic[0].count()
-
-	self._dic[0].restart()
-	self.it = self._dic[0]
-
-    def __iter__(self):
-	return self
-
-@moduleman_plugin("restart", "count", "next", "__iter__")
+@wfuzz_iterator
 class zip:
     name = "zip"
     description = "Returns an iterator that aggregates elements from each of the iterables."
@@ -30,15 +11,11 @@ class zip:
     priority = 99
 
     def __init__(self, *i):
-	self._dic = i
-	self.restart()
+	self.__count = max(map(lambda x:x.count(), i))
+	self.it = itertools.izip(*i)
 
     def count(self):
 	return self.__count
-
-    def restart(self):
-	self.__count = max(map(lambda x:x.count(), self._dic))
-	self.it = itertools.izip(*self._dic)
 
     def next(self):
 	return self.it.next()
@@ -46,7 +23,7 @@ class zip:
     def __iter__(self):
 	return self
 
-@moduleman_plugin("restart", "count", "next", "__iter__")
+@wfuzz_iterator
 class product:
     name = "product"
     description = "Returns an iterator cartesian product of input iterables."
@@ -54,12 +31,8 @@ class product:
     priority = 99
 
     def __init__(self, *i):
-	self._dic = i
-	self.restart()
-
-    def restart(self):
-	self.it = itertools.product(*self._dic)
-	self.__count = reduce(lambda x,y:x*y.count(), self._dic[1:], self._dic[0].count())
+	self.it = itertools.product(*i)
+	self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
 
     def count(self):
 	return self.__count
@@ -70,7 +43,7 @@ class product:
     def __iter__(self):
 	return self
 
-@moduleman_plugin("restart", "count", "next", "__iter__")
+@wfuzz_iterator
 class chain:
     name = "chain"
     description = "Returns an iterator returns elements from the first iterable until it is exhausted, then proceeds to the next iterable, until all of the iterables are exhausted."
@@ -81,12 +54,8 @@ class chain:
 	return self.__count
 
     def __init__(self, *i):
-	self._dic = i
-	self.restart()
-
-    def restart(self):
-	self.__count = sum(map(lambda x:x.count(), self._dic))
-	self.it = itertools.chain(*self._dic)
+	self.__count = sum(map(lambda x:x.count(), i))
+	self.it = itertools.chain(*i)
 
     def next(self):
 	return (self.it.next(),)

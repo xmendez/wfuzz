@@ -1,37 +1,16 @@
 import abc
 
 # decorator for iterator plugins
-def wfuzz_iterator(gen_func):
+def wfuzz_iterator(cls):
     method_args = ["count", "next", "__iter__"]
 
-    class _reiterator:
-	name = gen_func.name
-	description = gen_func.description
-	category = gen_func.category
-	priority = gen_func.priority
-	
-        def __init__(self, *args, **kwargs):
-            self.__args = args
-            self.__kwargs = kwargs
-
-	    self.__gen = gen_func(*self.__args, **self.__kwargs)
-
-	def restart(self):
-	    self.__gen = gen_func(*self.__args, **self.__kwargs)
-
-	def __getattr__(self, method):
-	    if method != "restart":
-		return getattr(self.__gen, method)
-	    else:
-		return self.restart
-
     for method in method_args:
-	if (not (method in dir(gen_func))):
+	if (not (method in dir(cls))):
 	    raise Exception("Required method %s not implemented" % method)
 
-    _reiterator.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
+    cls.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
 
-    return _reiterator
+    return cls
 
 class BaseFuzzRequest:
     """ Abstract class defining an interface for a Fuzz request.

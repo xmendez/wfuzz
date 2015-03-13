@@ -1,38 +1,41 @@
 from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.fuzzer.fuzzobjects import FuzzStats
+from framework.core.facade import Facade
 
 class dictionary:
-	def __init__(self, payload, encoders):
+	def __init__(self, payload, encoders_list):
 	    self.__payload = payload
-	    self.__encoder = encoders
-	    self.__generator = None
+	    self.__encoders = encoders_list
+	    self.__generator = self._gen() if self.__encoders else None
 
 	def count (self):
-	    return (self.__payload.count() * len(self.__encoder)) if self.__encoder else self.__payload.count()
-
-	def restart(self):
-	    self.__payload.restart()
-	    if self.__encoder:
-		self.__generator = self.gen()
+	    return (self.__payload.count() * len(self.__encoders)) if self.__encoders else self.__payload.count()
 
 	def __iter__(self):
-	    self.restart()
 	    return self
 
-	def gen(self):
+	def _gen(self):
 	    while 1:
 		pl = self.__payload.next()
-		for encode in self.__encoder:
-		    yield encode(pl)
+
+		for name in self.__encoders:
+		    if name.find('@') > 0:
+			string = pl
+			for i in reversed(name.split("@")):
+			    string = Facade().get_encoder(i).encode(string)
+			yield string
+		    else:
+			yield Facade().get_encoder(name).encode(pl)
 
 	def next(self):
-	    return self.__generator.next() if self.__encoder else self.__payload.next()
+	    return self.__generator.next() if self.__encoders else self.__payload.next()
 
 class requestGenerator:
-	def __init__(self, seed, dictio):
+	def __init__(self, seed, payload_options):
+	    self.options = payload_options
 	    self.seed = seed
 	    self._baseline = FuzzRequest.from_baseline(seed)
-	    self.dictio = dictio
+	    self.dictio = self._init_dictio(payload_options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
@@ -40,14 +43,27 @@ class requestGenerator:
 		self._allvar_gen = self.__allvars_gen(self.dictio)
 	    else:
 		self._allvar_gen = None
-		
+
+	def _init_dictio(self, payload_options):
+	    selected_dic = []
+
+	    for name, params, extra, encoders in payload_options['payloads']:
+		p = Facade().get_payload(name)(params, extra)
+		selected_dic.append(dictionary(p, encoders) if encoders else p)
+
+	    if len(selected_dic) == 1:
+		return selected_dic[0]
+	    elif payload_options["iterator"]:
+		return Facade().get_iterator(payload_options["iterator"])(*selected_dic)
+	    else:
+		return Facade().get_iterator("product")(*selected_dic)
 
 	def stop(self):
 	    self.stats.cancelled = True
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio.restart()
+	    self.dictio = self._init_dictio(self.options)
 
 	def count(self):
 	    v = self.dictio.count()
@@ -73,7 +89,8 @@ class requestGenerator:
 	    if self.seed.wf_allvars is not None:
 		return self._allvar_gen.next()
 	    else:
-		return FuzzRequest.from_seed(self.seed, self.dictio.next())
+		n = self.dictio.next()
+		return FuzzRequest.from_seed(self.seed, (n,) if isinstance(n, str) else n)
 
 	def get_baseline(self):
 	    return self._baseline
