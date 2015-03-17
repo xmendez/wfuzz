@@ -332,34 +332,37 @@ class FuzzRequest(BaseFuzzRequest, Request):
 
 	return newreq
 
+    def uptdate_from_options(self, options):
+	self.setUrl(options['url'])
+
+	if options['auth'][0] is not None:
+	    self.setAuth(options['auth'][0],options['auth'][1])
+
+	if options['follow']:
+	    self.setFollowLocation(options['follow'])
+
+        if options['postdata']:
+            self.setPostData(options['postdata'])
+
+        if options['head']:
+            self.method="HEAD"
+
+	if options['cookie']:
+            self.addHeader("Cookie", "; ".join(options['cookie']))
+
+	for h,v in options['extraheaders']:
+	    self.addHeader(h, v)
+
+        if options['allvars']:
+	    self.wf_allvars = options['allvars']
+
     @staticmethod
-    def from_parse_options(options):
+    def from_options(options):
 	fr = FuzzRequest()
 
         fr.rlevel = 1
-        fr.setUrl(options['url'])
 	fr.wf_fuzz_methods = options['fuzz_methods']
-
-	if options['auth'][0] is not None:
-	    fr.setAuth(options['auth'][0],options['auth'][1])
-
-	if options['follow']:
-	    fr.setFollowLocation(options['follow'])
-
-        if options['postdata']:
-            fr.setPostData(options['postdata'])
-
-        if options['head']:
-            fr.method="HEAD"
-
-	if options['cookie']:
-            fr.addHeader("Cookie", "; ".join(options['cookie']))
-
-	for h,v in options['extraheaders']:
-	    fr.addHeader(h, v)
-
-        if options['allvars']:
-	    fr.wf_allvars = options['allvars']
+	fr.uptdate_from_options(options)
 
 	return fr
 

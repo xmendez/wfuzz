@@ -228,8 +228,7 @@ class FuzzSession:
 	fuzz_options.set("max_concurrent", options["conn_options"]["max_concurrent"])
 
 	# seed
-	seed = FuzzRequest.from_parse_options(options["seed_options"])
-	fuzz_options.set("genreq", requestGenerator(seed, options["payload_options"]))
+	fuzz_options.set("genreq", requestGenerator(options["seed_options"], options["payload_options"]))
 
 	# scripts
 	script_string = options["script_options"]["script_string"]

@@ -31,18 +31,17 @@ class dictionary:
 	    return self.__generator.next() if self.__encoders else self.__payload.next()
 
 class requestGenerator:
-	def __init__(self, seed, payload_options):
+	def __init__(self, seed_options, payload_options):
 	    self.options = payload_options
-	    self.seed = seed
-	    self._baseline = FuzzRequest.from_baseline(seed)
+	    self.seed = FuzzRequest.from_options(seed_options)
+	    self._baseline = FuzzRequest.from_baseline(self.seed)
 	    self.dictio = self._init_dictio(payload_options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
+	    self._allvar_gen = None
 	    if self.seed.wf_allvars is not None:
 		self._allvar_gen = self.__allvars_gen(self.dictio)
-	    else:
-		self._allvar_gen = None
 
 	def _init_dictio(self, payload_options):
 	    selected_dic = []
