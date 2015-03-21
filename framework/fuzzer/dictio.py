@@ -25,7 +25,8 @@ class dictionary:
 			    string = Facade().get_encoder(i).encode(string)
 			yield string
 		    else:
-			yield Facade().get_encoder(name).encode(pl)
+			for e in Facade().proxy("encoders").get_plugins(name):
+			    yield e().encode(pl)
 
 	def next(self):
 	    return self.__generator.next() if self.__encoders else self.__payload.next()
