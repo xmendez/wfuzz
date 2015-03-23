@@ -35,22 +35,9 @@ class SeedQ(FuzzQueue):
     def _cleanup(self):
 	pass
 
-    def do_baseline(self):
-	# initial baseline request
-	bl = self.genReq.get_baseline()
-	if bl:
-	    self.genReq.stats.pending_fuzz += 1
-	    self.queue_out.put_first(bl)
-
-	    # wait for BBB to be completed before generating more items
-	    while(self.genReq.stats.processed == 0 and not self.genReq.stats.cancelled):
-		time.sleep(0.0001)
-
     def process(self, prio, item):
 	if isinstance(item, requestGenerator):
 	    self.genReq.stats.pending_seeds += 1
-	    if self.genReq.stats.pending_seeds == 1:
-		self.do_baseline()
 	elif isinstance(item, FuzzRequest):
 	    self.genReq.restart(item)
 	else:
@@ -59,6 +46,18 @@ class SeedQ(FuzzQueue):
 	# Empty dictionary?
 	try:
 	    rq = self.genReq.next()
+
+	    if rq.wf_is_baseline:
+		self.genReq.stats.pending_fuzz += 1
+		self.queue_out.put_first(rq)
+
+		# wait for BBB to be completed before generating more items
+		while(self.genReq.stats.processed == 0 and not self.genReq.stats.cancelled):
+		    time.sleep(0.0001)
+
+		# more after baseline?
+		rq = self.genReq.next()
+
 	except StopIteration:
 	    raise FuzzException(FuzzException.FATAL, "Empty dictionary! Please check payload or filter.")
 

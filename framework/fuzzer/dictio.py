@@ -88,6 +88,9 @@ class requestGenerator:
 		    yield r
 
 	def next(self):
+	    if self._baseline and self.stats.processed == 0 and self.stats.pending_seeds <= 1:
+		return self._baseline
+
 	    if self.stats.cancelled:
 		raise StopIteration
 
@@ -96,6 +99,3 @@ class requestGenerator:
 	    else:
 		n = self.dictio.next()
 		return FuzzRequest.from_seed(self.seed, (n,) if isinstance(n, str) else n)
-
-	def get_baseline(self):
-	    return self._baseline
