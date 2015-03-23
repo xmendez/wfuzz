@@ -170,13 +170,13 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	http_method = None
 
 	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	fuzz_words = len(marker_regex.findall(rawReq))
+	fuzz_words = len(set(marker_regex.findall(rawReq)))
 
 	if seed.wf_fuzz_methods:
 	    fuzz_words += 1
 
 	if method:
-	    fuzz_words += len(marker_regex.findall(userpass))
+	    fuzz_words += len(set(marker_regex.findall(userpass)))
 
 	if len(payload) != fuzz_words:
 	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
