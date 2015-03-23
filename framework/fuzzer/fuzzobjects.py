@@ -238,7 +238,10 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	seed.parseRequest(rawReq, schema)
 	if seed.wf_fuzz_methods: seed.method = "FUZZ"
 
-	baseline_req = FuzzRequest.from_seed(seed, baseline_payload)
+	try:
+	    baseline_req = FuzzRequest.from_seed(seed, baseline_payload)
+	except FuzzException:
+	    raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
 	baseline_req.wf_is_baseline = True
 
 	return baseline_req
