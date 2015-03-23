@@ -1,6 +1,7 @@
 from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.fuzzer.fuzzobjects import FuzzStats
 from framework.core.facade import Facade
+from framework.core.myexception import FuzzException
 
 class dictionary:
 	def __init__(self, payload, encoders_list):
@@ -25,7 +26,11 @@ class dictionary:
 			    string = Facade().get_encoder(i).encode(string)
 			yield string
 		    else:
-			for e in Facade().proxy("encoders").get_plugins(name):
+			l = Facade().proxy("encoders").get_plugins(name)
+			if not l:
+			    raise FuzzException(FuzzException.FATAL, name + " encoder does not exists (-e encodings for a list of available encoders)")
+
+			for e in l:
 			    yield e().encode(pl)
 
 	def next(self):
