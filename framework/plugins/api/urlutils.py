@@ -45,3 +45,13 @@ def parse_res(fuzzres):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(fuzzres.url)
     return FuzzResParse(scheme, netloc, path, params, query, fragment)
 
+
+def check_content_type(fuzzresult, which):
+    ctype = None
+    if fuzzresult.history.fr_headers()['response'].has_key('Content-Type'):
+	ctype = fuzzresult.history.fr_headers()['response']['Content-Type']
+
+    if which == 'text':
+	return not ctype or (ctype and any(map(lambda x: ctype.find(x) >= 0, ['text/plain'])))
+    else:
+	raise FuzzException(FuzzException.FATAL, "Unknown content type")

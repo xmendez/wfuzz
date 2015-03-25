@@ -1,5 +1,7 @@
 from urlparse import urljoin
 
+from framework.plugins.api.urlutils import check_content_type
+
 from framework.plugins.base import DiscoveryPlugin
 from externals.moduleman.plugin import moduleman_plugin
 
@@ -15,11 +17,7 @@ class cvs_extractor(DiscoveryPlugin):
     priority = 99
 
     def validate(self, fuzzresult):
-	ctype = None
-	if fuzzresult.history.fr_headers()['response'].has_key('Content-Type'):
-	    ctype = fuzzresult.history.fr_headers()['response']['Content-Type']
-
-	return fuzzresult.url.find("CVS/Entries") >= 0 and fuzzresult.code == 200 and (not ctype or (ctype and any(map(lambda x: ctype.find(x) >= 0, ['text/plain']))))
+	return fuzzresult.url.find("CVS/Entries") >= 0 and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
 
     def process(self, fuzzresult):
 	base_url = urljoin(fuzzresult.url, "..")
