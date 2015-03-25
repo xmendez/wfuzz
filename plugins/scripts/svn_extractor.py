@@ -49,8 +49,7 @@ class svn_extractor(DiscoveryPlugin):
 
 	for f in file_list:
 	    u = urljoin(base_url.replace("/.svn/", "/"), f)
-	    if not self.blacklisted_extension(u):
-		self.queue_url(u)
+	    self.queue_url(u)
 
 	for d in dir_list:
 	    self.queue_url(urljoin(base_url.replace("/.svn/", "/"), d) + "/.svn/entries")
@@ -101,9 +100,5 @@ class wcdb_extractor(DiscoveryPlugin):
 	if list_items:
 	    for f, pristine in list_items:
 		u = urljoin(fuzzresult.url.replace("/.svn/wc.db", "/"), f)
-		if not self.blacklisted_extension(u):
+		if self.queue_url(u):
 		    self.add_result("SVN %s source code in %s" % (f, pristine))
-		    self.queue_url(u)
-
-
-

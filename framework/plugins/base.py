@@ -70,3 +70,8 @@ class DiscoveryPlugin(BasePlugin):
     def blacklisted_extension(self, url):
 	return parse_url(url).file_extension in self.black_list
 
+    def queue_url(self, url):
+	if not self.blacklisted_extension(url):
+	    BasePlugin.queue_url(self, url)
+	    return True
+	return False

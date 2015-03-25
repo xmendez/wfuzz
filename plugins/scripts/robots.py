@@ -27,6 +27,6 @@ class robots(DiscoveryPlugin):
 		url = line[ line.find(':') + 1 : ]
 		url = url.strip(" *")
 
-		if url and not self.blacklisted_extension(url):
+		if url:
 		    self.queue_url(urljoin(fuzzresult.url, url))
 

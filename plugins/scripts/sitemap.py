@@ -28,6 +28,6 @@ class sitemap(DiscoveryPlugin):
 	for url in urlList:
 	    u = url.childNodes[0].data
 
-	    if not self.blacklisted_extension(u) and parse_res(fuzzresult).domain == parse_url(u).domain:
+	    if parse_res(fuzzresult).domain == parse_url(u).domain:
 		self.queue_url(u)
 

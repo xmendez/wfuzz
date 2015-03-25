@@ -51,7 +51,5 @@ class links(DiscoveryPlugin):
 			self.queue_url(urljoin(fuzzresult.url, newpath))
 
 			# file path
-			u = urljoin(fuzzresult.url, i)
-			if not self.blacklisted_extension(u):
-			    self.queue_url(u)
+			self.queue_url(urljoin(fuzzresult.url, i))
 

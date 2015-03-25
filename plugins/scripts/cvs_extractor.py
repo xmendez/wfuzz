@@ -27,14 +27,9 @@ class cvs_extractor(DiscoveryPlugin):
 	for line in fuzzresult.history.fr_content().splitlines():
 	    record = line.split("/")
 	    if len(record) == 6 and record[1]:
-		    u = urljoin(base_url, record[1])
-		    if not self.blacklisted_extension(u):
-			self.queue_url(u)
+		self.queue_url(urljoin(base_url, record[1]))
 
-		    # Directory
-		    if record[0] == 'D':
-			u = urljoin(base_url, record[1])
-			self.queue_url(u)
-
-			u = urljoin(base_url, "%s/CVS/Entries" % (record[1]))
-			self.queue_url(u)
+		# Directory
+		if record[0] == 'D':
+		    self.queue_url(urljoin(base_url, record[1]))
+		    self.queue_url(urljoin(base_url, "%s/CVS/Entries" % (record[1])))
