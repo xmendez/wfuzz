@@ -1,11 +1,7 @@
-from urlparse import urlparse, urljoin
+from urlparse import urljoin
 
 from framework.plugins.base import DiscoveryPlugin
-from framework.core.myexception import FuzzException
 from externals.moduleman.plugin import moduleman_plugin
-
-import tempfile
-import sqlite3
 
 # Entries format based on:
 # http://docstore.mik.ua/orelly/other/cvs/cvs-CHP-6-SECT-9.htm
