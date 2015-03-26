@@ -8,6 +8,7 @@ from threading import Lock
 from externals.reqresp import Request
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import BaseFuzzRequest
+from framework.core.facade import Facade
 
 class FuzzRequest(BaseFuzzRequest, Request):
     def __init__(self):
@@ -18,6 +19,8 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	self._is_baseline = False
 	self._fuzz_methods = False
 	self._description = ""
+
+	self.addHeader("User-Agent", Facade().sett.get("connection","User-Agent").encode('utf-8'))
 
     # read only methods for accessing HTTP requests information consistenly accross the codebase
 

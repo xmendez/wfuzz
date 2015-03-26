@@ -15,7 +15,10 @@ class Settings(SettingsBase):
 	return dict(
 	    plugins=[("bing_apikey", '')],
 	    kbase=[("discovery.blacklist", '.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
-	    connection=[("concurrent", '10'), ("conn_delay", '90')],
+	    connection=[("concurrent", '10'),
+		("conn_delay", '90'),
+		("User-Agent", "Wfuzz/%s" % version)
+	    ],
 	    general=[("default_printer", 'default'),("cancel_on_plugin_except","1")],
 	)
 
