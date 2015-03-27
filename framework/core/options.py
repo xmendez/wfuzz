@@ -44,7 +44,7 @@ class FuzzOptions(UserDict):
 	    conn_options = dict(
 		proxy_list = None,
 		max_conn_delay = int(Facade().sett.get('connection', 'conn_delay')),
-		max_req_delay = None,
+		max_req_delay = int(Facade().sett.get('connection', 'req_delay')),
 		rlevel = 0,
 		scanmode = False,
 		sleeper = None,
@@ -158,7 +158,7 @@ class FuzzSession:
 	    "interactive": False,
 	    "dryrun": False,
 	    "max_concurrent": int(Facade().sett.get('connection', 'concurrent')),
-	    "max_req_delay": None,
+	    "max_req_delay": int(Facade().sett.get('connection', 'req_delay')),
 	    "max_conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
 	    "genreq": None,
 	    "output_filename": "",

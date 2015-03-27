@@ -92,7 +92,7 @@ Options:
 -I			    : Use HTTP HEAD method (No HTML body responses). 
 --follow		    : Follow HTTP redirections
 -Z			    : Scan mode (Connection errors will be ignored).
---req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default forever.
+--req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
 --conn-delay		    : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 
 -A			    : Alias for --script=default -v -c
