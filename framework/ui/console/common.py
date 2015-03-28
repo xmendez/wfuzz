@@ -110,16 +110,16 @@ Options:
 -V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 -X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
 
--b cookie		    : Specify a cookie for the requests
+-b cookie		    : Specify a cookie for the requests. Repeat option for various cookies.
 -d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
--H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ")
+-H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ"). Repeat option for various headers.
 --basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
 
 --hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 --sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 --ss/hs regex		    : Show/Hide responses with the specified regex within the content
 --filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
-			      It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=
+			      It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 
 Keyword: FUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
 Baseline: FUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
