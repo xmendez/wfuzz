@@ -314,17 +314,20 @@ class json:
         pass
 
     def result(self, res):
+	server = ""
+	if 'Server' in res.history.fr_headers()['response']:
+	    server = res.history.fr_headers()['response']['Server']
 	location = ""
 	if 'Location' in res.history.fr_headers()['response']:
 	    location = res.history.fr_headers()['response']['Location']
 	elif res.history.fr_url() != res.history.fr_redirect_url():
 	    location = "(*) %s" % res.history.fr_url()
-
-	server = ""
-	if 'Server' in res.history.fr_headers()['response']:
-	    server = res.history.fr_headers()['response']['Server']
-
-        res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server}
+        res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server}
+	if res.history.fr_method().lower() == "post":
+	    inputs=""
+            res_entry["postdata"] = {}
+	    for n, v in res.history.fr_parameters()['post'].items():
+                res_entry["postdata"][n] = v
         self.json_res.append(res_entry)
 
     def noresult(self, res):
