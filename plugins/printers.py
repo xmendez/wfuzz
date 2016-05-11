@@ -1,5 +1,6 @@
 import socket
 import sys
+import json as jjson
 from xml.dom import minidom
 
 import os
@@ -38,11 +39,11 @@ class magictree:
 	doc = minidom.Document()
 
 	#<magictree class="MtBranchObject">
-	self.node_mt = doc.createElement("magictree") 
+	self.node_mt = doc.createElement("magictree")
 	self.node_mt.setAttribute("class", "MtBranchObject")
 
 	#<testdata class="MtBranchObject">
-	node_td = doc.createElement("testdata") 
+	node_td = doc.createElement("testdata")
 	node_td.setAttribute("class", "MtBranchObject")
 	self.node_mt.appendChild(node_td)
 
@@ -80,7 +81,7 @@ class magictree:
 
 	location = ""
 	if 'Location' in fuzz_result.history.fr_headers()['response']:
-	   location = fuzz_result.history.fr_headers()['response']['Location']
+	    location = fuzz_result.history.fr_headers()['response']['Location']
 
 	if fuzz_result.code == 301 or fuzz_result.code == 302 and location:
 	    self.__create_xml_element(node_url, "RedirectLocation", location)
@@ -194,14 +195,14 @@ class default:
 	    else:
 		WConio.textcolor(wc)
 
-	self._write_line(text, line_suffix) 
-		
+	self._write_line(text, line_suffix)
+
 	if wc != "":
 	    if self.OS!='nt':
 		sys.stdout.write("\033[0;0m")
 	    else:
 		WConio.textcolor(8)
-	
+
     def _print(self, res, line_suffix):
 	self._erase()
 
@@ -211,13 +212,13 @@ class default:
 	if res.exception:
 	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
 	else:
-	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8)) 
+	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
 	self._write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" % (res.lines, res.words, res.chars, res.description, line_suffix), line_suffix, txt_color)
 
 	if line_suffix != "":
 	    for i in res.plugins_res:
 		print "  |_ %s\r" % i.issue
-	
+
 	sys.stdout.flush()
 
     def header(self, summary):
@@ -281,12 +282,12 @@ class verbose(default):
 
 	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
 
-	self._write("%05d:  " % (res.nres), line_suffix, txt_color) 
-	self._write("%.3fs   C=" % (res.timer), line_suffix, txt_color) 
+	self._write("%05d:  " % (res.nres), line_suffix, txt_color)
+	self._write("%.3fs   C=" % (res.timer), line_suffix, txt_color)
 
 	location = ""
 	if 'Location' in res.history.fr_headers()['response']:
-	   location = res.history.fr_headers()['response']['Location']
+	    location = res.history.fr_headers()['response']['Location']
 	elif res.history.fr_url() != res.history.fr_redirect_url():
 	    location = "(*) %s" % res.history.fr_url()
 
@@ -297,13 +298,46 @@ class verbose(default):
 	if res.exception:
 	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
 	else:
-	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8)) 
+	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
 
 	self._write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"%s" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description, line_suffix), line_suffix, txt_color)
 
 	if line_suffix != "":
 	    for i in res.plugins_res:
 		print "  |_ %s\r" % i.issue
-	
+
 	sys.stdout.flush()
 
+@moduleman_plugin("header", "footer", "noresult", "result")
+class json:
+    name = "json"
+    description = "Results in json format"
+    category = ["default"]
+    priority = 99
+
+    json_res = []
+
+    def header(self, res):
+        pass
+
+    def result(self, res):
+	server = ""
+	if 'Server' in res.history.fr_headers()['response']:
+	    server = res.history.fr_headers()['response']['Server']
+	location = ""
+	if 'Location' in res.history.fr_headers()['response']:
+	    location = res.history.fr_headers()['response']['Location']
+	elif res.history.fr_url() != res.history.fr_redirect_url():
+	    location = "(*) %s" % res.history.fr_url()
+        post_data = {}
+	if res.history.fr_method().lower() == "post":
+	    for n, v in res.history.fr_parameters()['post'].items():
+                post_data[n] = v
+
+        res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}
+        self.json_res.append(res_entry)
+
+    def noresult(self, res):
+        pass
+    def footer(self, summary):
+        print jjson.dumps(self.json_res)
