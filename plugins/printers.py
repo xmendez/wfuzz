@@ -341,3 +341,48 @@ class json:
         pass
     def footer(self, summary):
         print jjson.dumps(self.json_res)
+
+
+
+@moduleman_plugin("header", "footer", "noresult", "result")
+class raw:
+    name = "raw"
+    description = "Raw output format"
+    category = ["default"]
+    priority = 99
+
+    def header(self, summary):
+	print exec_banner
+	print "Target: %s\r" % summary.url
+	#print "Payload type: " + payloadtype + "\n"
+	print "Total requests: %d\r\n" % summary.total_req
+	print "==================================================================\r"
+	print "ID	Response   Lines      Word         Chars          Request    \r"
+	print "==================================================================\r\n"
+
+    def result(self, res):
+	if res.exception:
+	    sys.stdout.write("XXX")
+	else:
+	    sys.stdout.write("%05d:  C=%03d" % (res.nres, res.code))
+
+	sys.stdout.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\r\n" % (res.lines, res.words, res.chars, res.description))
+
+	for i in res.plugins_res:
+		print "  |_ %s\r" % i.issue
+
+
+    def noresult(self, res):
+	self._print(res, "")
+
+    def footer(self, summary):
+	print "\r\n"
+
+	print "Total time: %s\r" % str(summary.totaltime)[:8]
+
+	if summary.backfeed > 0:
+	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	else:
+	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
+	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
+	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]

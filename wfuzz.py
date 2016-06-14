@@ -1,9 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #Covered by GPL V2.0
 
 import sys
 import logging
+import os
 
 from framework.fuzzer.Fuzzer import Fuzzer
 from framework.core.facade import Facade
@@ -25,6 +26,11 @@ console.setLevel(logging.WARNING)
 formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
+
+# set current folder in order to load plugins
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 try:
     # parse command line 
