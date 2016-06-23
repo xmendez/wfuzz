@@ -104,11 +104,11 @@ class CLParser:
 	    print version
 	    sys.exit(0)
 
-	if "--help" in optsd or "-h" in optsd:
+	if "-h" in optsd:
 	    self.show_usage()
 	    sys.exit(0)
 
-	if "--hh" in optsd:
+	if "--help" in optsd:
 	    self.show_verbose_usage()
 	    sys.exit(0)
 

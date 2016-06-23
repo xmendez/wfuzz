@@ -18,12 +18,12 @@ help_banner = '''********************************************************
 ********************************************************\r\n''' % (version, version)
 
 brief_usage ='''Usage: %s [options] -z payload,params <url>\r\n
-Type wfuzz.py -h for further information or --hh for advanced usage.
+Type wfuzz.py -h for further information or --help for advanced usage.
 ''' % (sys.argv[0])
 usage ='''Usage: %s [options] -z payload,params <url>\r\n
 Options:
--h/--help		    : This help
---hh			    : Advanced help
+-h      		    : This help
+--help			    : Advanced help
 --version		    : Wfuzz version details
 -e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 
