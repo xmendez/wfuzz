@@ -38,8 +38,9 @@ class dictionary:
 
 class requestGenerator:
 	def __init__(self, seed_options, payload_options):
-	    self.options = payload_options
-	    self.seed = FuzzRequest.from_options(seed_options)
+	    self.payload_options = payload_options
+	    self.seed_options = seed_options
+	    self.seed = FuzzRequest.from_options(seed_options, payload_options)
 	    self._baseline = FuzzRequest.from_baseline(self.seed)
 	    self.dictio = self._init_dictio(payload_options)
 
@@ -68,7 +69,7 @@ class requestGenerator:
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio = self._init_dictio(self.options)
+	    self.dictio = self._init_dictio(self.payload_options)
 
 	def count(self):
 	    v = self.dictio.count()
@@ -98,4 +99,4 @@ class requestGenerator:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
-		return FuzzRequest.from_seed(self.seed, (n,) if isinstance(n, str) else n)
+		return FuzzRequest.from_seed(self.seed, n if isinstance(n, tuple) else (n,))

@@ -9,7 +9,7 @@ class FuzzResPayload:
     def __init__(self, default_param, extra_params):
 	self._it = None
 
-	self._attr = "url"
+	self._attr = None
 	self._params = []
 
 	if extra_params: 
@@ -31,6 +31,9 @@ class FuzzResPayload:
 
     def next(self):
 	next_item = self._it.next()
+
+	if not self._attr:
+	    return next_item
 
 	try:
 	    attr = reduce(lambda x, y: getattr(x, y), self._attr.split("."), next_item)

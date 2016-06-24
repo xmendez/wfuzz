@@ -166,54 +166,63 @@ class FuzzRequest(BaseFuzzRequest, Request):
     # methods wfuzz needs for substituing payloads and building dictionaries
 
     @staticmethod
+    def replace_fuzz_word(text, fuzz_word, payload):
+	if isinstance(payload, str):
+		return (text.replace(fuzz_word, payload), [payload])
+	elif isinstance(payload, FuzzResult):
+		marker_regex = re.compile("(%s)(?:\$(.*?)\$)?" % (fuzz_word,),re.MULTILINE|re.DOTALL)
+		subs_array = []
+
+		for fw, field in marker_regex.findall(text):
+			subs = str(getattr(payload, field))
+			text = text.replace("%s$%s$" % (fw, field), subs)
+			subs_array.append(subs)
+
+		return (text, subs_array)
+
+    @staticmethod
     def from_seed(seed, payload):
-	rawReq = seed.getAll()
-	schema = seed.schema
-	method, userpass = seed.getAuth()
-	http_method = None
-
-	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	fuzz_words = len(set(marker_regex.findall(rawReq)))
-
-	if seed.wf_fuzz_methods:
-	    fuzz_words += 1
-
-	if method:
-	    fuzz_words += len(set(marker_regex.findall(userpass)))
-
-	if len(payload) != fuzz_words:
-	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
-
 	newreq = seed.from_copy()
+
+	rawReq = newreq.getAll()
 	rawUrl = newreq.completeUrl
+	schema = newreq.schema
+	auth_method, userpass = newreq.getAuth()
+
+        descr_array = []
+	new_http_method = None
 
 	for payload_pos, payload_content in enumerate(payload, start=1):
 	    fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
 
-	    if newreq.wf_description:
-		newreq.wf_description += " - "
-	    newreq.wf_description += payload_content
+            desc = None
 
 	    if seed.wf_fuzz_methods and fuzz_word == "FUZZ":
-		http_method = payload_content
-	    elif method and (userpass.count(fuzz_word)):
-		userpass = userpass.replace(fuzz_word, payload_content)
-	    elif newreq.completeUrl.count(fuzz_word):
-		rawUrl = rawUrl.replace(fuzz_word, payload_content)
+		new_http_method = payload_content
+		desc = [payload_content]
+	    if auth_method and (userpass.count(fuzz_word)):
+		userpass, desc = FuzzRequest.replace_fuzz_word(userpass, fuzz_word, payload_content)
+	    if newreq.completeUrl.count(fuzz_word):
+		rawUrl, desc = FuzzRequest.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
 
 		# reqresp appends http:// if not indicated in the URL, but if I have a payload with a full URL
 		# this messes up everything  => http://FUZZ and then http://http://asdkjsakd.com
-		if rawUrl[:11] == 'http://http':
+		if rawUrl[:14] == 'http://http://':
 		    rawUrl = rawUrl[7:]
-	    elif rawReq.count(fuzz_word):
-		rawReq = rawReq.replace(fuzz_word, payload_content)
-	    else:
+	    if rawReq.count(fuzz_word):
+		rawReq, desc = FuzzRequest.replace_fuzz_word(rawReq, fuzz_word, payload_content)
+
+            if desc:
+                descr_array += desc
+            else:
 		raise FuzzException(FuzzException.FATAL, "No %s word!" % fuzz_word)
 
 	newreq.parseRequest(rawReq, schema)
 	newreq.setUrl(rawUrl)
-	if http_method: newreq.method = http_method
-	if method != 'None': newreq.setAuth(method, userpass)
+	if new_http_method: newreq.method = new_http_method
+	if auth_method != 'None': newreq.setAuth(auth_method, userpass)
+
+	newreq.wf_description = " - ".join(descr_array)
 
 	return newreq
 
@@ -338,7 +347,7 @@ class FuzzRequest(BaseFuzzRequest, Request):
 
 	return newreq
 
-    def uptdate_from_options(self, options):
+    def update_from_options(self, options):
 	self.setUrl(options['url'])
 
 	if options['auth'][0] is not None:
@@ -363,12 +372,26 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	    self.wf_allvars = options['allvars']
 
     @staticmethod
-    def from_options(options):
+    def from_options(seed_options, payload_options):
 	fr = FuzzRequest()
 
+	fr.setUrl("")
         fr.rlevel = 1
-	fr.wf_fuzz_methods = options['fuzz_methods']
-	fr.uptdate_from_options(options)
+	fr.wf_fuzz_methods = seed_options['fuzz_methods']
+	fr.update_from_options(seed_options)
+
+	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
+	fuzz_words = marker_regex.findall(fr.getAll())
+	method, userpass = fr.getAuth()
+
+	if fr.wf_fuzz_methods:
+	    fuzz_words += ['FUZZ_METHOD']
+
+	if method:
+	    fuzz_words += fuzz_words + marker_regex.findall(userpass)
+
+	if len(payload_options['payloads']) != len(set(fuzz_words)):
+	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
 
 	return fr
 
