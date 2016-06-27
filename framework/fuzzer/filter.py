@@ -165,7 +165,11 @@ class FuzzResFilter:
 	return self.__myreduce(tokens[0])
 
     def is_active(self):
-	return self.hideparams['regex_show'] is not None or self.hideparams['codes_show'] is not None or self.hideparams['filter_string'] != ""
+	return any([
+            self.hideparams['regex_show'] is not None,
+            self.hideparams['codes_show'] is not None,
+            self.hideparams['filter_string'] != "",
+        ])
 
     def is_visible(self, res):
 	# baseline
