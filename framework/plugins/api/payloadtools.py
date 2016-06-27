@@ -53,18 +53,8 @@ def filter_results(extra_params, itera):
     ffilter = None
 
     if extra_params and extra_params.has_key("filter"):
-	filter_params = dict(
-	    active = True,
-	    regex_show = None,
-	    codes_show = None,
-	    codes = [],
-	    words = [],
-	    lines = [],
-	    chars = [],
-	    regex = None,
-	    filter_string = extra_params["filter"]
-	    )
-	ffilter = FuzzResFilter(filter_params)
+	ffilter = FuzzResFilter()
+	ffilter.hideparams["filter_string"] = extra_params["filter"]
 
 	return itertools.ifilter(lambda x:ffilter.is_visible(x), itera)
     else:

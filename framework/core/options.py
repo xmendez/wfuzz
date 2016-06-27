@@ -2,6 +2,7 @@ from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
 
 from framework.fuzzer.fuzzobjects import FuzzRequest
+from framework.fuzzer.filter import FuzzResFilter
 from framework.fuzzer.dictio import requestGenerator
 from framework.utils.minify_json import json_minify
 
@@ -174,49 +175,7 @@ class FuzzSession:
     def from_options(options):
 	fuzz_options = FuzzSession()
 
-	# filter
-	filter_params = dict(
-	    active = False,
-	    regex_show = None,
-	    codes_show = None,
-	    codes = [],
-	    words = [],
-	    lines = [],
-	    chars = [],
-	    regex = None,
-	    filter_string = ""
-	    )
-
-	filter_params["filter_string"] = options["filter_options"]["filterstr"]
-
-	try:
-	    if options["filter_options"]["ss"] is not None:
-		filter_params['regex_show'] = True
-		filter_params['regex'] = re.compile(options["filter_options"]['ss'], re.MULTILINE|re.DOTALL)
-
-	    elif options["filter_options"]["hs"] is not None:
-		filter_params['regex_show'] = False
-		filter_params['regex'] = re.compile(options["filter_options"]['hs'], re.MULTILINE|re.DOTALL)
-	except Exception, e:
-	    raise FuzzException(FuzzException.FATAL, "Invalied regex expression: %s" % str(e))
-
-	if filter(lambda x: len(options["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]):
-	    filter_params['codes_show'] = True
-	    filter_params['codes'] = options["filter_options"]["sc"]
-	    filter_params['words'] = options["filter_options"]["sw"]
-	    filter_params['lines'] = options["filter_options"]["sl"]
-	    filter_params['chars'] = options["filter_options"]["sh"]
-	elif filter(lambda x: len(options["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"]):
-	    filter_params['codes_show'] = False
-	    filter_params['codes'] = options["filter_options"]["hc"]
-	    filter_params['words'] = options["filter_options"]["hw"]
-	    filter_params['lines'] = options["filter_options"]["hl"]
-	    filter_params['chars'] = options["filter_options"]["hh"]
-
-	if filter_params['regex_show'] is not None or filter_params['codes_show'] is not None or filter_params['filter_string'] != "":
-	    filter_params['active'] = True
-
-	fuzz_options.set("filter_params", filter_params)
+	fuzz_options.set("filter_params", FuzzResFilter.from_options(options["filter_options"]))
 
 	# conn options
 	fuzz_options.set('proxy_list', options["conn_options"]["proxy_list"])

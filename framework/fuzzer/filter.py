@@ -17,7 +17,7 @@ except ImportError:
 
 
 class FuzzResFilter:
-    def __init__(self, ffilter):
+    def __init__(self, ffilter = None):
 	if PYPARSING:
 	    element = oneOf("c l w h index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
@@ -40,7 +40,19 @@ class FuzzResFilter:
 	    self.finalformula.setParseAction(self.__myreduce)
 
 	self.res = None
-	self.hideparams = ffilter
+        if ffilter:
+            self.hideparams = ffilter
+        else:
+            self.hideparams = dict(
+                regex_show = None,
+                codes_show = None,
+                codes = [],
+                words = [],
+                lines = [],
+                chars = [],
+                regex = None,
+                filter_string = ""
+                )
 
 	if "XXX" in self.hideparams['codes']:
 	    self.hideparams['codes'].append("0")
@@ -152,6 +164,9 @@ class FuzzResFilter:
     def __compute_formula(self, tokens):
 	return self.__myreduce(tokens[0])
 
+    def is_active(self):
+	return self.hideparams['regex_show'] is not None or self.hideparams['codes_show'] is not None or self.hideparams['filter_string'] != ""
+
     def is_visible(self, res):
 	# baseline
 	if self.baseline and res.is_baseline == True:
@@ -193,6 +208,38 @@ class FuzzResFilter:
 
 	    return (cond1 and cond2)
 
+    @staticmethod
+    def from_options(filter_options):
+        ffilter = FuzzResFilter()
+
+	ffilter.hideparams["filter_string"] = filter_options["filterstr"]
+
+	try:
+	    if filter_options["ss"] is not None:
+		ffilter.hideparams['regex_show'] = True
+		ffilter.hideparams['regex'] = re.compile(filter_options['ss'], re.MULTILINE|re.DOTALL)
+
+	    elif filter_options["hs"] is not None:
+		ffilter.hideparams['regex_show'] = False
+		ffilter.hideparams['regex'] = re.compile(filter_options['hs'], re.MULTILINE|re.DOTALL)
+	except Exception, e:
+	    raise FuzzException(FuzzException.FATAL, "Invalied regex expression: %s" % str(e))
+
+	if filter(lambda x: len(filter_options[x]) > 0, ["sc", "sw", "sh", "sl"]):
+	    ffilter.hideparams['codes_show'] = True
+	    ffilter.hideparams['codes'] = filter_options["sc"]
+	    ffilter.hideparams['words'] = filter_options["sw"]
+	    ffilter.hideparams['lines'] = filter_options["sl"]
+	    ffilter.hideparams['chars'] = filter_options["sh"]
+	elif filter(lambda x: len(filter_options[x]) > 0, ["hc", "hw", "hh", "hl"]):
+	    ffilter.hideparams['codes_show'] = False
+	    ffilter.hideparams['codes'] = filter_options["hc"]
+	    ffilter.hideparams['words'] = filter_options["hw"]
+	    ffilter.hideparams['lines'] = filter_options["hl"]
+	    ffilter.hideparams['chars'] = filter_options["hh"]
+
+        return ffilter
+
 class FilterQ(FuzzQueue):
     def __init__(self, ffilter, queue_out):
 	FuzzQueue.__init__(self, queue_out)
@@ -201,7 +248,7 @@ class FilterQ(FuzzQueue):
 	self.setName('filter_thread')
 
 	self.queue_out = queue_out
-	self.ffilter = FuzzResFilter(ffilter)
+	self.ffilter = ffilter
 
     def get_name(self):
 	return 'filter_thread'

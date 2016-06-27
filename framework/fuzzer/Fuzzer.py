@@ -115,7 +115,7 @@ class Fuzzer:
 		raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
 
 	recursive = lplugins or options.get("rlevel") > 0
-	filtering = options.get('filter_params')['active'] is True
+	filtering = options.get('filter_params').is_active()
 
 	# Create queues (in reverse order)
 	# genReq ---> seed_queue -> http_queue -> [round_robin] -> [plugins_queue] * N -> process_queue -> [routing_queue] -> [filter_queue]---> results_queue
