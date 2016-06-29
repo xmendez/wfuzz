@@ -19,7 +19,7 @@ class robots(DiscoveryPlugin):
 
     def process(self, fuzzresult):
 	# Shamelessly (partially) copied from w3af's plugins/discovery/robotsReader.py
-	for line in fuzzresult.history.fr_content().split('\n'):
+	for line in fuzzresult.history.content.split('\n'):
 	    line = line.strip()
 
 	    if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or\

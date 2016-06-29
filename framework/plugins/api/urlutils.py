@@ -48,8 +48,8 @@ def parse_res(fuzzres):
 
 def check_content_type(fuzzresult, which):
     ctype = None
-    if fuzzresult.history.fr_headers()['response'].has_key('Content-Type'):
-	ctype = fuzzresult.history.fr_headers()['response']['Content-Type']
+    if fuzzresult.history.headers.response.has_key('Content-Type'):
+	ctype = fuzzresult.history.headers.response['Content-Type']
 
     if which == 'text':
 	return not ctype or (ctype and any(map(lambda x: ctype.find(x) >= 0, ['text/plain'])))

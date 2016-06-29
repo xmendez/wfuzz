@@ -4,164 +4,256 @@ import hashlib
 import re
 from urlparse import urljoin
 from threading import Lock
+from collections import namedtuple
 
 from externals.reqresp import Request
 from framework.core.myexception import FuzzException
-from framework.fuzzer.base import BaseFuzzRequest
 from framework.core.facade import Facade
 
-class FuzzRequest(BaseFuzzRequest, Request):
+auth_header = namedtuple("auth_header", "method credentials")
+
+class headers:
+    def __init__(self, req):
+        self._req = req
+
+    @property
+    def response(self):
+        return dict(self._req.response.getHeaders()) if self._req.response else {}
+
+    @property
+    def request(self):
+        return dict(map(lambda x: x.split(":",1), self._req.getHeaders()))
+
+    def add(self, dd):
+        for k, v in dd.items():
+            self._req.addHeader(k, v)
+
+class cookies:
+    def __init__(self, req):
+        self._req = req
+
+    @property
+    def response(self):
+        if self._req.response:
+            c = self._req.response.getCookie().split("; ")
+            if c[0]:
+                #cc['response'] = dict(map(lambda x: x.split("=", 1), c))
+                return dict(map(lambda x:[x[0],x[2]],map(lambda x:x.partition("="), c)))
+
+        return {}
+
+
+    @property
+    def request(self):
+        if self._req.headers.request.has_key('Cookie'):
+            c = self._req.headers.request['Cookie'].split("; ")
+            if c[0]:
+                #cc['request'] = dict(map(lambda x: x.split("=", 1), c))
+                return dict(map(lambda x:[x[0],x[2]],map(lambda x:x.partition("="), c)))
+
+        return {}
+
+class parameters(object):
+    def __init__(self, req):
+        self._req = req
+
+    @property
+    def get(self):
+        return dict(map(lambda x: (x.name, x.value), self._req.getGETVars()))
+
+    @property
+    def post(self):
+        return dict(map(lambda x: (x.name, x.value), self._req.getPOSTVars()))
+
+    @post.setter
+    def post(self, pp):
+        if isinstance(pp, dict):
+            self._req.setPostData("&".join(["=".join([n,v]) if v is not None else n for n,v in pp.items()]))
+        elif isinstance(pp, str):
+            self._req.setPostData(pp)
+
+class FuzzRequest(object):
     def __init__(self):
-	Request.__init__(self)
-	self._rlevel = 0
+	self._request = Request()
+
 	self._proxy = None
 	self._allvars = None
-	self._is_baseline = False
-	self._fuzz_methods = False
-	self._description = ""
+	self.rlevel = 0
+	self.wf_is_baseline = False
+	self.wf_fuzz_methods = False
+	self.wf_description = ""
 
-	self.addHeader("User-Agent", Facade().sett.get("connection","User-Agent").encode('utf-8'))
+	self.headers.add({"User-Agent": Facade().sett.get("connection","User-Agent").encode('utf-8')})
 
-    # read only methods for accessing HTTP requests information consistenly accross the codebase
+    # methods for accessing HTTP requests information consistenly accross the codebase
 
-    def fr_headers(self):
-	h = dict(request = {}, response = {})
+    def __str__(self):
+        return self._request.getAll()
 
-	h['request'] = dict(map(lambda x: x.split(":",1), self.getHeaders()))
+    @property
+    def headers(self):
+        return headers(self._request)
 
-	if self.response:
-	    h['response'] = dict(self.response.getHeaders())
+    @property
+    def parameters(self):
+	return parameters(self._request)
 
-	return h
+    @property
+    def cookies(self):
+	return cookies(self._request)
 
-    def fr_parameters(self):
-	p = dict(get = {}, post = {})
+    @property
+    def method(self):
+	return self._request.method
 
-	p['get'] = dict(map(lambda x: (x.name, x.value), self.getGETVars()))
-	p['post'] = dict(map(lambda x: (x.name, x.value), self.getPOSTVars()))
+    @method.setter
+    def method(self, method):
+	self._request.method = method
 
-	return p
+    @property
+    def scheme(self):
+	return self._request.schema
 
-    def fr_cookies(self):
-	cc = dict(request = {}, response = {})
+    @scheme.setter
+    def scheme(self, s):
+	self._request.schema = s
 
-	if self['Cookie']:
-	    c = self['Cookie'].split("; ")
-	    if c[0]:
-		#cc['request'] = dict(map(lambda x: x.split("=", 1), c))
-		cc['request'] = dict(map(lambda x:[x[0],x[2]],map(lambda x:x.partition("="), c)))
+    @property
+    def host(self):
+	return self._request.getHost()
 
-	if self.response:
-	    c = self.response.getCookie().split("; ")
-	    if c[0]:
-		#cc['response'] = dict(map(lambda x: x.split("=", 1), c))
-		cc['response'] = dict(map(lambda x:[x[0],x[2]],map(lambda x:x.partition("="), c)))
+    @property
+    def path(self):
+	return self._request.path
 
-	return cc
+    @property
+    def redirect_url(self):
+	return self._request.completeUrl
 
-    def fr_method(self):
-	return self.method
+    @property
+    def url(self):
+	return self._request.finalUrl
 
-    def fr_schema(self):
-	return self.schema
+    @url.setter
+    def url(self, u):
+	self._request.setUrl(u)
 
-    def fr_host(self):
-	return self.getHost()
+    @property
+    def content(self):
+	return self._request.response.getContent() if self._request.response else ""
 
-    def fr_url(self):
-	return self.finalUrl
+    @property
+    def code(self):
+	return self._request.response.code if self._request.response else None
 
-    def fr_redirect_url(self):
-	return self.completeUrl
+    @code.setter
+    def code(self, c):
+	self._request.response.code = c
 
-    def fr_content(self):
-	return self.response.getContent() if self.response else ""
+    @property
+    def auth(self):
+	m, up = self._request.getAuth()
+        return auth_header(m, up)
 
-    def fr_code(self):
-	return self.response.code if self.response else None
+    @auth.setter
+    def auth(self, ah):
+        method, credentials = ah
+	self._request.setAuth(method, credentials)
 
-    def fr_auth(self):
-	return self.getAuth()
+    @property
+    def follow(self):
+	return self._request.followLocation
 
-    def fr_follow(self):
-	return self.followLocation
+    @follow.setter
+    def follow(self, f):
+	self._request.setFollowLocation(f)
 
-    def fr_time(self):
-	return self.totaltime
+    @property
+    def reqtime(self):
+	return self._request.totaltime
+
+    @reqtime.setter
+    def reqtime(self, t):
+	self._request.totaltime = t
 
     # Info extra that wfuzz needs within an HTTP request
 
-    def _get_baseline(self):
-	return self._is_baseline
-
-    def _set_baseline(self, bl):
-	self._is_baseline = bl
-
-    wf_is_baseline = property( _get_baseline, _set_baseline )
-
-    def wf_allvars_len(self):
+    @property
+    def wf_allvars_set(self):
 	if self.wf_allvars == "allvars":
-	    varSET = self.getGETVars()
+	    return self._request.getGETVars()
 	elif self.wf_allvars == "allpost":
-	    varSET = self.getPOSTVars()
+	    return self._request.getPOSTVars()
+	elif self.wf_allvars == "allheaders":
+	    return self._request.getHeaders()
 	else:
-	    raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + self.wf_allvars)
+	    return None
 
-	return len(varSET)
-
-    def _get_allvars(self):
+    @wf_allvars_set.setter
+    def wf_allvars_set(self, varset):
+        variable, payload_content = varset
+        try:
+            if self.wf_allvars == "allvars":
+                self._request.setVariableGET(variable, payload_content)
+            elif self.wf_allvars == "allpost":
+                self._request.setVariablePOST(variable, payload_content)
+            elif self.wf_allvars == "allheaders":
+                self._request.headers.add({variable: payload_content})
+            else:
+                raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + self.wf_allvars)
+        except TypeError, e:
+            raise FuzzException(FuzzException.FATAL, "It is not possible to use all fuzzing with duplicated parameters.")
+        
+    @property
+    def wf_allvars(self):
 	return self._allvars
 
-    def _set_allvars(self, bl):
-	if bl is not None and bl not in ['allvars', 'allpost']: 
+    @wf_allvars.setter
+    def wf_allvars(self, bl):
+	if bl is not None and bl not in ['allvars', 'allpost','allheaders']: 
 	    raise FuzzException(FuzzException.FATAL, "Incorrect all parameters brute forcing type specified, correct values are allvars, allpost or allheaders.")
 
 	self._allvars = bl
 
-    wf_allvars = property( _get_allvars, _set_allvars )
-
-    def _set_rlevel(self, l):
-	self._rlevel = l
-	
-    def _get_rlevel(self):
-	return self._rlevel
-
-    rlevel = property( _get_rlevel, _set_rlevel )
-
-    def _set_fuzz_methods(self, l):
-	self._fuzz_methods = l
-	
-    def _get_fuzz_methods(self):
-	return self._fuzz_methods
-
-    wf_fuzz_methods = property( _get_fuzz_methods, _set_fuzz_methods )
-
-    def _set_description(self, l):
-	self._description = l
-	
-    def _get_description(self):
-	return self._description
-
-    wf_description = property( _get_description, _set_description )
-
-    def _set_proxies(self, l):
-	if l:
-	    prox, ptype = l
-	    self.setProxy("%s" % prox, ptype if ptype else "HTML")
-	self._proxy = l
-	
-    def _get_proxies(self):
+    @property
+    def wf_proxy(self):
 	return self._proxy
 
-    wf_proxy = property( _get_proxies, _set_proxies )
+    @wf_proxy.setter
+    def wf_proxy(self, l):
+	if l:
+	    prox, ptype = l
+	    self._request.setProxy("%s" % prox, ptype if ptype else "HTML")
+	self._proxy = l
 
     # methods wfuzz needs to perform HTTP requests (this might change in the future).
 
     def to_http_object(self, c):
-	return Request.to_pycurl_object(c, self)
+	return Request.to_pycurl_object(c, self._request)
 
     def from_http_object(self, c, bh, bb):
-	return self.response_from_conn_object(c, bh, bb)
+	return self._request.response_from_conn_object(c, bh, bb)
+
+    def update_from_raw_http(self, raw, scheme):
+        return self._request.parseRequest(raw, scheme)
+
+    def to_cache_key(self):
+	key = self._request.urlWithoutVariables
+
+	dicc = {}
+
+	for j in [i.name for i in self._request.getGETVars()]:
+	    dicc[j] = True
+
+	for j in [i.name for i in self._request.getPOSTVars()]:
+	    dicc[j] = True
+
+	# take URL parameters into consideration
+	url_params = dicc.keys()
+	url_params.sort()
+	key += "-" + "-".join(url_params)
+
+	return key
 
     # methods wfuzz needs for substituing payloads and building dictionaries
 
@@ -184,10 +276,10 @@ class FuzzRequest(BaseFuzzRequest, Request):
     def from_seed(seed, payload):
 	newreq = seed.from_copy()
 
-	rawReq = newreq.getAll()
-	rawUrl = newreq.completeUrl
-	schema = newreq.schema
-	auth_method, userpass = newreq.getAuth()
+	rawReq = str(newreq)
+	rawUrl = newreq.redirect_url
+	scheme = newreq.scheme
+	auth_method, userpass = newreq.auth
 
         descr_array = []
 	new_http_method = None
@@ -202,7 +294,7 @@ class FuzzRequest(BaseFuzzRequest, Request):
 		desc = [payload_content]
 	    if auth_method and (userpass.count(fuzz_word)):
 		userpass, desc = FuzzRequest.replace_fuzz_word(userpass, fuzz_word, payload_content)
-	    if newreq.completeUrl.count(fuzz_word):
+	    if newreq.redirect_url.count(fuzz_word):
 		rawUrl, desc = FuzzRequest.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
 
 		# reqresp appends http:// if not indicated in the URL, but if I have a payload with a full URL
@@ -217,10 +309,10 @@ class FuzzRequest(BaseFuzzRequest, Request):
             else:
 		raise FuzzException(FuzzException.FATAL, "No %s word!" % fuzz_word)
 
-	newreq.parseRequest(rawReq, schema)
-	newreq.setUrl(rawUrl)
+	newreq.update_from_raw_http(rawReq, scheme)
+	newreq.url = rawUrl
 	if new_http_method: newreq.method = new_http_method
-	if auth_method != 'None': newreq.setAuth(auth_method, userpass)
+	if auth_method != 'None': newreq.auth = (auth_method, userpass)
 
 	newreq.wf_description = " - ".join(descr_array)
 
@@ -228,8 +320,8 @@ class FuzzRequest(BaseFuzzRequest, Request):
 
     @staticmethod
     def from_baseline(seed):
-	schema = seed.schema
-	rawReq = seed.getAll()
+	scheme = seed.scheme
+	rawReq = str(seed)
 
 	marker_regex = re.compile("FUZ\d*Z{(.*?)}",re.MULTILINE|re.DOTALL)
 	baseline_payload = marker_regex.findall(rawReq)
@@ -247,7 +339,7 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	    rawReq = rawReq.replace("{" + i + "}", '')
 
 	# re-parse seed without baseline markers
-	seed.parseRequest(rawReq, schema)
+	seed.update_from_raw_http(rawReq, scheme)
 	if seed.wf_fuzz_methods: seed.method = "FUZZ"
 
 	try:
@@ -262,42 +354,23 @@ class FuzzRequest(BaseFuzzRequest, Request):
     def from_all_fuzz_request(seed, payload):
 	# no FUZZ keyword allowed
 	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	if len(marker_regex.findall(seed.getAll())) > 0:
+	if len(marker_regex.findall(str(seed))) > 0:
 	    raise FuzzException(FuzzException.FATAL, "FUZZ words not allowed when using all parameters brute forcing.")
 
 	# only a fuzz payload is allowed using this technique
 	if len(payload) > 1:
 	    raise FuzzException(FuzzException.FATAL, "Only one payload is allowed when fuzzing all parameters!")
 
-	if seed.wf_allvars == "allvars":
-	    varSET = seed.getGETVars()
-	elif seed.wf_allvars == "allpost":
-	    varSET = seed.getPOSTVars()
-	elif seed.wf_allvars == "allheaders":
-	    varSET = seed.getHeaders()
-	else:
-	    raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + seed.wf_allvars)
-
-	if len(varSET) == 0:
+	if len(seed.wf_allvars_set) == 0:
 	    raise FuzzException(FuzzException.FATAL, "No variables on specified variable set: " + seed.wf_allvars)
 
-	for v in varSET:
+	for v in seed.wf_allvars_set:
 	    variable = v.name
 	    payload_content = payload[0]
 	    copycat = seed.from_copy()
 	    copycat.wf_description = variable + "=" + payload_content
 
-	    try:
-		if seed.wf_allvars == "allvars":
-		    copycat.setVariableGET(variable, payload_content)
-		elif seed.wf_allvars == "allpost":
-		    copycat.setVariablePOST(variable, payload_content)
-		elif seed.wf_allvars == "allheaders":
-		    copycat.addHeader(variable, payload_content)
-		else:
-		    raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + seed.wf_allvars)
-	    except TypeError, e:
-		raise FuzzException(FuzzException.FATAL, "It is not possible to use all fuzzing with duplicated parameters.")
+            seed.wf_allvars_set = (variable, payload_content)
 
 	    yield copycat
 
@@ -310,7 +383,7 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	fr.wf_description = fuzz_res.description
 	fr.rlevel = fuzz_res.rlevel
 
-	if new_url: fr.setUrl(new_url)
+	if new_url: fr.url = new_url
 
 	return fr
 
@@ -325,20 +398,14 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	newreq.wf_fuzz_methods = self.wf_fuzz_methods
 
 
-	for k,v in self.fr_headers()['request'].items():
-	    newreq.addHeader(k, v)
+        newreq.headers.add(self.headers.request)
+        newreq.parameters.post = self.parameters.post
 
-	pp = self.fr_parameters()['post']
-	if pp:
-	   newreq.setPostData("&".join(["=".join([n,v]) if v is not None else n for n,v in pp.items()]))
-
-	newreq.setFollowLocation(self.followLocation)
-	m, up = self.getAuth()
-	newreq.setAuth(m, up)
-	newreq.setUrl(self.finalUrl)
-	newreq.proxytype = self.proxytype
-	newreq.totaltime = self.totaltime
-	newreq.schema = self.schema
+	newreq.follow = self.follow
+	newreq.auth = self.auth
+	newreq.url = self.url
+	newreq.reqtime = self.reqtime
+	newreq.scheme = self.scheme
 
 	if self.wf_fuzz_methods:
 	    newreq.method = "FUZZ"
@@ -348,25 +415,25 @@ class FuzzRequest(BaseFuzzRequest, Request):
 	return newreq
 
     def update_from_options(self, options):
-	self.setUrl(options['url'])
+	self.url = options['url']
+        self._request.setUrl(options['url'])
 
 	if options['auth'][0] is not None:
-	    self.setAuth(options['auth'][0],options['auth'][1])
+	    self.auth = (options['auth'][0], options['auth'][1])
 
 	if options['follow']:
-	    self.setFollowLocation(options['follow'])
+	    self.follow = options['follow']
 
         if options['postdata']:
-            self.setPostData(options['postdata'])
+            self.parameters.post = options['postdata']
 
         if options['head']:
-            self.method="HEAD"
+            self.method = "HEAD"
 
 	if options['cookie']:
-            self.addHeader("Cookie", "; ".join(options['cookie']))
+            self.headers.add({"Cookie": "; ".join(options['cookie'])})
 
-	for h,v in options['extraheaders']:
-	    self.addHeader(h, v)
+        self.headers.add(dict(options['extraheaders']))
 
         if options['allvars']:
 	    self.wf_allvars = options['allvars']
@@ -375,14 +442,14 @@ class FuzzRequest(BaseFuzzRequest, Request):
     def from_options(seed_options, payload_options):
 	fr = FuzzRequest()
 
-	fr.setUrl("")
+	fr.url = ""
         fr.rlevel = 1
 	fr.wf_fuzz_methods = seed_options['fuzz_methods']
 	fr.update_from_options(seed_options)
 
 	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	fuzz_words = marker_regex.findall(fr.getAll())
-	method, userpass = fr.getAuth()
+	fuzz_words = marker_regex.findall(str(fr))
+	method, userpass = fr.auth
 
 	if fr.wf_fuzz_methods:
 	    fuzz_words += ['FUZZ_METHOD']
@@ -418,7 +485,7 @@ class FuzzStats:
     def from_requestGenerator(rg):
 	tmp_stats = FuzzStats()
 
-	tmp_stats.url = rg.seed.completeUrl
+	tmp_stats.url = rg.seed.redirect_url
 	tmp_stats.total_req = rg.count()
 	tmp_stats.seed = FuzzResult.from_fuzzReq(rg.seed, -1)
 
@@ -547,19 +614,19 @@ class FuzzResult:
 	fr = FuzzResult(nres)
 
 	fr.nres = nres
-	if req.fr_content():
+	if req.content:
 	    m = hashlib.md5()
-	    m.update(req.fr_content())
+	    m.update(req.content)
 	    fr.md5 = m.hexdigest()
 
-	    fr.chars = len(req.fr_content())
-	    fr.lines = req.fr_content().count("\n")
-	    fr.words = len(re.findall("\S+",req.fr_content()))
+	    fr.chars = len(req.content)
+	    fr.lines = req.content.count("\n")
+	    fr.words = len(re.findall("\S+",req.content))
 
-	fr.code = 0 if req.fr_code() is None else int(req.fr_code())
-	fr.url = req.fr_url()
+	fr.code = 0 if req.code is None else int(req.code)
+	fr.url = req.url
 	fr.description = req.wf_description
-	fr.timer = req.fr_time()
+	fr.timer = req.reqtime
 	fr.rlevel = req.rlevel
 
 	fr.history = req
@@ -576,7 +643,7 @@ class FuzzResult:
 	if self.code == 200 and self.url[-1] == '/':
 	    return True
 	elif self.code >= 300 and self.code < 400:
-	    if "Location" in self.history.fr_headers()['response'] and self.history.fr_headers()['response']["Location"][-1]=='/':
+	    if "Location" in self.history.headers.response and self.history.headers.response["Location"][-1]=='/':
 		return True
 	elif self.code == 401:
 	    if self.url[-1] == '/':
@@ -591,8 +658,8 @@ class FuzzResult:
 	return seed
 
     def _recursive_url(self):
-	if self.code >= 300 and self.code < 400 and "Location" in self.history.fr_headers()['response']:
-	    new_url = self.history.fr_headers()['response']["Location"]
+	if self.code >= 300 and self.code < 400 and "Location" in self.history.headers.response:
+	    new_url = self.history.headers.response["Location"]
 	    if not new_url[-1] == '/': new_url += "/"
 	    # taking into consideration redirections to /xxx/ without full URL
 	    new_url = urljoin(self.url, new_url)

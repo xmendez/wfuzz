@@ -34,6 +34,6 @@ class listing(BasePlugin):
 
     def process(self, fuzzresult):
 	for r in self.regex:
-	    if len(r.findall(fuzzresult.history.fr_content())) > 0:
+	    if len(r.findall(fuzzresult.history.content)) > 0:
 		self.add_result("Directory listing identified")
 		break

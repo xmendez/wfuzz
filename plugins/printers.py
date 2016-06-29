@@ -48,12 +48,12 @@ class magictree:
 	self.node_mt.appendChild(node_td)
 
 	#<host>209.85.146.105
-	host = summary.seed.history.fr_host()
+	host = summary.seed.history.host
 	if host.find(":") > 0:
 	    host, port = host.split(":")
 	else:
 	    port = 80
-	    if summary.seed.history.fr_schema().lower() == "https":
+	    if summary.seed.history.scheme.lower() == "https":
 		port = 443
 
 	try:
@@ -68,7 +68,7 @@ class magictree:
 	#<port>80<state>open</state><service>http
 	node_port = self.__create_xml_element(node_ipr, "port", str(port))
 	self.__create_xml_element(node_port, "state", "open")
-	if summary.seed.history.fr_schema().lower() == "https":
+	if summary.seed.history.scheme.lower() == "https":
 	    node_port = self.__create_xml_element(node_port, "tunnel", "ssl")
 
 	self.node_service = self.__create_xml_element(node_port, "service", "http")
@@ -76,12 +76,12 @@ class magictree:
     def result(self, fuzz_result):
 	node_url = self.__create_xml_element(self.node_service, "url", str(fuzz_result.url))
 
-	if 'Server' in fuzz_result.history.fr_headers()['response']:
-	    self.__create_xml_element(node_url, "HTTPServer", fuzz_result.history.fr_headers()['response']['Server'])
+	if 'Server' in fuzz_result.history.headers.response:
+	    self.__create_xml_element(node_url, "HTTPServer", fuzz_result.history.headers.response['Server'])
 
 	location = ""
-	if 'Location' in fuzz_result.history.fr_headers()['response']:
-	    location = fuzz_result.history.fr_headers()['response']['Location']
+	if 'Location' in fuzz_result.history.headers.response:
+	    location = fuzz_result.history.headers.response['Location']
 
 	if fuzz_result.code == 301 or fuzz_result.code == 302 and location:
 	    self.__create_xml_element(node_url, "RedirectLocation", location)
@@ -117,9 +117,9 @@ class html:
 	elif fuzz_result.code>=200 and fuzz_result.code < 300:
 	    htmlc = "<font color=#00aa00>"
 
-	if fuzz_result.history.fr_method().lower() == "post":
+	if fuzz_result.history.method.lower() == "post":
 	    inputs=""
-	    for n, v in fuzz_result.history.fr_parameters()['post'].items():
+	    for n, v in fuzz_result.history.parameters.post.items():
 		inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
 
 	    sys.stderr.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
@@ -286,14 +286,14 @@ class verbose(default):
 	self._write("%.3fs   C=" % (res.timer), line_suffix, txt_color)
 
 	location = ""
-	if 'Location' in res.history.fr_headers()['response']:
-	    location = res.history.fr_headers()['response']['Location']
-	elif res.history.fr_url() != res.history.fr_redirect_url():
-	    location = "(*) %s" % res.history.fr_url()
+	if 'Location' in res.history.headers.response:
+	    location = res.history.headers.response['Location']
+	elif res.history.url != res.history.redirect_url:
+	    location = "(*) %s" % res.history.url
 
 	server = ""
-	if 'Server' in res.history.fr_headers()['response']:
-	    server = res.history.fr_headers()['response']['Server']
+	if 'Server' in res.history.headers.response:
+	    server = res.history.headers.response['Server']
 
 	if res.exception:
 	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
@@ -322,16 +322,16 @@ class json:
 
     def result(self, res):
 	server = ""
-	if 'Server' in res.history.fr_headers()['response']:
-	    server = res.history.fr_headers()['response']['Server']
+	if 'Server' in res.history.headers.response:
+	    server = res.history.headers.response['Server']
 	location = ""
-	if 'Location' in res.history.fr_headers()['response']:
-	    location = res.history.fr_headers()['response']['Location']
-	elif res.history.fr_url() != res.history.fr_redirect_url():
-	    location = "(*) %s" % res.history.fr_url()
+	if 'Location' in res.history.headers.response:
+	    location = res.history.headers.response['Location']
+	elif res.history.url != res.history.redirect_url:
+	    location = "(*) %s" % res.history.url
         post_data = {}
-	if res.history.fr_method().lower() == "post":
-	    for n, v in res.history.fr_parameters()['post'].items():
+	if res.history.method.lower() == "post":
+	    for n, v in res.history.parameters.post.items():
                 post_data[n] = v
 
         res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}

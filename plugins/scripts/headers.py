@@ -16,11 +16,11 @@ class headers(BasePlugin):
         serverh = ""
 	poweredby = ""
 
-	if "Server" in fuzzresult.history.fr_headers()['response']:
-	    serverh = fuzzresult.history.fr_headers()['response']["Server"]
+	if "Server" in fuzzresult.history.headers.response:
+	    serverh = fuzzresult.history.headers.response["Server"]
 
-	if "X-Powered-By" in fuzzresult.history.fr_headers()['response']:
-	    poweredby = fuzzresult.history.fr_headers()['response']["X-Powered-By"]
+	if "X-Powered-By" in fuzzresult.history.headers.response:
+	    poweredby = fuzzresult.history.headers.response["X-Powered-By"]
 
         if serverh != "":
 	    if not self.has_kbase("server"):

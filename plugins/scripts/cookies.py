@@ -13,7 +13,7 @@ class cookies(BasePlugin):
 	return True
 
     def process(self, fuzzresult):
-        new_cookies = fuzzresult.history.fr_cookies()['response'].items()
+        new_cookies = fuzzresult.history.cookies.response.items()
 
 	if len(new_cookies) > 0:
 	    for name, value in new_cookies:

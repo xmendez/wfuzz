@@ -95,7 +95,7 @@ class FuzzResFilter:
 	if adv_element == 'intext':
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
-	    if regex.search(self.res.history.fr_content()): cond = True
+	    if regex.search(self.res.history.content): cond = True
 	elif adv_element == 'inurl':
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
@@ -110,7 +110,7 @@ class FuzzResFilter:
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False
 	    
-	    if regex.search("\n".join([': '.join(k) for k in self.res.history.fr_headers()['response'].items()])): cond = True
+	    if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
 
 	return cond if operator == "=" else not cond
 
@@ -207,7 +207,7 @@ class FuzzResFilter:
 		    cond1 = self.hideparams['codes_show']
 
 	    if self.hideparams['regex']:
-		if self.hideparams['regex'].search(res.history.fr_content()):
+		if self.hideparams['regex'].search(res.history.content):
 		    cond2 = self.hideparams['regex_show']
 
 	    return (cond1 and cond2)

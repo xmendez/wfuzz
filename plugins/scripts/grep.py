@@ -21,5 +21,5 @@ class grep(BasePlugin):
 	return True
 
     def process(self, fuzzresult):
-	for r in self.regex.findall(fuzzresult.history.fr_content()):
+	for r in self.regex.findall(fuzzresult.history.content):
 	    self.add_result("Pattern match %s" % r)

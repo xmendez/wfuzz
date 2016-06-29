@@ -42,7 +42,7 @@ class svn_extractor(DiscoveryPlugin):
     def process(self, fuzzresult):
 	base_url = fuzzresult.url
 
-	file_list, dir_list, author_list = self.readsvn(fuzzresult.history.fr_content())
+	file_list, dir_list, author_list = self.readsvn(fuzzresult.history.content)
 
 	if author_list:
 	    self.add_result("SVN authors: %s" % ', '.join(author_list))
@@ -92,7 +92,7 @@ class wcdb_extractor(DiscoveryPlugin):
 	return author_list, list_items
 
     def process(self, fuzzresult):
-	author_list, list_items = self.readwc(fuzzresult.history.fr_content())
+	author_list, list_items = self.readwc(fuzzresult.history.content)
 
 	if author_list:
 	    self.add_result("SVN authors: %s" % ', '.join(author_list))

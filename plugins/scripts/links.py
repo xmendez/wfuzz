@@ -37,7 +37,7 @@ class links(DiscoveryPlugin):
 	#ParseResult(scheme='', netloc='', path='www.owasp.org/index.php/OWASP_EU_Summit_2008', params='', query='', fragment='')
 
 	for r in self.regex:
-	    for i in r.findall(fuzzresult.history.fr_content()):
+	    for i in r.findall(fuzzresult.history.content):
 		parsed_link = parse_url(i)
 
 		if (not parsed_link.scheme or parsed_link.scheme == "http" or parsed_link.scheme == "https") and \

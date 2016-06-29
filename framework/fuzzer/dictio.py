@@ -74,7 +74,7 @@ class requestGenerator:
 	def count(self):
 	    v = self.dictio.count()
 	    if self.seed.wf_allvars is not None:
-		v *= self.seed.wf_allvars_len()
+		v *= len(self.seed.wf_allvars_set)
 
 	    if self._baseline: v += 1
 

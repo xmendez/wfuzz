@@ -26,5 +26,5 @@ class errors(BasePlugin):
 
     def process(self, fuzzresult):
 	for server_name, r in self.regex:
-	    for i in r.findall(fuzzresult.history.fr_content()):
+	    for i in r.findall(fuzzresult.history.content):
 		self.add_result("Server error identified, version: %s %s" % (server_name, i))

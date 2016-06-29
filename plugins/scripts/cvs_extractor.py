@@ -22,7 +22,7 @@ class cvs_extractor(DiscoveryPlugin):
     def process(self, fuzzresult):
 	base_url = urljoin(fuzzresult.url, "..")
 
-	for line in fuzzresult.history.fr_content().splitlines():
+	for line in fuzzresult.history.content.splitlines():
 	    record = line.split("/")
 	    if len(record) == 6 and record[1]:
 		self.queue_url(urljoin(base_url, record[1]))

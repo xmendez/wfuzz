@@ -20,7 +20,7 @@ class sitemap(DiscoveryPlugin):
 	base_url = fuzzresult.url
 
 	try:
-	    dom = xml.dom.minidom.parseString(fuzzresult.history.fr_content())
+	    dom = xml.dom.minidom.parseString(fuzzresult.history.content)
 	except:
 	    raise FuzzException(FuzzException.FATAL, 'Error while parsing %s.' % fuzzresult.url)
 
