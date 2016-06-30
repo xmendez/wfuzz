@@ -506,75 +506,76 @@ class FuzzStats:
 	    "totaltime": self.totaltime,
 	}
 
-    def get_cancelled(self):
+    @property
+    def cancelled(self):
 	with self.mutex:
 	    return self._cancel
 
-    def set_cancelled(self, someValue):
+    @cancelled.setter
+    def cancelled(self, someValue):
 	with self.mutex:
 	    self._cancel = someValue
 
-    cancelled = property( get_cancelled, set_cancelled )
-
-    def get_pend_fuzz(self):
+    @property
+    def pending_fuzz(self):
 	with self.mutex:
 	    return self._pending_fuzz
 
-    def set_pend_fuzz(self, someValue):
+    @pending_fuzz.setter
+    def pending_fuzz(self, someValue):
 	with self.mutex:
 	    self._pending_fuzz = someValue
 
-    pending_fuzz = property( get_pend_fuzz, set_pend_fuzz )
-
-    def get_filtered(self):
+    @property
+    def filtered(self):
 	with self.mutex:
 	    return self._filtered
 
-    def set_filtered(self, someValue):
+    @filtered.setter
+    def filtered(self, someValue):
 	with self.mutex:
 	    self._filtered = someValue
 
-    filtered = property( get_filtered, set_filtered )
 
-    def get_backfeed(self):
+    @property
+    def backfeed(self):
 	with self.mutex:
 	    return self._backfeed
 
-    def set_backfeed(self, someValue):
+    @backfeed.setter
+    def backfeed(self, someValue):
 	with self.mutex:
 	    self._backfeed = someValue
 
-    backfeed = property( get_backfeed, set_backfeed )
-
-    def get_processed(self):
+    @property
+    def processed(self):
 	with self.mutex:
 	    return self._processed
 
-    def set_processed(self, someValue):
+    @processed.setter
+    def processed(self, someValue):
 	with self.mutex:
 	    self._processed = someValue
 
-    processed = property( get_processed, set_processed )
-
-    def get_pend_seeds(self):
+    @property
+    def pending_seeds(self):
 	with self.mutex:
 	    return self._pending_seeds
 
-    def set_pend_seeds(self, someValue):
+    @pending_seeds.setter
+    def pending_seeds(self, someValue):
 	with self.mutex:
 	    self._pending_seeds = someValue
 
-    pending_seeds = property( get_pend_seeds, set_pend_seeds )
-
-    def get_total_time(self):
+    @property
+    def total_time(self):
 	with self.mutex:
 	    return self._totaltime
 
-    def set_total_time(self, someValue):
+    @total_time.setter
+    def total_time(self, someValue):
 	with self.mutex:
 	    self._totaltime = someValue
-
-    totaltime = property( get_total_time, set_total_time )
 
     def mark_start(self):
 	with self.mutex:
