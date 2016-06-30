@@ -83,7 +83,7 @@ class FuzzResFilter:
 	    if urlparse.urlparse(self.res.url).query:
 		cond = True
 	elif adv_element == 'ispath':
-		cond = self.res.is_path()
+		cond = self.res.history.is_path
 
 	return cond if operator == "notpresent" else not cond
 

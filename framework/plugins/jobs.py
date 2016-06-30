@@ -109,7 +109,7 @@ class ProcessorQ(FuzzQueue):
 	    plres.issue = "Plugin %s enqueued %d more requests (rlevel=%d)" % (plugin_name, enq_item, fuzz_res.rlevel)
 
 	# check if recursion is needed
-	if self.max_rlevel >= fuzz_res.rlevel and fuzz_res.is_path():
+	if self.max_rlevel >= fuzz_res.rlevel and fuzz_res.history.is_path:
 	    if self.cache.update_cache(fuzz_res.history, "recursion"):
 		self.send_new_seed(fuzz_res)
 

@@ -176,6 +176,34 @@ class FuzzRequest(object):
     def reqtime(self, t):
 	self._request.totaltime = t
 
+    @property
+    def is_path(self):
+	if self.code == 200 and self.url[-1] == '/':
+	    return True
+	elif self.code >= 300 and self.code < 400:
+	    if "Location" in self.headers.response and self.headers.response["Location"][-1]=='/':
+		return True
+	elif self.code == 401:
+	    if self.url[-1] == '/':
+		return True
+
+	return False
+
+    @property
+    def recursive_url(self):
+	if self.code >= 300 and self.code < 400 and "Location" in self.headers.response:
+	    new_url = self.headers.response["Location"]
+	    if not new_url[-1] == '/': new_url += "/"
+	    # taking into consideration redirections to /xxx/ without full URL
+	    new_url = urljoin(self.url, new_url)
+	elif self.code == 401 or self.code == 200:
+	    new_url = self.url
+	    if not self.url[-1] == '/': new_url = "/"
+	else:
+	    raise Exception, "Error generating recursive url"
+
+	return new_url + "FUZZ"
+
     # Info extra that wfuzz needs within an HTTP request
 
     @property
@@ -487,7 +515,7 @@ class FuzzStats:
 
 	tmp_stats.url = rg.seed.redirect_url
 	tmp_stats.total_req = rg.count()
-	tmp_stats.seed = FuzzResult.from_fuzzReq(rg.seed, -1)
+	tmp_stats.seed = FuzzResult.from_fuzzReq(rg.seed)
 
 	return tmp_stats
 
@@ -586,20 +614,11 @@ class FuzzStats:
 
 
 class FuzzResult:
-    def __init__(self, nres):
+    def __init__(self):
 	self.is_visible = True
-	self.is_baseline = False
-
-	self.nres = nres
-	self.timer = 0
-	self.rlevel = 1
 
 	self.exception = None
-	self.description = ""
 
-	self.url = ""
-
-	self.code = 0
 	self.chars = 0
 	self.lines = 0
 	self.words = 0
@@ -610,11 +629,45 @@ class FuzzResult:
 	self.plugins_res = []
 	self.plugins_backfeed = []
 
-    @staticmethod
-    def from_fuzzReq(req, nres = -1, exception = None):
-	fr = FuzzResult(nres)
+    # parameters in common with fuzzrequest
+    @property
+    def url(self):
+        return self.history.url
 
-	fr.nres = nres
+    @property
+    def code(self):
+        if self.history.code and not self.exception:
+            return int(self.history.code)
+        else:
+            return 0
+
+    @property
+    def is_baseline(self):
+        return self.history.wf_is_baseline
+
+    @property
+    def description(self):
+        desc = self.history.wf_description
+
+        if self.exception:
+            return desc + "! " + self.exception.msg
+
+        return desc
+
+    @property
+    def timer(self):
+        return self.history.reqtime if self.history.reqtime else 0
+
+    @property
+    def rlevel(self):
+        return self.history.rlevel
+
+    # factory methods
+
+    @staticmethod
+    def from_fuzzReq(req, exception = None):
+	fr = FuzzResult()
+
 	if req.content:
 	    m = hashlib.md5()
 	    m.update(req.content)
@@ -624,51 +677,14 @@ class FuzzResult:
 	    fr.lines = req.content.count("\n")
 	    fr.words = len(re.findall("\S+",req.content))
 
-	fr.code = 0 if req.code is None else int(req.code)
-	fr.url = req.url
-	fr.description = req.wf_description
-	fr.timer = req.reqtime
-	fr.rlevel = req.rlevel
-
 	fr.history = req
-	fr.is_baseline = req.wf_is_baseline
-
-	if exception:
-	    fr.code = 0
-	    fr.exception = exception
-	    fr.description = fr.description + "! " + exception.msg
+	if exception: fr.exception = exception
 
 	return fr
 
-    def is_path(self):
-	if self.code == 200 and self.url[-1] == '/':
-	    return True
-	elif self.code >= 300 and self.code < 400:
-	    if "Location" in self.history.headers.response and self.history.headers.response["Location"][-1]=='/':
-		return True
-	elif self.code == 401:
-	    if self.url[-1] == '/':
-		return True
-
-	return False
-
     def to_new_seed(self):
-	seed = FuzzRequest.from_fuzzRes(self, self._recursive_url())
+	seed = FuzzRequest.from_fuzzRes(self, self.history.recursive_url)
 	seed.rlevel += 1
 
 	return seed
-
-    def _recursive_url(self):
-	if self.code >= 300 and self.code < 400 and "Location" in self.history.headers.response:
-	    new_url = self.history.headers.response["Location"]
-	    if not new_url[-1] == '/': new_url += "/"
-	    # taking into consideration redirections to /xxx/ without full URL
-	    new_url = urljoin(self.url, new_url)
-	elif self.code == 401 or self.code == 200:
-	    new_url = self.url
-	    if not self.url[-1] == '/': new_url = "/"
-	else:
-	    raise Exception, "Error generating seed from fuzz res"
-
-	return new_url + "FUZZ"
 
