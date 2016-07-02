@@ -507,7 +507,7 @@ class FuzzStats:
 	self._totaltime = 0
 	self.__starttime = 0
 
-	self._cancel = False
+	self._cancelled = False
 
     @staticmethod
     def from_requestGenerator(rg):
@@ -534,76 +534,19 @@ class FuzzStats:
 	    "totaltime": self.totaltime,
 	}
 
-    @property
-    def cancelled(self):
-	with self.mutex:
-	    return self._cancel
+    def __getattr__(self, name):
+        if name in ["cancelled", "pending_fuzz", "filtered", "backfeed", "processed", "pending_seeds"]:
+            with self.mutex:
+                return self.__dict__["_" + name]
+        else:
+            raise AttributeError
 
-    @cancelled.setter
-    def cancelled(self, someValue):
-	with self.mutex:
-	    self._cancel = someValue
+    def __setattr__(self, name, value):
+        if name in ["cancelled", "pending_fuzz", "filtered", "backfeed", "processed", "pending_seeds"]:
+            with self.mutex:
+                self.__dict__["_" + name] = value
 
-    @property
-    def pending_fuzz(self):
-	with self.mutex:
-	    return self._pending_fuzz
-
-    @pending_fuzz.setter
-    def pending_fuzz(self, someValue):
-	with self.mutex:
-	    self._pending_fuzz = someValue
-
-    @property
-    def filtered(self):
-	with self.mutex:
-	    return self._filtered
-
-    @filtered.setter
-    def filtered(self, someValue):
-	with self.mutex:
-	    self._filtered = someValue
-
-
-    @property
-    def backfeed(self):
-	with self.mutex:
-	    return self._backfeed
-
-    @backfeed.setter
-    def backfeed(self, someValue):
-	with self.mutex:
-	    self._backfeed = someValue
-
-    @property
-    def processed(self):
-	with self.mutex:
-	    return self._processed
-
-    @processed.setter
-    def processed(self, someValue):
-	with self.mutex:
-	    self._processed = someValue
-
-    @property
-    def pending_seeds(self):
-	with self.mutex:
-	    return self._pending_seeds
-
-    @pending_seeds.setter
-    def pending_seeds(self, someValue):
-	with self.mutex:
-	    self._pending_seeds = someValue
-
-    @property
-    def total_time(self):
-	with self.mutex:
-	    return self._totaltime
-
-    @total_time.setter
-    def total_time(self, someValue):
-	with self.mutex:
-	    self._totaltime = someValue
+        self.__dict__[name] = value
 
     def mark_start(self):
 	with self.mutex:
