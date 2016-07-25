@@ -155,7 +155,6 @@ class Fuzzer:
 	self.results_queue.task_done()
 
 	if isinstance(item, FuzzResult):
-	    item.nres = self.genReq.stats.processed
 	    self.genReq.stats.processed += 1
 	    self.genReq.stats.pending_fuzz -= 1
 	    if not item.is_visible: self.genReq.stats.filtered += 1 

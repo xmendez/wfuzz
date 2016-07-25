@@ -24,7 +24,7 @@ class DryRunQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	self.send(FuzzResult.from_fuzzReq(item))
+	self.send(FuzzResult(item))
 
 class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
@@ -144,7 +144,7 @@ class HttpQueue(FuzzQueue):
 		buff_body, buff_header, req = c.response_queue
 		req.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
 
-		self.send(FuzzResult.from_fuzzReq(req))
+		self.send(FuzzResult(req))
 
 		self.m.remove_handle(c)
 		self.freelist.put(c)
@@ -185,7 +185,7 @@ class HttpQueue(FuzzQueue):
 		    err_number = ReqRespException.RESOLVE_PROXY
 
 		e = ReqRespException(err_number, "Pycurl error %d: %s" % (errno, errmsg))
-		self.send(FuzzResult.from_fuzzReq(req, exception=e))
+		self.send(FuzzResult(req, exception=e))
 
 		if not self.options.get("scanmode"):
 		    self._throw(e)

@@ -2,6 +2,8 @@ import types
 import time
 import hashlib
 import re
+import itertools
+
 from urlparse import urljoin
 from threading import Lock
 from collections import namedtuple
@@ -515,7 +517,7 @@ class FuzzStats:
 
 	tmp_stats.url = rg.seed.redirect_url
 	tmp_stats.total_req = rg.count()
-	tmp_stats.seed = FuzzResult.from_fuzzReq(rg.seed)
+	tmp_stats.seed = FuzzResult(rg.seed)
 
 	return tmp_stats
 
@@ -557,17 +559,30 @@ class FuzzStats:
 
 
 class FuzzResult:
-    def __init__(self):
+    newid = itertools.count(0).next
+
+    def __init__(self, history, exception = None):
 	self.is_visible = True
 
-	self.exception = None
+	self.exception = exception
 
-	self.chars = 0
-	self.lines = 0
-	self.words = 0
-	self.md5 = ""
+	self.history = history
 
-	self.history = None
+        if self.history.content:
+            m = hashlib.md5()
+            m.update(self.history.content)
+            self.md5 = m.hexdigest()
+
+            self.chars = len(self.history.content)
+            self.lines = self.history.content.count("\n")
+            self.words = len(re.findall("\S+", self.history.content))
+        else:
+            self.chars = 0
+            self.lines = 0
+            self.words = 0
+            self.md5 = ""
+
+        self.nres = 0 if self.is_baseline else FuzzResult.newid()
 
 	self.plugins_res = []
 	self.plugins_backfeed = []
@@ -606,24 +621,6 @@ class FuzzResult:
         return self.history.rlevel
 
     # factory methods
-
-    @staticmethod
-    def from_fuzzReq(req, exception = None):
-	fr = FuzzResult()
-
-	if req.content:
-	    m = hashlib.md5()
-	    m.update(req.content)
-	    fr.md5 = m.hexdigest()
-
-	    fr.chars = len(req.content)
-	    fr.lines = req.content.count("\n")
-	    fr.words = len(re.findall("\S+",req.content))
-
-	fr.history = req
-	if exception: fr.exception = exception
-
-	return fr
 
     def to_new_seed(self):
 	seed = FuzzRequest.from_fuzzRes(self, self.history.recursive_url)
