@@ -3,6 +3,18 @@
 #Covered by GPL V2.0
 
 import sys
+
+# Check for pycurl dependency
+try:
+    import pycurl
+
+    if "openssl".lower() not in pycurl.version.lower():
+        print "\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's wiki for more information at https://github.com/xmendez/wfuzz/wiki/PyCurlSSLBug\n"
+
+except ImportError, e:
+    print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
+    sys.exit(1)
+
 import logging
 import os
 
