@@ -1,6 +1,10 @@
 import sys
 from framework.core.facade import version
 
+examples_banner = '''Examples:\n\twfuzz.py -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+\twfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
+\twfuzz.py --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
+\n\tMore examples in the README.'''
 
 exec_banner = '''********************************************************\r
 * Wfuzz %s - The Web Bruteforcer                      *\r
@@ -17,118 +21,107 @@ help_banner = '''********************************************************
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n''' % (version, version)
 
-brief_usage ='''Usage: %s [options] -z payload,params <url>\r\n
-Type wfuzz.py -h for further information or --help for advanced usage.
+header_usage ='''Usage:\t%s [options] -z payload,params <url>\r\n
+\tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
+\tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
 ''' % (sys.argv[0])
-usage ='''Usage: %s [options] -z payload,params <url>\r\n
-Options:
--h      		    : This help
---help			    : Advanced help
---version		    : Wfuzz version details
--e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 
--c			    : Output with colors
--v			    : Verbose information. Alias for -o verbose
---interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
+brief_usage ='''%s\n\n%s\n\nType wfuzz.py -h for further information or --help for advanced usage.''' % (header_usage, examples_banner)
 
--p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
-			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
+usage ='''%s\n\nOptions:
+\t-h      		    : This help
+\t--help			    : Advanced help
+\t--version		    : Wfuzz version details
+\t-e <type>		    : List of available encoders/payloads/iterators/printers/scripts
+\t
+\t-c			    : Output with colors
+\t-v			    : Verbose information. Alias for -o verbose
+\t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
+\t
+\t-p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
+\t			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
+\t
+\t-t N			    : Specify the number of concurrent connections (10 default)
+\t-s N			    : Specify time delay between requests (0 default)
+\t-R depth		    : Recursive path discovery being depth the maximum recursion level.
+\t--follow		    : Follow HTTP redirections
+\t
+\t-m iterator		    : Specify an iterator for combining payloads (product by default)
+\t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
+\t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
+\t			      Encoders category can be used. ie. url
+\t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
+\t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
+\t-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
+\t
+\t-b cookie		    : Specify a cookie for the requests
+\t-d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
+\t-H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ")
+\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
+\t
+\t--hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
+\t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
+\t			      It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=
+\n%s
+''' % (header_usage, examples_banner)
 
--t N			    : Specify the number of concurrent connections (10 default)
--s N			    : Specify time delay between requests (0 default)
--R depth		    : Recursive path discovery being depth the maximum recursion level.
---follow		    : Follow HTTP redirections
-
--m iterator		    : Specify an iterator for combining payloads (product by default)
--z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
-			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
-			      Encoders category can be used. ie. url
--w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
--V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
--X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
-
--b cookie		    : Specify a cookie for the requests
--d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
--H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ")
---basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
-
---hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
---sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
---ss/hs regex		    : Show/Hide responses with the specified regex within the content
---filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
-			      It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=
-
-Keyword: FUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
-Baseline: FUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
-
-Examples: - wfuzz.py -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
-	  - wfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-
-	   More examples in the README.''' % (sys.argv[0])
-
-verbose_usage ='''Usage: %s [options] -z payload,params <url>\r\n
-Options:
--h/--help		    : This help
---hh			    : Advanced help
---version		    : Wfuzz version details
--e <type>		    : List of available encoders/payloads/iterators/printers/scripts
-
---recipe <filename>	    : Reads options from a recipe
---dump-recipe		    : Prints current options as a recipe
---oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
-
--c			    : Output with colors
--v			    : Verbose information. Alias for -o verbose
--o printer		    : Format output using the specified printer (default printer if omitted).
---interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
---dry-run		    : Print the results of applying the requests without actually making any HTTP request.
-
--p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
-			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
-
--t N			    : Specify the number of concurrent connections (10 default)
--s N			    : Specify time delay between requests (0 default)
--R depth		    : Recursive path discovery being depth the maximum recursion level.
--I			    : Use HTTP HEAD method (No HTML body responses). 
---follow		    : Follow HTTP redirections
--Z			    : Scan mode (Connection errors will be ignored).
---req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
---conn-delay		    : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
-
--A			    : Alias for --script=default -v -c
---script=		    : Equivalent to --script=default
---script=<plugins>	    : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
---script-help=<plugins>	    : Show help about scripts.
---script-args n1=v1,...     : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
-
--m iterator		    : Specify an iterator for combining payloads (product by default)
--z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
-			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
-			      Encoders category can be used. ie. url
---zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
--w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
--V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
--X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
-
--b cookie		    : Specify a cookie for the requests. Repeat option for various cookies.
--d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
--H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ"). Repeat option for various headers.
---basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
-
---hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
---sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
---ss/hs regex		    : Show/Hide responses with the specified regex within the content
---filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
-			      It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
-
-Keyword: FUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
-Baseline: FUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
-
-Examples: - wfuzz.py -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
-	  - wfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-	  - wfuzz.py --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
-
-	   More examples in the README.''' % (sys.argv[0])
+verbose_usage ='''%s\n\nOptions:
+\t-h/--help		    : This help
+\t--hh			    : Advanced help
+\t--version		    : Wfuzz version details
+\t-e <type>		    : List of available encoders/payloads/iterators/printers/scripts
+\t
+\t--recipe <filename>	    : Reads options from a recipe
+\t--dump-recipe		    : Prints current options as a recipe
+\t--oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
+\t
+\t-c			    : Output with colors
+\t-v			    : Verbose information. Alias for -o verbose
+\t-o printer		    : Format output using the specified printer (default printer if omitted).
+\t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
+\t--dry-run		    : Print the results of applying the requests without actually making any HTTP request.
+\t
+\t-p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
+\t			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
+\t
+\t-t N			    : Specify the number of concurrent connections (10 default)
+\t-s N			    : Specify time delay between requests (0 default)
+\t-R depth		    : Recursive path discovery being depth the maximum recursion level.
+\t-I			    : Use HTTP HEAD method (No HTML body responses). 
+\t--follow		    : Follow HTTP redirections
+\t-Z			    : Scan mode (Connection errors will be ignored).
+\t--req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
+\t--conn-delay		    : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
+\t
+\t-A			    : Alias for --script=default -v -c
+\t--script=		    : Equivalent to --script=default
+\t--script=<plugins>	    : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
+\t--script-help=<plugins>	    : Show help about scripts.
+\t--script-args n1=v1,...     : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
+\t
+\t-m iterator		    : Specify an iterator for combining payloads (product by default)
+\t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
+\t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
+\t			      Encoders category can be used. ie. url
+\t--zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
+\t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
+\t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
+\t-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
+\t
+\t-b cookie		    : Specify a cookie for the requests. Repeat option for various cookies.
+\t-d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
+\t-H header  		    : Use header (ex:"Cookie:id=1312321&user=FUZZ"). Repeat option for various headers.
+\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
+\t
+\t--hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
+\t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
+\t			      It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+\n%s
+''' % (header_usage, examples_banner)
 
 class term_colors:
     reset = "\x1b[0m"
