@@ -19,7 +19,7 @@ except ImportError:
 class FuzzResFilter:
     def __init__(self, ffilter = None):
 	if PYPARSING:
-	    element = oneOf("c l w h index")
+	    element = oneOf("c code l lines w words h chars i index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
 	    digits = "XB0123456789"
@@ -124,18 +124,19 @@ class FuzzResFilter:
 	    value = 0
 
 	if value == 'BBB':
-	    if element == 'l':
+	    if element == 'l' or element == 'lines':
 		value = self.baseline.lines
-	    elif element == 'c':
+	    elif element == 'c' or element == 'code':
 		value = self.baseline.code
-	    elif element == 'w':
+	    elif element == 'w' or element == 'words':
 		value = self.baseline.words
-	    elif element == 'h':
+	    elif element == 'h' or element == 'chars':
 		value = self.baseline.chars
-	    elif element == 'index':
+	    elif element == 'index' or element == 'i':
 		value = self.baseline.nres
 
-	test = dict(w=self.res.words, c=self.res.code, l=self.res.lines, h=self.res.chars, index=self.res.nres)
+	test = dict(w=self.res.words, c=self.res.code, l=self.res.lines, h=self.res.chars, i=self.res.nres, \
+                words=self.res.words, code=self.res.code, lines=self.res.lines, chars=self.res.chars, index=self.res.nres)
 	value = int(value)
 
 	if operator == "=":
@@ -182,7 +183,7 @@ class FuzzResFilter:
 	    try:
 		return self.finalformula.parseString(filter_string)[0]
 	    except ParseException, e:
-		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 	else:
 	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
 		    or 'BBB' in self.hideparams['lines'] \
