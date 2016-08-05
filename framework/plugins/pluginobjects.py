@@ -1,4 +1,4 @@
-from framework.fuzzer.fuzzobjects import FuzzRequest
+from framework.fuzzer.fuzzobjects import FuzzRequestFactory
 
 class PluginResult:
     def __init__(self):
@@ -13,7 +13,7 @@ class PluginRequest():
 
     @staticmethod
     def from_fuzzRes(res, url, source):
-	fr = FuzzRequest.from_fuzzRes(res, str(url))
+	fr = FuzzRequestFactory.from_fuzzRes(res, str(url))
 	fr.wf_description = fr.path
 	fr.rlevel = res.rlevel + 1
 

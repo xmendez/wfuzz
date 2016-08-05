@@ -287,6 +287,57 @@ class FuzzRequest(object):
 
     # methods wfuzz needs for substituing payloads and building dictionaries
 
+    def update_from_options(self, options):
+
+	if options['auth'][0] is not None:
+	    self.auth = (options['auth'][0], options['auth'][1])
+
+	if options['follow']:
+	    self.follow = options['follow']
+
+        if options['postdata']:
+            self.parameters.post = options['postdata']
+
+        if options['head']:
+            self.method = "HEAD"
+
+	if options['cookie']:
+            self.headers.add({"Cookie": "; ".join(options['cookie'])})
+
+        self.headers.add(dict(options['extraheaders']))
+
+        if options['allvars']:
+	    self.wf_allvars = options['allvars']
+
+    def from_copy(self):
+	newreq = FuzzRequest()
+
+	newreq.rlevel = self.rlevel
+	newreq.wf_description = self.wf_description
+	newreq.wf_proxy = self.wf_proxy
+	newreq.wf_is_baseline = self.wf_is_baseline
+	newreq.wf_allvars = self.wf_allvars
+	newreq.wf_fuzz_methods = self.wf_fuzz_methods
+
+
+        newreq.headers.add(self.headers.request)
+        newreq.parameters.post = self.parameters.post
+
+	newreq.follow = self.follow
+	newreq.auth = self.auth
+	newreq.url = self.url
+	newreq.reqtime = self.reqtime
+	newreq.scheme = self.scheme
+
+	if self.wf_fuzz_methods:
+	    newreq.method = "FUZZ"
+	else:
+	    newreq.method = self.method
+
+	return newreq
+
+class FuzzRequestFactory:
+
     @staticmethod
     def replace_fuzz_word(text, fuzz_word, payload):
 	if isinstance(payload, str):
@@ -322,7 +373,7 @@ class FuzzRequest(object):
 
             # substitute entire seed when using a request payload generator without specifying field
             if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ" and isinstance(payload_content, FuzzResult):
-                newreq = FuzzRequest.from_fuzzRes(payload_content)
+                newreq = FuzzRequestFactory.from_fuzzRes(payload_content)
 
                 # new seed
                 newreq.update_from_options(seed_options)
@@ -341,16 +392,16 @@ class FuzzRequest(object):
 		new_http_method = payload_content
 		desc = [payload_content]
 	    if auth_method and (userpass.count(fuzz_word)):
-		userpass, desc = FuzzRequest.replace_fuzz_word(userpass, fuzz_word, payload_content)
+		userpass, desc = FuzzRequestFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
 	    if newreq.redirect_url.count(fuzz_word):
-		rawUrl, desc = FuzzRequest.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
+		rawUrl, desc = FuzzRequestFactory.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
 
 		# reqresp appends http:// if not indicated in the URL, but if I have a payload with a full URL
 		# this messes up everything  => http://FUZZ and then http://http://asdkjsakd.com
 		if rawUrl[:14] == 'http://http://':
 		    rawUrl = rawUrl[7:]
 	    if rawReq.count(fuzz_word):
-		rawReq, desc = FuzzRequest.replace_fuzz_word(rawReq, fuzz_word, payload_content)
+		rawReq, desc = FuzzRequestFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
 
             if desc:
                 descr_array += desc
@@ -391,7 +442,7 @@ class FuzzRequest(object):
 	if seed.wf_fuzz_methods: seed.method = "FUZZ"
 
 	try:
-	    baseline_req = FuzzRequest.from_seed(seed, baseline_payload, None)
+	    baseline_req = FuzzRequestFactory.from_seed(seed, baseline_payload, None)
 	except FuzzException:
 	    raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
 	baseline_req.wf_is_baseline = True
@@ -434,55 +485,6 @@ class FuzzRequest(object):
 	if new_url: fr.url = new_url
 
 	return fr
-
-    def from_copy(self):
-	newreq = FuzzRequest()
-
-	newreq.rlevel = self.rlevel
-	newreq.wf_description = self.wf_description
-	newreq.wf_proxy = self.wf_proxy
-	newreq.wf_is_baseline = self.wf_is_baseline
-	newreq.wf_allvars = self.wf_allvars
-	newreq.wf_fuzz_methods = self.wf_fuzz_methods
-
-
-        newreq.headers.add(self.headers.request)
-        newreq.parameters.post = self.parameters.post
-
-	newreq.follow = self.follow
-	newreq.auth = self.auth
-	newreq.url = self.url
-	newreq.reqtime = self.reqtime
-	newreq.scheme = self.scheme
-
-	if self.wf_fuzz_methods:
-	    newreq.method = "FUZZ"
-	else:
-	    newreq.method = self.method
-
-	return newreq
-
-    def update_from_options(self, options):
-
-	if options['auth'][0] is not None:
-	    self.auth = (options['auth'][0], options['auth'][1])
-
-	if options['follow']:
-	    self.follow = options['follow']
-
-        if options['postdata']:
-            self.parameters.post = options['postdata']
-
-        if options['head']:
-            self.method = "HEAD"
-
-	if options['cookie']:
-            self.headers.add({"Cookie": "; ".join(options['cookie'])})
-
-        self.headers.add(dict(options['extraheaders']))
-
-        if options['allvars']:
-	    self.wf_allvars = options['allvars']
 
     @staticmethod
     def from_options(seed_options, payload_options):
@@ -639,7 +641,7 @@ class FuzzResult:
     # factory methods
 
     def to_new_seed(self):
-	seed = FuzzRequest.from_fuzzRes(self, self.history.recursive_url)
+	seed = FuzzRequestFactory.from_fuzzRes(self, self.history.recursive_url)
 	seed.rlevel += 1
 
 	return seed
