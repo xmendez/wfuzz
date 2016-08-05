@@ -99,4 +99,4 @@ class requestGenerator:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
-		return FuzzRequest.from_seed(self.seed, n if isinstance(n, tuple) else (n,))
+		return FuzzRequest.from_seed(self.seed, n if isinstance(n, tuple) else (n,), self.seed_options)

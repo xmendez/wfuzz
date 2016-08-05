@@ -296,6 +296,9 @@ class FuzzRequest(object):
 		subs_array = []
 
 		for fw, field in marker_regex.findall(text):
+                        if not field:
+                            raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ$url$, or use FUZZ only to repeat the same request.")
+
 			subs = str(getattr(payload, field))
 			text = text.replace("%s$%s$" % (fw, field), subs)
 			subs_array.append(subs)
@@ -303,7 +306,7 @@ class FuzzRequest(object):
 		return (text, subs_array)
 
     @staticmethod
-    def from_seed(seed, payload):
+    def from_seed(seed, payload, seed_options):
 	newreq = seed.from_copy()
 
 	rawReq = str(newreq)
@@ -316,6 +319,21 @@ class FuzzRequest(object):
 
 	for payload_pos, payload_content in enumerate(payload, start=1):
 	    fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
+
+            # substitute entire seed when using a request payload generator without specifying field
+            if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ" and isinstance(payload_content, FuzzResult):
+                newreq = FuzzRequest.from_fuzzRes(payload_content)
+
+                # new seed
+                newreq.update_from_options(seed_options)
+                rawReq = str(newreq)
+                rawUrl = newreq.redirect_url
+                scheme = newreq.scheme
+                auth_method, userpass = newreq.auth
+
+                descr_array.append(rawUrl)
+
+                continue
 
             desc = None
 
@@ -373,7 +391,7 @@ class FuzzRequest(object):
 	if seed.wf_fuzz_methods: seed.method = "FUZZ"
 
 	try:
-	    baseline_req = FuzzRequest.from_seed(seed, baseline_payload)
+	    baseline_req = FuzzRequest.from_seed(seed, baseline_payload, None)
 	except FuzzException:
 	    raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
 	baseline_req.wf_is_baseline = True
@@ -445,8 +463,6 @@ class FuzzRequest(object):
 	return newreq
 
     def update_from_options(self, options):
-	self.url = options['url']
-        self._request.setUrl(options['url'])
 
 	if options['auth'][0] is not None:
 	    self.auth = (options['auth'][0], options['auth'][1])
@@ -472,7 +488,7 @@ class FuzzRequest(object):
     def from_options(seed_options, payload_options):
 	fr = FuzzRequest()
 
-	fr.url = ""
+	fr.url = seed_options['url']
         fr.rlevel = 1
 	fr.wf_fuzz_methods = seed_options['fuzz_methods']
 	fr.update_from_options(seed_options)
