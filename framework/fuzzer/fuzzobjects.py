@@ -11,6 +11,7 @@ from collections import namedtuple
 from externals.reqresp import Request
 from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
+from framework.plugins.api.urlutils import parse_url
 
 auth_header = namedtuple("auth_header", "method credentials")
 
@@ -177,6 +178,11 @@ class FuzzRequest(object):
     @reqtime.setter
     def reqtime(self, t):
 	self._request.totaltime = t
+
+    # urlparse functions
+    @property
+    def urlparse(self):
+        return parse_url(self.url)
 
     @property
     def is_path(self):

@@ -3,10 +3,8 @@ from threading import Thread
 
 from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.utils.myqueue import FuzzQueue
-from framework.plugins.api.urlutils import parse_res, parse_url
 
 import re
-import urlparse
 
 PYPARSING = True
 try:
@@ -80,7 +78,7 @@ class FuzzResFilter:
 	cond = False
 
 	if adv_element == 'hasquery':
-	    if urlparse.urlparse(self.res.url).query:
+	    if self.res.history.urlparse.query:
 		cond = True
 	elif adv_element == 'ispath':
 		cond = self.res.history.is_path
@@ -101,10 +99,10 @@ class FuzzResFilter:
 	    cond = False
 	    if regex.search(self.res.url): cond = True
 	elif adv_element == 'filetype':
-	    if parse_res(self.res).file_extension == value:
+	    if self.res.history.urlparse.file_extension == value:
 		cond = True
 	elif adv_element == 'site':
-	    if urlparse.urlparse(self.res.url).netloc.rfind(value) >= 0:
+	    if self.res.history.urlparse.netloc.rfind(value) >= 0:
 		cond = True
 	elif adv_element == 'inheader':
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)

@@ -1,5 +1,5 @@
 from framework.plugins.base import DiscoveryPlugin
-from framework.plugins.api.urlutils import parse_res, parse_url
+from framework.plugins.api.urlutils import parse_url
 from framework.core.myexception import FuzzException
 from externals.moduleman.plugin import moduleman_plugin
 
@@ -14,7 +14,7 @@ class sitemap(DiscoveryPlugin):
     priority = 99
 
     def validate(self, fuzzresult):
-	return parse_res(fuzzresult).file_fullname == "sitemap.xml" and fuzzresult.code == 200
+	return fuzzresult.history.urlparse.file_fullname == "sitemap.xml" and fuzzresult.code == 200
 
     def process(self, fuzzresult):
 	base_url = fuzzresult.url
@@ -28,6 +28,6 @@ class sitemap(DiscoveryPlugin):
 	for url in urlList:
 	    u = url.childNodes[0].data
 
-	    if parse_res(fuzzresult).domain == parse_url(u).domain:
+	    if fuzzresult.history.urlparse.domain == parse_url(u).domain:
 		self.queue_url(u)
 

@@ -1,7 +1,7 @@
 import os
 import urlparse
 
-class FuzzResParse(urlparse.ParseResult):
+class FuzzRequestParse(urlparse.ParseResult):
     @property
     def domain(self):
 	'''
@@ -39,12 +39,7 @@ class FuzzResParse(urlparse.ParseResult):
 
 def parse_url(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
-    return FuzzResParse(scheme, netloc, path, params, query, fragment)
-
-def parse_res(fuzzres):
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(fuzzres.url)
-    return FuzzResParse(scheme, netloc, path, params, query, fragment)
-
+    return FuzzRequestParse(scheme, netloc, path, params, query, fragment)
 
 def check_content_type(fuzzresult, which):
     ctype = None

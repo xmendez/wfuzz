@@ -2,7 +2,7 @@ import re
 from urlparse import urlparse, urljoin
 
 from framework.plugins.base import DiscoveryPlugin
-from framework.plugins.api.urlutils import parse_url, parse_res
+from framework.plugins.api.urlutils import parse_url
 from externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
@@ -41,7 +41,7 @@ class links(DiscoveryPlugin):
 		parsed_link = parse_url(i)
 
 		if (not parsed_link.scheme or parsed_link.scheme == "http" or parsed_link.scheme == "https") and \
-		    (parsed_link.domain == parse_res(fuzzresult).domain or (not parsed_link.netloc and parsed_link.path)):
+		    (parsed_link.domain == fuzzresult.history.urlparse.domain or (not parsed_link.netloc and parsed_link.path)):
 		    if i not in l:
 			l.append(i)
 

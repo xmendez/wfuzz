@@ -3,7 +3,6 @@ from urlparse import urlparse, urljoin
 
 
 from framework.plugins.base import DiscoveryPlugin
-from framework.plugins.api.urlutils import parse_res
 from framework.plugins.api.urlutils import check_content_type
 from externals.moduleman.plugin import moduleman_plugin
 
@@ -15,7 +14,7 @@ class robots(DiscoveryPlugin):
     priority = 99
 
     def validate(self, fuzzresult):
-	return parse_res(fuzzresult).file_fullname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
+	return fuzzresult.history.urlparse.file_fullname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
 
     def process(self, fuzzresult):
 	# Shamelessly (partially) copied from w3af's plugins/discovery/robotsReader.py
