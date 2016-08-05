@@ -9,6 +9,7 @@ from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
 from framework.plugins.api.payloadtools import range_results, filter_results
 from framework.plugins.api.payloadtools import FuzzResPayload
+from framework.fuzzer.fuzzobjects import FuzzResult
 
 @wfuzz_iterator
 class file:
@@ -32,8 +33,8 @@ class file:
 	    f = open(filename, "r")
 	    self.__max = len(f.readlines())
 	    f.seek(0)
-	except IOError:
-	    raise FuzzException(FuzzException.FATAL, "Error opening file")
+	except IOError, e:
+	    raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
     
 	return f
 
@@ -423,7 +424,13 @@ class wfuzz(FuzzResPayload):
 	    with gzip.open(output_fn, 'r+b') as output:
 	    #with open(self.output_fn, 'r+b') as output:
 		while 1:
-		    yield pickle.load(output)
+		    item = pickle.load(output)
+                    if not isinstance(item, FuzzResult):
+                        raise FuzzException(FuzzException.FATAL, "Wrong wfuzz payload format, the read object is not a valid fuzz result.")
+
+		    yield item
+	except IOError, e:
+	    raise FuzzException(FuzzException.FATAL, "Error opening wfuzz payload file. %s" % str(e))
 	except EOFError:
 	    raise StopIteration
 
