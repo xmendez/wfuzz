@@ -5,6 +5,7 @@ from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.fuzzer.fuzzobjects import FuzzRequest
 from framework.plugins.pluginobjects import PluginResult
 from framework.plugins.pluginobjects import PluginRequest
+from framework.plugins.pluginobjects import PluginItem
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
 from framework.utils.myqueue import FuzzRRQueue
@@ -62,13 +63,16 @@ class JobMan(FuzzQueue):
 
 		while not plugins_res_queue.empty():
 		    item = plugins_res_queue.get()
-		    if isinstance(item, PluginResult):
+
+                    if item.plugintype == PluginItem.result:
 			if Facade().sett.get("general","cancel_on_plugin_except") == "1" and item.source == "$$exception$$":
 			    self._throw(FuzzException(FuzzException.FATAL, item.issue))
 			res.plugins_res.append(item)
-		    elif isinstance(item, PluginRequest):
+                    elif item.plugintype == PluginItem.backfeed:
 			if self.cache.update_cache(item.request, "backfeed"):
 			    res.plugins_backfeed.append(item)
+                    else:
+                        raise FuzzException(FuzzException.FATAL, "Jobman: Unknown pluginitem type in queue!")
 
 	# add result to results queue
 	self.send(res)

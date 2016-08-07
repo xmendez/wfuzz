@@ -1,15 +1,24 @@
 from framework.fuzzer.fuzzobjects import FuzzRequestFactory
 
-class PluginResult:
-    def __init__(self):
+class PluginItem:
+    undefined, result, backfeed = range(3)
+
+    def __init__(self, ptype):
 	self.source = ""
+        self.plugintype = ptype
+
+class PluginResult(PluginItem):
+    def __init__(self):
+        PluginItem.__init__(self, PluginItem.result)
+
 	self.issue = ""
 
-class PluginRequest():
+class PluginRequest(PluginItem):
     def __init__(self):
-	self.source = ""
+        PluginItem.__init__(self, PluginItem.backfeed)
+
 	self.request = None
-	self.rlevel = 0
+        self.rlevel = 0
 
     @staticmethod
     def from_fuzzRes(res, url, source):
