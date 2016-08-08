@@ -579,6 +579,7 @@ class FuzzResult:
         self.description = ""
         self.is_baseline = False
 	self.is_visible = True
+	self.is_processable = True
         self.rlevel = 1
         self.nres = 0 if self.is_baseline else FuzzResult.newid()
 
@@ -643,6 +644,7 @@ class FuzzResult:
         fr.description = self.description
         fr.is_baseline = self.is_baseline
 	fr.is_visible = self.is_visible
+	fr.is_processable = self.is_processable
 	fr.type = self.type
         fr.rlevel = self.rlevel
 

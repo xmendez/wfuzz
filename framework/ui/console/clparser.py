@@ -38,7 +38,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','slice=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -172,8 +172,14 @@ class CLParser:
 	    sl = [],
 	    sh = [],
 	    filterstr = "",
+	    slicestr = "",
 	    ),
 	'''
+
+	if "--slice" in optsd:
+	    if not PYPARSING:
+		raise FuzzException(FuzzException.FATAL, "--filter switch needs pyparsing module.")
+	    filter_params['slicestr'] = optsd["--slice"][0]
 
 	if "--filter" in optsd:
 	    if not PYPARSING:

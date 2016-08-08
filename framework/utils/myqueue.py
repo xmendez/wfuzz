@@ -4,6 +4,7 @@ import traceback
 from Queue import PriorityQueue
 from threading import Thread
 from framework.core.myexception import FuzzException
+from framework.fuzzer.fuzzobjects import FuzzResult
 
 
 class MyPriorityQueue(PriorityQueue):
@@ -100,6 +101,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
 		elif isinstance(item, Exception):
 		    cancelling = True if item.etype == FuzzException.SIGCANCEL else False
 		    self.send_first(item)
+		    self.task_done()
+		    continue
+                elif isinstance(item, FuzzResult) and not item.is_processable:
+		    self.send(item)
 		    self.task_done()
 		    continue
 

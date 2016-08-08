@@ -19,6 +19,7 @@ from framework.plugins.jobs import JobMan
 from framework.plugins.jobs import ProcessorQ
 from framework.plugins.jobs import RoundRobin
 from framework.fuzzer.filter import FilterQ
+from framework.fuzzer.filter import SliceQ
 
 from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
@@ -113,9 +114,10 @@ class Fuzzer:
 
 	recursive = lplugins or options.get("rlevel") > 0
 	filtering = options.get('filter_params').is_active()
+	slicing = options.get('slice_params').is_active()
 
 	# Create queues (in reverse order)
-	# genReq ---> seed_queue -> http_queue -> [round_robin] -> [plugins_queue] * N -> process_queue -> [routing_queue] -> [filter_queue]---> results_queue
+	# genReq ---> seed_queue -> [slice_queue] -> http_queue -> [round_robin] -> [plugins_queue] * N -> process_queue -> [routing_queue] -> [filter_queue]---> results_queue
 	self.results_queue = MyPriorityQueue()
 	self.filter_queue = FilterQ(options.get("filter_params"), self.results_queue) if filtering else None
 	self.routing_queue = RoutingQ(None, self.filter_queue if filtering else self.results_queue) if recursive else None
@@ -129,7 +131,8 @@ class Fuzzer:
 	    self.http_queue = DryRunQ(self.plugins_queue if lplugins else self.process_queue)
 	else:
 	    self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.process_queue)
-	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.http_queue)
+	self.slice_queue = SliceQ(options.get("slice_params"), self.http_queue) if slicing else None
+	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.slice_queue if slicing else self.http_queue)
 
 	# recursion routes
 	if recursive:
@@ -152,7 +155,7 @@ class Fuzzer:
 	self.results_queue.task_done()
 
 	if isinstance(item, FuzzResult):
-	    self.genReq.stats.processed += 1
+	    if item.is_processable: self.genReq.stats.processed += 1
 	    self.genReq.stats.pending_fuzz -= 1
 	    if not item.is_visible: self.genReq.stats.filtered += 1 
 	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED:
@@ -169,7 +172,7 @@ class Fuzzer:
     def next(self):
 	# ignore end seed marks
 	res = self.process()
-	while isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED:
+	while (isinstance(res, FuzzResult) and not res.is_processable) or (isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED):
 	    res = self.process()
 
 	# done! (None sent has gone through all queues).

@@ -14,7 +14,7 @@ except ImportError:
 
 
 class FuzzResFilter:
-    def __init__(self, ffilter = None):
+    def __init__(self, ffilter = None, filter_string = None):
 	if PYPARSING:
 	    element = oneOf("c code l lines w words h chars i index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
@@ -36,6 +36,9 @@ class FuzzResFilter:
 	    nestedformula.setParseAction(self.__compute_formula)
 	    self.finalformula.setParseAction(self.__myreduce)
 
+        if ffilter is not None and filter_string is not None:
+            raise FuzzException(FuzzException.FATAL, "A filter must be initilized with a filter string or an object, not both")
+
 	self.res = None
         if ffilter:
             self.hideparams = ffilter
@@ -50,6 +53,9 @@ class FuzzResFilter:
                 regex = None,
                 filter_string = ""
                 )
+
+        if filter_string:
+            self.hideparams['filter_string'] = filter_string
 
 	if "XXX" in self.hideparams['codes']:
 	    self.hideparams['codes'].append("0")
@@ -251,8 +257,6 @@ class FilterQ(FuzzQueue):
 	Thread.__init__(self)
 
 	self.setName('filter_thread')
-
-	self.queue_out = queue_out
 	self.ffilter = ffilter
 
     def get_name(self):
@@ -267,22 +271,20 @@ class FilterQ(FuzzQueue):
 	item.is_visible = self.ffilter.is_visible(item)
 	self.send(item)
 
-if __name__ == "__main__":
-    tests = []
-    tests.append("(w=200 and w=200) or w=200")
-    tests.append("(w=400 and w=200) and (w=200 or w=200 or w=000)")
-    tests.append("(w=200 and l=7) and (h=23)")
-    tests.append("w=201")
-    tests.append("w=200")
+class SliceQ(FuzzQueue):
+    def __init__(self, ffilter, queue_out):
+	FuzzQueue.__init__(self, queue_out)
+	Thread.__init__(self)
 
-    class t:
-	code = 200
-	words = 200
-	lines = 7
-	chars = 23
+	self.setName('slice_thread')
+	self.ffilter = ffilter
 
-    res = t()
+    def get_name(self):
+	return 'slice_thread'
 
-    f = FilterQ()
-    for i in tests:
-	print "%s := %s" % (str(i), f.is_visible(res, i))
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	item.is_processable = self.ffilter.is_visible(item)
+	self.send(item)

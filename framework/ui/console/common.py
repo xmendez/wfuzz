@@ -106,6 +106,8 @@ verbose_usage ='''%s\n\nOptions:
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
 \t--zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
+\t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline)
+\t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 \t-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
@@ -119,7 +121,7 @@ verbose_usage ='''%s\n\nOptions:
 \t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
 \t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
-\t			      It should be composed of: c,l,w,h,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+\t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 \n%s
 ''' % (header_usage, examples_banner)
 

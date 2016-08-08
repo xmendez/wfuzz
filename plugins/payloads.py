@@ -7,7 +7,6 @@ import gzip
 from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
-from framework.plugins.api.payloadtools import range_results, filter_results
 from framework.plugins.api.payloadtools import FuzzResPayload
 from framework.fuzzer.fuzzobjects import FuzzResult
 
@@ -18,31 +17,24 @@ class file:
     category = ["default"]
     priority = 99
 
+    def __init__(self, filename, extra):
+	try:
+	    self.f = open(filename,"r")
+	except IOError, e:
+	    raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
 
-    def __init__(self, default_param, extra):
-	self.__max = -1
-	self.f = range_results(extra, self._my_gen(default_param))
+	self.__count = len(self.f.readlines())
+	self.f.seek(0)
+
+
+    def next (self):
+	return self.f.next().strip()
+
+    def count(self):
+	return self.__count
 
     def __iter__(self):
 	return self
-
-    def _my_gen(self, filename):
-	maxl = 0
-
-	try:
-	    f = open(filename, "r")
-	    self.__max = len(f.readlines())
-	    f.seek(0)
-	except IOError, e:
-	    raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
-    
-	return f
-
-    def count(self):
-	return self.__max
-
-    def next(self):
-	return self.f.next().strip()
 
 
 @wfuzz_iterator
@@ -411,7 +403,7 @@ class wfuzz(FuzzResPayload):
     def __init__(self, default_param, extra_params):
 	FuzzResPayload.__init__(self, default_param, extra_params)
 	self.__max = -1
-	self._it = range_results(extra_params, filter_results(extra_params, self._gen_wfuzz(default_param)))
+	self._it = self._gen_wfuzz(default_param)
 
     def __iter__(self, default_param, extra):   
 	return self

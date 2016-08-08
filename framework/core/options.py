@@ -29,6 +29,7 @@ class FuzzOptions(UserDict):
 		sl = [],
 		sh = [],
 		filterstr = "",
+		slicestr = "",
 		),
 	    payload_options = dict(
 		payloads = [],
@@ -150,6 +151,7 @@ class FuzzSession:
     def __init__(self):
 	self._values = {
 	    "filter_params": None,
+	    "slice_params": None,
 	    "printer_tool": Facade().sett.get('general', 'default_printer'),
 	    "rlevel": 0,
 	    "script_string": "",
@@ -175,7 +177,9 @@ class FuzzSession:
     def from_options(options):
 	fuzz_options = FuzzSession()
 
+        # filter options
 	fuzz_options.set("filter_params", FuzzResFilter.from_options(options["filter_options"]))
+	fuzz_options.set("slice_params", FuzzResFilter(filter_string = options["filter_options"]['slicestr']))
 
 	# conn options
 	fuzz_options.set('proxy_list', options["conn_options"]["proxy_list"])

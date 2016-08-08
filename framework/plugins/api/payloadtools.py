@@ -1,4 +1,3 @@
-from framework.fuzzer.filter import FuzzResFilter
 from framework.core.myexception import FuzzException
 
 import itertools
@@ -49,37 +48,6 @@ class FuzzResPayload:
 
 	return str(attr)
 
-def filter_results(extra_params, itera):
-    ffilter = None
-
-    if extra_params and extra_params.has_key("filter"):
-	ffilter = FuzzResFilter()
-	ffilter.hideparams["filter_string"] = extra_params["filter"]
-
-	return itertools.ifilter(lambda x:ffilter.is_visible(x), itera)
-    else:
-	#raise FuzzException(FuzzException.FATAL, "Missing filter parameter in payload")
-	return itera
-
-def range_results(extra_params, itera):
-    offset = None
-    limit = None
-
-    try:
-	if extra_params:
-	    if extra_params.has_key("offset"):
-		offset = int(extra_params["offset"])
-
-	    if extra_params.has_key("limit"):
-		limit = int(extra_params["limit"])
-    except ValueError:
-	raise FuzzException(FuzzException.FATAL, "Invalid parameters, limit and offset should be numeric values.")
-
-    if offset is None and limit is None:
-	return itera
-    else:
-	if offset is not None and limit is not None: limit += offset
-	return itertools.islice(itera, offset, limit)
 
 class BingIter:
     def __init__(self, dork, offset = 0, limit = 0, key = None):
