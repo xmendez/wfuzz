@@ -192,12 +192,13 @@ class Fuzzer:
     def stats(self):
 	dic = {
 	    "plugins_queue": self.plugins_queue.qsize() if self.plugins_queue else -1,
-	    "results_queue": self.recursive_queue.qsize(),
+	    "recursive_queue": self.recursive_queue.qsize(),
 	    "results_queue": self.results_queue.qsize(),
 	    "routing_queue": self.routing_queue.qsize() if self.routing_queue else -1,
 	    "http_queue": self.http_queue.qsize(),
 	    "seed_queue": self.seed_queue.qsize(),
 	    "filter_queue": self.filter_queue.qsize() if self.filter_queue else -1,
+	    "slice_queue": self.slice_queue.qsize() if self.slice_queue else -1,
 	}
 
 	if self.plugins_queue:
@@ -218,7 +219,7 @@ class Fuzzer:
 	    if q: q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
 	# wait for cancel to be processed
-	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.recursive_queue, self.filter_queue, self.routing_queue]:
+	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.recursive_queue, self.filter_queue, self.routing_queue, self.slice_queue]:
 	    if q: q.join()
 
 	# send None to stop (almost nicely)
