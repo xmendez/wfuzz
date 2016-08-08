@@ -15,7 +15,7 @@ from framework.utils.myqueue import FuzzQueue
 from framework.fuzzer.myhttp import HttpQueue
 from framework.fuzzer.myhttp import DryRunQ
 from framework.plugins.jobs import JobMan
-from framework.plugins.jobs import ProcessorQ
+from framework.plugins.jobs import RecursiveQ
 from framework.plugins.jobs import RoundRobin
 from framework.fuzzer.filter import FilterQ
 from framework.fuzzer.filter import SliceQ
@@ -116,20 +116,20 @@ class Fuzzer:
 	slicing = options.get('slice_params').is_active()
 
 	# Create queues (in reverse order)
-	# genReq ---> seed_queue -> [slice_queue] -> http_queue -> [round_robin] -> [plugins_queue] * N -> process_queue -> [routing_queue] -> [filter_queue]---> results_queue
+	# genReq ---> seed_queue -> [slice_queue] -> http_queue -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue]---> results_queue
 	self.results_queue = MyPriorityQueue()
 	self.filter_queue = FilterQ(options.get("filter_params"), self.results_queue) if filtering else None
 	self.routing_queue = RoutingQ(None, self.filter_queue if filtering else self.results_queue) if recursive else None
 
 	cache = HttpCache()
-	self.process_queue = ProcessorQ(options.get("rlevel"), self.genReq.stats, cache, self.routing_queue if recursive else self.filter_queue if filtering else self.results_queue)
+	self.recursive_queue = RecursiveQ(options.get("rlevel"), self.genReq.stats, cache, self.routing_queue) if recursive else None
 	self.plugins_queue = None
 	if lplugins:
-	    self.plugins_queue = RoundRobin([JobMan(lplugins, cache, self.process_queue) for i in range(3)])
+	    self.plugins_queue = RoundRobin([JobMan(lplugins, cache, self.recursive_queue) for i in range(3)])
 	if options.get("dryrun"):
-	    self.http_queue = DryRunQ(self.plugins_queue if lplugins else self.process_queue)
+	    self.http_queue = DryRunQ(self.plugins_queue if lplugins else self.recursive_queue if recursive else self.filter_queue if filtering else self.results_queue)
 	else:
-	    self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.process_queue)
+	    self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.recursive_queue if recursive else self.filter_queue if filtering else self.results_queue)
 	self.slice_queue = SliceQ(options.get("slice_params"), self.http_queue) if slicing else None
 	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.slice_queue if slicing else self.http_queue)
 
@@ -192,7 +192,7 @@ class Fuzzer:
     def stats(self):
 	dic = {
 	    "plugins_queue": self.plugins_queue.qsize() if self.plugins_queue else -1,
-	    "results_queue": self.process_queue.qsize(),
+	    "results_queue": self.recursive_queue.qsize(),
 	    "results_queue": self.results_queue.qsize(),
 	    "routing_queue": self.routing_queue.qsize() if self.routing_queue else -1,
 	    "http_queue": self.http_queue.qsize(),
@@ -214,11 +214,11 @@ class Fuzzer:
 	self.genReq.stop()
 
 	# stop processing pending items
-	for q in [self.seed_queue, self.http_queue, self.plugins_queue, self.process_queue, self.filter_queue, self.routing_queue]:
+	for q in [self.seed_queue, self.http_queue, self.plugins_queue, self.recursive_queue, self.filter_queue, self.routing_queue]:
 	    if q: q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
 	# wait for cancel to be processed
-	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.process_queue, self.filter_queue, self.routing_queue]:
+	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.recursive_queue, self.filter_queue, self.routing_queue]:
 	    if q: q.join()
 
 	# send None to stop (almost nicely)

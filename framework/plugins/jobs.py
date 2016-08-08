@@ -75,7 +75,7 @@ class JobMan(FuzzQueue):
 	# add result to results queue
 	self.send(res)
 
-class ProcessorQ(FuzzQueue):
+class RecursiveQ(FuzzQueue):
     def __init__(self, max_rlevel, stats, cache, queue_out):
         FuzzQueue.__init__(self, queue_out)
 
@@ -84,7 +84,7 @@ class ProcessorQ(FuzzQueue):
 	self.max_rlevel = max_rlevel
 
     def get_name(self):
-	return 'ProcessorQ'
+	return 'RecursiveQ'
 
     def _cleanup(self):
 	pass
