@@ -116,7 +116,6 @@ class ProcessorQ(FuzzQueue):
 		self.send_new_seed(fuzz_res)
 
 	# send new result
-        fuzz_res.type = FuzzResult.result
 	self.send(fuzz_res)
 
     def send_new_seed(self, res):

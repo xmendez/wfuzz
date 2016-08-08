@@ -144,7 +144,9 @@ class HttpQueue(FuzzQueue):
 		buff_body, buff_header, res = c.response_queue
 		res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
 
-		self.send(res.update())
+
+                # reset type to result otherwise backfeed items will enter an infinite loop
+		self.send(res.update(ftype=FuzzResult.result))
 
 		self.m.remove_handle(c)
 		self.freelist.put(c)
@@ -185,7 +187,7 @@ class HttpQueue(FuzzQueue):
 		    err_number = ReqRespException.RESOLVE_PROXY
 
 		e = ReqRespException(err_number, "Pycurl error %d: %s" % (errno, errmsg))
-		self.send(res.update(e))
+		self.send(res.update(exception=e, ftype=FuzzResult.result))
 
 		if not self.options.get("scanmode"):
 		    self._throw(e)

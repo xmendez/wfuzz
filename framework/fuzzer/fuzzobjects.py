@@ -416,7 +416,7 @@ class FuzzResultFactory:
             newres.description += " - "
 
 	newres.description += " - ".join(descr_array)
-        newres.type = FuzzResult.seed
+        newres.type = FuzzResult.result
 
 	return newres
 
@@ -565,14 +565,14 @@ class FuzzStats:
 	self.totaltime = time.time() - self.__starttime	
 
 class FuzzResult:
-    undefined, seed, backfeed, result, error = range(5)
+    seed, backfeed, result, error, endseed, cancel = range(6)
     newid = itertools.count(0).next
 
-    def __init__(self, history, exception = None):
+    def __init__(self, history = None, exception = None):
 	self.history = history
 
-        self.type = FuzzResult.undefined
-	self.exception = None
+        self.type = None
+	self.exception = exception
         self.description = ""
         self.is_baseline = False
 	self.is_visible = True
@@ -585,18 +585,21 @@ class FuzzResult:
         self.words = 0
         self.md5 = ""
 
-        self.update(exception)
+        self.update()
 
 	self.plugins_res = []
 	self.plugins_backfeed = []
 
-    def update(self, exception = None):
-	self.exception = exception
-
-        if self.exception:
+    def update(self, exception = None, ftype = None):
+        if exception:
+            self.exception = exception
             self.description = self.description + "! " + self.exception.msg
+            self.type = FuzzResult.error
 
-        if self.history.content:
+        if ftype:
+            self.type = ftype
+
+        if self.history and self.history.content:
             m = hashlib.md5()
             m.update(self.history.content)
             self.md5 = m.hexdigest()
@@ -610,23 +613,26 @@ class FuzzResult:
     # parameters in common with fuzzrequest
     @property
     def url(self):
-        return self.history.url
+        return self.history.url if self.history else ""
 
     @property
     def code(self):
-        if self.history.code and not self.exception:
+        if self.history and self.history.code and not self.exception:
             return int(self.history.code)
         else:
             return 0
 
     @property
     def timer(self):
-        return self.history.reqtime if self.history.reqtime else 0
+        return self.history.reqtime if self.history and self.history.reqtime else 0
 
     # factory methods
 
     def to_new_seed(self):
         seed = self.from_soft_copy()
+
+        if seed.type == FuzzResult.error:
+            raise FuzzException(FuzzException.FATAL, "A new seed cannot be created with a Fuzz item representing an error.")
 
         seed.history.url = self.history.recursive_url
 	seed.rlevel += 1
@@ -644,5 +650,29 @@ class FuzzResult:
 	fr.is_processable = self.is_processable
 	fr.type = self.type
         fr.rlevel = self.rlevel
+
+        return fr
+
+    @staticmethod
+    def to_new_exception(exception):
+        fr = FuzzResult(exception = exception)
+        fr.type = FuzzResult.error
+
+        return fr
+
+    @staticmethod
+    def to_new_signal(signal):
+        fr = FuzzResult()
+        fr.type = signal
+
+        return fr
+
+    def to_new_url(self, url):
+        fr = self.from_soft_copy()
+        fr.history.url = str(url)
+	fr.description = fr.history.path
+	fr.rlevel = self.rlevel + 1
+        fr.type = FuzzResult.backfeed
+        fr.is_baseline = False
 
         return fr

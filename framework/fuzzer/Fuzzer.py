@@ -71,7 +71,7 @@ class SeedQ(FuzzQueue):
 	except StopIteration:
 	    pass
 
-	self.send_last(FuzzException(FuzzException.SIG_ENDSEED, "end of seed"))
+	self.send_last(FuzzResult.to_new_signal(FuzzResult.endseed))
 
 
 class RoutingQ(FuzzQueue):
@@ -153,14 +153,17 @@ class Fuzzer:
 
 	self.results_queue.task_done()
 
-	if isinstance(item, FuzzResult):
+        if item is None:
+            return None
+
+        if item.type == FuzzResult.result:
 	    if item.is_processable: self.genReq.stats.processed += 1
 	    self.genReq.stats.pending_fuzz -= 1
 	    if not item.is_visible: self.genReq.stats.filtered += 1 
-	elif isinstance(item, FuzzException) and item.etype == FuzzException.SIG_ENDSEED:
+        elif item.type == FuzzResult.endseed:
 	    self.genReq.stats.pending_seeds -= 1
-	elif isinstance(item, Exception):
-	    raise item
+        elif item.type == FuzzResult.error:
+	    raise item.exception
 
 	# check if we are done. If so, send None to everyone so they can stop nicely
 	if item and self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
@@ -169,9 +172,9 @@ class Fuzzer:
 	return item
 
     def next(self):
-	# ignore end seed marks
+	# ignore end seed marks and not processable items
 	res = self.process()
-	while (isinstance(res, FuzzResult) and not res.is_processable) or (isinstance(res, FuzzException) and res.etype == FuzzException.SIG_ENDSEED):
+	while res and (not res.is_processable or res.type == FuzzResult.endseed):
 	    res = self.process()
 
 	# done! (None sent has gone through all queues).
@@ -212,7 +215,7 @@ class Fuzzer:
 
 	# stop processing pending items
 	for q in [self.seed_queue, self.http_queue, self.plugins_queue, self.process_queue, self.filter_queue, self.routing_queue]:
-	    if q: q.put_first(FuzzException(FuzzException.SIGCANCEL, "Cancel job"))
+	    if q: q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
 	# wait for cancel to be processed
 	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.process_queue, self.filter_queue, self.routing_queue]:

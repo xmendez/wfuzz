@@ -21,15 +21,9 @@ class PluginRequest(PluginItem):
 
     @staticmethod
     def from_fuzzRes(res, url, source):
-        fr = res.from_soft_copy()
-        fr.history.url = str(url)
-	fr.description = fr.history.path
-	fr.rlevel = res.rlevel + 1
-        fr.type = FuzzResult.backfeed
-
 	plreq = PluginRequest()
 	plreq.source = source
-	plreq.fuzzitem = fr
+	plreq.fuzzitem = res.to_new_url(url)
 
 	return plreq
 
