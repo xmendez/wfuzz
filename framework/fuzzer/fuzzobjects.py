@@ -578,7 +578,7 @@ class FuzzResult:
 	self.is_visible = True
 	self.is_processable = True
         self.rlevel = 1
-        self.nres = 0 if self.is_baseline else FuzzResult.newid()
+        self.nres = FuzzResult.newid()
 
         self.chars = 0
         self.lines = 0
