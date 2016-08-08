@@ -240,6 +240,9 @@ class FuzzResFilter:
 	    ffilter.hideparams['lines'] = filter_options["hl"]
 	    ffilter.hideparams['chars'] = filter_options["hh"]
 
+	if "XXX" in ffilter.hideparams['codes']:
+	    ffilter.hideparams['codes'].append("0")
+
         return ffilter
 
 class FilterQ(FuzzQueue):
