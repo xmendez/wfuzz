@@ -481,7 +481,6 @@ class FuzzResultFactory:
 	fr = FuzzRequest()
 
 	fr.url = seed_options['url']
-        fr.rlevel = 1
 	fr.wf_fuzz_methods = seed_options['fuzz_methods']
 	fr.update_from_options(seed_options)
 
@@ -580,7 +579,7 @@ class FuzzResult:
         self.description = ""
         self.is_baseline = False
 	self.is_visible = True
-        self.rlevel = 0
+        self.rlevel = 1
         self.nres = 0 if self.is_baseline else FuzzResult.newid()
 
         self.chars = 0
@@ -627,10 +626,6 @@ class FuzzResult:
         return self.history.reqtime if self.history.reqtime else 0
 
     # factory methods
-
-    # si la description no esta en la fuzzreq se pierde el asunto de q la description se acumule
-    # idem para el rlevel
-    # plugin request contiene una fuzzreq y myhttp ya no trabaja con ellas
 
     def to_new_seed(self):
         seed = self.from_soft_copy()
