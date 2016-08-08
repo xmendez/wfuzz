@@ -416,7 +416,7 @@ class FuzzResultFactory:
             newres.description += " - "
 
 	newres.description += " - ".join(descr_array)
-        newres.type = FuzzItemType.seed
+        newres.type = FuzzResult.seed
 
 	return newres
 
@@ -564,17 +564,14 @@ class FuzzStats:
     def mark_end(self):
 	self.totaltime = time.time() - self.__starttime	
 
-
-class FuzzItemType:
-    undefined, seed, backfeed, result = range(4)
-
 class FuzzResult:
+    undefined, seed, backfeed, result, error = range(5)
     newid = itertools.count(0).next
 
     def __init__(self, history, exception = None):
 	self.history = history
 
-        self.type = FuzzItemType.undefined
+        self.type = FuzzResult.undefined
 	self.exception = None
         self.description = ""
         self.is_baseline = False
@@ -633,7 +630,7 @@ class FuzzResult:
 
         seed.history.url = self.history.recursive_url
 	seed.rlevel += 1
-        seed.type = FuzzItemType.seed
+        seed.type = FuzzResult.seed
 
 	return seed
 

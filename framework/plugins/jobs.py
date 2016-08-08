@@ -1,7 +1,7 @@
 import threading
 from Queue import Queue
 
-from framework.fuzzer.fuzzobjects import FuzzItemType
+from framework.fuzzer.fuzzobjects import FuzzResult
 from framework.plugins.pluginobjects import PluginResult
 from framework.plugins.pluginobjects import PluginItem
 from framework.core.myexception import FuzzException
@@ -116,7 +116,7 @@ class ProcessorQ(FuzzQueue):
 		self.send_new_seed(fuzz_res)
 
 	# send new result
-        fuzz_res.type = FuzzItemType.result
+        fuzz_res.type = FuzzResult.result
 	self.send(fuzz_res)
 
     def send_new_seed(self, res):

@@ -5,7 +5,6 @@ import cPickle as pickle
 import gzip
 
 from framework.fuzzer.fuzzobjects import FuzzResult
-from framework.fuzzer.fuzzobjects import FuzzItemType
 from framework.fuzzer.dictio import requestGenerator
 
 from framework.core.facade import Facade
@@ -137,9 +136,9 @@ class Fuzzer:
 	# recursion routes
 	if recursive:
 	    self.routing_queue.set_routes({
-		FuzzItemType.seed: self.seed_queue,
-		FuzzItemType.backfeed: self.http_queue,
-		FuzzItemType.result: self.filter_queue if filtering else self.results_queue})
+		FuzzResult.seed: self.seed_queue,
+		FuzzResult.backfeed: self.http_queue,
+		FuzzResult.result: self.filter_queue if filtering else self.results_queue})
 
 	# initial seed request
 	self.genReq.stats.mark_start()
