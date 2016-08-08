@@ -24,7 +24,7 @@ class DryRunQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	self.send(FuzzResult(item))
+	self.send(item)
 
 class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
@@ -45,7 +45,7 @@ class HttpQueue(FuzzQueue):
 	# Connection pool
 	self.m = None
 	self.freelist = Queue()
-	self.create_pool(options.get("max_concurrent"))
+	self._create_pool(options.get("max_concurrent"))
 
 	th2 = Thread(target=self.__read_multi_stack)
 	th2.setName('__read_multi_stack')
@@ -71,7 +71,7 @@ class HttpQueue(FuzzQueue):
 	return dic
 
     # Pycurl management
-    def create_pool(self, num_conn):
+    def _create_pool(self, num_conn):
 	# Pre-allocate a list of curl objects
 	self.m = pycurl.CurlMulti()
 	self.m.handles = []
@@ -119,7 +119,7 @@ class HttpQueue(FuzzQueue):
 
     def process(self, prio, obj):
 	self.pause.wait()
-	c = obj.to_http_object(self.freelist.get())
+	c = obj.history.to_http_object(self.freelist.get())
 	c = self._set_extra_options(c, obj)
 
 	c.response_queue = ((StringIO(), StringIO(), obj))
@@ -141,10 +141,10 @@ class HttpQueue(FuzzQueue):
 	    num_q, ok_list, err_list = self.m.info_read()
 	    for c in ok_list:
 		# Parse response
-		buff_body, buff_header, req = c.response_queue
-		req.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
+		buff_body, buff_header, res = c.response_queue
+		res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
 
-		self.send(FuzzResult(req))
+		self.send(res.update())
 
 		self.m.remove_handle(c)
 		self.freelist.put(c)
@@ -153,9 +153,9 @@ class HttpQueue(FuzzQueue):
 		    self.processed += 1
 
 	    for c, errno, errmsg in err_list:
-		buff_body, buff_header, req = c.response_queue
+		buff_body, buff_header, res = c.response_queue
 
-		req.totaltime = 0
+		res.history.totaltime = 0
 		self.m.remove_handle(c)
 		self.freelist.put(c)
 		
@@ -185,7 +185,7 @@ class HttpQueue(FuzzQueue):
 		    err_number = ReqRespException.RESOLVE_PROXY
 
 		e = ReqRespException(err_number, "Pycurl error %d: %s" % (errno, errmsg))
-		self.send(FuzzResult(req, exception=e))
+		self.send(res.update(e))
 
 		if not self.options.get("scanmode"):
 		    self._throw(e)

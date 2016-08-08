@@ -1,10 +1,8 @@
 import threading
 from Queue import Queue
 
-from framework.fuzzer.fuzzobjects import FuzzResult
-from framework.fuzzer.fuzzobjects import FuzzRequest
+from framework.fuzzer.fuzzobjects import FuzzItemType
 from framework.plugins.pluginobjects import PluginResult
-from framework.plugins.pluginobjects import PluginRequest
 from framework.plugins.pluginobjects import PluginItem
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
@@ -69,7 +67,7 @@ class JobMan(FuzzQueue):
 			    self._throw(FuzzException(FuzzException.FATAL, item.issue))
 			res.plugins_res.append(item)
                     elif item.plugintype == PluginItem.backfeed:
-			if self.cache.update_cache(item.request, "backfeed"):
+			if self.cache.update_cache(item.fuzzitem.history, "backfeed"):
 			    res.plugins_backfeed.append(item)
                     else:
                         raise FuzzException(FuzzException.FATAL, "Jobman: Unknown pluginitem type in queue!")
@@ -103,7 +101,7 @@ class ProcessorQ(FuzzQueue):
 
 	    self.stats.backfeed += 1
 	    self.stats.pending_fuzz += 1
-	    self.send(plg_backfeed)
+	    self.send(plg_backfeed.fuzzitem)
 	    enq_item += 1
 
 	if enq_item > 0:
@@ -118,6 +116,7 @@ class ProcessorQ(FuzzQueue):
 		self.send_new_seed(fuzz_res)
 
 	# send new result
+        fuzz_res.type = FuzzItemType.result
 	self.send(fuzz_res)
 
     def send_new_seed(self, res):

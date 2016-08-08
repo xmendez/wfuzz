@@ -1,4 +1,4 @@
-from framework.fuzzer.fuzzobjects import FuzzRequestFactory
+from framework.fuzzer.fuzzobjects import FuzzItemType
 
 class PluginItem:
     undefined, result, backfeed = range(3)
@@ -17,19 +17,19 @@ class PluginRequest(PluginItem):
     def __init__(self):
         PluginItem.__init__(self, PluginItem.backfeed)
 
-	self.request = None
-        self.rlevel = 0
+	self.fuzzitem = None
 
     @staticmethod
     def from_fuzzRes(res, url, source):
-	fr = FuzzRequestFactory.from_fuzzRes(res, str(url))
-	fr.wf_description = fr.path
+        fr = res.from_soft_copy()
+        fr.history.url = str(url)
+	fr.description = fr.history.path
 	fr.rlevel = res.rlevel + 1
+        fr.type = FuzzItemType.backfeed
 
 	plreq = PluginRequest()
 	plreq.source = source
-	plreq.request = fr
-	plreq.rlevel = res.rlevel + 1
+	plreq.fuzzitem = fr
 
 	return plreq
 

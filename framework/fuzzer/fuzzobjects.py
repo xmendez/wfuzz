@@ -81,10 +81,7 @@ class FuzzRequest(object):
 
 	self._proxy = None
 	self._allvars = None
-	self.rlevel = 0
-	self.wf_is_baseline = False
 	self.wf_fuzz_methods = False
-	self.wf_description = ""
 
 	self.headers.add({"User-Agent": Facade().sett.get("connection","User-Agent").encode('utf-8')})
 
@@ -318,10 +315,7 @@ class FuzzRequest(object):
     def from_copy(self):
 	newreq = FuzzRequest()
 
-	newreq.rlevel = self.rlevel
-	newreq.wf_description = self.wf_description
 	newreq.wf_proxy = self.wf_proxy
-	newreq.wf_is_baseline = self.wf_is_baseline
 	newreq.wf_allvars = self.wf_allvars
 	newreq.wf_fuzz_methods = self.wf_fuzz_methods
 
@@ -342,8 +336,7 @@ class FuzzRequest(object):
 
 	return newreq
 
-class FuzzRequestFactory:
-
+class FuzzResultFactory:
     @staticmethod
     def replace_fuzz_word(text, fuzz_word, payload):
 	if isinstance(payload, str):
@@ -364,12 +357,12 @@ class FuzzRequestFactory:
 
     @staticmethod
     def from_seed(seed, payload, seed_options):
-	newreq = seed.from_copy()
+	newres = seed.from_soft_copy()
 
-	rawReq = str(newreq)
-	rawUrl = newreq.redirect_url
-	scheme = newreq.scheme
-	auth_method, userpass = newreq.auth
+	rawReq = str(newres.history)
+	rawUrl = newres.history.redirect_url
+	scheme = newres.history.scheme
+	auth_method, userpass = newres.history.auth
 
         descr_array = []
 	new_http_method = None
@@ -379,14 +372,14 @@ class FuzzRequestFactory:
 
             # substitute entire seed when using a request payload generator without specifying field
             if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ" and isinstance(payload_content, FuzzResult):
-                newreq = FuzzRequestFactory.from_fuzzRes(payload_content)
-
                 # new seed
-                newreq.update_from_options(seed_options)
-                rawReq = str(newreq)
-                rawUrl = newreq.redirect_url
-                scheme = newreq.scheme
-                auth_method, userpass = newreq.auth
+                newres = payload_content
+
+                newres.history.update_from_options(seed_options)
+                rawReq = str(newres.history)
+                rawUrl = newres.history.redirect_url
+                scheme = newres.history.scheme
+                auth_method, userpass = newres.history.auth
 
                 descr_array.append(rawUrl)
 
@@ -394,39 +387,43 @@ class FuzzRequestFactory:
 
             desc = None
 
-	    if seed.wf_fuzz_methods and fuzz_word == "FUZZ":
+	    if seed.history.wf_fuzz_methods and fuzz_word == "FUZZ":
 		new_http_method = payload_content
 		desc = [payload_content]
 	    if auth_method and (userpass.count(fuzz_word)):
-		userpass, desc = FuzzRequestFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
-	    if newreq.redirect_url.count(fuzz_word):
-		rawUrl, desc = FuzzRequestFactory.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
+		userpass, desc = FuzzResultFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
+	    if newres.history.redirect_url.count(fuzz_word):
+		rawUrl, desc = FuzzResultFactory.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
 
 		# reqresp appends http:// if not indicated in the URL, but if I have a payload with a full URL
 		# this messes up everything  => http://FUZZ and then http://http://asdkjsakd.com
 		if rawUrl[:14] == 'http://http://':
 		    rawUrl = rawUrl[7:]
 	    if rawReq.count(fuzz_word):
-		rawReq, desc = FuzzRequestFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
+		rawReq, desc = FuzzResultFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
 
             if desc:
                 descr_array += desc
             else:
 		raise FuzzException(FuzzException.FATAL, "No %s word!" % fuzz_word)
 
-	newreq.update_from_raw_http(rawReq, scheme)
-	newreq.url = rawUrl
-	if new_http_method: newreq.method = new_http_method
-	if auth_method != 'None': newreq.auth = (auth_method, userpass)
+	newres.history.update_from_raw_http(rawReq, scheme)
+	newres.history.url = rawUrl
+	if new_http_method: newres.history.method = new_http_method
+	if auth_method != 'None': newres.history.auth = (auth_method, userpass)
 
-	newreq.wf_description = " - ".join(descr_array)
+        if newres.description:
+            newres.description += " - "
 
-	return newreq
+	newres.description += " - ".join(descr_array)
+        newres.type = FuzzItemType.seed
+
+	return newres
 
     @staticmethod
-    def from_baseline(seed):
-	scheme = seed.scheme
-	rawReq = str(seed)
+    def from_baseline(fuzzresult):
+	scheme = fuzzresult.history.scheme
+	rawReq = str(fuzzresult.history)
 
 	marker_regex = re.compile("FUZ\d*Z{(.*?)}",re.MULTILINE|re.DOTALL)
 	baseline_payload = marker_regex.findall(rawReq)
@@ -436,7 +433,7 @@ class FuzzRequestFactory:
 	    return None
 
 	# it is not possible to specify baseline value for HTTP method!
-	if seed.wf_fuzz_methods:
+	if fuzzresult.history.wf_fuzz_methods:
 	    baseline_payload = ['GET'] + baseline_payload
 
 	## remove baseline marker from seed request
@@ -444,16 +441,16 @@ class FuzzRequestFactory:
 	    rawReq = rawReq.replace("{" + i + "}", '')
 
 	# re-parse seed without baseline markers
-	seed.update_from_raw_http(rawReq, scheme)
-	if seed.wf_fuzz_methods: seed.method = "FUZZ"
+	fuzzresult.history.update_from_raw_http(rawReq, scheme)
+	if fuzzresult.history.wf_fuzz_methods: fuzzresult.history.method = "FUZZ"
 
 	try:
-	    baseline_req = FuzzRequestFactory.from_seed(seed, baseline_payload, None)
+	    baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
 	except FuzzException:
 	    raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
-	baseline_req.wf_is_baseline = True
+	baseline_res.is_baseline = True
 
-	return baseline_req
+	return baseline_res
 
     @staticmethod
     def from_all_fuzz_request(seed, payload):
@@ -472,25 +469,12 @@ class FuzzRequestFactory:
 	for v in seed.wf_allvars_set:
 	    variable = v.name
 	    payload_content = payload[0]
-	    copycat = seed.from_copy()
-	    copycat.wf_description = variable + "=" + payload_content
+	    fuzzres = FuzzResult(seed.from_copy())
+	    fuzzres.description = variable + "=" + payload_content
 
             seed.wf_allvars_set = (variable, payload_content)
 
-	    yield copycat
-
-    # methods wfuzz needs for creating and converting a fuzz request to other internal objects, ie. fuzz result
-
-    @staticmethod
-    def from_fuzzRes(fuzz_res, new_url = None):
-	fr = fuzz_res.history.from_copy()
-	
-	fr.wf_description = fuzz_res.description
-	fr.rlevel = fuzz_res.rlevel
-
-	if new_url: fr.url = new_url
-
-	return fr
+	    yield fuzzres
 
     @staticmethod
     def from_options(seed_options, payload_options):
@@ -514,7 +498,7 @@ class FuzzRequestFactory:
 	if len(payload_options['payloads']) != len(set(fuzz_words)):
 	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
 
-	return fr
+	return FuzzResult(fr)
 
 class FuzzStats:
     def __init__(self):
@@ -539,9 +523,9 @@ class FuzzStats:
     def from_requestGenerator(rg):
 	tmp_stats = FuzzStats()
 
-	tmp_stats.url = rg.seed.redirect_url
+	tmp_stats.url = rg.seed.history.redirect_url
 	tmp_stats.total_req = rg.count()
-	tmp_stats.seed = FuzzResult(rg.seed)
+	tmp_stats.seed = rg.seed
 
 	return tmp_stats
 
@@ -582,15 +566,38 @@ class FuzzStats:
 	self.totaltime = time.time() - self.__starttime	
 
 
+class FuzzItemType:
+    undefined, seed, backfeed, result = range(4)
+
 class FuzzResult:
     newid = itertools.count(0).next
 
     def __init__(self, history, exception = None):
-	self.is_visible = True
+	self.history = history
 
+        self.type = FuzzItemType.undefined
+	self.exception = None
+        self.description = ""
+        self.is_baseline = False
+	self.is_visible = True
+        self.rlevel = 0
+        self.nres = 0 if self.is_baseline else FuzzResult.newid()
+
+        self.chars = 0
+        self.lines = 0
+        self.words = 0
+        self.md5 = ""
+
+        self.update(exception)
+
+	self.plugins_res = []
+	self.plugins_backfeed = []
+
+    def update(self, exception = None):
 	self.exception = exception
 
-	self.history = history
+        if self.exception:
+            self.description = self.description + "! " + self.exception.msg
 
         if self.history.content:
             m = hashlib.md5()
@@ -600,16 +607,8 @@ class FuzzResult:
             self.chars = len(self.history.content)
             self.lines = self.history.content.count("\n")
             self.words = len(re.findall("\S+", self.history.content))
-        else:
-            self.chars = 0
-            self.lines = 0
-            self.words = 0
-            self.md5 = ""
 
-        self.nres = 0 if self.is_baseline else FuzzResult.newid()
-
-	self.plugins_res = []
-	self.plugins_backfeed = []
+        return self
 
     # parameters in common with fuzzrequest
     @property
@@ -624,31 +623,32 @@ class FuzzResult:
             return 0
 
     @property
-    def is_baseline(self):
-        return self.history.wf_is_baseline
-
-    @property
-    def description(self):
-        desc = self.history.wf_description
-
-        if self.exception:
-            return desc + "! " + self.exception.msg
-
-        return desc
-
-    @property
     def timer(self):
         return self.history.reqtime if self.history.reqtime else 0
 
-    @property
-    def rlevel(self):
-        return self.history.rlevel
-
     # factory methods
 
+    # si la description no esta en la fuzzreq se pierde el asunto de q la description se acumule
+    # idem para el rlevel
+    # plugin request contiene una fuzzreq y myhttp ya no trabaja con ellas
+
     def to_new_seed(self):
-	seed = FuzzRequestFactory.from_fuzzRes(self, self.history.recursive_url)
+        seed = self.from_soft_copy()
+
+        seed.history.url = self.history.recursive_url
 	seed.rlevel += 1
+        seed.type = FuzzItemType.seed
 
 	return seed
 
+    def from_soft_copy(self):
+        fr = FuzzResult(self.history.from_copy())
+
+	fr.exception = self.exception
+        fr.description = self.description
+        fr.is_baseline = self.is_baseline
+	fr.is_visible = self.is_visible
+	fr.type = self.type
+        fr.rlevel = self.rlevel
+
+        return fr

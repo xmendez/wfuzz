@@ -1,4 +1,4 @@
-from framework.fuzzer.fuzzobjects import FuzzRequestFactory
+from framework.fuzzer.fuzzobjects import FuzzResultFactory
 from framework.fuzzer.fuzzobjects import FuzzStats
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
@@ -40,14 +40,14 @@ class requestGenerator:
 	def __init__(self, seed_options, payload_options):
 	    self.payload_options = payload_options
 	    self.seed_options = seed_options
-	    self.seed = FuzzRequestFactory.from_options(seed_options, payload_options)
-	    self._baseline = FuzzRequestFactory.from_baseline(self.seed)
+	    self.seed = FuzzResultFactory.from_options(seed_options, payload_options)
+	    self._baseline = FuzzResultFactory.from_baseline(self.seed)
 	    self.dictio = self._init_dictio(payload_options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
 	    self._allvar_gen = None
-	    if self.seed.wf_allvars is not None:
+	    if self.seed.history.wf_allvars is not None:
 		self._allvar_gen = self.__allvars_gen(self.dictio)
 
 	def _init_dictio(self, payload_options):
@@ -73,8 +73,8 @@ class requestGenerator:
 
 	def count(self):
 	    v = self.dictio.count()
-	    if self.seed.wf_allvars is not None:
-		v *= len(self.seed.wf_allvars_set)
+	    if self.seed.history.wf_allvars is not None:
+		v *= len(self.seed.history.wf_allvars_set)
 
 	    if self._baseline: v += 1
 
@@ -85,7 +85,7 @@ class requestGenerator:
 
 	def __allvars_gen(self, dic):
 	    for payload in dic:
-		for r in FuzzRequestFactory.from_all_fuzz_request(self.seed, payload):
+		for r in FuzzResultFactory.from_all_fuzz_request(self.seed, payload):
 		    yield r
 
 	def next(self):
@@ -95,8 +95,8 @@ class requestGenerator:
 	    if self.stats.cancelled:
 		raise StopIteration
 
-	    if self.seed.wf_allvars is not None:
+	    if self.seed.history.wf_allvars is not None:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
-		return FuzzRequestFactory.from_seed(self.seed, n if isinstance(n, tuple) else (n,), self.seed_options)
+		return FuzzResultFactory.from_seed(self.seed, n if isinstance(n, tuple) else (n,), self.seed_options)

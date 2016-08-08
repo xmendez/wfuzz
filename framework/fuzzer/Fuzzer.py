@@ -5,7 +5,7 @@ import cPickle as pickle
 import gzip
 
 from framework.fuzzer.fuzzobjects import FuzzResult
-from framework.fuzzer.fuzzobjects import FuzzRequest
+from framework.fuzzer.fuzzobjects import FuzzItemType
 from framework.fuzzer.dictio import requestGenerator
 
 from framework.core.facade import Facade
@@ -38,36 +38,36 @@ class SeedQ(FuzzQueue):
     def process(self, prio, item):
 	if isinstance(item, requestGenerator):
 	    self.genReq.stats.pending_seeds += 1
-	elif isinstance(item, FuzzRequest):
+	elif isinstance(item, FuzzResult):
 	    self.genReq.restart(item)
 	else:
 	    raise FuzzException(FuzzException.FATAL, "SeedQ: Unknown item type in queue!")
 
 	# Empty dictionary?
 	try:
-	    rq = self.genReq.next()
+	    fuzzres = self.genReq.next()
 
-	    if rq.wf_is_baseline:
+	    if fuzzres.is_baseline:
 		self.genReq.stats.pending_fuzz += 1
-		self.queue_out.put_first(rq)
+		self.queue_out.put_first(fuzzres)
 
 		# wait for BBB to be completed before generating more items
 		while(self.genReq.stats.processed == 0 and not self.genReq.stats.cancelled):
 		    time.sleep(0.0001)
 
 		# more after baseline?
-		rq = self.genReq.next()
+		fuzzres = self.genReq.next()
 
 	except StopIteration:
 	    raise FuzzException(FuzzException.FATAL, "Empty dictionary! Please check payload or filter.")
 
 	# Enqueue requests
 	try:
-	    while rq:
+	    while fuzzres:
 		self.genReq.stats.pending_fuzz += 1
 		if self.delay: time.sleep(self.delay)
-		self.send(rq)
-		rq = self.genReq.next()
+		self.send(fuzzres)
+		fuzzres = self.genReq.next()
 	except StopIteration:
 	    pass
 
@@ -89,10 +89,7 @@ class RoutingQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	if str(item.__class__) == "framework.plugins.pluginobjects.PluginRequest":
-	    self.routes[str(item.__class__)].put(item.request)
-	else:
-	    self.routes[str(item.__class__)].put(item)
+        self.routes[item.type].put(item)
 
 class Fuzzer:
     def __init__(self, options):
@@ -137,9 +134,9 @@ class Fuzzer:
 	# recursion routes
 	if recursive:
 	    self.routing_queue.set_routes({
-		"<class 'framework.fuzzer.fuzzobjects.FuzzRequest'>": self.seed_queue,
-		"framework.plugins.pluginobjects.PluginRequest": self.http_queue,
-		"framework.fuzzer.fuzzobjects.FuzzResult": self.filter_queue if filtering else self.results_queue})
+		FuzzItemType.seed: self.seed_queue,
+		FuzzItemType.backfeed: self.http_queue,
+		FuzzItemType.result: self.filter_queue if filtering else self.results_queue})
 
 	# initial seed request
 	self.genReq.stats.mark_start()
