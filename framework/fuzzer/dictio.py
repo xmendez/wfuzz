@@ -89,11 +89,11 @@ class requestGenerator:
 		    yield r
 
 	def next(self):
-	    if self._baseline and self.stats.processed == 0 and self.stats.pending_seeds <= 1:
-		return self._baseline
-
 	    if self.stats.cancelled:
 		raise StopIteration
+
+	    if self._baseline and self.stats.processed == 0 and self.stats.pending_seeds <= 1:
+		return self._baseline
 
 	    if self.seed.history.wf_allvars is not None:
 		return self._allvar_gen.next()
