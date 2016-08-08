@@ -176,10 +176,6 @@ class FuzzResFilter:
         ])
 
     def is_visible(self, res):
-	# baseline
-	if self.baseline and res.is_baseline == True:
-	    return True
-
 	filter_string = self.hideparams['filter_string']
 	if filter_string and PYPARSING:
 	    self.res = res
@@ -268,7 +264,10 @@ class FilterQ(FuzzQueue):
     def process(self, prio, item):
 	if item.is_baseline:
 	    self.ffilter.set_baseline(item)
-	item.is_visible = self.ffilter.is_visible(item)
+            item.is_visible = True
+        else:
+            item.is_visible = self.ffilter.is_visible(item)
+
 	self.send(item)
 
 class SliceQ(FuzzQueue):
@@ -286,5 +285,7 @@ class SliceQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	item.is_processable = self.ffilter.is_visible(item)
+	if not item.is_baseline:
+            item.is_processable = self.ffilter.is_visible(item)
+
 	self.send(item)
