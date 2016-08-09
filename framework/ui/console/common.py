@@ -64,8 +64,7 @@ usage ='''%s\n\nOptions:
 \t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
 \t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
 \t			      It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=
-\n%s
-''' % (header_usage, examples_banner)
+''' % (header_usage)
 
 verbose_usage ='''%s\n\nOptions:
 \t-h/--help		    : This help
@@ -122,8 +121,7 @@ verbose_usage ='''%s\n\nOptions:
 \t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
 \t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
-\n%s
-''' % (header_usage, examples_banner)
+''' % (header_usage)
 
 class term_colors:
     reset = "\x1b[0m"
