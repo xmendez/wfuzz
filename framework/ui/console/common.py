@@ -68,7 +68,7 @@ usage ='''%s\n\nOptions:
 
 verbose_usage ='''%s\n\nOptions:
 \t-h/--help		    : This help
-\t--hh			    : Advanced help
+\t--help			    : Advanced help
 \t--version		    : Wfuzz version details
 \t-e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 \t
