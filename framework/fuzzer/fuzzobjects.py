@@ -1,12 +1,13 @@
-import types
 import time
 import hashlib
 import re
 import itertools
+import operator
 
 from urlparse import urljoin
 from threading import Lock
 from collections import namedtuple
+from collections import defaultdict
 
 from externals.reqresp import Request
 from framework.core.myexception import FuzzException
@@ -425,12 +426,13 @@ class FuzzResultFactory:
 	scheme = fuzzresult.history.scheme
 	rawReq = str(fuzzresult.history)
 
-	marker_regex = re.compile("FUZ\d*Z{(.*?)}",re.MULTILINE|re.DOTALL)
-	baseline_payload = marker_regex.findall(rawReq)
+        # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
+        baseline_control = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", rawReq, re.MULTILINE|re.DOTALL)])
+        baseline_payload = map(lambda x: x[1], sorted(baseline_control.items(), key=operator.itemgetter(0)))
 
 	# if there is no marker, there is no baseline request
-	if len(baseline_payload) == 0:
-	    return None
+        if not filter(lambda x: x is not None, baseline_payload):
+            return None
 
 	# it is not possible to specify baseline value for HTTP method!
 	if fuzzresult.history.wf_fuzz_methods:
@@ -438,16 +440,15 @@ class FuzzResultFactory:
 
 	## remove baseline marker from seed request
 	for i in baseline_payload:
+            if not i:
+                raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
 	    rawReq = rawReq.replace("{" + i + "}", '')
 
 	# re-parse seed without baseline markers
 	fuzzresult.history.update_from_raw_http(rawReq, scheme)
 	if fuzzresult.history.wf_fuzz_methods: fuzzresult.history.method = "FUZZ"
 
-	try:
-	    baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
-	except FuzzException:
-	    raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
+        baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
 	baseline_res.is_baseline = True
 
 	return baseline_res
@@ -483,19 +484,6 @@ class FuzzResultFactory:
 	fr.url = seed_options['url']
 	fr.wf_fuzz_methods = seed_options['fuzz_methods']
 	fr.update_from_options(seed_options)
-
-	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	fuzz_words = marker_regex.findall(str(fr))
-	method, userpass = fr.auth
-
-	if fr.wf_fuzz_methods:
-	    fuzz_words += ['FUZZ_METHOD']
-
-	if method:
-	    fuzz_words += fuzz_words + marker_regex.findall(userpass)
-
-	if len(payload_options['payloads']) != len(set(fuzz_words)):
-	    raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
 
 	return FuzzResult(fr)
 

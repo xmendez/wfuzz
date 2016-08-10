@@ -3,6 +3,8 @@ from framework.fuzzer.fuzzobjects import FuzzStats
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
 
+import re
+
 class dictionary:
 	def __init__(self, payload, encoders_list):
 	    self.__payload = payload
@@ -71,6 +73,21 @@ class requestGenerator:
 	    self.seed = seed
 	    self.dictio = self._init_dictio(self.payload_options)
 
+        def _check_dictio_len(self, element):
+            marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
+            fuzz_words = marker_regex.findall(str(self.seed.history))
+            method, userpass = self.seed.history.auth
+
+            if self.seed.history.wf_fuzz_methods:
+                fuzz_words += ['FUZZ']
+
+            if method:
+                fuzz_words += marker_regex.findall(userpass)
+
+            lenght = len(element) if isinstance(element, tuple) else 1
+            if lenght != len(set(fuzz_words)):
+                raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
+
 	def count(self):
 	    v = self.dictio.count()
 	    if self.seed.history.wf_allvars is not None:
@@ -99,4 +116,7 @@ class requestGenerator:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
+                if self.stats.processed == 0 or (self._baseline and self.stats.processed == 1): 
+                    self._check_dictio_len(n)
+
 		return FuzzResultFactory.from_seed(self.seed, n if isinstance(n, tuple) else (n,), self.seed_options)
