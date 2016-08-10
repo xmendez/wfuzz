@@ -46,7 +46,6 @@ usage ='''%s\n\nOptions:
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
 \t--follow		    : Follow HTTP redirections
 \t
-\t-m iterator		    : Specify an iterator for combining payloads (product by default)
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
@@ -62,8 +61,6 @@ usage ='''%s\n\nOptions:
 \t--hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
-\t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
-\t			      It should be composed of: c,l,w,h/and,or/=,<,>,!=,<=,>=
 ''' % (header_usage)
 
 verbose_usage ='''%s\n\nOptions:
