@@ -82,7 +82,7 @@ class FuzzRequest(object):
 
 	self._proxy = None
 	self._allvars = None
-	self.wf_fuzz_methods = False
+	self.wf_fuzz_methods = None
 
 	self.headers.add({"User-Agent": Facade().sett.get("connection","User-Agent").encode('utf-8')})
 
@@ -302,8 +302,9 @@ class FuzzRequest(object):
         if options['postdata']:
             self.parameters.post = options['postdata']
 
-        if options['head']:
-            self.method = "HEAD"
+        if options['fuzz_methods']:
+            self.method = options['fuzz_methods']
+            self.wf_fuzz_methods = options['fuzz_methods']
 
 	if options['cookie']:
             self.headers.add({"Cookie": "; ".join(options['cookie'])})
@@ -329,11 +330,7 @@ class FuzzRequest(object):
 	newreq.url = self.url
 	newreq.reqtime = self.reqtime
 	newreq.scheme = self.scheme
-
-	if self.wf_fuzz_methods:
-	    newreq.method = "FUZZ"
-	else:
-	    newreq.method = self.method
+        newreq.method = self.wf_fuzz_methods if self.wf_fuzz_methods else self.method
 
 	return newreq
 
@@ -366,7 +363,6 @@ class FuzzResultFactory:
 	auth_method, userpass = newres.history.auth
 
         descr_array = []
-	new_http_method = None
 
 	for payload_pos, payload_content in enumerate(payload, start=1):
 	    fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
@@ -388,9 +384,6 @@ class FuzzResultFactory:
 
             desc = None
 
-	    if seed.history.wf_fuzz_methods and fuzz_word == "FUZZ":
-		new_http_method = payload_content
-		desc = [payload_content]
 	    if auth_method and (userpass.count(fuzz_word)):
 		userpass, desc = FuzzResultFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
 	    if newres.history.redirect_url.count(fuzz_word):
@@ -410,7 +403,6 @@ class FuzzResultFactory:
 
 	newres.history.update_from_raw_http(rawReq, scheme)
 	newres.history.url = rawUrl
-	if new_http_method: newres.history.method = new_http_method
 	if auth_method != 'None': newres.history.auth = (auth_method, userpass)
 
         if newres.description:
@@ -434,10 +426,6 @@ class FuzzResultFactory:
         if not filter(lambda x: x is not None, baseline_payload):
             return None
 
-	# it is not possible to specify baseline value for HTTP method!
-	if fuzzresult.history.wf_fuzz_methods:
-	    baseline_payload = ['GET'] + baseline_payload
-
 	## remove baseline marker from seed request
 	for i in baseline_payload:
             if not i:
@@ -446,7 +434,6 @@ class FuzzResultFactory:
 
 	# re-parse seed without baseline markers
 	fuzzresult.history.update_from_raw_http(rawReq, scheme)
-	if fuzzresult.history.wf_fuzz_methods: fuzzresult.history.method = "FUZZ"
 
         baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
 	baseline_res.is_baseline = True

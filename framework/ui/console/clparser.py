@@ -38,7 +38,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZIXvcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','slice=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','slice=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -266,7 +266,7 @@ class CLParser:
 	    options['url'] = url
 
 	if "-X" in optsd:
-	    options['fuzz_methods'] = True
+	    options['fuzz_methods'] = optsd["-X"][0]
 
 	if "--basic" in optsd:
 	    options['auth'] = ("basic", optsd["--basic"][0])
@@ -279,9 +279,6 @@ class CLParser:
 
 	if "--follow" in optsd:
 	    options['follow'] = True
-
-	if "-I" in optsd:
-	    options['head'] = True
 
 	if "-d" in optsd:
 	    options['postdata'] = optsd["-d"][0]

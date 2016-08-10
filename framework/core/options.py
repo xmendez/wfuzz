@@ -54,10 +54,9 @@ class FuzzOptions(UserDict):
 	    ),
 	    seed_options = dict(
 		url = "",
-		fuzz_methods = False,
+		fuzz_methods = None,
 		auth = (None, None),
 		follow = False,
-		head = False,
 		postdata = None,
 		extraheaders = [],
 		cookie = [],
@@ -81,9 +80,6 @@ class FuzzOptions(UserDict):
 
 	if len(self.data['payload_options']['payloads']) == 0:
 	    return "Bad usage: You must specify a payload."
-
-	if self.data['seed_options']['head'] and self.data['seed_options']['postdata']:
-	    return "Bad usage: HEAD with POST parameters? Does it makes sense?"
 
 	if filter(lambda x: len(self.data["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]) and \
 	 filter(lambda x: len(self.data["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"]): 

@@ -51,7 +51,7 @@ usage ='''%s\n\nOptions:
 \t			      Encoders category can be used. ie. url
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
-\t-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
+\t-X method		    : Specify an HTTP method for the request, ie. HEAD or FUZZ
 \t
 \t-b cookie		    : Specify a cookie for the requests
 \t-d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
@@ -85,7 +85,6 @@ verbose_usage ='''%s\n\nOptions:
 \t-t N			    : Specify the number of concurrent connections (10 default)
 \t-s N			    : Specify time delay between requests (0 default)
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
-\t-I			    : Use HTTP HEAD method (No HTML body responses). 
 \t--follow		    : Follow HTTP redirections
 \t-Z			    : Scan mode (Connection errors will be ignored).
 \t--req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
@@ -106,7 +105,7 @@ verbose_usage ='''%s\n\nOptions:
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
-\t-X			    : Payload within HTTP methods (ex: "FUZZ HTTP/1.0"). No need for FUZZ keyword.
+\t-X method		    : Specify an HTTP method for the request, ie. HEAD or FUZZ
 \t
 \t-b cookie		    : Specify a cookie for the requests. Repeat option for various cookies.
 \t-d postdata 		    : Use post data (ex: "id=FUZZ&catalogue=1")
