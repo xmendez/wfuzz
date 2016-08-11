@@ -135,6 +135,7 @@ class Request:
 
 		self.__variablesGET=VariablesSet()
 		self.schema,self.__host,self.__path,self.__params,variables,f=urlparse(urltmp)
+                if not self.__path: self.__path = "/"
 		self._headers["Host"]=self.__host
 
 		if variables:
