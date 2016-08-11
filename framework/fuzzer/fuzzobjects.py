@@ -368,7 +368,7 @@ class FuzzResultFactory:
 	    fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
 
             # substitute entire seed when using a request payload generator without specifying field
-            if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ" and isinstance(payload_content, FuzzResult):
+            if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ/" and isinstance(payload_content, FuzzResult):
                 # new seed
                 newres = payload_content
 
