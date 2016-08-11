@@ -1,4 +1,5 @@
 from framework.core.myexception import FuzzException
+from framework.fuzzer.fuzzobjects import FuzzResult
 from threading import Thread
 
 from framework.utils.myqueue import FuzzQueue
@@ -58,7 +59,7 @@ class FuzzResFilter:
             self.hideparams['filter_string'] = filter_string
 
 	if "XXX" in self.hideparams['codes']:
-	    self.hideparams['codes'].append("0")
+	    self.hideparams['codes'].append(str(FuzzResult.ERROR_CODE))
 
 	self.baseline = None
 
@@ -124,7 +125,7 @@ class FuzzResFilter:
 	    raise FuzzException(FuzzException.FATAL, "FilterQ: specify a baseline value when using BBB")
 
 	if element == 'c' and value == 'XXX':
-	    value = 0
+	    value = FuzzResult.ERROR_CODE
 
 	if value == 'BBB':
 	    if element == 'l' or element == 'lines':
@@ -243,7 +244,7 @@ class FuzzResFilter:
 	    ffilter.hideparams['chars'] = filter_options["hh"]
 
 	if "XXX" in ffilter.hideparams['codes']:
-	    ffilter.hideparams['codes'].append("0")
+	    ffilter.hideparams['codes'].append(str(FuzzResult.ERROR_CODE))
 
         return ffilter
 

@@ -552,6 +552,7 @@ class FuzzStats:
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel = range(7)
     newid = itertools.count(0).next
+    ERROR_CODE = -1
 
     def __init__(self, history = None, exception = None):
 	self.history = history
@@ -602,10 +603,10 @@ class FuzzResult:
 
     @property
     def code(self):
-        if self.history and self.history.code and not self.exception:
+        if self.history and self.history.code >=0 and not self.exception:
             return int(self.history.code)
         else:
-            return 0
+            return FuzzResult.ERROR_CODE
 
     @property
     def timer(self):
