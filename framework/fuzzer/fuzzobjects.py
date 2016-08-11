@@ -540,7 +540,7 @@ class FuzzStats:
 	self.totaltime = time.time() - self.__starttime	
 
 class FuzzResult:
-    seed, backfeed, result, error, endseed, cancel = range(6)
+    seed, backfeed, result, error, startseed, endseed, cancel = range(7)
     newid = itertools.count(0).next
 
     def __init__(self, history = None, exception = None):

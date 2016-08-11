@@ -36,9 +36,9 @@ class SeedQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	if isinstance(item, requestGenerator):
+	if item.type == FuzzResult.startseed:
 	    self.genReq.stats.pending_seeds += 1
-	elif isinstance(item, FuzzResult):
+	elif item.type == FuzzResult.seed:
 	    self.genReq.restart(item)
 	else:
 	    raise FuzzException(FuzzException.FATAL, "SeedQ: Unknown item type in queue!")
@@ -142,7 +142,7 @@ class Fuzzer:
 
 	# initial seed request
 	self.genReq.stats.mark_start()
-	self.seed_queue.put_priority(1, self.genReq)
+	self.seed_queue.put_priority(1, FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def __iter__(self):
 	return self

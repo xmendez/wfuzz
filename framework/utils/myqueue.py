@@ -48,7 +48,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self.queue_out.put_first(item)
 
     def send_last(self, item):
-	if not self.propagate and (item is None or (isinstance(item, FuzzResult) and item.type == FuzzResult.endseed)):
+	if not self.propagate and (item is None or item.type == FuzzResult.endseed):
 	    return
 	else:
 	    self.queue_out.put_last(item)
@@ -82,33 +82,27 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	    prio, item = self.get(True, 365 * 24 * 60 * 60)
 
 	    try:
-                if item == None and not cancelling:
+                if item == None:
                     self.send_last(None)
-                    self.qout_join()
-                    self.task_done()
-                    break
-                elif item == None and cancelling:
-                    self.send_last(None)
+                    if not cancelling: self.qout_join()
                     self.task_done()
                     break
                 elif cancelling:
                     self.task_done()
                     continue
-
-                if isinstance(item, FuzzResult):
-                    if item.type == FuzzResult.endseed:
-                        self.send_last(item)
-                        self.task_done()
-                        continue
-                    elif item.type == FuzzResult.error or item.type == FuzzResult.cancel:
-                        cancelling = True if item.type == FuzzResult.cancel else False
-                        self.send_first(item)
-                        self.task_done()
-                        continue
-                    elif not item.is_processable:
-                        self.send(item)
-                        self.task_done()
-                        continue
+                elif item.type == FuzzResult.endseed:
+                    self.send_last(item)
+                    self.task_done()
+                    continue
+                elif item.type in [FuzzResult.error, FuzzResult.cancel]:
+                    cancelling = True if item.type == FuzzResult.cancel else False
+                    self.send_first(item)
+                    self.task_done()
+                    continue
+                elif not item.is_processable:
+                    self.send(item)
+                    self.task_done()
+                    continue
 
 		self.process(prio, item)
 		self.task_done()
