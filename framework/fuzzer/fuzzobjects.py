@@ -705,8 +705,10 @@ class FuzzResult:
 
     @property
     def code(self):
-        if self.history and self.history.code >=0 and not self.exception:
+        if self.history and self.history.code >= 0 and not self.exception:
             return int(self.history.code)
+        elif not self.history.code:
+            return 0
         else:
             return FuzzResult.ERROR_CODE
 
