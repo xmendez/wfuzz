@@ -32,6 +32,33 @@ class headers:
         for k, v in dd.items():
             self._req.addHeader(k, v)
 
+    def get_field(self, field):
+        attr = field.split(".")
+        num_fields = len(attr)
+
+        if num_fields == 2:
+            if attr[1] == "request":
+                return str(self.request)
+            elif attr[1] == "response":
+                return str(self.response)
+            else:
+                raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+        elif num_fields != 3:
+            raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+
+        ret = ""
+        try:
+            if attr[1] == "request":
+                ret = self.request[attr[2]]
+            elif attr[1] == "response":
+                ret = self.response[attr[2]]
+            else:
+                raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+        except KeyError:
+            pass
+
+        return ret.strip()
+
 class cookies:
     def __init__(self, req):
         self._req = req
@@ -57,6 +84,23 @@ class cookies:
 
         return {}
 
+    def get_field(self, field):
+        attr = field.split(".")
+        num_fields = len(attr)
+
+        if num_fields != 2:
+            raise FuzzException(FuzzException.FATAL, "Cookie must be specified as cookies.[request|response]")
+
+        if attr[1] == "response":
+            if self._req.response:
+                return self._req.response.getCookie()
+        elif attr[1] == "request":
+            return self._req['COOKIE']
+        else:
+            raise FuzzException(FuzzException.FATAL, "Cookie must be specified as cookies.[request|response]")
+
+        return ""
+
 class parameters(object):
     def __init__(self, req):
         self._req = req
@@ -75,6 +119,33 @@ class parameters(object):
             self._req.setPostData("&".join(["=".join([n,v]) if v is not None else n for n,v in pp.items()]))
         elif isinstance(pp, str):
             self._req.setPostData(pp)
+
+    def get_field(self, field):
+        attr = field.split(".")
+        num_fields = len(attr)
+
+        if num_fields == 2:
+            if attr[1] == "get":
+                return str(self.get)
+            elif attr[1] == "post":
+                return str(self.post)
+            else:
+                raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
+        elif num_fields == 3:
+            ret = ""
+            try:
+                if attr[1] == "get":
+                    ret = self.get[attr[2]]
+                elif attr[1] == "post":
+                    ret = self.post[attr[2]]
+                else:
+                    raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
+            except KeyError:
+                pass
+
+            return ret
+        else:
+            raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
 
 class FuzzRequest(object):
     def __init__(self):
@@ -176,6 +247,31 @@ class FuzzRequest(object):
     @reqtime.setter
     def reqtime(self, t):
 	self._request.totaltime = t
+
+    def get_field(self, field):
+        if field in ["url", "method", "scheme", "host", "content", "code"]:
+            return str(getattr(self, field))
+        elif field.startswith("cookies"):
+            return self.cookies.get_field(field).strip()
+        elif field.startswith("headers.request") or field.startswith("headers.response"):
+            return self.headers.get_field(field)
+        elif field.startswith("parameters."):
+            return self.parameters.get_field(field)
+        elif field.startswith("url."):
+            attr = field.split(".")
+            allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "domain", "file_fullname", "file_extension", "file_name"]
+
+            if len(attr) != 2:
+                raise FuzzException(FuzzException.FATAL, "Url must be specified as url.<field>")
+
+            if attr[1] in allowed_attr:
+                return getattr(self.urlparse, attr[1])
+            else:
+                raise FuzzException(FuzzException.FATAL, "Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
+
+            return ""
+        else:
+            raise FuzzException(FuzzException.FATAL, "Unknown FuzzResult attribute: %s." % (field,))
 
     # urlparse functions
     @property
@@ -347,7 +443,7 @@ class FuzzResultFactory:
                         if not field:
                             raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ$url$, or use FUZZ only to repeat the same request.")
 
-			subs = str(getattr(payload, field))
+			subs = payload.get_field(field)
 			text = text.replace("%s$%s$" % (fw, field), subs)
 			subs_array.append(subs)
 
@@ -595,6 +691,12 @@ class FuzzResult:
             self.words = len(re.findall("\S+", self.history.content))
 
         return self
+
+    def get_field(self, field):
+        if field in ["description", "nres", "chars", "lines", "words", "md5"]:
+            return str(getattr(self, field))
+        else:
+            return self.history.get_field(field)
 
     # parameters in common with fuzzrequest
     @property
