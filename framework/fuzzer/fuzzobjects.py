@@ -417,9 +417,12 @@ class FuzzResultFactory:
     def from_baseline(fuzzresult):
 	scheme = fuzzresult.history.scheme
 	rawReq = str(fuzzresult.history)
+	auth_method, userpass = fuzzresult.history.auth
 
         # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
-        baseline_control = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", rawReq, re.MULTILINE|re.DOTALL)])
+        b1 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", rawReq, re.MULTILINE|re.DOTALL)])
+        b2 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", userpass, re.MULTILINE|re.DOTALL)])
+	baseline_control = dict(b1.items() + b2.items())
         baseline_payload = map(lambda x: x[1], sorted(baseline_control.items(), key=operator.itemgetter(0)))
 
 	# if there is no marker, there is no baseline request
@@ -432,8 +435,15 @@ class FuzzResultFactory:
                 raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
 	    rawReq = rawReq.replace("{" + i + "}", '')
 
+            if fuzzresult.history.wf_fuzz_methods:
+                fuzzresult.history.wf_fuzz_methods = fuzzresult.history.wf_fuzz_methods.replace("{" + i + "}", '')
+
+            if auth_method:
+                userpass = userpass.replace("{" + i + "}", '')
+
 	# re-parse seed without baseline markers
 	fuzzresult.history.update_from_raw_http(rawReq, scheme)
+	if auth_method: fuzzresult.history.auth = (auth_method, userpass)
 
         baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
 	baseline_res.is_baseline = True
