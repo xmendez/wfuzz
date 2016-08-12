@@ -436,7 +436,7 @@ class FuzzResultFactory:
 	if isinstance(payload, str):
 		return (text.replace(fuzz_word, payload), [payload])
 	elif isinstance(payload, FuzzResult):
-		marker_regex = re.compile("(%s)(?:\$(.*?)\$)?" % (fuzz_word,),re.MULTILINE|re.DOTALL)
+		marker_regex = re.compile("(%s)(?:\[(.*?)\])?" % (fuzz_word,),re.MULTILINE|re.DOTALL)
 		subs_array = []
 
 		for fw, field in marker_regex.findall(text):

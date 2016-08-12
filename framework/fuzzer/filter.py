@@ -20,20 +20,23 @@ class FuzzResFilter:
 	    element = oneOf("c code l lines w words h chars i index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
+            filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
 	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
+	    filterRef = Group(filter_element + oneOf("= != ~") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    operator = oneOf("and or")
 	    not_operator = oneOf("not")
 	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
-	    definition = adv_elementRef ^ elementRef ^ adv_elementRef_bool + ZeroOrMore( operator + adv_elementRef ^ adv_elementRef_bool ^ elementRef)
+	    definition = filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
 	    elementRef.setParseAction(self.__compute_element)
 	    adv_elementRef.setParseAction(self.__compute_adv_element)
 	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
+	    filterRef.setParseAction(self.__compute_filter_element)
 	    nestedformula.setParseAction(self.__compute_formula)
 	    self.finalformula.setParseAction(self.__myreduce)
 
@@ -86,10 +89,19 @@ class FuzzResFilter:
 	if adv_element == 'hasquery':
 	    if self.res.history.urlparse.query:
 		cond = True
-	elif adv_element == 'ispath':
-		cond = self.res.history.is_path
 
-	return cond if operator == "notpresent" else not cond
+    def __compute_filter_element(self, tokens):
+	filter_element, operator, value = tokens[0]
+
+        leftvalue = self.res.get_field(filter_element)
+	cond = False
+
+	if operator == "=":
+	    return value == leftvalue
+	elif operator == "!=":
+	    return value != leftvalue
+	elif operator == "~":
+	    return leftvalue.find(value) >= 0
 
     def __compute_adv_element(self, tokens):
 	adv_element, operator, value = tokens[0]
