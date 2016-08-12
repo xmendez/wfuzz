@@ -5,6 +5,8 @@ from threading import Thread
 from framework.utils.myqueue import FuzzQueue
 
 import re
+import collections
+
 
 PYPARSING = True
 try:
@@ -21,6 +23,7 @@ class FuzzResFilter:
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
             filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
+            special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
@@ -29,7 +32,7 @@ class FuzzResFilter:
 	    operator = oneOf("and or")
 	    not_operator = oneOf("not")
 	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
-	    definition = filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef)
+	    definition = filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool ^ special_element + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef ^ special_element)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
@@ -38,6 +41,7 @@ class FuzzResFilter:
 	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
 	    filterRef.setParseAction(self.__compute_filter_element)
 	    nestedformula.setParseAction(self.__compute_formula)
+	    special_element.setParseAction(self.__compute_special_element)
 	    self.finalformula.setParseAction(self.__myreduce)
 
         if ffilter is not None and filter_string is not None:
@@ -66,6 +70,8 @@ class FuzzResFilter:
 
 	self.baseline = None
 
+        self._cache = collections.defaultdict(set)
+
     def set_baseline(self, res):
 	if "BBB" in self.hideparams['lines']:
 	    self.hideparams['lines'].append(str(res.lines))
@@ -80,6 +86,17 @@ class FuzzResFilter:
 
     def __convertIntegers(self, tokens):
 	return int(tokens[0])
+
+    def __compute_special_element(self, tokens):
+	special_element = tokens[0]
+
+        item = self.res.get_field(special_element)
+
+        if item not in self._cache[special_element]:
+            self._cache[special_element].add(item)
+            return True
+        else:
+            return False
 
     def __compute_adv_element_bool(self, tokens):
 	operator, adv_element = tokens[0]
