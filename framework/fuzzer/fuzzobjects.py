@@ -444,7 +444,7 @@ class FuzzResultFactory:
                             raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ$url$, or use FUZZ only to repeat the same request.")
 
 			subs = payload.get_field(field)
-			text = text.replace("%s$%s$" % (fw, field), subs)
+			text = text.replace("%s[%s]" % (fw, field), subs)
 			subs_array.append(subs)
 
 		return (text, subs_array)
