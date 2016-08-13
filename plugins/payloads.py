@@ -405,7 +405,7 @@ class wfuzz(FuzzResPayload):
 	self.__max = -1
 	self._it = self._gen_wfuzz(default_param)
 
-    def __iter__(self, default_param, extra):   
+    def __iter__(self):
 	return self
 
     def count(self):
