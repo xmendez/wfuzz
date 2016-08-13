@@ -24,6 +24,7 @@ class FuzzResFilter:
 	    adv_element_bool = oneOf("hasquery ispath")
             filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
             special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
+            sed_element = Suppress("replace(") + filter_element + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(")"))
 	    digits = "XB0123456789"
 	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
 	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
@@ -32,7 +33,7 @@ class FuzzResFilter:
 	    operator = oneOf("and or")
 	    not_operator = oneOf("not")
 	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
-	    definition = filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool ^ special_element + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef ^ special_element)
+	    definition = sed_element ^ filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool ^ special_element + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef ^ special_element)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
@@ -40,6 +41,7 @@ class FuzzResFilter:
 	    adv_elementRef.setParseAction(self.__compute_adv_element)
 	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
 	    filterRef.setParseAction(self.__compute_filter_element)
+	    sed_element.setParseAction(self.__compute_sed_element)
 	    nestedformula.setParseAction(self.__compute_formula)
 	    special_element.setParseAction(self.__compute_special_element)
 	    self.finalformula.setParseAction(self.__myreduce)
@@ -97,6 +99,14 @@ class FuzzResFilter:
             return True
         else:
             return False
+
+    def __compute_sed_element(self, tokens):
+	field, old, new = tokens
+
+        self.res.set_field(field, self.res.get_field(field).replace(old, new))
+
+        return True
+
 
     def __compute_adv_element_bool(self, tokens):
 	operator, adv_element = tokens[0]
@@ -213,6 +223,8 @@ class FuzzResFilter:
 		return self.finalformula.parseString(filter_string)[0]
 	    except ParseException, e:
 		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+            except AttributeError, e:
+		raise FuzzException(FuzzException.FATAL, "It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 	else:
 	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
 		    or 'BBB' in self.hideparams['lines'] \

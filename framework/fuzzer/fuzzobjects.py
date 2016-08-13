@@ -248,6 +248,10 @@ class FuzzRequest(object):
     def reqtime(self, t):
 	self._request.totaltime = t
 
+    def set_field(self, field, value):
+        if field in ["url"]:
+            self.url = value
+
     def get_field(self, field):
         if field in ["url", "method", "scheme", "host", "content", "code"]:
             return str(getattr(self, field))
@@ -691,6 +695,9 @@ class FuzzResult:
             self.words = len(re.findall("\S+", self.history.content))
 
         return self
+
+    def set_field(self, field, value):
+        return self.history.set_field(field, value)
 
     def get_field(self, field):
         if field in ["description", "nres", "chars", "lines", "words", "md5"]:
