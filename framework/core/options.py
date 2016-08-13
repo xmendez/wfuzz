@@ -38,6 +38,7 @@ class FuzzOptions(UserDict):
 	    grl_options = dict(
 		    printer_tool = Facade().sett.get('general', 'default_printer'),
 		    colour = False,
+		    verbose = False,
 		    interactive = False,
 		    dryrun = False,
 		    recipe = "",
@@ -220,6 +221,8 @@ class FuzzSession:
 	    fuzz_options.set("output_filename", options["grl_options"]["output_filename"])
 	if options["grl_options"]["colour"]:
 	    Facade().proxy("printers").kbase.add("colour", True)
+	if options["grl_options"]["verbose"]:
+	    Facade().proxy("printers").kbase.add("verbose", True)
 
 	fuzz_options.set("printer_tool", options["grl_options"]["printer_tool"])
 	fuzz_options.set("interactive", options["grl_options"]["interactive"])

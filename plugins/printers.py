@@ -141,10 +141,8 @@ class default:
     priority = 99
 
     def __init__(self):
-	if self.kbase.has("colour"):
-	    self.colour = self.kbase.get("colour")
-	else:
-	    self.colour = False
+        self.colour = True if self.kbase.has("colour") else False
+        self.verbose = True if self.kbase.has("verbose") else False
 
 	self.sizex, sizey = getTerminalSize()
 	self.written_x = 0
@@ -203,81 +201,7 @@ class default:
 	    else:
 		WConio.textcolor(8)
 
-    def _print(self, res, line_suffix):
-	self._erase()
-
-	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
-
-	self._write("%05d:  C=" % (res.nres), line_suffix, txt_color)
-	if res.exception:
-	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
-	else:
-	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
-	self._write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" % (res.lines, res.words, res.chars, res.description, line_suffix), line_suffix, txt_color)
-
-	if line_suffix != "":
-	    for i in res.plugins_res:
-		print "  |_ %s\r" % i.issue
-
-	sys.stdout.flush()
-
-    def header(self, summary):
-	print exec_banner
-	print "Target: %s\r" % summary.url
-	#print "Payload type: " + payloadtype + "\n"
-	#print "Total requests:aaaaaaa %d\r\n" % summary.total_req
-	if summary.total_req > 0:
-	    print "Total requests: %d\r\n" % summary.total_req
-	else:
-		print "Total requests: <<unknown>>\r\n"
-	print "==================================================================\r"
-	print "ID	Response   Lines      Word         Chars          Request    \r"
-	print "==================================================================\r\n"
-
-    def result(self, res):
-	self._print(res, "\r\n")
-
-    def noresult(self, res):
-	self._print(res, "")
-
-    def footer(self, summary):
-	self._erase()
-	sys.stdout.write("\r\n")
-
-	print "Total time: %s\r" % str(summary.totaltime)[:8]
-
-	if summary.backfeed > 0:
-	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
-	else:
-	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
-	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
-	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
-
-@moduleman_plugin("header", "footer", "noresult", "result")
-class verbose(default):
-    name = "verbose"
-    description = "Results in verbose format"
-    category = ["default"]
-    priority = 99
-
-    def __init__(self):
-	default.__init__(self)
-
-    def header(self, summary):
-	print exec_banner
-	print "Target: %s\r" % summary.url
-	#print "Payload type: " + payloadtype + "\n"
-	if summary.total_req > 0:
-	    print "Total requests: %d\r\n" % summary.total_req
-	else:
-		print "Total requests: <<unknown>>\r\n"
-	print
-
-	print "==============================================================================================================================================\r"
-	print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Request    \r"
-	print "==============================================================================================================================================\r\n"
-
-    def _print(self, res, line_suffix):
+    def _print_verbose(self, res, line_suffix):
 	self._erase()
 
 	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
@@ -307,6 +231,66 @@ class verbose(default):
 		print "  |_ %s\r" % i.issue
 
 	sys.stdout.flush()
+
+
+    def _print(self, res, line_suffix):
+	self._erase()
+
+	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
+
+	self._write("%05d:  C=" % (res.nres), line_suffix, txt_color)
+	if res.exception:
+	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
+	else:
+	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
+	self._write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" % (res.lines, res.words, res.chars, res.description, line_suffix), line_suffix, txt_color)
+
+	if line_suffix != "":
+	    for i in res.plugins_res:
+		print "  |_ %s\r" % i.issue
+
+	sys.stdout.flush()
+
+    def header(self, summary):
+	print exec_banner
+	print "Target: %s\r" % summary.url
+	#print "Payload type: " + payloadtype + "\n"
+	#print "Total requests:aaaaaaa %d\r\n" % summary.total_req
+	if summary.total_req > 0:
+	    print "Total requests: %d\r\n" % summary.total_req
+	else:
+		print "Total requests: <<unknown>>\r\n"
+
+        if self.verbose:
+            print "==============================================================================================================================================\r"
+            print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Request    \r"
+            print "==============================================================================================================================================\r\n"
+        else:
+            print "==================================================================\r"
+            print "ID	Response   Lines      Word         Chars          Request    \r"
+            print "==================================================================\r\n"
+
+    def result(self, res):
+        if self.verbose:
+            self._print_verbose(res, "\r\n")
+        else:
+            self._print(res, "\r\n")
+
+    def noresult(self, res):
+	self._print(res, "")
+
+    def footer(self, summary):
+	self._erase()
+	sys.stdout.write("\r\n")
+
+	print "Total time: %s\r" % str(summary.totaltime)[:8]
+
+	if summary.backfeed > 0:
+	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	else:
+	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
+	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
+	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
 
 @moduleman_plugin("header", "footer", "noresult", "result")
 class json:

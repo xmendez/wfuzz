@@ -365,13 +365,13 @@ class CLParser:
 	    options["output_filename"] = optsd['--oF'][0]
 
 	if "-v" in optsd:
-	    options["printer_tool"] = "verbose"
+	    options["verbose"] = True
 
 	if "-c" in optsd:
 	    options["colour"] = True
 
 	if "-A" in optsd:
-	    options["printer_tool"] = "verbose"
+	    options["verbose"] = True
 	    options["colour"] = True
 
 	if "-o" in optsd:
