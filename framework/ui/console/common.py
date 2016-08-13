@@ -101,7 +101,7 @@ verbose_usage ='''%s\n\nOptions:
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
 \t--zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
-\t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline)
+\t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline). It must be preceded by -z. 
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
@@ -114,8 +114,9 @@ verbose_usage ='''%s\n\nOptions:
 \t
 \t--hc/hl/hw/hh N[,N]+	    : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
-\t--ss/hs regex		    : Show/Hide responses with the specified regex within the content
-\t--filter <filter>	    : Filter responses using the specified expression (Use BBB for taking values from baseline)
+\t--ss/hs regex		    : Show/hide responses with the specified regex within the content
+\t--filter <filter>	    : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
+\t--prefilter <filter>	    : Filter items before fuzzing using the specified expression (Use BBB for taking values from baseline)
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 ''' % (header_usage)
 

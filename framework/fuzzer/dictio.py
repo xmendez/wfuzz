@@ -3,7 +3,27 @@ from framework.fuzzer.fuzzobjects import FuzzStats
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
 
+from framework.fuzzer.filter import FuzzResFilter
+
 import re
+
+class sliceit:
+    def __init__(self, payload, slicestr):
+	self.ffilter = FuzzResFilter(filter_string = slicestr)
+        self.payload = payload
+
+    def __iter__(self):
+        return self
+
+    def count(self):
+        return -1
+
+    def next(self):
+        item = self.payload.next()
+        while not self.ffilter.is_visible(item):
+            item = self.payload.next()
+
+	return item
 
 class dictionary:
 	def __init__(self, payload, encoders_list):
@@ -55,9 +75,10 @@ class requestGenerator:
 	def _init_dictio(self, payload_options):
 	    selected_dic = []
 
-	    for name, params, extra, encoders in payload_options['payloads']:
+	    for name, params, extra, encoders, slicestr in payload_options['payloads']:
 		p = Facade().get_payload(name)(params, extra)
-		selected_dic.append(dictionary(p, encoders) if encoders else p)
+		pp = dictionary(p, encoders) if encoders else p
+		selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
 	    if len(selected_dic) == 1:
 		return selected_dic[0]
