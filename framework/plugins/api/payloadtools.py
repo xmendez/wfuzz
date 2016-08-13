@@ -12,42 +12,13 @@ class FuzzResPayload:
 	self._params = []
 
 	if extra_params: 
-	    if extra_params.has_key('attr'):
+	    if 'attr' in extra_params:
 		self._attr = extra_params['attr']
-
-		first_index = self._attr.find("(")
-		sec_index = self._attr.find(")")
-
-		if first_index > 0:
-		    if sec_index != len(self._attr) - 1:
-			raise FuzzException(FuzzException.FATAL, "Wrong expression.")
-
-		    if sec_index < 0 or first_index > sec_index:
-			raise FuzzException(FuzzException.FATAL, "Wrong expression, Unbalanced parenthesis.")
-
-		    self._params = self._attr[first_index + 1:sec_index].split("-")
-		    self._attr = self._attr[:first_index]
 
     def next(self):
 	next_item = self._it.next()
 
-	if not self._attr:
-	    return next_item
-
-	try:
-	    attr = reduce(lambda x, y: getattr(x, y), self._attr.split("."), next_item)
-	except AttributeError:
-	    raise FuzzException(FuzzException.FATAL, "Unknown fuzz result attribute.")
-
-	try:
-	    if callable(attr):
-		attr = attr(*self._params)
- 
-	except TypeError:
-	    raise FuzzException(FuzzException.FATAL, "Incorrect paramaters specified for Fuzz result attribute.")
-
-	return str(attr)
-
+        return next_item if not self._attr else next_item.get_field(self._attr)
 
 class BingIter:
     def __init__(self, dork, offset = 0, limit = 0, key = None):
