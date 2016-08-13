@@ -6,6 +6,7 @@ from framework.core.myexception import FuzzException
 from framework.fuzzer.filter import FuzzResFilter
 
 import re
+import itertools
 
 class sliceit:
     def __init__(self, payload, slicestr):
@@ -24,6 +25,10 @@ class sliceit:
             item = self.payload.next()
 
 	return item
+
+class tupleit(itertools.imap):
+    def count(self):
+        return -1
 
 class dictionary:
 	def __init__(self, payload, encoders_list):
@@ -81,7 +86,7 @@ class requestGenerator:
 		selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
 	    if len(selected_dic) == 1:
-		return selected_dic[0]
+		return tupleit(lambda x: (x,), selected_dic[0])
 	    elif payload_options["iterator"]:
 		return Facade().get_iterator(payload_options["iterator"])(*selected_dic)
 	    else:
@@ -102,8 +107,7 @@ class requestGenerator:
             if method:
                 fuzz_words += marker_regex.findall(userpass)
 
-            lenght = len(element) if isinstance(element, tuple) else 1
-            if lenght != len(set(fuzz_words)):
+            if len(element) != len(set(fuzz_words)):
                 raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
 
 	def count(self):
@@ -137,4 +141,4 @@ class requestGenerator:
                 if self.stats.processed == 0 or (self._baseline and self.stats.processed == 1): 
                     self._check_dictio_len(n)
 
-		return FuzzResultFactory.from_seed(self.seed, n if isinstance(n, tuple) else (n,), self.seed_options)
+		return FuzzResultFactory.from_seed(self.seed, n, self.seed_options)
