@@ -211,21 +211,21 @@ class FuzzSession:
 		    if value[0] == "+":
 			value = value[1:]
 
-			Facade().proxy("parsers").kbase.add(k, v + "-" + value)
+			Facade().parsers.kbase.add(k, v + "-" + value)
 		    else:
-			Facade().proxy("parsers").kbase.add(k, value)
+			Facade().parsers.kbase.add(k, value)
 
 		else:
-		    Facade().proxy("parsers").kbase.add(k, v)
+		    Facade().parsers.kbase.add(k, v)
 
 	# grl options
 	if options["grl_options"]["output_filename"]:
 	    fuzz_options.set("output_filename", options["grl_options"]["output_filename"])
 	if options["grl_options"]["colour"]:
-	    Facade().proxy("printers").kbase.add("colour", True)
+	    Facade().printers.kbase.add("colour", True)
             fuzz_options.set("colour", options["grl_options"]["colour"])
 	if options["grl_options"]["verbose"]:
-	    Facade().proxy("printers").kbase.add("verbose", True)
+	    Facade().printers.kbase.add("verbose", True)
             fuzz_options.set("verbose", options["grl_options"]["verbose"])
 
 	fuzz_options.set("printer_tool", options["grl_options"]["printer_tool"])

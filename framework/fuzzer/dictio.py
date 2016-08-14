@@ -53,7 +53,7 @@ class dictionary:
 			    string = Facade().get_encoder(i).encode(string)
 			yield string
 		    else:
-			l = Facade().proxy("encoders").get_plugins(name)
+			l = Facade().encoders.get_plugins(name)
 			if not l:
 			    raise FuzzException(FuzzException.FATAL, name + " encoder does not exists (-e encodings for a list of available encoders)")
 

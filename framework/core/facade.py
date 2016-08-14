@@ -65,6 +65,12 @@ class Facade:
     def proxy(self, which):
 	return self._load(which)
 
+    def __getattr__(self, name):
+        if name in ["printers", "payloads", "iterators", "encoders", "parsers"]:
+            return self.proxy(name)
+        else:
+            raise AttributeError
+
     def get_printer(self, name):
 	try:
 	    return self._load("printers").get_plugin("printers/" + name)
