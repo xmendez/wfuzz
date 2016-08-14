@@ -1,21 +1,19 @@
 import socket
-import sys
 import json as jjson
 from xml.dom import minidom
 
 from externals.moduleman.plugin import moduleman_plugin
-from framework.ui.console.output import getTerminalSize
-from framework.ui.console.common import exec_banner, Term
-from framework.core.myexception import FuzzException
+from framework.plugins.base import BasePrinter
 
 @moduleman_plugin("header", "footer", "result")
-class magictree:
+class magictree(BasePrinter):
     name = "magictree"
     description = "Prints results in magictree format"
     category = ["default"]
     priority = 99
 
-    def __init__(self):
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
 	self.node_mt = None
 	self.node_service = None
 
@@ -86,19 +84,22 @@ class magictree:
 	self.__create_xml_element(node_url, "source", "WFuzz")
 
     def footer(self, summary):
-	sys.stderr.write(self.node_mt.toxml())
+	self.f.write(self.node_mt.toxml())
 
 @moduleman_plugin("header", "footer", "result")
-class html:
+class html(BasePrinter):
     name = "html"
     description = "Prints results in html format"
     category = ["default"]
     priority = 99
 
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
+
     def header(self, summary):
 	url = summary.url
 
-	sys.stderr.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url) )
+	self.f.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url) )
 
     def result(self, fuzz_result):
 	htmlc="<font>"
@@ -115,123 +116,24 @@ class html:
 	    for n, v in fuzz_result.history.parameters.post.items():
 		inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
 
-	    sys.stderr.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
+	    self.f.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
 	else:
-	    sys.stderr.write("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.url, fuzz_result.url))
+	    self.f.write("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.url, fuzz_result.url))
 
     def footer(self, summary):
-	sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
-	sys.stdout.flush()
+	self.f.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
 
 @moduleman_plugin("header", "footer", "result")
-class default:
-    name = "default"
-    description = "Default output format"
-    category = ["default"]
-    priority = 99
-
-    def __init__(self):
-        self.colour = True if self.kbase.has("colour") else False
-        self.verbose = True if self.kbase.has("verbose") else False
-
-        self.term = Term()
-
-    def _print_verbose(self, res):
-	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
-
-        self.term.set_colour(txt_colour)
-
-	self.term.write("%05d:  " % (res.nres), txt_colour)
-	self.term.write("%.3fs   C=" % (res.timer), txt_colour)
-
-	location = ""
-	if 'Location' in res.history.headers.response:
-	    location = res.history.headers.response['Location']
-	elif res.history.url != res.history.redirect_url:
-	    location = "(*) %s" % res.history.url
-
-	server = ""
-	if 'Server' in res.history.headers.response:
-	    server = res.history.headers.response['Server']
-
-	if res.exception:
-	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
-	else:
-	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
-
-	self.term.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description), txt_colour)
-
-	sys.stdout.flush()
-
-
-    def _print(self, res):
-	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
-
-        self.term.set_colour(txt_colour)
-
-        self.term.write("%05d:  C=" % (res.nres), txt_colour)
-	if res.exception:
-	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
-	else:
-	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
-	self.term.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (res.lines, res.words, res.chars, res.description), txt_colour)
-
-	sys.stdout.flush()
-
-    def header(self, summary):
-	print exec_banner
-	print "Target: %s\r" % summary.url
-	#print "Payload type: " + payloadtype + "\n"
-	#print "Total requests:aaaaaaa %d\r\n" % summary.total_req
-	if summary.total_req > 0:
-	    print "Total requests: %d\r\n" % summary.total_req
-	else:
-		print "Total requests: <<unknown>>\r\n"
-
-        if self.verbose:
-            print "==============================================================================================================================================\r"
-            print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r"
-            print "==============================================================================================================================================\r\n"
-        else:
-            print "==================================================================\r"
-            print "ID	Response   Lines      Word         Chars          Request    \r"
-            print "==================================================================\r\n"
-
-    def result(self, res):
-        self.term.delete_line()
-
-        if self.verbose:
-            self._print_verbose(res)
-        else:
-            self._print(res)
-
-        if res.is_visible: 
-            sys.stdout.write("\n\r")
-
-            for i in res.plugins_res:
-                print "  |_ %s\r" % i.issue
-
-    def footer(self, summary):
-        self.term.delete_line()
-	sys.stdout.write("\r\n")
-
-	print "Total time: %s\r" % str(summary.totaltime)[:8]
-
-	if summary.backfeed > 0:
-	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
-	else:
-	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
-	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
-	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
-
-@moduleman_plugin("header", "footer", "result")
-class json:
+class json(BasePrinter):
     name = "json"
     description = "Results in json format"
     category = ["default"]
     priority = 99
 
-    json_res = []
+
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
+        self.json_res = []
 
     def header(self, res):
         pass
@@ -253,49 +155,47 @@ class json:
         res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}
         self.json_res.append(res_entry)
 
-    def noresult(self, res):
-        pass
     def footer(self, summary):
-        print jjson.dumps(self.json_res)
+        self.f.write(jjson.dumps(self.json_res))
 
 
 
 @moduleman_plugin("header", "footer", "result")
-class raw:
+class raw(BasePrinter):
     name = "raw"
     description = "Raw output format"
     category = ["default"]
     priority = 99
 
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
+
     def header(self, summary):
-	print exec_banner
-	print "Target: %s\r" % summary.url
-	#print "Payload type: " + payloadtype + "\n"
-	print "Total requests: %d\r\n" % summary.total_req
-	print "==================================================================\r"
-	print "ID	Response   Lines      Word         Chars          Payload    \r"
-	print "==================================================================\r\n"
+	self.f.write("Target: %s\n" % summary.url)
+	self.f.write("Total requests: %d\n" % summary.total_req)
+	self.f.write("==================================================================\n")
+	self.f.write("ID	Response   Lines      Word         Chars          Payload    \n")
+	self.f.write("==================================================================\n")
 
     def result(self, res):
 	if res.exception:
-	    sys.stdout.write("XXX")
+	    self.f.write("XXX")
 	else:
-	    sys.stdout.write("%05d:  C=%03d" % (res.nres, res.code))
+	    self.f.write("%05d:  C=%03d" % (res.nres, res.code))
 
-	sys.stdout.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\r\n" % (res.lines, res.words, res.chars, res.description))
+	self.f.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\n" % (res.lines, res.words, res.chars, res.description))
 
 	for i in res.plugins_res:
-		print "  |_ %s\r" % i.issue
+		self.f.write("  |_ %s\n" % i.issue)
 
 
     def footer(self, summary):
-	print "\r\n"
-
-	print "Total time: %s\r" % str(summary.totaltime)[:8]
+	self.f.write("\n")
+	self.f.write("Total time: %s\n" % str(summary.totaltime)[:8])
 
 	if summary.backfeed > 0:
-	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	    self.f.write("Processed Requests: %s (%d + %d)\n" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed))
 	else:
-	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
-	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
-	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
+	    self.f.write("Processed Requests: %s\n" % (str(summary.processed)[:8]))
+	self.f.write("Filtered Requests: %s\n" % (str(summary.filtered)[:8]))
+	self.f.write("Requests/sec.: %s\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8])

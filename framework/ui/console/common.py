@@ -39,7 +39,7 @@ usage ='''%s\n\nOptions:
 \t-e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 \t
 \t-c			    : Output with colors
-\t-v			    : Verbose information. Alias for -o verbose
+\t-v			    : Verbose information.
 \t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t
 \t-p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
@@ -78,8 +78,8 @@ verbose_usage ='''%s\n\nOptions:
 \t--oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 \t
 \t-c			    : Output with colors
-\t-v			    : Verbose information. Alias for -o verbose
-\t-o printer		    : Format output using the specified printer (default printer if omitted).
+\t-v			    : Verbose information.
+\t-o filename,printer         : Store results in the output file using the specified printer (raw printer if omitted).
 \t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run		    : Print the results of applying the requests without actually making any HTTP request.
 \t

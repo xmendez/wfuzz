@@ -75,3 +75,13 @@ class DiscoveryPlugin(BasePlugin):
 	    BasePlugin.queue_url(self, url)
 	    return True
 	return False
+
+
+class BasePrinter:
+    def __init__(self, output):
+        self.f = None
+        try:
+            self.f = open(output,'w')
+        except IOError, e:
+            raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
+

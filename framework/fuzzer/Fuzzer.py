@@ -103,6 +103,8 @@ class Fuzzer:
 	    except Exception:
 		raise FuzzException(FuzzException.FATAL, "Error opening results file!")
 
+        self.printer = options.get("printer_tool")
+
 	# Get active plugins
 	lplugins = None
 	if options.get("script_string"):
@@ -142,6 +144,7 @@ class Fuzzer:
 
 	# initial seed request
 	self.genReq.stats.mark_start()
+        if self.printer: self.printer.header(self.genReq.stats)
 	self.seed_queue.put_priority(1, FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def __iter__(self):
@@ -180,13 +183,20 @@ class Fuzzer:
 	# done! (None sent has gone through all queues).
 	if not res:
 	    self.genReq.stats.mark_end()
+
+            if self.printer:
+                self.printer.footer(self.genReq.stats)
+	   
 	    if self.output_fn: self.output_fn.close()
 	    raise StopIteration
 
 	# Save results?
 	if res and self.output_fn: 
 	    pickle.dump(res, self.output_fn)
-	   
+
+        if self.printer:
+            self.printer.result(res)
+
 	return res
 
     def stats(self):

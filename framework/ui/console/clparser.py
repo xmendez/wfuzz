@@ -375,8 +375,16 @@ class CLParser:
 	    options["colour"] = True
 
 	if "-o" in optsd:
-	    options["printer_tool"] = optsd['-o'][0]
+	    vals = optsd['-o'][0].split(",", 1)
 
+            if len(vals) == 1:
+                filename = vals[0]
+                printer = Facade().sett.get('general', 'default_printer')
+            else:
+                filename, printer = vals
+
+            options["printer_tool"] = Facade().get_printer(printer)(filename)
+                
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]
 

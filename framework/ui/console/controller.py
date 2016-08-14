@@ -1,3 +1,8 @@
+import sys
+
+from framework.ui.console.common import exec_banner, Term
+from framework.core.facade import Facade
+
 usage='''\r\n
 Interactive keyboard commands:\r\n
 ?: Show this help
@@ -79,4 +84,98 @@ class Controller:
 		    print "ET left min.: %s\r\n" % str(eta/60)[:8]
 		else:
 		    print "ET left sec.: %s\r\n" % str(eta)[:8]
+
+class View:
+    def __init__(self, colour, verbose):
+        self.colour = colour
+        self.verbose = verbose
+        self.term = Term()
+
+    def _print_verbose(self, res):
+	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
+
+        self.term.set_colour(txt_colour)
+
+	self.term.write("%05d:  " % (res.nres), txt_colour)
+	self.term.write("%.3fs   C=" % (res.timer), txt_colour)
+
+	location = ""
+	if 'Location' in res.history.headers.response:
+	    location = res.history.headers.response['Location']
+	elif res.history.url != res.history.redirect_url:
+	    location = "(*) %s" % res.history.url
+
+	server = ""
+	if 'Server' in res.history.headers.response:
+	    server = res.history.headers.response['Server']
+
+	if res.exception:
+	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
+	else:
+	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
+
+	self.term.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description), txt_colour)
+
+	sys.stdout.flush()
+
+
+    def _print(self, res):
+	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
+
+        self.term.set_colour(txt_colour)
+
+        self.term.write("%05d:  C=" % (res.nres), txt_colour)
+	if res.exception:
+	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
+	else:
+	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
+	self.term.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (res.lines, res.words, res.chars, res.description), txt_colour)
+
+	sys.stdout.flush()
+
+    def header(self, summary):
+	print exec_banner
+	print "Target: %s\r" % summary.url
+	#print "Payload type: " + payloadtype + "\n"
+	#print "Total requests:aaaaaaa %d\r\n" % summary.total_req
+	if summary.total_req > 0:
+	    print "Total requests: %d\r\n" % summary.total_req
+	else:
+		print "Total requests: <<unknown>>\r\n"
+
+        if self.verbose:
+            print "==============================================================================================================================================\r"
+            print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r"
+            print "==============================================================================================================================================\r\n"
+        else:
+            print "==================================================================\r"
+            print "ID	Response   Lines      Word         Chars          Request    \r"
+            print "==================================================================\r\n"
+
+    def result(self, res):
+        self.term.delete_line()
+
+        if self.verbose:
+            self._print_verbose(res)
+        else:
+            self._print(res)
+
+        if res.is_visible: 
+            sys.stdout.write("\n\r")
+
+            for i in res.plugins_res:
+                print "  |_ %s\r" % i.issue
+
+    def footer(self, summary):
+        self.term.delete_line()
+	sys.stdout.write("\r\n")
+
+	print "Total time: %s\r" % str(summary.totaltime)[:8]
+
+	if summary.backfeed > 0:
+	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	else:
+	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
+	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
+	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
 

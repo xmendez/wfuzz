@@ -25,6 +25,7 @@ from framework.core.myexception import FuzzException
 
 from framework.ui.console.keystroke import KeyPress
 from framework.ui.console.controller import Controller
+from framework.ui.console.controller import View
 from framework.ui.console.clparser import CLParser
 
 kb = None
@@ -61,7 +62,7 @@ try:
             mc = Controller(fz, kb)
             kb.start()
 
-    printer = Facade().get_printer(session_options.get("printer_tool"))
+    printer = View(session_options.get("colour"), session_options.get("verbose"))
     printer.header(fz.genReq.stats)
 
     for res in fz:

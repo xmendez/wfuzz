@@ -20,7 +20,7 @@ class Settings(SettingsBase):
 		("req_delay", '90'),
 		("User-Agent", "Wfuzz/%s" % version)
 	    ],
-	    general=[("default_printer", 'default'),("cancel_on_plugin_except","1")],
+	    general=[("default_printer", 'raw'),("cancel_on_plugin_except","1")],
 	)
 
 class Facade:
@@ -67,7 +67,7 @@ class Facade:
 
     def get_printer(self, name):
 	try:
-	    return self._load("printers").get_plugin("printers/" + name)()
+	    return self._load("printers").get_plugin("printers/" + name)
 	except KeyError:
 	    raise FuzzException(FuzzException.FATAL, name + " printer does not exists (-e printers for a list of available printers)")
 

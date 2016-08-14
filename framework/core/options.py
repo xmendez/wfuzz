@@ -36,7 +36,7 @@ class FuzzOptions(UserDict):
 		iterator = None,
 	    ),
 	    grl_options = dict(
-		    printer_tool = Facade().sett.get('general', 'default_printer'),
+		    printer_tool = None,
 		    colour = False,
 		    verbose = False,
 		    interactive = False,
@@ -156,6 +156,8 @@ class FuzzSession:
 	    "proxy_list": None,
 	    "scanmode": False,
 	    "interactive": False,
+	    "colour": False,
+	    "verbose": False,
 	    "dryrun": False,
 	    "max_concurrent": int(Facade().sett.get('connection', 'concurrent')),
 	    "max_req_delay": int(Facade().sett.get('connection', 'req_delay')),
@@ -221,8 +223,10 @@ class FuzzSession:
 	    fuzz_options.set("output_filename", options["grl_options"]["output_filename"])
 	if options["grl_options"]["colour"]:
 	    Facade().proxy("printers").kbase.add("colour", True)
+            fuzz_options.set("colour", options["grl_options"]["colour"])
 	if options["grl_options"]["verbose"]:
 	    Facade().proxy("printers").kbase.add("verbose", True)
+            fuzz_options.set("verbose", options["grl_options"]["verbose"])
 
 	fuzz_options.set("printer_tool", options["grl_options"]["printer_tool"])
 	fuzz_options.set("interactive", options["grl_options"]["interactive"])
