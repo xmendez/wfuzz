@@ -1,5 +1,9 @@
 import sys
 from framework.core.facade import version
+import os
+if os.name == "nt":
+    import WConio
+
 
 examples_banner = '''Examples:\n\twfuzz.py -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 \twfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
@@ -120,7 +124,7 @@ verbose_usage ='''%s\n\nOptions:
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 ''' % (header_usage)
 
-class term_colors:
+class Term:
     reset = "\x1b[0m"
     bright = "\x1b[1m"
     dim = "\x1b[2m"
@@ -128,6 +132,9 @@ class term_colors:
     blink = "\x1b[5m"
     reverse = "\x1b[7m"
     hidden = "\x1b[8m"
+
+    delete = "\x1b[0K"
+    oneup = "\033[1A"
 
     fgBlack = "\x1b[30m"
     fgRed = "\x1b[31m"
@@ -146,3 +153,62 @@ class term_colors:
     bgMagenta = "\x1b[45m"
     bgCyan = "\x1b[46m"
     bgWhite = "\x1b[47m"
+
+
+    def get_colour(self, code):
+	if code == 0:
+	    cc = Term.fgYellow
+	    wc = 12
+	elif code >= 400 and code < 500:
+	    cc = Term.fgRed
+	    wc = 12
+	elif code >= 300 and code < 400:
+	    cc = Term.fgBlue
+	    wc = 11
+	elif code >= 200 and code < 300:
+	    cc = Term.fgGreen
+	    wc = 10
+	else:
+	    cc = Term.fgMagenta
+	    wc = 1
+
+	return (cc, wc)
+
+    def delete_line(self):
+        if os.name != 'nt':
+            sys.stdout.write("\r" + Term.delete)
+        else:
+            WConio.clreol()
+
+    def set_colour(self, colour):
+	cc, wc = colour
+
+        if os.name != 'nt':
+            sys.stdout.write(cc)
+        else:
+            WConio.textcolor(wc)
+
+    def write(self, string, colour):
+	cc, wc = colour
+
+        if os.name != 'nt':
+            sys.stdout.write(cc + string + Term.reset)
+        else:
+            WConio.textcolor(wc)
+            sys.stdout.write(string)
+            WConio.textcolor(8)
+
+    def go_up(self, lines):
+        sys.stdout.write("\033["+str(lines)+"A")
+
+    def erase_lines(self, lines):
+        for i in range(lines):
+            sys.stdout.write("\r" + Term.delete)
+            sys.stdout.write(Term.oneup)
+
+
+
+
+
+
+

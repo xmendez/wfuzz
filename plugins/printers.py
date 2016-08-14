@@ -3,16 +3,12 @@ import sys
 import json as jjson
 from xml.dom import minidom
 
-import os
-if os.name == "nt":
-    import WConio
-
 from externals.moduleman.plugin import moduleman_plugin
 from framework.ui.console.output import getTerminalSize
-from framework.ui.console.common import exec_banner, term_colors
+from framework.ui.console.common import exec_banner, Term
 from framework.core.myexception import FuzzException
 
-@moduleman_plugin("header", "footer", "noresult", "result")
+@moduleman_plugin("header", "footer", "result")
 class magictree:
     name = "magictree"
     description = "Prints results in magictree format"
@@ -92,10 +88,7 @@ class magictree:
     def footer(self, summary):
 	sys.stderr.write(self.node_mt.toxml())
 
-    def noresult(self, res):
-	pass
-
-@moduleman_plugin("header", "footer", "noresult", "result")
+@moduleman_plugin("header", "footer", "result")
 class html:
     name = "html"
     description = "Prints results in html format"
@@ -130,10 +123,7 @@ class html:
 	sys.stderr.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
 	sys.stdout.flush()
 
-    def noresult(self, res):
-	pass
-
-@moduleman_plugin("header", "footer", "noresult", "result")
+@moduleman_plugin("header", "footer", "result")
 class default:
     name = "default"
     description = "Default output format"
@@ -144,70 +134,15 @@ class default:
         self.colour = True if self.kbase.has("colour") else False
         self.verbose = True if self.kbase.has("verbose") else False
 
-	self.sizex, sizey = getTerminalSize()
-	self.written_x = 0
+        self.term = Term()
 
-	self.OS = os.name
+    def _print_verbose(self, res):
+	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
 
-    def _erase(self):
-	self.written_x = 0
-	sys.stdout.write ("\r")
-	if self.OS != 'nt':
-	    sys.stdout.write ("\x1b[0K")
-	else:
-	    WConio.clreol()
+        self.term.set_colour(txt_colour)
 
-    def _write_line(self, string, line_suffix):
-	self.written_x += len(string)
-
-	if self.written_x + 31 > self.sizex:
-	    string = string[:self.sizex-31] + "...\"" +  line_suffix
-
-	sys.stdout.write(string)
-
-    def _get_code_color(self, code):
-	if code == 0:
-	    cc = term_colors.fgYellow
-	    wc = 12
-	elif code >= 400 and code < 500:
-	    cc = term_colors.fgRed
-	    wc = 12
-	elif code >= 300 and code < 400:
-	    cc = term_colors.fgBlue
-	    wc = 11
-	elif code >= 200 and code < 300:
-	    cc = term_colors.fgGreen
-	    wc = 10
-	else:
-	    cc = term_colors.fgMagenta
-	    wc = 1
-
-	return (cc, wc)
-
-    def _write(self, text, line_suffix, color = ("", 8)):
-	cc, wc = color
-
-	if cc != "":
-	    if self.OS != 'nt':
-		sys.stdout.write(cc)
-	    else:
-		WConio.textcolor(wc)
-
-	self._write_line(text, line_suffix)
-
-	if wc != "":
-	    if self.OS!='nt':
-		sys.stdout.write("\033[0;0m")
-	    else:
-		WConio.textcolor(8)
-
-    def _print_verbose(self, res, line_suffix):
-	self._erase()
-
-	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
-
-	self._write("%05d:  " % (res.nres), line_suffix, txt_color)
-	self._write("%.3fs   C=" % (res.timer), line_suffix, txt_color)
+	self.term.write("%05d:  " % (res.nres), txt_colour)
+	self.term.write("%.3fs   C=" % (res.timer), txt_colour)
 
 	location = ""
 	if 'Location' in res.history.headers.response:
@@ -220,34 +155,26 @@ class default:
 	    server = res.history.headers.response['Server']
 
 	if res.exception:
-	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
+	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
 	else:
-	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
+	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
 
-	self._write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"%s" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description, line_suffix), line_suffix, txt_color)
-
-	if line_suffix != "":
-	    for i in res.plugins_res:
-		print "  |_ %s\r" % i.issue
+	self.term.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description), txt_colour)
 
 	sys.stdout.flush()
 
 
-    def _print(self, res, line_suffix):
-	self._erase()
+    def _print(self, res):
+	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
 
-	txt_color = ("", 8) if not res.is_baseline or not self.colour else (term_colors.fgCyan, 8)
+        self.term.set_colour(txt_colour)
 
-	self._write("%05d:  C=" % (res.nres), line_suffix, txt_color)
+        self.term.write("%05d:  C=" % (res.nres), txt_colour)
 	if res.exception:
-	    self._write("XXX", line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
+	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
 	else:
-	    self._write("%03d" % (res.code), line_suffix, self._get_code_color(res.code) if self.colour else ("",8))
-	self._write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"%s" % (res.lines, res.words, res.chars, res.description, line_suffix), line_suffix, txt_color)
-
-	if line_suffix != "":
-	    for i in res.plugins_res:
-		print "  |_ %s\r" % i.issue
+	    self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("",8))
+	self.term.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (res.lines, res.words, res.chars, res.description), txt_colour)
 
 	sys.stdout.flush()
 
@@ -263,7 +190,7 @@ class default:
 
         if self.verbose:
             print "==============================================================================================================================================\r"
-            print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Request    \r"
+            print "ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r"
             print "==============================================================================================================================================\r\n"
         else:
             print "==================================================================\r"
@@ -271,16 +198,21 @@ class default:
             print "==================================================================\r\n"
 
     def result(self, res):
-        if self.verbose:
-            self._print_verbose(res, "\r\n")
-        else:
-            self._print(res, "\r\n")
+        self.term.delete_line()
 
-    def noresult(self, res):
-	self._print(res, "")
+        if self.verbose:
+            self._print_verbose(res)
+        else:
+            self._print(res)
+
+        if res.is_visible: 
+            sys.stdout.write("\n\r")
+
+            for i in res.plugins_res:
+                print "  |_ %s\r" % i.issue
 
     def footer(self, summary):
-	self._erase()
+        self.term.delete_line()
 	sys.stdout.write("\r\n")
 
 	print "Total time: %s\r" % str(summary.totaltime)[:8]
@@ -292,7 +224,7 @@ class default:
 	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
 	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
 
-@moduleman_plugin("header", "footer", "noresult", "result")
+@moduleman_plugin("header", "footer", "result")
 class json:
     name = "json"
     description = "Results in json format"
@@ -328,7 +260,7 @@ class json:
 
 
 
-@moduleman_plugin("header", "footer", "noresult", "result")
+@moduleman_plugin("header", "footer", "result")
 class raw:
     name = "raw"
     description = "Raw output format"
@@ -341,7 +273,7 @@ class raw:
 	#print "Payload type: " + payloadtype + "\n"
 	print "Total requests: %d\r\n" % summary.total_req
 	print "==================================================================\r"
-	print "ID	Response   Lines      Word         Chars          Request    \r"
+	print "ID	Response   Lines      Word         Chars          Payload    \r"
 	print "==================================================================\r\n"
 
     def result(self, res):
@@ -355,9 +287,6 @@ class raw:
 	for i in res.plugins_res:
 		print "  |_ %s\r" % i.issue
 
-
-    def noresult(self, res):
-	self._print(res, "")
 
     def footer(self, summary):
 	print "\r\n"

@@ -65,7 +65,7 @@ try:
     printer.header(fz.genReq.stats)
 
     for res in fz:
-        printer.result(res) if res.is_visible else printer.noresult(res)
+        printer.result(res)
 
     printer.footer(fz.genReq.stats)
 except FuzzException, e:
