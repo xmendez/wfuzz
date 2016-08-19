@@ -177,7 +177,8 @@ class Fuzzer:
     def next(self):
 	# ignore end seed marks and not processable items
 	res = self.process()
-	while res and (not res.is_processable or res.type == FuzzResult.endseed):
+	while res and (not res.is_processable or res.type == FuzzResult.cancel or res.type == FuzzResult.endseed):
+
 	    res = self.process()
 
 	# done! (None sent has gone through all queues).
