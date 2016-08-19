@@ -290,8 +290,8 @@ class FuzzResFilter:
         return ffilter
 
 class FilterQ(FuzzQueue):
-    def __init__(self, ffilter, queue_out):
-	FuzzQueue.__init__(self, queue_out)
+    def __init__(self, ffilter):
+	FuzzQueue.__init__(self)
 	Thread.__init__(self)
 
 	self.setName('filter_thread')
@@ -313,8 +313,8 @@ class FilterQ(FuzzQueue):
 	self.send(item)
 
 class SliceQ(FuzzQueue):
-    def __init__(self, ffilter, queue_out):
-	FuzzQueue.__init__(self, queue_out)
+    def __init__(self, ffilter):
+	FuzzQueue.__init__(self)
 	Thread.__init__(self)
 
 	self.setName('slice_thread')

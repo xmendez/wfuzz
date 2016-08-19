@@ -13,8 +13,8 @@ from framework.fuzzer.fuzzobjects import FuzzResult
 import pycurl
 
 class DryRunQ(FuzzQueue):
-    def __init__(self, queue_out):
-	FuzzQueue.__init__(self, queue_out)
+    def __init__(self):
+	FuzzQueue.__init__(self)
 	self.pause = Event()
 
     def get_name(self):
@@ -29,8 +29,8 @@ class DryRunQ(FuzzQueue):
 class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
 
-    def __init__(self, options, q_out):
-	FuzzQueue.__init__(self, q_out, options.get("max_concurrent") * 5)
+    def __init__(self, options):
+	FuzzQueue.__init__(self, limit=options.get("max_concurrent") * 5)
 
 	self.options = options
 
@@ -39,8 +39,6 @@ class HttpQueue(FuzzQueue):
 	self.exit_job = False
 	self.mutex_multi = Lock()
 	self.mutex_stats = Lock()
-
-	self.queue_out = q_out
 
 	# Connection pool
 	self.m = None

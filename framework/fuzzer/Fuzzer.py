@@ -11,6 +11,7 @@ from framework.core.facade import Facade
 
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import MyPriorityQueue
+from framework.utils.myqueue import QueueManager
 from framework.utils.myqueue import FuzzQueue
 from framework.fuzzer.myhttp import HttpQueue
 from framework.fuzzer.myhttp import DryRunQ
@@ -24,8 +25,8 @@ from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
 
 class SeedQ(FuzzQueue):
-    def __init__(self, genReq, delay, queue_out):
-	FuzzQueue.__init__(self, queue_out)
+    def __init__(self, genReq, delay):
+	FuzzQueue.__init__(self)
 	self.delay = delay
 	self.genReq = genReq
 
@@ -75,11 +76,8 @@ class SeedQ(FuzzQueue):
 
 
 class RoutingQ(FuzzQueue):
-    def __init__(self, routes, queue_out):
-	FuzzQueue.__init__(self, queue_out)
-	self.routes = routes
-
-    def set_routes(self, routes):
+    def __init__(self, routes):
+	FuzzQueue.__init__(self)
 	self.routes = routes
 
     def get_name(self):
@@ -89,7 +87,10 @@ class RoutingQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-        self.routes[item.type].put(item)
+        if item.type in self.routes:
+            self.routes[item.type].put(item)
+        else:
+            self.queue_out.put(item)
 
 class Fuzzer:
     def __init__(self, options):
@@ -113,39 +114,48 @@ class Fuzzer:
 	    if not lplugins:
 		raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
 
-	recursive = lplugins or options.get("rlevel") > 0
-	filtering = options.get('filter_params').is_active()
-	slicing = options.get('slice_params').is_active()
-
-	# Create queues (in reverse order)
-	# genReq ---> seed_queue -> [slice_queue] -> http_queue -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue]---> results_queue
-	self.results_queue = MyPriorityQueue()
-	self.filter_queue = FilterQ(options.get("filter_params"), self.results_queue) if filtering else None
-	self.routing_queue = RoutingQ(None, self.filter_queue if filtering else self.results_queue) if recursive else None
-
 	cache = HttpCache()
-	self.recursive_queue = RecursiveQ(options.get("rlevel"), self.genReq.stats, cache, self.routing_queue) if recursive else None
-	self.plugins_queue = None
-	if lplugins:
-	    self.plugins_queue = RoundRobin([JobMan(lplugins, cache, self.recursive_queue) for i in range(3)])
-	if options.get("dryrun"):
-	    self.http_queue = DryRunQ(self.plugins_queue if lplugins else self.recursive_queue if recursive else self.filter_queue if filtering else self.results_queue)
-	else:
-	    self.http_queue = HttpQueue(options, self.plugins_queue if lplugins else self.recursive_queue if recursive else self.filter_queue if filtering else self.results_queue)
-	self.slice_queue = SliceQ(options.get("slice_params"), self.http_queue) if slicing else None
-	self.seed_queue = SeedQ(self.genReq, options.get("sleeper"), self.slice_queue if slicing else self.http_queue)
 
-	# recursion routes
-	if recursive:
-	    self.routing_queue.set_routes({
-		FuzzResult.seed: self.seed_queue,
-		FuzzResult.backfeed: self.http_queue,
-		FuzzResult.result: self.filter_queue if filtering else self.results_queue})
+	# Create queues
+	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue]---> results_queue
+
+        self.qmanager = QueueManager()
+        self.results_queue = MyPriorityQueue()
+
+        self.qmanager.add("seed_queue", SeedQ(self.genReq, options.get("sleeper")))
+
+        if options.get('slice_params').is_active():
+            self.qmanager.add("slice_queue", SliceQ(options.get("slice_params")))
+
+	if options.get("dryrun"):
+            self.qmanager.add("http_queue", DryRunQ())
+	else:
+            self.qmanager.add("http_queue", HttpQueue(options))
+
+
+	if lplugins:
+	    self.qmanager.add("plugins_queue", RoundRobin([JobMan(lplugins, cache) for i in range(3)]))
+
+        # no me gusta lo de la routingq por defecto mirar!!!!!!
+        if lplugins or options.get("rlevel") > 0:
+            self.qmanager.add("recursive_queue", RecursiveQ(options.get("rlevel"), self.genReq.stats, cache))
+            rq = RoutingQ({
+		FuzzResult.seed: self.qmanager["seed_queue"],
+		FuzzResult.backfeed: self.qmanager["http_queue"]
+		})
+
+            self.qmanager.add("routing_queue", rq)
+
+	if options.get('filter_params').is_active():
+            self.qmanager.add("filter_queue", FilterQ(options.get("filter_params")))
+
+        self.qmanager.bind(self.results_queue)
 
 	# initial seed request
 	self.genReq.stats.mark_start()
         if self.printer: self.printer.header(self.genReq.stats)
-	self.seed_queue.put_priority(1, FuzzResult.to_new_signal(FuzzResult.startseed))
+	self.qmanager["seed_queue"].put_priority(1, FuzzResult.to_new_signal(FuzzResult.startseed))
+
 
     def __iter__(self):
 	return self
@@ -170,7 +180,7 @@ class Fuzzer:
 
 	# check if we are done. If so, send None to everyone so they can stop nicely
 	if item and self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
-	    self.seed_queue.put_last(None)
+	    self.qmanager["seed_queue"].put_last(None)
 
 	return item
 
@@ -201,43 +211,17 @@ class Fuzzer:
 	return res
 
     def stats(self):
-	dic = {
-	    "plugins_queue": self.plugins_queue.qsize() if self.plugins_queue else -1,
-	    "recursive_queue": self.recursive_queue.qsize(),
-	    "results_queue": self.results_queue.qsize(),
-	    "routing_queue": self.routing_queue.qsize() if self.routing_queue else -1,
-	    "http_queue": self.http_queue.qsize(),
-	    "seed_queue": self.seed_queue.qsize(),
-	    "filter_queue": self.filter_queue.qsize() if self.filter_queue else -1,
-	    "slice_queue": self.slice_queue.qsize() if self.slice_queue else -1,
-	}
-
-	if self.plugins_queue:
-	    j = 0
-	    for i in self.plugins_queue.queue_out:
-		dic = dict(dic.items() + {"plugins_queue #%d" % j: i.qsize()}.items())
-		j += 1
-
-	return dict(self.http_queue.job_stats().items() + self.genReq.stats.get_stats().items() + dic.items())
+	return dict(self.qmanager.get_stats().items() + self.qmanager["http_queue"].job_stats().items() + self.genReq.stats.get_stats().items())
 
     def cancel_job(self):
 	# stop generating items
-	self.http_queue.pause.set()
+	self.qmanager["http_queue"].pause.set()
 	self.genReq.stop()
 
-	# stop processing pending items
-	for q in [self.seed_queue, self.http_queue, self.plugins_queue, self.recursive_queue, self.filter_queue, self.routing_queue]:
-	    if q: q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
-
-	# wait for cancel to be processed
-	for q in [self.seed_queue, self.http_queue, self.plugins_queue] + self.plugins_queue.queue_out if self.plugins_queue else [] + [self.recursive_queue, self.filter_queue, self.routing_queue, self.slice_queue]:
-	    if q: q.join()
-
-	# send None to stop (almost nicely)
-	self.seed_queue.put_last(None)
+        self.qmanager.cancel()
 
     def pause_job(self):
-	self.http_queue.pause.clear()
+	self.qmanager["http_queue"].pause.clear()
 
     def resume_job(self):
-	self.http_queue.pause.set()
+	self.qmanager["http_queue"].pause.set()

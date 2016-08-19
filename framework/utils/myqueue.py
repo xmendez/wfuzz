@@ -1,5 +1,6 @@
 import sys
 import traceback
+import collections
 
 from Queue import PriorityQueue
 from threading import Thread
@@ -29,7 +30,7 @@ class MyPriorityQueue(PriorityQueue):
 	PriorityQueue.put(self, (self.max_prio, item))
 	
 class FuzzQueue(MyPriorityQueue, Thread):
-    def __init__(self, queue_out, limit = 0):
+    def __init__(self, queue_out = None, limit = 0):
         MyPriorityQueue.__init__(self, limit)
 	self.queue_out = queue_out
 	self.propagate = True
@@ -37,6 +38,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	Thread.__init__(self)
 	self.setName(self.get_name())
 	self.start()
+
+    def next_queue(self, q):
+        self.queue_out = q
 
     def process(self, prio, item):
 	raise NotImplemented
@@ -75,6 +79,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	    msg = "%s\n\n%s" %(str(e), traceback.format_exc())
 	    self.send_first(FuzzResult.to_new_exception(FuzzException(FuzzException.FATAL, msg)))
 
+    def get_stats(self):
+        return {self.get_name(): self.qsize()}
+        
     def run(self):
 	cancelling = False
 
@@ -137,6 +144,24 @@ class FuzzListQueue(FuzzQueue):
 	for q in self.queue_out:
 	    q.join()
 
+    def join(self):
+        self.qout_join()
+	MyPriorityQueue.join(self)
+
+    def next_queue(self, nextq):
+        for qq in self.queue_out:
+            qq.next_queue(nextq)
+
+    def get_stats(self):
+        l = []
+
+        for qq in self.queue_out:
+            l = l + qq.get_stats().items()
+
+        l = l + FuzzQueue.get_stats(self).items()
+
+        return dict(l)
+
 class FuzzRRQueue(FuzzListQueue):
     def __init__(self, queue_out, limit = 0):
         FuzzListQueue.__init__(self, queue_out, limit)
@@ -151,3 +176,50 @@ class FuzzRRQueue(FuzzListQueue):
 	    yield self.queue_out[i]
 	    i += 1
 	    i = i % len(self.queue_out)
+
+class QueueManager:
+    def __init__(self):
+        self._queues = collections.OrderedDict()
+
+    def add(self, name, q):
+        self._queues[name] = q
+
+    def bind(self, lastq):
+        l = self._queues.values()
+        length = len(l)
+
+        for i in range(0, length):
+            first = l[i]
+            second = l[i+1] if i+1 < length else None
+
+            if second: 
+                first.next_queue(second)
+            else:
+               first.next_queue(lastq) 
+
+    def __getitem__(self, key):
+        return self._queues[key]
+
+    def join(self):
+	for q in self._queues.values():
+            q.join()
+
+    def cancel(self):
+	# stop processing pending items
+	for q in self._queues.values():
+	    q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
+
+	# wait for cancel to be processed
+	for q in self._queues.values():
+	    q.join()
+
+	# send None to stop (almost nicely)
+	self._queues.values()[0].put_last(None)
+
+    def get_stats(self):
+        l = []
+
+	for q in self._queues.values():
+            l = l + q.get_stats().items()
+
+	return dict(l)

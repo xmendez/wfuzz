@@ -618,14 +618,14 @@ class FuzzStats:
 	    "url": self.url,
 	    "total": self.total_req,
 
-	    "backfed": self.backfeed,
-	    "Processed": self.processed,
-	    "Pending": self.pending_fuzz,
-	    "filtered": self.filtered,
+	    "backfed": self._backfeed,
+	    "Processed": self._processed,
+	    "Pending": self._pending_fuzz,
+	    "filtered": self._filtered,
 
-	    "Pending_seeds": self.pending_seeds,
+	    "Pending_seeds": self._pending_seeds,
 
-	    "totaltime": self.totaltime,
+	    "totaltime": self._totaltime,
 	}
 
     def __getattr__(self, name):

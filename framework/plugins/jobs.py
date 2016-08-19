@@ -23,8 +23,8 @@ class RoundRobin(FuzzRRQueue):
 	self.send(item)
 
 class JobMan(FuzzQueue):
-    def __init__(self, selected_plugins, cache, queue_out):
-        FuzzQueue.__init__(self, queue_out)
+    def __init__(self, selected_plugins, cache):
+        FuzzQueue.__init__(self)
 	self.__walking_threads = Queue(20)
 	self.selected_plugins = selected_plugins
 	self.cache = cache
@@ -76,8 +76,8 @@ class JobMan(FuzzQueue):
 	self.send(res)
 
 class RecursiveQ(FuzzQueue):
-    def __init__(self, max_rlevel, stats, cache, queue_out):
-        FuzzQueue.__init__(self, queue_out)
+    def __init__(self, max_rlevel, stats, cache):
+        FuzzQueue.__init__(self)
 
 	self.stats = stats
 	self.cache = cache

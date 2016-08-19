@@ -52,17 +52,11 @@ class Controller:
 	if self._debug:
 	    fzstats = self.fuzzer.stats()
 
-	    print "\nTotal items %d, Backfed items %d, HTTP reqs: %d, Fuzzed items: %d, Pending: %d (Wait HTTP: %d, Wait pre HTTP: %d, Wait Workers: %d, Wait processed: %d). (MEM: %d)" % \
-		(fzstats['total'], \
-		fzstats['backfed'], \
-		fzstats['http_Processed'], \
-		fzstats['Processed'], \
-		fzstats['Pending'], \
-		fzstats['http_Pending'], \
-		fzstats['http_queue'], \
-		fzstats['plugins_queue'], \
-		fzstats['results_queue'],
-		)
+            print "\n=============== Paused =================="
+            stats = self.fuzzer.stats()
+            for k,v in stats.items():
+                print "%s: %s" % (k, v)
+            print "\n========================================="
 	else:
 	    pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed
 	    summary = self.fuzzer.genReq.stats
