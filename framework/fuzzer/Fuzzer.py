@@ -136,7 +136,6 @@ class Fuzzer:
 	if lplugins:
 	    self.qmanager.add("plugins_queue", RoundRobin([JobMan(lplugins, cache) for i in range(3)]))
 
-        # no me gusta lo de la routingq por defecto mirar!!!!!!
         if lplugins or options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options.get("rlevel"), self.genReq.stats, cache))
             rq = RoutingQ({

@@ -670,7 +670,7 @@ class FuzzResult:
     newid = itertools.count(0).next
     ERROR_CODE = -1
 
-    def __init__(self, history = None, exception = None):
+    def __init__(self, history = None, exception = None, track_id = True):
 	self.history = history
 
         self.type = None
@@ -680,7 +680,7 @@ class FuzzResult:
 	self.is_visible = True
 	self.is_processable = True
         self.rlevel = 1
-        self.nres = FuzzResult.newid()
+        self.nres = FuzzResult.newid() if  track_id else 0
 
         self.chars = 0
         self.lines = 0
@@ -742,7 +742,7 @@ class FuzzResult:
     # factory methods
 
     def to_new_seed(self):
-        seed = self.from_soft_copy()
+        seed = self.from_soft_copy(False)
 
         if seed.type == FuzzResult.error:
             raise FuzzException(FuzzException.FATAL, "A new seed cannot be created with a Fuzz item representing an error.")
@@ -753,8 +753,8 @@ class FuzzResult:
 
 	return seed
 
-    def from_soft_copy(self):
-        fr = FuzzResult(self.history.from_copy())
+    def from_soft_copy(self, track_id = True):
+        fr = FuzzResult(self.history.from_copy(), track_id = track_id)
 
 	fr.exception = self.exception
         fr.description = self.description
@@ -768,14 +768,14 @@ class FuzzResult:
 
     @staticmethod
     def to_new_exception(exception):
-        fr = FuzzResult(exception = exception)
+        fr = FuzzResult(exception = exception, track_id = False)
         fr.type = FuzzResult.error
 
         return fr
 
     @staticmethod
     def to_new_signal(signal):
-        fr = FuzzResult()
+        fr = FuzzResult(track_id = False)
         fr.type = signal
 
         return fr
