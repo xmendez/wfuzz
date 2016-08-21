@@ -38,7 +38,7 @@ class SeedQ(FuzzQueue):
 
     def process(self, prio, item):
 	if item.type == FuzzResult.startseed:
-	    self.genReq.stats.pending_seeds += 1
+	    self.genReq.stats.pending_seeds.inc()
 	elif item.type == FuzzResult.seed:
 	    self.genReq.restart(item)
 	else:
@@ -49,11 +49,11 @@ class SeedQ(FuzzQueue):
 	    fuzzres = self.genReq.next()
 
 	    if fuzzres.is_baseline:
-		self.genReq.stats.pending_fuzz += 1
+		self.genReq.stats.pending_fuzz.inc()
 		self.queue_out.put_first(fuzzres)
 
 		# wait for BBB to be completed before generating more items
-		while(self.genReq.stats.processed == 0 and not self.genReq.stats.cancelled):
+		while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
 		    time.sleep(0.0001)
 
 		# more after baseline?
@@ -65,7 +65,7 @@ class SeedQ(FuzzQueue):
 	# Enqueue requests
 	try:
 	    while fuzzres:
-		self.genReq.stats.pending_fuzz += 1
+		self.genReq.stats.pending_fuzz.inc()
 		if self.delay: time.sleep(self.delay)
 		self.send(fuzzres)
 		fuzzres = self.genReq.next()
@@ -170,16 +170,16 @@ class Fuzzer:
             return None
 
         if item.type == FuzzResult.result:
-	    if item.is_processable: self.genReq.stats.processed += 1
-	    self.genReq.stats.pending_fuzz -= 1
-	    if not item.is_visible: self.genReq.stats.filtered += 1 
+	    if item.is_processable: self.genReq.stats.processed.inc()
+	    self.genReq.stats.pending_fuzz.dec()
+	    if not item.is_visible: self.genReq.stats.filtered.inc()
         elif item.type == FuzzResult.endseed:
-	    self.genReq.stats.pending_seeds -= 1
+	    self.genReq.stats.pending_seeds.dec()
         elif item.type == FuzzResult.error:
 	    raise item.exception
 
 	# check if we are done. If so, send None to everyone so they can stop nicely
-	if item and self.genReq.stats.pending_fuzz == 0 and self.genReq.stats.pending_seeds == 0:
+	if item and self.genReq.stats.pending_fuzz() == 0 and self.genReq.stats.pending_seeds() == 0:
 	    self.qmanager["seed_queue"].put_last(None)
 
 	return item

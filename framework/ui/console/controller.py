@@ -58,18 +58,18 @@ class Controller:
                 print "%s: %s" % (k, v)
             print "\n========================================="
 	else:
-	    pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed
+	    pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed()
 	    summary = self.fuzzer.genReq.stats
 	    summary.mark_end()
 	    print "\nTotal requests: %s\r" % str(summary.total_req)
 	    print "Pending requests: %s\r" % str(pending)
 
-	    if summary.backfeed > 0:
-		print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	    if summary.backfeed() > 0:
+		print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed())
 	    else:
-		print "Processed Requests: %s\r" % (str(summary.processed)[:8])
-	    print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
-	    req_sec = summary.processed/summary.totaltime if summary.totaltime > 0 else 0
+		print "Processed Requests: %s\r" % (str(summary.processed())[:8])
+	    print "Filtered Requests: %s\r" % (str(summary.filtered())[:8])
+	    req_sec = summary.processed()/summary.totaltime if summary.totaltime > 0 else 0
 	    print "Total time: %s\r" % str(summary.totaltime)[:8]
 	    if req_sec > 0:
 		print "Requests/sec.: %s\r" % str(req_sec)[:8]
@@ -166,10 +166,10 @@ class View:
 
 	print "Total time: %s\r" % str(summary.totaltime)[:8]
 
-	if summary.backfeed > 0:
-	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed)
+	if summary.backfeed() > 0:
+	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed())
 	else:
-	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
-	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
-	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
+	    print "Processed Requests: %s\r" % (str(summary.processed())[:8])
+	print "Filtered Requests: %s\r" % (str(summary.filtered())[:8])
+	print "Requests/sec.: %s\r\n" % str(summary.processed()/summary.totaltime if summary.totaltime > 0 else 0)[:8]
 

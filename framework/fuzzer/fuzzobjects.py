@@ -584,6 +584,25 @@ class FuzzResultFactory:
 
 	return FuzzResult(fr)
 
+class MyCounter:
+    def __init__(self, count = 0):
+        self._count = count
+	self._mutex = Lock()
+
+    def inc(self):
+        self._operation(1)
+
+    def dec(self):
+        self._operation(-1)
+
+    def _operation(self, dec):
+        with self._mutex:
+            self._count += dec
+
+    def __call__(self):
+        with self._mutex:
+            return self._count
+
 class FuzzStats:
     def __init__(self):
 	self.mutex = Lock()
@@ -592,11 +611,11 @@ class FuzzStats:
 	self.seed = None
 
 	self.total_req = 0
-	self._pending_fuzz = 0
-	self._pending_seeds = 0
-	self._processed = 0
-	self._backfeed = 0
-	self._filtered = 0
+	self.pending_fuzz = MyCounter()
+	self.pending_seeds = MyCounter()
+	self.processed = MyCounter()
+	self.backfeed = MyCounter()
+	self.filtered = MyCounter()
 
 	self._totaltime = 0
 	self.__starttime = 0
@@ -618,36 +637,33 @@ class FuzzStats:
 	    "url": self.url,
 	    "total": self.total_req,
 
-	    "backfed": self._backfeed,
-	    "Processed": self._processed,
-	    "Pending": self._pending_fuzz,
-	    "filtered": self._filtered,
+	    "backfed": self.backfeed(),
+	    "Processed": self.processed(),
+	    "Pending": self.pending_fuzz(),
+	    "filtered": self.filtered(),
 
-	    "Pending_seeds": self._pending_seeds,
+	    "Pending_seeds": self.pending_seeds(),
 
 	    "totaltime": self._totaltime,
 	}
-
-    def __getattr__(self, name):
-        if name in ["cancelled", "pending_fuzz", "filtered", "backfeed", "processed", "pending_seeds"]:
-            with self.mutex:
-                return self.__dict__["_" + name]
-        else:
-            raise AttributeError
-
-    def __setattr__(self, name, value):
-        if name in ["cancelled", "pending_fuzz", "filtered", "backfeed", "processed", "pending_seeds"]:
-            with self.mutex:
-                self.__dict__["_" + name] = value
-
-        self.__dict__[name] = value
 
     def mark_start(self):
 	with self.mutex:
 	    self.__starttime = time.time()	
 
     def mark_end(self):
-	self.totaltime = time.time() - self.__starttime	
+        with self.mutex:
+            self.totaltime = time.time() - self.__starttime	
+
+    @property
+    def cancelled(self):
+        with self.mutex:
+            return self._cancelled
+
+    @cancelled.setter
+    def cancelled(self, v):
+        with self.mutex:
+            self._cancelled = v
 
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel = range(7)

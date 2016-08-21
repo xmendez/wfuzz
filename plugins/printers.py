@@ -193,9 +193,9 @@ class raw(BasePrinter):
 	self.f.write("\n")
 	self.f.write("Total time: %s\n" % str(summary.totaltime)[:8])
 
-	if summary.backfeed > 0:
-	    self.f.write("Processed Requests: %s (%d + %d)\n" % (str(summary.processed)[:8], (summary.processed - summary.backfeed), summary.backfeed))
+	if summary.backfeed() > 0:
+	    self.f.write("Processed Requests: %s (%d + %d)\n" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed()))
 	else:
-	    self.f.write("Processed Requests: %s\n" % (str(summary.processed)[:8]))
-	self.f.write("Filtered Requests: %s\n" % (str(summary.filtered)[:8]))
-	self.f.write("Requests/sec.: %s\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8])
+	    self.f.write("Processed Requests: %s\n" % (str(summary.processed())[:8]))
+	self.f.write("Filtered Requests: %s\n" % (str(summary.filtered())[:8]))
+	self.f.write("Requests/sec.: %s\n" % str(summary.processed()/summary.totaltime if summary.totaltime > 0 else 0)[:8])

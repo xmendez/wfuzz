@@ -131,14 +131,14 @@ class requestGenerator:
 	    if self.stats.cancelled:
 		raise StopIteration
 
-	    if self._baseline and self.stats.processed == 0 and self.stats.pending_seeds <= 1:
+	    if self._baseline and self.stats.processed() == 0 and self.stats.pending_seeds() <= 1:
 		return self._baseline
 
 	    if self.seed.history.wf_allvars is not None:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
-                if self.stats.processed == 0 or (self._baseline and self.stats.processed == 1): 
+                if self.stats.processed() == 0 or (self._baseline and self.stats.processed() == 1): 
                     self._check_dictio_len(n)
 
 		return FuzzResultFactory.from_seed(self.seed, n, self.seed_options)

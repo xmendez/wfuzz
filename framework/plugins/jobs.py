@@ -99,8 +99,8 @@ class RecursiveQ(FuzzQueue):
 	    plg_backfeed = fuzz_res.plugins_backfeed.pop()
 	    plugin_name = plg_backfeed.source
 
-	    self.stats.backfeed += 1
-	    self.stats.pending_fuzz += 1
+	    self.stats.backfeed.inc()
+	    self.stats.pending_fuzz.inc()
 	    self.send(plg_backfeed.fuzzitem)
 	    enq_item += 1
 
@@ -126,5 +126,5 @@ class RecursiveQ(FuzzQueue):
 	res.plugins_res.append(plres)
 
 	# send new seed
-	self.stats.pending_seeds += 1
+	self.stats.pending_seeds.inc()
 	self.send(res.to_new_seed())
