@@ -1,6 +1,7 @@
 import sys
 import traceback
 import collections
+import itertools
 
 from Queue import PriorityQueue
 from threading import Thread
@@ -186,16 +187,11 @@ class QueueManager:
 
     def bind(self, lastq):
         l = self._queues.values()
-        length = len(l)
 
-        for i in range(0, length):
-            first = l[i]
-            second = l[i+1] if i+1 < length else None
+        for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
+            first.next_queue(second)
 
-            if second: 
-                first.next_queue(second)
-            else:
-               first.next_queue(lastq) 
+        l[-1].next_queue(lastq) 
 
     def __getitem__(self, key):
         return self._queues[key]
