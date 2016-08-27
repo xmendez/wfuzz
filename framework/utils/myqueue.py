@@ -15,21 +15,19 @@ class MyPriorityQueue(PriorityQueue):
 
 	self.max_prio = 0
 
-    def put_priority(self, prio, item):
+    def _put_priority(self, prio, item):
 	self.max_prio = max(prio, self.max_prio)
 	PriorityQueue.put(self, (prio, item))
 
     def put(self, item):
-	self.max_prio = max(item.rlevel, self.max_prio)
-	PriorityQueue.put(self, (item.rlevel, item))
+        self._put_priority(item.rlevel, item)
 
     def put_first(self, item):
-	PriorityQueue.put(self, (0, item))
+        self._put_priority(0, item)
 
     def put_last(self, item):
-	self.max_prio += 1
-	PriorityQueue.put(self, (self.max_prio, item))
-	
+        self._put_priority(self.max_prio + 1, item)
+
 class FuzzQueue(MyPriorityQueue, Thread):
     def __init__(self, queue_out = None, limit = 0):
         MyPriorityQueue.__init__(self, limit)
