@@ -25,9 +25,9 @@ from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
 
 class SeedQ(FuzzQueue):
-    def __init__(self, genReq, delay):
-	FuzzQueue.__init__(self)
-	self.delay = delay
+    def __init__(self, options, genReq):
+	FuzzQueue.__init__(self, options)
+	self.delay = options.get("sleeper")
 	self.genReq = genReq
 
     def get_name(self):
@@ -76,8 +76,8 @@ class SeedQ(FuzzQueue):
 
 
 class RoutingQ(FuzzQueue):
-    def __init__(self, routes):
-	FuzzQueue.__init__(self)
+    def __init__(self, options, routes):
+	FuzzQueue.__init__(self, options)
 	self.routes = routes
 
     def get_name(self):
@@ -122,23 +122,23 @@ class Fuzzer:
         self.qmanager = QueueManager()
         self.results_queue = MyPriorityQueue()
 
-        self.qmanager.add("seed_queue", SeedQ(self.genReq, options.get("sleeper")))
+        self.qmanager.add("seed_queue", SeedQ(options, self.genReq))
 
         if options.get('slice_params').is_active():
-            self.qmanager.add("slice_queue", SliceQ(options.get("slice_params")))
+            self.qmanager.add("slice_queue", SliceQ(options))
 
 	if options.get("dryrun"):
-            self.qmanager.add("http_queue", DryRunQ())
+            self.qmanager.add("http_queue", DryRunQ(options))
 	else:
             self.qmanager.add("http_queue", HttpQueue(options))
 
 
 	if lplugins:
-	    self.qmanager.add("plugins_queue", RoundRobin([JobMan(lplugins, cache) for i in range(3)]))
+	    self.qmanager.add("plugins_queue", RoundRobin(options, [JobMan(options, lplugins, cache) for i in range(3)]))
 
         if lplugins or options.get("rlevel") > 0:
-            self.qmanager.add("recursive_queue", RecursiveQ(options.get("rlevel"), self.genReq.stats, cache))
-            rq = RoutingQ({
+            self.qmanager.add("recursive_queue", RecursiveQ(options, cache))
+            rq = RoutingQ(options, {
 		FuzzResult.seed: self.qmanager["seed_queue"],
 		FuzzResult.backfeed: self.qmanager["http_queue"]
 		})
@@ -146,7 +146,7 @@ class Fuzzer:
             self.qmanager.add("routing_queue", rq)
 
 	if options.get('filter_params').is_active():
-            self.qmanager.add("filter_queue", FilterQ(options.get("filter_params")))
+            self.qmanager.add("filter_queue", FilterQ(options))
 
         self.qmanager.bind(self.results_queue)
 

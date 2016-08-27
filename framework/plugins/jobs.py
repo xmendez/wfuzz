@@ -10,8 +10,8 @@ from framework.utils.myqueue import FuzzRRQueue
 from framework.core.facade import Facade
 
 class RoundRobin(FuzzRRQueue):
-    def __init__(self, queue_out):
-        FuzzRRQueue.__init__(self, queue_out)
+    def __init__(self, options, queues_out):
+        FuzzRRQueue.__init__(self, options, queues_out)
 
     def get_name(self):
 	return 'RoundRobin'
@@ -23,8 +23,8 @@ class RoundRobin(FuzzRRQueue):
 	self.send(item)
 
 class JobMan(FuzzQueue):
-    def __init__(self, selected_plugins, cache):
-        FuzzQueue.__init__(self)
+    def __init__(self, options, selected_plugins, cache):
+	FuzzQueue.__init__(self, options)
 	self.__walking_threads = Queue(20)
 	self.selected_plugins = selected_plugins
 	self.cache = cache
@@ -76,12 +76,11 @@ class JobMan(FuzzQueue):
 	self.send(res)
 
 class RecursiveQ(FuzzQueue):
-    def __init__(self, max_rlevel, stats, cache):
-        FuzzQueue.__init__(self)
+    def __init__(self, options, cache):
+	FuzzQueue.__init__(self, options)
 
-	self.stats = stats
 	self.cache = cache
-	self.max_rlevel = max_rlevel
+	self.max_rlevel = options.get("rlevel")
 
     def get_name(self):
 	return 'RecursiveQ'

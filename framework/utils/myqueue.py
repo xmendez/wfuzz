@@ -31,10 +31,13 @@ class MyPriorityQueue(PriorityQueue):
 class FuzzQueue(MyPriorityQueue, Thread):
     first, last, duplicated, undefined = range(4)
 
-    def __init__(self, queue_out = None, limit = 0):
+    def __init__(self, options, queue_out = None, limit = 0):
         MyPriorityQueue.__init__(self, limit)
 	self.queue_out = queue_out
         self.type = FuzzQueue.undefined
+
+        self.stats = options.get("genreq").stats
+        self.options = options
 
 	Thread.__init__(self)
 	self.setName(self.get_name())
@@ -121,11 +124,11 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self._cleanup()
 
 class FuzzListQueue(FuzzQueue):
-    def __init__(self, queue_out, limit = 0):
-        FuzzQueue.__init__(self, queue_out, limit)
+    def __init__(self, options, queues_out, limit = 0):
+        FuzzQueue.__init__(self, options, queues_out, limit)
 
 	# not to convert a None/Exception to various elements, thus only propagate in one queue
-	for q in queue_out[1:]:
+	for q in self.queue_out[1:]:
 	    q.type = FuzzQueue.duplicated
 
     def send_first(self, item):
@@ -163,8 +166,8 @@ class FuzzListQueue(FuzzQueue):
         return dict(l)
 
 class FuzzRRQueue(FuzzListQueue):
-    def __init__(self, queue_out, limit = 0):
-        FuzzListQueue.__init__(self, queue_out, limit)
+    def __init__(self, options, queues_out, limit = 0):
+        FuzzListQueue.__init__(self, options, queues_out, limit)
 	self._next_queue = self._get_next_route()
 
     def send(self, item):

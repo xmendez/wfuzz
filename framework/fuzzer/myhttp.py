@@ -13,12 +13,12 @@ from framework.fuzzer.fuzzobjects import FuzzResult
 import pycurl
 
 class DryRunQ(FuzzQueue):
-    def __init__(self):
-	FuzzQueue.__init__(self)
+    def __init__(self, options):
+	FuzzQueue.__init__(self, options)
 	self.pause = Event()
 
     def get_name(self):
-	return ' DryRunQ'
+	return 'DryRunQ'
 
     def _cleanup(self):
 	pass
@@ -30,7 +30,7 @@ class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
 
     def __init__(self, options):
-	FuzzQueue.__init__(self, limit=options.get("max_concurrent") * 5)
+	FuzzQueue.__init__(self, options, limit=options.get("max_concurrent") * 5)
 
 	self.options = options
 
