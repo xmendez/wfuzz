@@ -29,10 +29,12 @@ class MyPriorityQueue(PriorityQueue):
         self._put_priority(self.max_prio + 1, item)
 
 class FuzzQueue(MyPriorityQueue, Thread):
+    first, last, duplicated, undefined = range(4)
+
     def __init__(self, queue_out = None, limit = 0):
         MyPriorityQueue.__init__(self, limit)
 	self.queue_out = queue_out
-	self.propagate = True
+        self.type = FuzzQueue.undefined
 
 	Thread.__init__(self)
 	self.setName(self.get_name())
@@ -51,7 +53,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self.queue_out.put_first(item)
 
     def send_last(self, item):
-	if not self.propagate and (item is None or item.type == FuzzResult.endseed):
+	if self.type == FuzzQueue.duplicated and (item is None or item.type == FuzzResult.endseed):
 	    return
 	else:
 	    self.queue_out.put_last(item)
@@ -123,9 +125,8 @@ class FuzzListQueue(FuzzQueue):
         FuzzQueue.__init__(self, queue_out, limit)
 
 	# not to convert a None/Exception to various elements, thus only propagate in one queue
-	for q in queue_out:
-	    q.propagate = False
-	queue_out[0].propagate = True
+	for q in queue_out[1:]:
+	    q.type = FuzzQueue.duplicated
 
     def send_first(self, item):
 	for q in self.queue_out:
@@ -190,6 +191,8 @@ class QueueManager:
             first.next_queue(second)
 
         l[-1].next_queue(lastq) 
+        l[-1].type = FuzzQueue.last
+        l[0].type = FuzzQueue.first
 
     def __getitem__(self, key):
         return self._queues[key]
