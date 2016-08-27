@@ -198,6 +198,9 @@ class QueueManager:
 	for q in self._queues.values():
             q.join()
 
+    def stop(self):
+        self._queues.values()[0].put_last(None)
+    
     def cancel(self):
 	# stop processing pending items
 	for q in self._queues.values():

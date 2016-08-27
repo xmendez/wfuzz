@@ -50,7 +50,7 @@ class SeedQ(FuzzQueue):
 
 	    if fuzzres.is_baseline:
 		self.genReq.stats.pending_fuzz.inc()
-		self.queue_out.put_first(fuzzres)
+		self.send_first(fuzzres)
 
 		# wait for BBB to be completed before generating more items
 		while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
@@ -179,7 +179,7 @@ class Fuzzer:
 
 	# check if we are done. If so, send None to everyone so they can stop nicely
 	if item and self.genReq.stats.pending_fuzz() == 0 and self.genReq.stats.pending_seeds() == 0:
-	    self.qmanager["seed_queue"].put_last(None)
+	    self.qmanager.stop()
 
 	return item
 
