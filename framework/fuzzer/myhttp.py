@@ -32,8 +32,6 @@ class HttpQueue(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options, limit=options.get("max_concurrent") * 5)
 
-	self.options = options
-
 	self.processed = 0
 
 	self.exit_job = False
