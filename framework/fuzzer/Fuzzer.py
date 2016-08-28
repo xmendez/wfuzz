@@ -74,6 +74,29 @@ class SeedQ(FuzzQueue):
 
 	self.send_last(FuzzResult.to_new_signal(FuzzResult.endseed))
 
+class SaveQ(FuzzQueue):
+    def __init__(self, options):
+	FuzzQueue.__init__(self, options)
+
+	self.output_fn = None
+        try:
+            self.output_fn = gzip.open(options.get("output_filename"), 'w+b')
+        except IOError, e:
+            raise FuzzException(FuzzException.FATAL, "Error opening results file!. %s" % str(e))
+
+    def get_name(self):
+	return 'SaveQ'
+
+    def _cleanup(self):
+        if self.output_fn: 
+            self.output_fn.close()
+
+    def process(self, prio, item):
+	if self.output_fn: 
+	    pickle.dump(item, self.output_fn)
+
+        self.send(item)
+
 class PrinterQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
@@ -115,15 +138,6 @@ class RoutingQ(FuzzQueue):
 class Fuzzer:
     def __init__(self, options):
 	self.genReq = options.get("genreq")
-
-	# save results
-	self.output_fn = None
-	if options.get("output_filename"):
-	    try:
-		self.output_fn = gzip.open(options.get("output_filename"), 'w+b')
-	    except Exception:
-		raise FuzzException(FuzzException.FATAL, "Error opening results file!")
-
 
 	# Get active plugins
 	lplugins = None
@@ -167,6 +181,9 @@ class Fuzzer:
 	if options.get('filter_params').is_active():
             self.qmanager.add("filter_queue", FilterQ(options))
 
+	if options.get('output_filename'):
+            self.qmanager.add("save_queue", SaveQ(options))
+
 	if options.get('printer_tool'):
             self.qmanager.add("printer_queue", PrinterQ(options))
 
@@ -186,14 +203,9 @@ class Fuzzer:
 	# done! (None sent has gone through all queues).
 	if not res:
 	    self.qmanager.stop()
-	    if self.output_fn: self.output_fn.close()
 	    raise StopIteration
         elif res.type == FuzzResult.error:
 	    raise res.exception
-
-	# Save results?
-	if res and self.output_fn: 
-	    pickle.dump(res, self.output_fn)
 
 	return res
 
