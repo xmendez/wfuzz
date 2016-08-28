@@ -88,6 +88,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
     def _check_finish(self):
 	if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
+	    self.stats.mark_end()
 	    self.send_last(None)
 
     def run(self):
@@ -106,6 +107,8 @@ class FuzzQueue(MyPriorityQueue, Thread):
                 elif cancelling:
                     self.task_done()
                     continue
+                elif item.type == FuzzResult.startseed:
+                    self.stats.mark_start()
                 elif item.type == FuzzResult.endseed:
                     if self.type == FuzzQueue.last:
                         self.stats.pending_seeds.dec()

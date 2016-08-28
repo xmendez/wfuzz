@@ -151,10 +151,8 @@ class Fuzzer:
         self.qmanager.bind(self.results_queue)
 
 	# initial seed request
-	self.genReq.stats.mark_start()
         if self.printer: self.printer.header(self.genReq.stats)
 	self.qmanager["seed_queue"].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
-
 
     def __iter__(self):
 	return self
@@ -167,7 +165,6 @@ class Fuzzer:
 	# done! (None sent has gone through all queues).
 	if not res:
 	    self.qmanager.stop()
-	    self.genReq.stats.mark_end()
 
             if self.printer:
                 self.printer.footer(self.genReq.stats)
