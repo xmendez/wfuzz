@@ -88,13 +88,10 @@ class SaveQ(FuzzQueue):
 	return 'SaveQ'
 
     def _cleanup(self):
-        if self.output_fn: 
-            self.output_fn.close()
+        self.output_fn.close()
 
     def process(self, prio, item):
-	if self.output_fn: 
-	    pickle.dump(item, self.output_fn)
-
+        pickle.dump(item, self.output_fn)
         self.send(item)
 
 class PrinterQ(FuzzQueue):
@@ -102,18 +99,16 @@ class PrinterQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 
         self.printer = options.get("printer_tool")
-        if self.printer: 
-            self.printer.header(self.stats)
+        self.printer.header(self.stats)
 
     def get_name(self):
 	return 'PrinterQ'
 
     def _cleanup(self):
-        if self.printer:
-            self.printer.footer(self.stats)
+        self.printer.footer(self.stats)
 
     def process(self, prio, item):
-        if self.printer and item.is_visible:
+        if item.is_visible:
             self.printer.result(item)
 
         self.send(item)
