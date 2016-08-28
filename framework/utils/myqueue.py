@@ -228,6 +228,9 @@ class QueueManager:
 	for q in self._queues.values():
             q.join()
 
+    def start(self):
+        self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
+
     def stop(self):
         self._queues.values()[0].put_last(None)
     

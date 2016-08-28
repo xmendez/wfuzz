@@ -152,7 +152,7 @@ class Fuzzer:
 
 	# initial seed request
         if self.printer: self.printer.header(self.genReq.stats)
-	self.qmanager["seed_queue"].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
+	self.qmanager.start()
 
     def __iter__(self):
 	return self
