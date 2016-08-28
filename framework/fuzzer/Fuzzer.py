@@ -25,10 +25,10 @@ from externals.reqresp.exceptions import ReqRespException
 from externals.reqresp.cache import HttpCache
 
 class SeedQ(FuzzQueue):
-    def __init__(self, options, genReq):
+    def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 	self.delay = options.get("sleeper")
-	self.genReq = genReq
+	self.genReq = options.get("genreq")
 
     def get_name(self):
 	return 'SeedQ'
@@ -155,7 +155,7 @@ class Fuzzer:
         self.qmanager = QueueManager()
         self.results_queue = MyPriorityQueue()
 
-        self.qmanager.add("seed_queue", SeedQ(options, self.genReq))
+        self.qmanager.add("seed_queue", SeedQ(options))
 
         if options.get('slice_params').is_active():
             self.qmanager.add("slice_queue", SliceQ(options))
