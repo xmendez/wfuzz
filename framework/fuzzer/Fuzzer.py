@@ -17,7 +17,7 @@ from framework.fuzzer.myhttp import HttpQueue
 from framework.fuzzer.myhttp import DryRunQ
 from framework.plugins.jobs import JobMan
 from framework.plugins.jobs import RecursiveQ
-from framework.plugins.jobs import RoundRobin
+from framework.plugins.jobs import JobQ
 from framework.fuzzer.filter import FilterQ
 from framework.fuzzer.filter import SliceQ
 
@@ -139,18 +139,10 @@ class Fuzzer:
     def __init__(self, options):
 	self.genReq = options.get("genreq")
 
-	# Get active plugins
-	lplugins = None
-	if options.get("script_string"):
-	    lplugins = Facade().get_parsers(options.get("script_string"))
-
-	    if not lplugins:
-		raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
-
 	cache = HttpCache()
 
 	# Create queues
-	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue] -> [printer_queue] ---> results_queue
+	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
 
         self.qmanager = QueueManager()
         self.results_queue = MyPriorityQueue()
@@ -165,11 +157,10 @@ class Fuzzer:
 	else:
             self.qmanager.add("http_queue", HttpQueue(options))
 
+	if options.get("script_string"):
+	    self.qmanager.add("plugins_queue", JobQ(options, cache))
 
-	if lplugins:
-	    self.qmanager.add("plugins_queue", RoundRobin(options, [JobMan(options, lplugins, cache) for i in range(3)]))
-
-        if lplugins or options.get("rlevel") > 0:
+	if options.get("script_string") or options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options, cache))
             rq = RoutingQ(options, {
 		FuzzResult.seed: self.qmanager["seed_queue"],

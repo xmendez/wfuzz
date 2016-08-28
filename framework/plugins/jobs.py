@@ -9,12 +9,18 @@ from framework.utils.myqueue import FuzzQueue
 from framework.utils.myqueue import FuzzRRQueue
 from framework.core.facade import Facade
 
-class RoundRobin(FuzzRRQueue):
-    def __init__(self, options, queues_out):
-        FuzzRRQueue.__init__(self, options, queues_out)
+class JobQ(FuzzRRQueue):
+    def __init__(self, options, cache):
+	# Get active plugins
+        lplugins = Facade().get_parsers(options.get("script_string"))
+
+        if not lplugins:
+            raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
+
+        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins, cache) for i in range(3)])
 
     def get_name(self):
-	return 'RoundRobin'
+	return 'JobQ'
 
     def _cleanup(self):
 	pass
