@@ -85,7 +85,11 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
     def get_stats(self):
         return {self.get_name(): self.qsize()}
-        
+
+    def _check_finish(self):
+	if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
+	    self.send_last(None)
+
     def run(self):
 	cancelling = False
 
@@ -94,20 +98,29 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
 	    try:
                 if item == None:
-                    self.send_last(None)
-                    if not cancelling: self.qout_join()
+                    if self.type != FuzzQueue.last:
+                        self.send_last(None)
+                        if not cancelling: self.qout_join()
                     self.task_done()
                     break
                 elif cancelling:
                     self.task_done()
                     continue
                 elif item.type == FuzzResult.endseed:
-                    self.send_last(item)
+                    if self.type == FuzzQueue.last:
+                        self.stats.pending_seeds.dec()
+                        self._check_finish()
+                    else:
+                        self.send_last(item)
                     self.task_done()
                     continue
-                elif item.type in [FuzzResult.error, FuzzResult.cancel]:
-                    cancelling = True if item.type == FuzzResult.cancel else False
+                elif item.type == FuzzResult.error:
                     self.send_first(item)
+                    self.task_done()
+                    continue
+                elif item.type == FuzzResult.cancel:
+                    cancelling = True
+                    if self.type != FuzzQueue.last: self.send_first(item)
                     self.task_done()
                     continue
                 elif not item.is_processable:
@@ -116,6 +129,14 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     continue
 
 		self.process(prio, item)
+
+                if self.type == FuzzQueue.last:
+                    if item.type == FuzzResult.result:
+                        if item.is_processable: self.stats.processed.inc()
+                        self.stats.pending_fuzz.dec()
+                        if not item.is_visible: self.stats.filtered.inc()
+                    self._check_finish()
+
 		self.task_done()
 	    except Exception, e:
 		self.task_done()

@@ -159,39 +159,14 @@ class Fuzzer:
     def __iter__(self):
 	return self
 
-    def process(self):
-	# http://bugs.python.org/issue1360
-	prio, item = self.results_queue.get(True, 365 * 24 * 60 * 60)
-
-	self.results_queue.task_done()
-
-        if item is None:
-            return None
-
-        if item.type == FuzzResult.result:
-	    if item.is_processable: self.genReq.stats.processed.inc()
-	    self.genReq.stats.pending_fuzz.dec()
-	    if not item.is_visible: self.genReq.stats.filtered.inc()
-        elif item.type == FuzzResult.endseed:
-	    self.genReq.stats.pending_seeds.dec()
-        elif item.type == FuzzResult.error:
-	    raise item.exception
-
-	# check if we are done. If so, send None to everyone so they can stop nicely
-	if item and self.genReq.stats.pending_fuzz() == 0 and self.genReq.stats.pending_seeds() == 0:
-	    self.qmanager.stop()
-
-	return item
-
     def next(self):
-	# ignore end seed marks and not processable items
-	res = self.process()
-	while res and (not res.is_processable or res.type == FuzzResult.cancel or res.type == FuzzResult.endseed):
-
-	    res = self.process()
+	# http://bugs.python.org/issue1360
+	prio, res = self.results_queue.get(True, 365 * 24 * 60 * 60)
+	self.results_queue.task_done()
 
 	# done! (None sent has gone through all queues).
 	if not res:
+	    self.qmanager.stop()
 	    self.genReq.stats.mark_end()
 
             if self.printer:
@@ -199,6 +174,8 @@ class Fuzzer:
 	   
 	    if self.output_fn: self.output_fn.close()
 	    raise StopIteration
+        elif res.type == FuzzResult.error:
+	    raise res.exception
 
 	# Save results?
 	if res and self.output_fn: 
