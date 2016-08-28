@@ -56,10 +56,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self.queue_out.put_first(item)
 
     def send_last(self, item):
-	if self.type == FuzzQueue.duplicated and (item is None or item.type == FuzzResult.endseed):
-	    return
-	else:
-	    self.queue_out.put_last(item)
+        self.queue_out.put_last(item)
 
     def qout_join(self):
 	self.queue_out.join()
@@ -100,7 +97,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	    try:
                 if item == None:
                     if self.type != FuzzQueue.last:
-                        self.send_last(None)
+                        if not self.type == self.duplicated: self.send_last(None)
                         if not cancelling: self.qout_join()
                     self.task_done()
                     break
@@ -114,7 +111,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
                         self.stats.pending_seeds.dec()
                         self._check_finish()
                     else:
-                        self.send_last(item)
+                        if not self.type == self.duplicated: self.send_last(item)
                     self.task_done()
                     continue
                 elif item.type == FuzzResult.error:
