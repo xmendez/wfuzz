@@ -123,16 +123,12 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     if self.type != FuzzQueue.last: self.send_first(item)
                     self.task_done()
                     continue
-                elif not item.is_processable:
-                    self.send(item)
-                    self.task_done()
-                    continue
 
 		self.process(prio, item)
 
                 if self.type == FuzzQueue.last:
                     if item.type == FuzzResult.result:
-                        if item.is_processable: self.stats.processed.inc()
+                        self.stats.processed.inc()
                         self.stats.pending_fuzz.dec()
                         if not item.is_visible: self.stats.filtered.inc()
                     self._check_finish()

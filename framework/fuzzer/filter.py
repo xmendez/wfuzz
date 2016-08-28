@@ -325,7 +325,8 @@ class SliceQ(FuzzQueue):
 	pass
 
     def process(self, prio, item):
-	if not item.is_baseline:
-            item.is_processable = self.ffilter.is_visible(item)
+	if item.is_baseline or self.ffilter.is_visible(item):
+            self.send(item)
+        else:
+            self.stats.pending_fuzz.dec()
 
-	self.send(item)
