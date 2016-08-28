@@ -74,6 +74,26 @@ class SeedQ(FuzzQueue):
 
 	self.send_last(FuzzResult.to_new_signal(FuzzResult.endseed))
 
+class PrinterQ(FuzzQueue):
+    def __init__(self, options):
+	FuzzQueue.__init__(self, options)
+
+        self.printer = options.get("printer_tool")
+        if self.printer: 
+            self.printer.header(self.stats)
+
+    def get_name(self):
+	return 'PrinterQ'
+
+    def _cleanup(self):
+        if self.printer:
+            self.printer.footer(self.stats)
+
+    def process(self, prio, item):
+        if self.printer and item.is_visible:
+            self.printer.result(item)
+
+        self.send(item)
 
 class RoutingQ(FuzzQueue):
     def __init__(self, options, routes):
@@ -104,7 +124,6 @@ class Fuzzer:
 	    except Exception:
 		raise FuzzException(FuzzException.FATAL, "Error opening results file!")
 
-        self.printer = options.get("printer_tool")
 
 	# Get active plugins
 	lplugins = None
@@ -117,7 +136,7 @@ class Fuzzer:
 	cache = HttpCache()
 
 	# Create queues
-	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue]---> results_queue
+	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue] -> [printer_queue] ---> results_queue
 
         self.qmanager = QueueManager()
         self.results_queue = MyPriorityQueue()
@@ -148,10 +167,12 @@ class Fuzzer:
 	if options.get('filter_params').is_active():
             self.qmanager.add("filter_queue", FilterQ(options))
 
+	if options.get('printer_tool'):
+            self.qmanager.add("printer_queue", PrinterQ(options))
+
         self.qmanager.bind(self.results_queue)
 
 	# initial seed request
-        if self.printer: self.printer.header(self.genReq.stats)
 	self.qmanager.start()
 
     def __iter__(self):
@@ -165,10 +186,6 @@ class Fuzzer:
 	# done! (None sent has gone through all queues).
 	if not res:
 	    self.qmanager.stop()
-
-            if self.printer:
-                self.printer.footer(self.genReq.stats)
-	   
 	    if self.output_fn: self.output_fn.close()
 	    raise StopIteration
         elif res.type == FuzzResult.error:
@@ -177,9 +194,6 @@ class Fuzzer:
 	# Save results?
 	if res and self.output_fn: 
 	    pickle.dump(res, self.output_fn)
-
-        if self.printer:
-            self.printer.result(res)
 
 	return res
 
