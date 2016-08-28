@@ -1,8 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #Covered by GPL V2.0
 
 import sys
+import os
+
 from framework.fuzzer.Fuzzer import Fuzzer
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
@@ -14,6 +16,11 @@ from framework.ui.console.clparser import CLParser
 kb = None
 fz = None
 printer = None
+
+# set current folder in order to load plugins
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 try:
     # parse command line 
