@@ -1,4 +1,4 @@
-from patterns.singleton import Singleton
+from .utils import Singleton
 from framework.externals.moduleman.registrant import BRegistrant
 from framework.externals.moduleman.loader import FileLoader
 from framework.externals.moduleman.loader import DirLoader
