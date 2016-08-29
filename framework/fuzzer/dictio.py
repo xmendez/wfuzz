@@ -26,9 +26,15 @@ class sliceit:
 
 	return item
 
-class tupleit(itertools.imap):
+class tupleit:
+    def __init__(self, parent):
+        self.parent = parent
+
     def count(self):
-        return -1
+        return self.parent.count()
+
+    def next(self):
+        return (self.parent.next(),)
 
 class dictionary:
 	def __init__(self, payload, encoders_list):
@@ -86,7 +92,7 @@ class requestGenerator:
 		selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
 	    if len(selected_dic) == 1:
-		return tupleit(lambda x: (x,), selected_dic[0])
+		return tupleit(selected_dic[0])
 	    elif payload_options["iterator"]:
 		return Facade().get_iterator(payload_options["iterator"])(*selected_dic)
 	    else:
