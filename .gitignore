@@ -56,3 +56,5 @@ target/
 # vim
 *.swp
 *.swo
+
+wfuzz.ini
