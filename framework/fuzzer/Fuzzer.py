@@ -4,10 +4,7 @@ from framework.utils.myqueue import MyPriorityQueue
 from framework.utils.myqueue import QueueManager
 from framework.fuzzer.myhttp import HttpQueue
 from framework.fuzzer.myhttp import DryRunQ
-from framework.plugins.jobs import JobMan
-from framework.plugins.jobs import RecursiveQ
-from framework.plugins.jobs import JobQ
-from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ
+from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ
 
 from framework.externals.reqresp.exceptions import ReqRespException
 from framework.externals.reqresp.cache import HttpCache
