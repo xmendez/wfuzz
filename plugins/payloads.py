@@ -4,7 +4,7 @@ import __builtin__
 import cPickle as pickle
 import gzip
 
-from framework.core.myexception import FuzzException
+from framework.facade import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
 from framework.plugins.api.payloadtools import FuzzResPayload

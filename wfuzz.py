@@ -21,7 +21,7 @@ import os
 from framework.Fuzzer import Fuzzer
 from framework.facade import Facade
 from framework.core.options import FuzzSession
-from framework.core.myexception import FuzzException
+from framework.facade import FuzzException
 
 from framework.ui.console.keystroke import KeyPress
 from framework.ui.console.controller import Controller

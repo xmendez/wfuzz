@@ -1,4 +1,4 @@
-from framework.core.myexception import FuzzException
+from framework.facade import FuzzException
 from framework.fuzzobjects import FuzzResult
 
 import re

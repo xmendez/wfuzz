@@ -1,6 +1,6 @@
 from framework.plugins.base import DiscoveryPlugin
 from framework.plugins.api.urlutils import parse_url
-from framework.core.myexception import FuzzException
+from framework.facade import FuzzException
 from framework.externals.moduleman.plugin import moduleman_plugin
 
 import xml.dom.minidom

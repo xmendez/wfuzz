@@ -1,11 +1,18 @@
 from patterns.singleton import Singleton
-from framework.core.myexception import FuzzException
 from framework.externals.moduleman.registrant import BRegistrant
 from framework.externals.moduleman.loader import FileLoader
 from framework.externals.moduleman.loader import DirLoader
 from framework.externals.settings.settings import SettingsBase
 
 version = "2.2"
+
+class FuzzException(Exception):
+    FATAL = range(1)
+
+    def __init__(self, etype, msg):
+	self.etype = etype
+	self.msg = msg
+        Exception.__init__(self, msg)
 
 class Settings(SettingsBase):
     def get_config_file(self):

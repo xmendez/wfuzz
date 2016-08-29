@@ -5,7 +5,7 @@ import itertools
 
 from Queue import PriorityQueue
 from threading import Thread
-from framework.core.myexception import FuzzException
+from framework.facade import FuzzException
 from framework.fuzzobjects import FuzzResult
 
 
