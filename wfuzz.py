@@ -18,7 +18,7 @@ except ImportError, e:
 import logging
 import os
 
-from framework.fuzzer.Fuzzer import Fuzzer
+from framework.Fuzzer import Fuzzer
 from framework.facade import Facade
 from framework.core.options import FuzzSession
 from framework.core.myexception import FuzzException
