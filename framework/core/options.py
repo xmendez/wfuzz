@@ -2,7 +2,7 @@ from framework.core.myexception import FuzzException
 from framework.facade import Facade
 
 from framework.fuzzobjects import FuzzRequest
-from framework.fuzzer.filter import FuzzResFilter
+from framework.filter import FuzzResFilter
 from framework.fuzzer.dictio import requestGenerator
 from framework.utils.minify_json import json_minify
 

@@ -3,7 +3,7 @@ from framework.fuzzobjects import FuzzStats
 from framework.facade import Facade
 from framework.core.myexception import FuzzException
 
-from framework.fuzzer.filter import FuzzResFilter
+from framework.filter import FuzzResFilter
 
 import re
 import itertools
