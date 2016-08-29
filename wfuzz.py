@@ -23,7 +23,7 @@ from framework.facade import Facade
 from framework.options import FuzzSession
 from framework.facade import FuzzException
 
-from framework.ui.console.controller import Controller, KeyPress, View
+from framework.ui.console.mvc import Controller, KeyPress, View
 from framework.ui.console.clparser import CLParser
 
 kb = None
