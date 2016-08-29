@@ -1,5 +1,5 @@
 import sys
-from .facade import version
+from wfuzz.facade import version
 import os
 if os.name == "nt":
     import WConio

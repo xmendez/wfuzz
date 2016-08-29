@@ -3,16 +3,16 @@ import getopt
 from collections import defaultdict
 import itertools
 
-from .filter import PYPARSING
-from .facade import Facade
-from .options import FuzzOptions
-from .facade import FuzzException
-from .ui.console.common import help_banner
-from .ui.console.common import usage
-from .ui.console.common import brief_usage
-from .ui.console.common import verbose_usage
-from .ui.console.common import version
-from .ui.console.output import table_print
+from wfuzz.filter import PYPARSING
+from wfuzz.facade import Facade
+from wfuzz.options import FuzzOptions
+from wfuzz.facade import FuzzException
+from .common import help_banner
+from .common import usage
+from .common import brief_usage
+from .common import verbose_usage
+from .common import version
+from .output import table_print
 
 class CLParser:
     def __init__(self, argv):

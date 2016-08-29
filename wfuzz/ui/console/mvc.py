@@ -2,8 +2,8 @@ import sys
 from collections import defaultdict
 import threading
 
-from .ui.console.common import exec_banner, Term
-from .ui.console.getch import _Getch
+from .common import exec_banner, Term
+from .getch import _Getch
 
 usage='''\r\n
 Interactive keyboard commands:\r\n
