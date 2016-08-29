@@ -2,8 +2,8 @@ import socket
 import json as jjson
 from xml.dom import minidom
 
-from .externals.moduleman.plugin import moduleman_plugin
-from .plugin_api.base import BasePrinter
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
+from wfuzz.plugin_api.base import BasePrinter
 
 @moduleman_plugin("header", "footer", "result")
 class magictree(BasePrinter):

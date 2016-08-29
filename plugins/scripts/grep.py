@@ -1,8 +1,8 @@
 import re
 
-from .plugin_api.base import BasePlugin
-from .facade import FuzzException
-from .externals.moduleman.plugin import moduleman_plugin
+from wfuzz.plugin_api.base import BasePlugin
+from wfuzz.facade import FuzzException
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class grep(BasePlugin):

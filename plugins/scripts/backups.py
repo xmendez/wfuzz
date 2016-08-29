@@ -1,5 +1,5 @@
-from .externals.moduleman.plugin import moduleman_plugin
-from .plugin_api.base import BasePlugin
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
+from wfuzz.plugin_api.base import BasePlugin
 
 from urlparse import urljoin
 
