@@ -1,7 +1,7 @@
 import re
 
-from framework.plugin_api.base import BasePlugin
-from framework.externals.moduleman.plugin import moduleman_plugin
+from wfuzz.plugin_api.base import BasePlugin
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class listing(BasePlugin):
