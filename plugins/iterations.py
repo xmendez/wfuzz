@@ -1,4 +1,4 @@
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 from framework.fuzzer.base import wfuzz_iterator
 
 import itertools

@@ -3,7 +3,7 @@ from urlparse import urlparse, urljoin
 
 from framework.plugins.base import DiscoveryPlugin
 from framework.plugins.api.urlutils import parse_url
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class links(DiscoveryPlugin):

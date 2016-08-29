@@ -9,7 +9,7 @@ from threading import Lock
 from collections import namedtuple
 from collections import defaultdict
 
-from externals.reqresp import Request
+from framework.externals.reqresp import Request
 from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
 from framework.plugins.api.urlutils import parse_url

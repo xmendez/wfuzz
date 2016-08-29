@@ -3,7 +3,7 @@ from urlparse import urljoin
 from framework.plugins.api.urlutils import check_content_type
 
 from framework.plugins.base import DiscoveryPlugin
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 
 # Entries format based on:
 # http://docstore.mik.ua/orelly/other/cvs/cvs-CHP-6-SECT-9.htm

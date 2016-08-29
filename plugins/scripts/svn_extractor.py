@@ -2,7 +2,7 @@ from urlparse import urlparse, urljoin
 
 from framework.plugins.base import DiscoveryPlugin
 from framework.core.myexception import FuzzException
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 
 import tempfile
 import sqlite3

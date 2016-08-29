@@ -2,7 +2,7 @@ import socket
 import json as jjson
 from xml.dom import minidom
 
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 from framework.plugins.base import BasePrinter
 
 @moduleman_plugin("header", "footer", "result")

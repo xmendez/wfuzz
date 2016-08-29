@@ -4,7 +4,7 @@ from threading import Lock
 from threading import Event
 from cStringIO import StringIO
 
-from externals.reqresp.exceptions import ReqRespException
+from framework.externals.reqresp.exceptions import ReqRespException
 
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue

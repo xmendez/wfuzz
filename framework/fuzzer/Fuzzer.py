@@ -21,8 +21,8 @@ from framework.plugins.jobs import JobQ
 from framework.fuzzer.filter import FilterQ
 from framework.fuzzer.filter import SliceQ
 
-from externals.reqresp.exceptions import ReqRespException
-from externals.reqresp.cache import HttpCache
+from framework.externals.reqresp.exceptions import ReqRespException
+from framework.externals.reqresp.cache import HttpCache
 
 class SeedQ(FuzzQueue):
     def __init__(self, options):

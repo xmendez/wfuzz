@@ -1,5 +1,5 @@
 from framework.plugins.base import BasePlugin
-from externals.moduleman.plugin import moduleman_plugin
+from framework.externals.moduleman.plugin import moduleman_plugin
 
 import subprocess
 import tempfile
