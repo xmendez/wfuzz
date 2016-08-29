@@ -4,7 +4,7 @@ from framework.facade import Facade
 from framework.fuzzobjects import FuzzRequest
 from framework.filter import FuzzResFilter
 from framework.fuzzer.dictio import requestGenerator
-from framework.utils.minify_json import json_minify
+from framework.utils import json_minify
 
 from UserDict import UserDict
 from collections import defaultdict

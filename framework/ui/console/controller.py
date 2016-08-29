@@ -1,7 +1,9 @@
 import sys
+from collections import defaultdict
 
 from framework.ui.console.common import exec_banner, Term
-from framework.facade import Facade
+from framework.ui.console.getch import _Getch
+import threading
 
 usage='''\r\n
 Interactive keyboard commands:\r\n
@@ -11,6 +13,58 @@ p: Pause
 s: Show stats
 q: Cancel
 '''
+
+class SimpleEventDispatcher:
+    def __init__(self):
+	self.publisher = defaultdict(list)
+
+    def create_event(self, msg):
+	self.publisher[msg] = []
+
+    def subscribe(self, func, msg, dynamic = False):
+	if not self.publisher.has_key(msg) and not dynamic:
+	    raise KeyError, 'subscribe. No such event: %s' % (msg)
+	else:
+	    self.publisher[msg].append(func)
+
+    def notify(self, msg, **event):
+	if not self.publisher.has_key(msg):
+	    raise KeyError, 'notify. Event not subscribed: %s' % (msg,)
+	else:
+	    for functor in self.publisher[msg]:
+		functor(**event)
+
+class KeyPress(threading.Thread):
+    def __init__(self):
+	threading.Thread.__init__(self)
+	self.inkey = _Getch()
+	self.setName("KeyPress")
+
+	self.dispatcher = SimpleEventDispatcher()
+	self.dispatcher.create_event("?")
+	self.dispatcher.create_event("p")
+	self.dispatcher.create_event("s")
+	self.dispatcher.create_event("q")
+
+	self.do_job = True
+
+    def cancel_job(self):
+	self.do_job = False
+
+    def run(self):
+	while self.do_job:
+	    k = self.inkey()
+	    if ord(k) == 3:
+		self.dispatcher.notify("q", key="q")
+	    elif k == 'p':
+		self.dispatcher.notify("p", key="p")
+	    elif k == 's':
+		self.dispatcher.notify("s", key="s")
+	    elif k == '?':
+		self.dispatcher.notify("?", key="?")
+	    elif k == 'q':
+		self.dispatcher.notify("q", key="q")
+	#raise KeyboardInterrupt
 
 class Controller:
     def __init__(self, fuzzer, view):
