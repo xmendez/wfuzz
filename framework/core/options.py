@@ -1,5 +1,5 @@
 from framework.core.myexception import FuzzException
-from framework.core.facade import Facade
+from framework.facade import Facade
 
 from framework.fuzzobjects import FuzzRequest
 from framework.fuzzer.filter import FuzzResFilter

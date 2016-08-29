@@ -1,7 +1,7 @@
 from framework.fuzzobjects import (
     PluginResult, PluginRequest)
 from framework.core.myexception import FuzzException
-from framework.core.facade import Facade
+from framework.facade import Facade
 from framework.plugins.api.urlutils import parse_url
 
 # Util methods for accessing search results

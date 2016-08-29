@@ -4,7 +4,7 @@ from collections import defaultdict
 import itertools
 
 from framework.fuzzer.filter import PYPARSING
-from framework.core.facade import Facade
+from framework.facade import Facade
 from framework.core.options import FuzzOptions
 from framework.core.myexception import FuzzException
 from framework.ui.console.common import help_banner

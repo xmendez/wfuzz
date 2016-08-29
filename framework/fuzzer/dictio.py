@@ -1,6 +1,6 @@
 from framework.fuzzobjects import FuzzResultFactory
 from framework.fuzzobjects import FuzzStats
-from framework.core.facade import Facade
+from framework.facade import Facade
 from framework.core.myexception import FuzzException
 
 from framework.fuzzer.filter import FuzzResFilter

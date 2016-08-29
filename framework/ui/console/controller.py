@@ -1,7 +1,7 @@
 import sys
 
 from framework.ui.console.common import exec_banner, Term
-from framework.core.facade import Facade
+from framework.facade import Facade
 
 usage='''\r\n
 Interactive keyboard commands:\r\n
