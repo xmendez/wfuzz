@@ -5,7 +5,7 @@ import itertools
 
 from framework.filter import PYPARSING
 from framework.facade import Facade
-from framework.core.options import FuzzOptions
+from framework.options import FuzzOptions
 from framework.facade import FuzzException
 from framework.ui.console.common import help_banner
 from framework.ui.console.common import usage

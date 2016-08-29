@@ -20,7 +20,7 @@ import os
 
 from framework.Fuzzer import Fuzzer
 from framework.facade import Facade
-from framework.core.options import FuzzSession
+from framework.options import FuzzSession
 from framework.facade import FuzzException
 
 from framework.ui.console.keystroke import KeyPress
