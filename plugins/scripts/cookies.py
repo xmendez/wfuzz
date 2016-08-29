@@ -1,6 +1,6 @@
-from framework.plugin_api.base import BasePlugin
+from .plugin_api.base import BasePlugin
 
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class cookies(BasePlugin):

@@ -1,5 +1,5 @@
-from framework.externals.moduleman.plugin import moduleman_plugin
-from framework.plugin_api.base import BasePlugin
+from .externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import BasePlugin
 
 from urlparse import urljoin
 

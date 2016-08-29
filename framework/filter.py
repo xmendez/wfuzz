@@ -1,5 +1,5 @@
-from framework.facade import FuzzException
-from framework.fuzzobjects import FuzzResult
+from .facade import FuzzException
+from .fuzzobjects import FuzzResult
 
 import re
 import collections

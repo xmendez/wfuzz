@@ -1,9 +1,9 @@
 from urlparse import urljoin
 
-from framework.plugin_api.urlutils import check_content_type
+from .plugin_api.urlutils import check_content_type
 
-from framework.plugin_api.base import DiscoveryPlugin
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import DiscoveryPlugin
+from .externals.moduleman.plugin import moduleman_plugin
 
 # Entries format based on:
 # http://docstore.mik.ua/orelly/other/cvs/cvs-CHP-6-SECT-9.htm

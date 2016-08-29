@@ -1,5 +1,5 @@
-from framework.externals.moduleman.plugin import moduleman_plugin
-from framework.plugin_api.base import wfuzz_iterator
+from .externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import wfuzz_iterator
 
 import itertools
 

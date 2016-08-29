@@ -4,11 +4,11 @@ import __builtin__
 import cPickle as pickle
 import gzip
 
-from framework.facade import FuzzException
-from framework.plugin_api.base import wfuzz_iterator
-from framework.plugin_api.payloadtools import BingIter
-from framework.plugin_api.payloadtools import FuzzResPayload
-from framework.fuzzobjects import FuzzResult
+from .facade import FuzzException
+from .plugin_api.base import wfuzz_iterator
+from .plugin_api.payloadtools import BingIter
+from .plugin_api.payloadtools import FuzzResPayload
+from .fuzzobjects import FuzzResult
 
 @wfuzz_iterator
 class file:

@@ -9,10 +9,10 @@ from threading import Lock
 from collections import namedtuple
 from collections import defaultdict
 
-from framework.externals.reqresp import Request
-from framework.facade import FuzzException
-from framework.facade import Facade
-from framework.plugin_api.urlutils import parse_url
+from .externals.reqresp import Request
+from .facade import FuzzException
+from .facade import Facade
+from .plugin_api.urlutils import parse_url
 
 auth_header = namedtuple("auth_header", "method credentials")
 

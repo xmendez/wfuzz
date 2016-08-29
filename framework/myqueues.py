@@ -5,8 +5,8 @@ import itertools
 
 from Queue import PriorityQueue
 from threading import Thread
-from framework.facade import FuzzException
-from framework.fuzzobjects import FuzzResult
+from .facade import FuzzException
+from .fuzzobjects import FuzzResult
 
 
 class MyPriorityQueue(PriorityQueue):

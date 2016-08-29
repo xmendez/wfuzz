@@ -1,8 +1,8 @@
 from urlparse import urlparse, urljoin
 
-from framework.plugin_api.base import DiscoveryPlugin
-from framework.facade import FuzzException
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import DiscoveryPlugin
+from .facade import FuzzException
+from .externals.moduleman.plugin import moduleman_plugin
 
 import tempfile
 import sqlite3

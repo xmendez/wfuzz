@@ -1,9 +1,9 @@
 import re
 from urlparse import urlparse, urljoin
 
-from framework.plugin_api.base import DiscoveryPlugin
-from framework.plugin_api.urlutils import parse_url
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import DiscoveryPlugin
+from .plugin_api.urlutils import parse_url
+from .externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class links(DiscoveryPlugin):

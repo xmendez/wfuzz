@@ -1,10 +1,10 @@
-from framework.facade import FuzzException
-from framework.facade import Facade
+from .facade import FuzzException
+from .facade import Facade
 
-from framework.fuzzobjects import FuzzRequest
-from framework.filter import FuzzResFilter
-from framework.core import requestGenerator
-from framework.utils import json_minify
+from .fuzzobjects import FuzzRequest
+from .filter import FuzzResFilter
+from .core import requestGenerator
+from .utils import json_minify
 
 from UserDict import UserDict
 from collections import defaultdict

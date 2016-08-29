@@ -1,4 +1,4 @@
-from framework.facade import FuzzException
+from .facade import FuzzException
 
 import itertools
 import urllib2

@@ -18,13 +18,13 @@ except ImportError, e:
 import logging
 import os
 
-from framework.core import Fuzzer
-from framework.facade import Facade
-from framework.options import FuzzSession
-from framework.facade import FuzzException
+from .core import Fuzzer
+from .facade import Facade
+from .options import FuzzSession
+from .facade import FuzzException
 
-from framework.ui.console.mvc import Controller, KeyPress, View
-from framework.ui.console.clparser import CLParser
+from .ui.console.mvc import Controller, KeyPress, View
+from .ui.console.clparser import CLParser
 
 kb = None
 fz = None

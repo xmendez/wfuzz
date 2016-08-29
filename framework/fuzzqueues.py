@@ -6,14 +6,14 @@ from cStringIO import StringIO
 from threading import Thread, Lock, Event
 from Queue import Queue
 
-from framework.fuzzobjects import FuzzResult
-from framework.myqueues import FuzzQueue
-from framework.facade import FuzzException
-from framework.myqueues import FuzzRRQueue
-from framework.facade import Facade
-from framework.fuzzobjects import PluginResult, PluginItem
+from .fuzzobjects import FuzzResult
+from .myqueues import FuzzQueue
+from .facade import FuzzException
+from .myqueues import FuzzRRQueue
+from .facade import Facade
+from .fuzzobjects import PluginResult, PluginItem
 
-from framework.externals.reqresp.exceptions import ReqRespException
+from .externals.reqresp.exceptions import ReqRespException
 
 class SeedQ(FuzzQueue):
     def __init__(self, options):

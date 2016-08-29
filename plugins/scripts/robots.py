@@ -2,9 +2,9 @@ import re
 from urlparse import urlparse, urljoin
 
 
-from framework.plugin_api.base import DiscoveryPlugin
-from framework.plugin_api.urlutils import check_content_type
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import DiscoveryPlugin
+from .plugin_api.urlutils import check_content_type
+from .externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
 class robots(DiscoveryPlugin):

@@ -1,16 +1,16 @@
-from framework.fuzzobjects import FuzzResult
+from .fuzzobjects import FuzzResult
 
-from framework.myqueues import MyPriorityQueue,QueueManager
-from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue
+from .myqueues import MyPriorityQueue,QueueManager
+from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue
 
-from framework.externals.reqresp.exceptions import ReqRespException
-from framework.externals.reqresp.cache import HttpCache
+from .externals.reqresp.exceptions import ReqRespException
+from .externals.reqresp.cache import HttpCache
 
-from framework.fuzzobjects import FuzzResultFactory, FuzzStats
-from framework.facade import Facade
-from framework.facade import FuzzException
+from .fuzzobjects import FuzzResultFactory, FuzzStats
+from .facade import Facade
+from .facade import FuzzException
 
-from framework.filter import FuzzResFilter
+from .filter import FuzzResFilter
 
 import re
 import itertools

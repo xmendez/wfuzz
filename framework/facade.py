@@ -1,8 +1,8 @@
 from .utils import Singleton
-from framework.externals.moduleman.registrant import BRegistrant
-from framework.externals.moduleman.loader import FileLoader
-from framework.externals.moduleman.loader import DirLoader
-from framework.externals.settings.settings import SettingsBase
+from .externals.moduleman.registrant import BRegistrant
+from .externals.moduleman.loader import FileLoader
+from .externals.moduleman.loader import DirLoader
+from .externals.settings.settings import SettingsBase
 
 version = "2.2"
 

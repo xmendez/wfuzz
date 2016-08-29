@@ -1,7 +1,7 @@
-from framework.plugin_api.base import DiscoveryPlugin
-from framework.plugin_api.urlutils import parse_url
-from framework.facade import FuzzException
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .plugin_api.base import DiscoveryPlugin
+from .plugin_api.urlutils import parse_url
+from .facade import FuzzException
+from .externals.moduleman.plugin import moduleman_plugin
 
 import xml.dom.minidom
 import urlparse

@@ -1,4 +1,4 @@
-from framework.externals.moduleman.plugin import moduleman_plugin
+from .externals.moduleman.plugin import moduleman_plugin
 
 import urllib
 import base64 as mybase64

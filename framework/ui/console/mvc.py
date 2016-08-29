@@ -1,9 +1,9 @@
 import sys
 from collections import defaultdict
-
-from framework.ui.console.common import exec_banner, Term
-from framework.ui.console.getch import _Getch
 import threading
+
+from .ui.console.common import exec_banner, Term
+from .ui.console.getch import _Getch
 
 usage='''\r\n
 Interactive keyboard commands:\r\n
