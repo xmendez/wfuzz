@@ -1,7 +1,7 @@
-from .fuzzobjects import PluginResult, PluginRequest
-from .facade import FuzzException
-from .facade import Facade
-from .plugin_api.urlutils import parse_url
+from wfuzz.fuzzobjects import PluginResult, PluginRequest
+from wfuzz.facade import FuzzException
+from wfuzz.facade import Facade
+from wfuzz.plugin_api.urlutils import parse_url
 
 # Util methods for accessing search results
 class BasePlugin():

@@ -15,6 +15,8 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
 # Check for pycurl dependency
+import sys
+
 try:
     import pycurl
 
