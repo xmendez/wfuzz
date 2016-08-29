@@ -1,5 +1,5 @@
-from framework.plugins.pluginobjects import PluginResult
-from framework.plugins.pluginobjects import PluginRequest
+from framework.fuzzobjects import (
+    PluginResult, PluginRequest)
 from framework.core.myexception import FuzzException
 from framework.core.facade import Facade
 from framework.plugins.api.urlutils import parse_url

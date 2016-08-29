@@ -2,8 +2,8 @@ import threading
 from Queue import Queue
 
 from framework.fuzzobjects import FuzzResult
-from framework.plugins.pluginobjects import PluginResult
-from framework.plugins.pluginobjects import PluginItem
+from framework.fuzzobjects import (
+    PluginResult, PluginItem)
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
 from framework.utils.myqueue import FuzzRRQueue
