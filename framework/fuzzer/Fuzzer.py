@@ -7,9 +7,7 @@ from framework.fuzzer.myhttp import DryRunQ
 from framework.plugins.jobs import JobMan
 from framework.plugins.jobs import RecursiveQ
 from framework.plugins.jobs import JobQ
-from framework.fuzzer.filter import FilterQ
-from framework.fuzzer.filter import SliceQ
-from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ
+from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ
 
 from framework.externals.reqresp.exceptions import ReqRespException
 from framework.externals.reqresp.cache import HttpCache

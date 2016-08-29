@@ -112,4 +112,44 @@ class RoutingQ(FuzzQueue):
         else:
             self.queue_out.put(item)
 
+class FilterQ(FuzzQueue):
+    def __init__(self, options):
+	FuzzQueue.__init__(self, options)
+
+	self.setName('filter_thread')
+	self.ffilter = options.get("filter_params")
+
+    def get_name(self):
+	return 'filter_thread'
+
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	if item.is_baseline:
+	    self.ffilter.set_baseline(item)
+            item.is_visible = True
+        else:
+            item.is_visible = self.ffilter.is_visible(item)
+
+	self.send(item)
+
+class SliceQ(FuzzQueue):
+    def __init__(self, options):
+	FuzzQueue.__init__(self, options)
+
+	self.setName('slice_thread')
+	self.ffilter = options.get("slice_params")
+
+    def get_name(self):
+	return 'slice_thread'
+
+    def _cleanup(self):
+	pass
+
+    def process(self, prio, item):
+	if item.is_baseline or self.ffilter.is_visible(item):
+            self.send(item)
+        else:
+            self.stats.pending_fuzz.dec()
 
