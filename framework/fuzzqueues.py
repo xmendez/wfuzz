@@ -7,9 +7,9 @@ from threading import Thread, Lock, Event
 from Queue import Queue
 
 from framework.fuzzobjects import FuzzResult
-from framework.utils.myqueue import FuzzQueue
+from framework.myqueues import FuzzQueue
 from framework.facade import FuzzException
-from framework.utils.myqueue import FuzzRRQueue
+from framework.myqueues import FuzzRRQueue
 from framework.facade import Facade
 from framework.fuzzobjects import PluginResult, PluginItem
 

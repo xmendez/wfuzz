@@ -1,7 +1,7 @@
 from framework.fuzzobjects import FuzzResult
 
-from framework.utils.myqueue import MyPriorityQueue
-from framework.utils.myqueue import QueueManager
+from framework.myqueues import MyPriorityQueue
+from framework.myqueues import QueueManager
 from framework.fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue
 
 from framework.externals.reqresp.exceptions import ReqRespException
