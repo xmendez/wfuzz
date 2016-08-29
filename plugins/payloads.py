@@ -8,7 +8,7 @@ from framework.core.myexception import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
 from framework.plugins.api.payloadtools import BingIter
 from framework.plugins.api.payloadtools import FuzzResPayload
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 
 @wfuzz_iterator
 class file:

@@ -4,7 +4,7 @@ from Queue import Queue
 import cPickle as pickle
 import gzip
 
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 from framework.fuzzer.dictio import requestGenerator
 
 from framework.core.facade import Facade

@@ -8,7 +8,7 @@ from framework.externals.reqresp.exceptions import ReqRespException
 
 from framework.core.myexception import FuzzException
 from framework.utils.myqueue import FuzzQueue
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 
 import pycurl
 

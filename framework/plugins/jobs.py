@@ -1,7 +1,7 @@
 import threading
 from Queue import Queue
 
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 from framework.plugins.pluginobjects import PluginResult
 from framework.plugins.pluginobjects import PluginItem
 from framework.core.myexception import FuzzException

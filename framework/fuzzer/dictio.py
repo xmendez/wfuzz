@@ -1,5 +1,5 @@
-from framework.fuzzer.fuzzobjects import FuzzResultFactory
-from framework.fuzzer.fuzzobjects import FuzzStats
+from framework.fuzzobjects import FuzzResultFactory
+from framework.fuzzobjects import FuzzStats
 from framework.core.facade import Facade
 from framework.core.myexception import FuzzException
 

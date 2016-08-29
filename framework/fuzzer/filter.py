@@ -1,5 +1,5 @@
 from framework.core.myexception import FuzzException
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 from threading import Thread
 
 from framework.utils.myqueue import FuzzQueue

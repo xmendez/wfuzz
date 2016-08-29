@@ -1,4 +1,4 @@
-from framework.fuzzer.fuzzobjects import FuzzResult
+from framework.fuzzobjects import FuzzResult
 
 class PluginItem:
     undefined, result, backfeed = range(3)
