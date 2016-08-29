@@ -2,8 +2,8 @@ import re
 from urlparse import urlparse, urljoin
 
 
-from framework.plugins.base import DiscoveryPlugin
-from framework.plugins.api.urlutils import check_content_type
+from framework.plugin_api.base import DiscoveryPlugin
+from framework.plugin_api.urlutils import check_content_type
 from framework.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin

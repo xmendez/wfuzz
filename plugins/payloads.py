@@ -6,8 +6,8 @@ import gzip
 
 from framework.facade import FuzzException
 from framework.fuzzer.base import wfuzz_iterator
-from framework.plugins.api.payloadtools import BingIter
-from framework.plugins.api.payloadtools import FuzzResPayload
+from framework.plugin_api.payloadtools import BingIter
+from framework.plugin_api.payloadtools import FuzzResPayload
 from framework.fuzzobjects import FuzzResult
 
 @wfuzz_iterator

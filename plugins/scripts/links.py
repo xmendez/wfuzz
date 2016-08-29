@@ -1,8 +1,8 @@
 import re
 from urlparse import urlparse, urljoin
 
-from framework.plugins.base import DiscoveryPlugin
-from framework.plugins.api.urlutils import parse_url
+from framework.plugin_api.base import DiscoveryPlugin
+from framework.plugin_api.urlutils import parse_url
 from framework.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin

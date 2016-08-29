@@ -1,4 +1,4 @@
-from framework.plugins.base import BasePlugin
+from framework.plugin_api.base import BasePlugin
 
 from framework.externals.moduleman.plugin import moduleman_plugin
 

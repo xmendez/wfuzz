@@ -12,7 +12,7 @@ from collections import defaultdict
 from framework.externals.reqresp import Request
 from framework.facade import FuzzException
 from framework.facade import Facade
-from framework.plugins.api.urlutils import parse_url
+from framework.plugin_api.urlutils import parse_url
 
 auth_header = namedtuple("auth_header", "method credentials")
 
