@@ -4,8 +4,6 @@
 
 import sys
 
-import os
-
 from .core import Fuzzer
 from .facade import Facade
 from .options import FuzzSession
@@ -19,11 +17,6 @@ def main():
     fz = None
     printer = None
     session_options = None
-
-    # set current folder in order to load plugins
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname)
 
     try:
         # parse command line 
