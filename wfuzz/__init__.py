@@ -1,0 +1,27 @@
+__title__ = 'wfuzz'
+__version__ = '2.3'
+__build__ = 0x023000
+__author__ = 'Xavier Mendez'
+__license__ = 'Apache 2.0'
+__copyright__ = 'Copyright 2016 Xavier Mendez'
+
+# define a logging Handler
+import logging
+
+console = logging.StreamHandler()
+console.setLevel(logging.WARNING)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
+
+# Check for pycurl dependency
+try:
+    import pycurl
+
+    if "openssl".lower() not in pycurl.version.lower():
+        print "\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's wiki for more information at https://github.com/xmendez/wfuzz/wiki/PyCurlSSLBug\n"
+
+except ImportError, e:
+    print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
+    sys.exit(1)
+

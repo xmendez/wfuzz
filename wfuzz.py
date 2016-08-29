@@ -4,18 +4,6 @@
 
 import sys
 
-# Check for pycurl dependency
-try:
-    import pycurl
-
-    if "openssl".lower() not in pycurl.version.lower():
-        print "\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's wiki for more information at https://github.com/xmendez/wfuzz/wiki/PyCurlSSLBug\n"
-
-except ImportError, e:
-    print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
-    sys.exit(1)
-
-import logging
 import os
 
 from .core import Fuzzer
@@ -30,13 +18,6 @@ kb = None
 fz = None
 printer = None
 session_options = None
-
-# define a logging Handler
-console = logging.StreamHandler()
-console.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
 
 # set current folder in order to load plugins
 abspath = os.path.abspath(__file__)
