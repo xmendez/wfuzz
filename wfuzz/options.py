@@ -14,12 +14,7 @@ import re
 class FuzzOptions(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
-
-        # mirar si kwars tiene otras keys q no estan en el data y petar
-        # y entonces aplicar kwargs
-
-
-
+        self.data.update(kwargs)
 
     def _defaults(self):
 	return dict(
@@ -189,7 +184,7 @@ class FuzzSession:
 	fuzz_options.set("concurrent", options["concurrent"])
 
 	# seed
-	fuzz_options.set("genreq", requestGenerator(options, options))
+	fuzz_options.set("genreq", requestGenerator(options))
 
 	# scripts
 	script = options["script"]

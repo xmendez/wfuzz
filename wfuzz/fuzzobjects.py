@@ -575,12 +575,12 @@ class FuzzResultFactory:
 	    yield fuzzres
 
     @staticmethod
-    def from_options(seed_options, payload_options):
+    def from_options(options):
 	fr = FuzzRequest()
 
-	fr.url = seed_options['url']
-	fr.wf_fuzz_methods = seed_options['method']
-	fr.update_from_options(seed_options)
+	fr.url = options['url']
+	fr.wf_fuzz_methods = options['method']
+	fr.update_from_options(options)
 
 	return FuzzResult(fr)
 
@@ -719,6 +719,9 @@ class FuzzResult:
             return str(getattr(self, field))
         else:
             return self.history.get_field(field)
+
+    def __str__(self):
+        return "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
 
     # parameters in common with fuzzrequest
     @property

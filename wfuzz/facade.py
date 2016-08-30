@@ -41,6 +41,12 @@ class Facade:
 	self.__payloads = None
 
 	self.sett = Settings()
+        # set current folder in order to load plugins
+        import os
+
+        abspath = os.path.abspath(__file__)
+        dname = os.path.dirname(abspath)
+        os.chdir(dname)
 
     def _load(self, cat):
 	try:

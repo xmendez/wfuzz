@@ -14,14 +14,6 @@ formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
-# set current folder in order to load plugins
-import os
-
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
-
-
 # Check for pycurl dependency
 import sys
 
@@ -35,3 +27,4 @@ except ImportError, e:
     print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
     sys.exit(1)
 
+from .api import fuzz

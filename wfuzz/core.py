@@ -77,12 +77,11 @@ class dictionary:
 	    return self.__generator.next() if self.__encoders else self.__payload.next()
 
 class requestGenerator:
-	def __init__(self, seed_options, payload_options):
-	    self.payload_options = payload_options
-	    self.seed_options = seed_options
-	    self.seed = FuzzResultFactory.from_options(seed_options, payload_options)
+	def __init__(self, options ):
+            self.options = options
+	    self.seed = FuzzResultFactory.from_options(options)
 	    self._baseline = FuzzResultFactory.from_baseline(self.seed)
-	    self.dictio = self._init_dictio(payload_options)
+	    self.dictio = self._init_dictio(options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
@@ -98,6 +97,9 @@ class requestGenerator:
 		pp = dictionary(p, encoders) if encoders else p
 		selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
+            if not selected_dic:
+                raise FuzzException(FuzzException.FATAL, "Empty dictionary! Check payload and filter")
+
 	    if len(selected_dic) == 1:
 		return tupleit(selected_dic[0])
 	    elif payload_options["iterator"]:
@@ -110,7 +112,7 @@ class requestGenerator:
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio = self._init_dictio(self.payload_options)
+	    self.dictio = self._init_dictio(self.options)
 
         def _check_dictio_len(self, element):
             marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
@@ -154,7 +156,7 @@ class requestGenerator:
                 if self.stats.processed() == 0 or (self._baseline and self.stats.processed() == 1): 
                     self._check_dictio_len(n)
 
-		return FuzzResultFactory.from_seed(self.seed, n, self.seed_options)
+		return FuzzResultFactory.from_seed(self.seed, n, self.options)
 
 class Fuzzer:
     def __init__(self, options):
