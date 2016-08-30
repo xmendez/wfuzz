@@ -126,7 +126,7 @@ class FilterQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 
 	self.setName('filter_thread')
-	self.ffilter = options.get("filter_params")
+	self.ffilter = options.get("filter")
 
     def get_name(self):
 	return 'filter_thread'
@@ -148,7 +148,7 @@ class SliceQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 
 	self.setName('slice_thread')
-	self.ffilter = options.get("slice_params")
+	self.ffilter = options.get("prefilter")
 
     def get_name(self):
 	return 'slice_thread'

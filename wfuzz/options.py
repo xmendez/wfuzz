@@ -146,8 +146,8 @@ class FuzzOptions(UserDict):
 class FuzzSession:
     def __init__(self):
 	self._values = {
-	    "filter_params": None,
-	    "slice_params": None,
+	    "filter": None,
+	    "prefilter": None,
 	    "printer": Facade().sett.get('general', 'default_printer'),
 	    "rlevel": 0,
 	    "script": "",
@@ -176,8 +176,8 @@ class FuzzSession:
 	fuzz_options = FuzzSession()
 
         # filter options
-	fuzz_options.set("filter_params", FuzzResFilter.from_options(options))
-	fuzz_options.set("slice_params", FuzzResFilter(filter_string = options['prefilter']))
+	fuzz_options.set("filter", FuzzResFilter.from_options(options))
+	fuzz_options.set("prefilter", FuzzResFilter(filter_string = options['prefilter']))
 
 	# conn options
 	fuzz_options.set('proxies', options["proxies"])

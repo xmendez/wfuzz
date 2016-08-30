@@ -170,7 +170,7 @@ class Fuzzer:
 
         self.qmanager.add("seed_queue", SeedQ(options))
 
-        if options.get('slice_params').is_active():
+        if options.get('prefilter').is_active():
             self.qmanager.add("slice_queue", SliceQ(options))
 
 	if options.get("dryrun"):
@@ -190,7 +190,7 @@ class Fuzzer:
 
             self.qmanager.add("routing_queue", rq)
 
-	if options.get('filter_params').is_active():
+	if options.get('filter').is_active():
             self.qmanager.add("filter_queue", FilterQ(options))
 
 	if options.get('save'):
