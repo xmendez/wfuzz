@@ -402,14 +402,14 @@ class FuzzRequest(object):
         if options['postdata']:
             self.parameters.post = options['postdata']
 
-        if options['fuzz_methods']:
-            self.method = options['fuzz_methods']
-            self.wf_fuzz_methods = options['fuzz_methods']
+        if options['method']:
+            self.method = options['method']
+            self.wf_fuzz_methods = options['method']
 
 	if options['cookie']:
             self.headers.add({"Cookie": "; ".join(options['cookie'])})
 
-        self.headers.add(dict(options['extraheaders']))
+        self.headers.add(dict(options['headers']))
 
         if options['allvars']:
 	    self.wf_allvars = options['allvars']
@@ -579,7 +579,7 @@ class FuzzResultFactory:
 	fr = FuzzRequest()
 
 	fr.url = seed_options['url']
-	fr.wf_fuzz_methods = seed_options['fuzz_methods']
+	fr.wf_fuzz_methods = seed_options['method']
 	fr.update_from_options(seed_options)
 
 	return FuzzResult(fr)

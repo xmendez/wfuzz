@@ -12,83 +12,77 @@ import json
 import re
 
 class FuzzOptions(UserDict):
-    def __init__(self):
+    def __init__(self, **kwargs):
 	self.data = self._defaults()
+
+        # mirar si kwars tiene otras keys q no estan en el data y petar
+        # y entonces aplicar kwargs
+
+
+
 
     def _defaults(self):
 	return dict(
-	    filter_options = dict(
-		hs = None,
-		hc = [],
-		hw = [],
-		hl = [],
-		hh = [],
-		ss = None,
-		sc = [],
-		sw = [],
-		sl = [],
-		sh = [],
-		filterstr = "",
-		slicestr = "",
-		),
-	    payload_options = dict(
-		payloads = [],
-		iterator = None,
-	    ),
-	    grl_options = dict(
-		    printer_tool = None,
-		    colour = False,
-		    verbose = False,
-		    interactive = False,
-		    dryrun = False,
-		    recipe = "",
-		    output_filename = "",
-	    ),
-	    conn_options = dict(
-		proxy_list = None,
-		max_conn_delay = int(Facade().sett.get('connection', 'conn_delay')),
-		max_req_delay = int(Facade().sett.get('connection', 'req_delay')),
-		rlevel = 0,
-		scanmode = False,
-		sleeper = None,
-		max_concurrent = int(Facade().sett.get('connection', 'concurrent')),
-	    ),
-	    seed_options = dict(
-		url = "",
-		fuzz_methods = None,
-		auth = (None, None),
-		follow = False,
-		postdata = None,
-		extraheaders = [],
-		cookie = [],
-		allvars = None,
-	    ),
-	    script_options = dict(
-		script_string = "",
-		script_args = [],
-	    ),
+            hs = None,
+            hc = [],
+            hw = [],
+            hl = [],
+            hh = [],
+            ss = None,
+            sc = [],
+            sw = [],
+            sl = [],
+            sh = [],
+            filter = "",
+            prefilter = "",
+            payloads = [],
+            iterator = None,
+            printer = None,
+            colour = False,
+            verbose = False,
+            interactive = False,
+            dryrun = False,
+            recipe = "",
+            save = "",
+            proxies = None,
+            conn_delay = int(Facade().sett.get('connection', 'conn_delay')),
+            req_delay = int(Facade().sett.get('connection', 'req_delay')),
+            rlevel = 0,
+            scanmode = False,
+            delay = None,
+            concurrent = int(Facade().sett.get('connection', 'concurrent')),
+            url = "",
+            method = None,
+            auth = (None, None),
+            follow = False,
+            postdata = None,
+            headers = [],
+            cookie = [],
+            allvars = None,
+            script= "",
+            script_args = [],
 	)
 
     def validate(self):
-	if self.data['conn_options']['rlevel'] > 0 and self.data['grl_options']['dryrun']:
+	if self.data['rlevel'] > 0 and self.data['dryrun']:
 	    return "Bad usage: Recursion cannot work without making any HTTP request."
 
-	if self.data['script_options']['script_string'] and self.data['grl_options']['dryrun']:
+	if self.data['script'] and self.data['dryrun']:
 	    return "Bad usage: Plugins cannot work without making any HTTP request."
 
-	if not self.data['seed_options']['url']:
+	if not self.data['url']:
 	    return "Bad usage: You must specify an URL."
 
-	if len(self.data['payload_options']['payloads']) == 0:
+	if len(self.data['payloads']) == 0:
 	    return "Bad usage: You must specify a payload."
 
-	if filter(lambda x: len(self.data["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]) and \
-	 filter(lambda x: len(self.data["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"]): 
+	if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
+	 filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"]): 
 	    return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
 
-	if (filter(lambda x: len(self.data["filter_options"][x]) > 0, ["sc", "sw", "sh", "sl"]) or \
-	 filter(lambda x: len(self.data["filter_options"][x]) > 0, ["hc", "hw", "hh", "hl"])) and \
-	 self.data['filter_options']['filterstr']:
+	if (filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) or \
+	 filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"])) and \
+	 self.data['filter']:
 	    return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
 
     # pycurl does not like unicode strings
@@ -104,6 +98,8 @@ class FuzzOptions(UserDict):
 
     def import_json(self, data):
 	js = json.loads(json_minify(data))
+
+        # fixme!
 
 	try:
 	    if js['version'] == "0.1" and js.has_key('wfuzz_recipe'):
@@ -124,6 +120,9 @@ class FuzzOptions(UserDict):
 	    raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
 
     def export_json(self):
+        # fixme!
+
+
 	tmp = dict(
 	    version = "0.1",
 	    wfuzz_recipe = defaultdict(dict)
@@ -137,8 +136,8 @@ class FuzzOptions(UserDict):
 		    tmp['wfuzz_recipe'][section][k] = self.data[section][k]
 
 	# don't dump recipe
-	if tmp['wfuzz_recipe']["grl_options"].has_key("recipe"):
-	    del(tmp['wfuzz_recipe']["grl_options"]["recipe"])
+	if tmp['wfuzz_recipe'].has_key("recipe"):
+	    del(tmp['wfuzz_recipe']["recipe"])
 	    if len(tmp['wfuzz_recipe']["grl_options"]) == 0:
 		del(tmp['wfuzz_recipe']["grl_options"])
 	    
@@ -149,21 +148,21 @@ class FuzzSession:
 	self._values = {
 	    "filter_params": None,
 	    "slice_params": None,
-	    "printer_tool": Facade().sett.get('general', 'default_printer'),
+	    "printer": Facade().sett.get('general', 'default_printer'),
 	    "rlevel": 0,
-	    "script_string": "",
-	    "sleeper": None,
-	    "proxy_list": None,
+	    "script": "",
+	    "delay": None,
+	    "proxies": None,
 	    "scanmode": False,
 	    "interactive": False,
 	    "colour": False,
 	    "verbose": False,
 	    "dryrun": False,
-	    "max_concurrent": int(Facade().sett.get('connection', 'concurrent')),
-	    "max_req_delay": int(Facade().sett.get('connection', 'req_delay')),
-	    "max_conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
+	    "concurrent": int(Facade().sett.get('connection', 'concurrent')),
+	    "req_delay": int(Facade().sett.get('connection', 'req_delay')),
+	    "conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
 	    "genreq": None,
-	    "output_filename": "",
+	    "save": "",
 	    }
 
     def set(self, name, value):
@@ -177,33 +176,33 @@ class FuzzSession:
 	fuzz_options = FuzzSession()
 
         # filter options
-	fuzz_options.set("filter_params", FuzzResFilter.from_options(options["filter_options"]))
-	fuzz_options.set("slice_params", FuzzResFilter(filter_string = options["filter_options"]['slicestr']))
+	fuzz_options.set("filter_params", FuzzResFilter.from_options(options))
+	fuzz_options.set("slice_params", FuzzResFilter(filter_string = options['prefilter']))
 
 	# conn options
-	fuzz_options.set('proxy_list', options["conn_options"]["proxy_list"])
-	fuzz_options.set("max_conn_delay", options["conn_options"]["max_conn_delay"])
-	fuzz_options.set("max_req_delay", options["conn_options"]["max_req_delay"])
-	fuzz_options.set("rlevel", options["conn_options"]["rlevel"])
-	fuzz_options.set("scanmode", options["conn_options"]["scanmode"])
-	fuzz_options.set("sleeper", options["conn_options"]["sleeper"])
-	fuzz_options.set("max_concurrent", options["conn_options"]["max_concurrent"])
+	fuzz_options.set('proxies', options["proxies"])
+	fuzz_options.set("conn_delay", options["conn_delay"])
+	fuzz_options.set("req_delay", options["req_delay"])
+	fuzz_options.set("rlevel", options["rlevel"])
+	fuzz_options.set("scanmode", options["scanmode"])
+	fuzz_options.set("delay", options["delay"])
+	fuzz_options.set("concurrent", options["concurrent"])
 
 	# seed
-	fuzz_options.set("genreq", requestGenerator(options["seed_options"], options["payload_options"]))
+	fuzz_options.set("genreq", requestGenerator(options, options))
 
 	# scripts
-	script_string = options["script_options"]["script_string"]
-	fuzz_options.set("script_string", script_string)
+	script = options["script"]
+	fuzz_options.set("script", script)
 
 	try:
 	    script_args = {}
-	    if options["script_options"]['script_args']:
-		script_args = dict(map(lambda x: x.split("=", 1), options["script_options"]['script_args'].split(",")))
+	    if options['script_args']:
+		script_args = dict(map(lambda x: x.split("=", 1), options['script_args'].split(",")))
 	except ValueError:
 	    raise FuzzException(FuzzException.FATAL, "Incorrect arguments format supplied.")
 
-	if script_string:
+	if script:
 	    for k, v in Facade().sett.get_section("kbase"):
 		if script_args.has_key(k):
 		    value = script_args[k]
@@ -219,17 +218,17 @@ class FuzzSession:
 		    Facade().parsers.kbase.add(k, v)
 
 	# grl options
-	if options["grl_options"]["output_filename"]:
-	    fuzz_options.set("output_filename", options["grl_options"]["output_filename"])
-	if options["grl_options"]["colour"]:
+	if options["save"]:
+	    fuzz_options.set("save", options["save"])
+	if options["colour"]:
 	    Facade().printers.kbase.add("colour", True)
-            fuzz_options.set("colour", options["grl_options"]["colour"])
-	if options["grl_options"]["verbose"]:
+            fuzz_options.set("colour", options["colour"])
+	if options["verbose"]:
 	    Facade().printers.kbase.add("verbose", True)
-            fuzz_options.set("verbose", options["grl_options"]["verbose"])
+            fuzz_options.set("verbose", options["verbose"])
 
-	fuzz_options.set("printer_tool", options["grl_options"]["printer_tool"])
-	fuzz_options.set("interactive", options["grl_options"]["interactive"])
-	fuzz_options.set("dryrun", options["grl_options"]["dryrun"])
+	fuzz_options.set("printer", options["printer"])
+	fuzz_options.set("interactive", options["interactive"])
+	fuzz_options.set("dryrun", options["dryrun"])
 
 	return fuzz_options

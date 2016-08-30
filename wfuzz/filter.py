@@ -255,7 +255,7 @@ class FuzzResFilter:
     def from_options(filter_options):
         ffilter = FuzzResFilter()
 
-	ffilter.hideparams["filter_string"] = filter_options["filterstr"]
+	ffilter.hideparams["filter_string"] = filter_options["filter"]
 
 	try:
 	    if filter_options["ss"] is not None:

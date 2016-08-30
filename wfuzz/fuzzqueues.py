@@ -18,7 +18,7 @@ from .externals.reqresp.exceptions import ReqRespException
 class SeedQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
-	self.delay = options.get("sleeper")
+	self.delay = options.get("delay")
 	self.genReq = options.get("genreq")
 
     def get_name(self):
@@ -71,7 +71,7 @@ class SaveQ(FuzzQueue):
 
 	self.output_fn = None
         try:
-            self.output_fn = gzip.open(options.get("output_filename"), 'w+b')
+            self.output_fn = gzip.open(options.get("save"), 'w+b')
         except IOError, e:
             raise FuzzException(FuzzException.FATAL, "Error opening results file!. %s" % str(e))
 
@@ -89,7 +89,7 @@ class PrinterQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-        self.printer = options.get("printer_tool")
+        self.printer = options.get("printer")
         self.printer.header(self.stats)
 
     def get_name(self):
@@ -165,7 +165,7 @@ class SliceQ(FuzzQueue):
 class JobQ(FuzzRRQueue):
     def __init__(self, options, cache):
 	# Get active plugins
-        lplugins = Facade().get_parsers(options.get("script_string"))
+        lplugins = Facade().get_parsers(options.get("script"))
 
         if not lplugins:
             raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
@@ -305,7 +305,7 @@ class HttpQueue(FuzzQueue):
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
 
     def __init__(self, options):
-	FuzzQueue.__init__(self, options, limit=options.get("max_concurrent") * 5)
+	FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
 
 	self.processed = 0
 
@@ -316,7 +316,7 @@ class HttpQueue(FuzzQueue):
 	# Connection pool
 	self.m = None
 	self.freelist = Queue()
-	self._create_pool(options.get("max_concurrent"))
+	self._create_pool(options.get("concurrent"))
 
 	th2 = Thread(target=self.__read_multi_stack)
 	th2.setName('__read_multi_stack')
@@ -326,8 +326,8 @@ class HttpQueue(FuzzQueue):
 	self.pause.set()
 
 	self._proxies = None
-	if options.get("proxy_list"):
-	    self._proxies = self.__get_next_proxy(options.get("proxy_list"))
+	if options.get("proxies"):
+	    self._proxies = self.__get_next_proxy(options.get("proxies"))
 
     def get_name(self):
 	return 'HttpQueue'
@@ -378,11 +378,11 @@ class HttpQueue(FuzzQueue):
 	    else:
 		raise FuzzException(FuzzException.FATAL, "Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 
-	mdelay = self.options.get("max_req_delay")
+	mdelay = self.options.get("req_delay")
 	if mdelay is not None:
 	    c.setopt(pycurl.TIMEOUT, mdelay)
 
-	cdelay = self.options.get("max_conn_delay")
+	cdelay = self.options.get("conn_delay")
 	if cdelay is not None:
 	    c.setopt(pycurl.CONNECTTIMEOUT, cdelay)
 

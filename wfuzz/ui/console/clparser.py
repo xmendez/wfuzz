@@ -70,12 +70,12 @@ class CLParser:
 		options.import_json(f.read())
 		
 	    # command line has priority over recipe
-	    self._parse_options(optsd, options['grl_options'])
-	    self._parse_conn_options(optsd, options['conn_options'])
-	    self._parse_filters(optsd, options['filter_options'])
-	    self._parse_seed(url, optsd, options['seed_options'])
-	    self._parse_payload(optsd, options['payload_options'])
-	    self._parse_scripts(optsd, options['script_options'])
+	    self._parse_options(optsd, options)
+	    self._parse_conn_options(optsd, options)
+	    self._parse_filters(optsd, options)
+	    self._parse_seed(url, optsd, options)
+	    self._parse_payload(optsd, options)
+	    self._parse_scripts(optsd, options)
 
 	    # Validate options
 	    error = options.validate()
@@ -171,20 +171,20 @@ class CLParser:
 	    sw = [],
 	    sl = [],
 	    sh = [],
-	    filterstr = "",
-	    slicestr = "",
+	    filter = "",
+	    prefilter = "",
 	    ),
 	'''
 
 	if "--prefilter" in optsd:
 	    if not PYPARSING:
 		raise FuzzException(FuzzException.FATAL, "--prefilter switch needs pyparsing module.")
-	    filter_params['slicestr'] = optsd["--prefilter"][0]
+	    filter_params['prefilter'] = optsd["--prefilter"][0]
 
 	if "--filter" in optsd:
 	    if not PYPARSING:
 		raise FuzzException(FuzzException.FATAL, "--filter switch needs pyparsing module.")
-	    filter_params['filterstr'] = optsd["--filter"][0]
+	    filter_params['filter'] = optsd["--filter"][0]
 
 	if "--hc" in optsd:
 	    filter_params['hc'] = optsd["--hc"][0].split(",")
@@ -254,12 +254,12 @@ class CLParser:
 	'''
 	options = dict(
 	    url = url,
-	    fuzz_methods = False,
+	    method = None,
 	    auth = (None, None),
 	    follow = False,
 	    head = False,
 	    postdata = None,
-	    extraheaders = [(header, value)],
+	    headers = [(header, value)],
 	    cookie = [],
 	    allvars = None,
 	)
@@ -269,7 +269,7 @@ class CLParser:
 	    options['url'] = url
 
 	if "-X" in optsd:
-	    options['fuzz_methods'] = optsd["-X"][0]
+	    options['method'] = optsd["-X"][0]
 
 	if "--basic" in optsd:
 	    options['auth'] = ("basic", optsd["--basic"][0])
@@ -293,7 +293,7 @@ class CLParser:
 	    splitted = x.partition(":")
 	    if splitted[1] != ":":
 		raise FuzzException(FuzzException.FATAL, "Wrong header specified, it should be in the format \"name: value\".")
-	    options['extraheaders'].append((splitted[0], splitted[2].strip()))
+	    options['headers'].append((splitted[0], splitted[2].strip()))
 
 	if "-V" in optsd:
 	    varset = str(optsd["-V"][0])
@@ -305,13 +305,13 @@ class CLParser:
     def _parse_conn_options(self, optsd, conn_options):
 	'''
 	conn_options = dict(
-	    proxy_list = None,
-	    max_conn_delay = 90,
-	    max_req_delay = None,
+	    proxies = None,
+	    conn_delay = 90,
+	    req_delay = None,
 	    rlevel = 0,
 	    scanmode = False,
-	    sleeper = None,
-	    max_concurrent = 10,
+	    delay = None,
+	    concurrent = 10,
 	)
 	'''
 
@@ -330,13 +330,13 @@ class CLParser:
 		else:
 		    raise FuzzException(FuzzException.FATAL, "Bad proxy parameter specified.")
 
-	    conn_options['proxy_list'] = proxy
+	    conn_options['proxies'] = proxy
 
 	if "--conn-delay" in optsd:
-	    conn_options['max_conn_delay'] = int(optsd["--conn-delay"][0])
+	    conn_options['conn_delay'] = int(optsd["--conn-delay"][0])
 
 	if "--req-delay" in optsd:
-	    conn_options["max_req_delay"] = int(optsd["--req-delay"][0])
+	    conn_options["req_delay"] = int(optsd["--req-delay"][0])
 
 	if "-R" in optsd:
 	    conn_options["rlevel"] = int(optsd["-R"][0])
@@ -345,15 +345,15 @@ class CLParser:
 	    conn_options["scanmode"] = True
 
 	if "-s" in optsd:
-	    conn_options["sleeper"] = float(optsd["-s"][0])
+	    conn_options["delay"] = float(optsd["-s"][0])
 
 	if "-t" in optsd:
-	    conn_options["max_concurrent"] = int(optsd["-t"][0])
+	    conn_options["concurrent"] = int(optsd["-t"][0])
 
     def _parse_options(self, optsd, options):
 	'''
 	options = dict(
-	    printer_tool = "default",
+	    printer = "default",
 	    colour = False,
 	    interactive = False,
 	    dryrun = False,
@@ -362,7 +362,7 @@ class CLParser:
 	'''
 	
 	if "--oF" in optsd:
-	    options["output_filename"] = optsd['--oF'][0]
+	    options["save"] = optsd['--oF'][0]
 
 	if "-v" in optsd:
 	    options["verbose"] = True
@@ -383,7 +383,7 @@ class CLParser:
             else:
                 filename, printer = vals
 
-            options["printer_tool"] = Facade().get_printer(printer)(filename)
+            options["printer"] = Facade().get_printer(printer)(filename)
                 
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]
@@ -397,16 +397,16 @@ class CLParser:
     def _parse_scripts(self, optsd, options):
 	'''
 	options = dict(
-	    script_string = "",
+	    script = "",
 	    script_args = [],
 	)
 	'''
 
 	if "-A" in optsd:
-	    options["script_string"] = "default"
+	    options["script"] = "default"
 
 	if "--script" in optsd:
-	    options["script_string"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]
+	    options["script"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]
 
 	if "--script-args" in optsd:
 	    options['script_args'] = optsd["--script-args"][0]

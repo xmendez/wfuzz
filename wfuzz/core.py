@@ -178,10 +178,10 @@ class Fuzzer:
 	else:
             self.qmanager.add("http_queue", HttpQueue(options))
 
-	if options.get("script_string"):
+	if options.get("script"):
 	    self.qmanager.add("plugins_queue", JobQ(options, cache))
 
-	if options.get("script_string") or options.get("rlevel") > 0:
+	if options.get("script") or options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options, cache))
             rq = RoutingQ(options, {
 		FuzzResult.seed: self.qmanager["seed_queue"],
@@ -193,10 +193,10 @@ class Fuzzer:
 	if options.get('filter_params').is_active():
             self.qmanager.add("filter_queue", FilterQ(options))
 
-	if options.get('output_filename'):
+	if options.get('save'):
             self.qmanager.add("save_queue", SaveQ(options))
 
-	if options.get('printer_tool'):
+	if options.get('printer'):
             self.qmanager.add("printer_queue", PrinterQ(options))
 
         self.qmanager.bind(self.results_queue)
