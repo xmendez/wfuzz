@@ -219,6 +219,7 @@ class Fuzzer:
 	    self.qmanager.stop()
 	    raise StopIteration
         elif res.type == FuzzResult.error:
+            self.cancel_job()
 	    raise res.exception
 
 	return res

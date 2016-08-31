@@ -44,7 +44,6 @@ def main():
         printer.footer(fz.genReq.stats)
     except FuzzException, e:
         print "\nFatal exception: %s" % e.msg
-        if fz: fz.cancel_job()
     except KeyboardInterrupt:
         print "\nFinishing pending requests..."
         if fz: fz.cancel_job()
