@@ -7,6 +7,7 @@ from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzOptions
 from wfuzz.facade import FuzzException
+from wfuzz.core import Payload
 from .common import help_banner
 from .common import usage
 from .common import brief_usage
@@ -222,18 +223,14 @@ class CLParser:
 	if len(optsd["--slice"]) > len(optsd["-z"]):
 	    raise FuzzException(FuzzException.FATAL, "slice must be preceded by a -z swith.")
 
+        options["payloads"] = Payload()
+
 	for zpayl, extraparams, sliceit in itertools.izip_longest(optsd["-z"], optsd["--zE"], optsd["--slice"]):
 	    vals = zpayl.split(",")
 	    name, params = vals[:2]
+            encoders = vals[2] if len(vals) == 3 else None
 
-	    encoders = None
-	    if len(vals) == 3:
-		encoders = vals[2].split("-")
-
-	    if extraparams:
-		extraparams = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
-
-	    options["payloads"].append((name, params, extraparams, encoders, sliceit))
+            options["payloads"].add(name, params, extraparams, encoders, sliceit)
 
 	# Alias por "-z file,Wordlist"
 	if "-w" in optsd:
@@ -241,11 +238,9 @@ class CLParser:
 		vals = i.split(",", 1)
 		f, = vals[:1]
 
-		encoders = None
-		if len(vals) == 2:
-		    encoders = vals[1].split("-")
+		encoders = vals[1] if len(vals) == 2 else None
 
-		options["payloads"].append(("file", f, None, encoders))
+		options["payloads"].add("file", f, None, encoders)
 
 	if "-m" in optsd:
 	    options["iterator"] = optsd['-m'][0]

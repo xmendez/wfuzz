@@ -30,7 +30,7 @@ class FuzzOptions(UserDict):
             sh = [],
             filter = "",
             prefilter = "",
-            payloads = [],
+            payloads = None,
             iterator = None,
             printer = None,
             colour = False,
@@ -68,7 +68,7 @@ class FuzzOptions(UserDict):
 	if not self.data['url']:
 	    return "Bad usage: You must specify an URL."
 
-	if len(self.data['payloads']) == 0:
+	if self.data['payloads'] is None:
 	    return "Bad usage: You must specify a payload."
 
 	if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
