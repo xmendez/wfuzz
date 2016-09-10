@@ -5,6 +5,8 @@ from externals.moduleman.loader import FileLoader
 from externals.moduleman.loader import DirLoader
 from externals.settings.settings import SettingsBase
 
+import os
+
 version = "2.1.3"
 
 class Settings(SettingsBase):
@@ -42,15 +44,21 @@ class Facade:
 
     def __init__(self):
 	try:
-	    self.__printers = BRegistrant(FileLoader(**{"filename": "printers.py", "base_path": "./plugins" }))
-	    self.__plugins = BRegistrant(DirLoader(**{"base_dir": "scripts", "base_path": "./plugins" }))
-	    self.__encoders = BRegistrant(FileLoader(**{"filename": "encoders.py", "base_path": "./plugins" }))
-	    self.__iterators = BRegistrant(FileLoader(**{"filename": "iterations.py", "base_path": "./plugins" }))
-	    self.__payloads = BRegistrant(FileLoader(**{"filename": "payloads.py", "base_path": "./plugins" }))
+            self.__printers = BRegistrant(FileLoader(**{"filename": "printers.py", "base_path": os.path.join(self.get_path(), "plugins")}))
+            self.__plugins = BRegistrant(DirLoader(**{"base_dir": "scripts", "base_path": os.path.join(self.get_path(), "plugins")}))
+            self.__encoders = BRegistrant(FileLoader(**{"filename": "encoders.py", "base_path": os.path.join(self.get_path(), "plugins")}))
+            self.__iterators = BRegistrant(FileLoader(**{"filename": "iterations.py", "base_path": os.path.join(self.get_path(), "plugins")}))
+            self.__payloads = BRegistrant(FileLoader(**{"filename": "payloads.py", "base_path": os.path.join(self.get_path(), "plugins")}))
 	except Exception, e:
 	    raise FuzzException(FuzzException.FATAL, "Error loading plugins: %s" % str(e))
 
 	self.sett = Settings()
+
+    def get_path(self):
+        abspath = os.path.abspath(__file__)
+        abspath =  os.path.join(os.path.dirname(abspath))
+        abspath =  os.path.join(os.path.dirname(abspath))
+        return os.path.dirname(abspath)
 
     def proxy(self, which):
 	if which == 'parsers':
