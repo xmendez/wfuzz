@@ -4,6 +4,8 @@ from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
 from .externals.settings.settings import SettingsBase
 
+import os
+
 version = "2.2"
 
 class FuzzException(Exception):
@@ -41,34 +43,34 @@ class Facade:
 	self.__payloads = None
 
 	self.sett = Settings()
-        # set current folder in order to load plugins
-        import os
 
+    def get_path(self, directory = None):
         abspath = os.path.abspath(__file__)
-        dname = os.path.dirname(abspath)
-        os.chdir(dname)
+        ret = os.path.dirname(abspath)
+
+        return os.path.join(ret, directory) if directory else ret
 
     def _load(self, cat):
 	try:
 	    if cat == "printers":
 		if not self.__printers:
-		    self.__printers = BRegistrant(FileLoader(**{"filename": "printers.py", "base_path": "./plugins" }))
+		    self.__printers = BRegistrant(FileLoader(**{"filename": "printers.py", "base_path": self.get_path("plugins")}))
 		return self.__printers
 	    elif cat == "plugins" or cat == "parsers":
 		if not self.__plugins:
-		    self.__plugins = BRegistrant(DirLoader(**{"base_dir": "scripts", "base_path": "./plugins" }))
+		    self.__plugins = BRegistrant(DirLoader(**{"base_dir": "scripts", "base_path": self.get_path("plugins")}))
 		return self.__plugins
 	    if cat == "encoders":
 		if not self.__encoders:
-		    self.__encoders = BRegistrant(FileLoader(**{"filename": "encoders.py", "base_path": "./plugins" }))
+		    self.__encoders = BRegistrant(FileLoader(**{"filename": "encoders.py", "base_path": self.get_path("plugins")}))
 		return self.__encoders
 	    if cat == "iterators":
 		if not self.__iterators:
-		    self.__iterators = BRegistrant(FileLoader(**{"filename": "iterations.py", "base_path": "./plugins" }))
+		    self.__iterators = BRegistrant(FileLoader(**{"filename": "iterations.py", "base_path": self.get_path("plugins")}))
 		return self.__iterators
 	    if cat == "payloads":
 		if not self.__payloads:
-		    self.__payloads = BRegistrant(FileLoader(**{"filename": "payloads.py", "base_path": "./plugins" }))
+		    self.__payloads = BRegistrant(FileLoader(**{"filename": "payloads.py", "base_path": self.get_path("plugins")}))
 		return self.__payloads
 	    else:
 		raise FuzzException(FuzzException.FATAL, "Non-existent plugin category %s" % which)
