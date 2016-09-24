@@ -11,6 +11,34 @@ from wfuzz.plugin_api.payloadtools import FuzzResPayload
 from wfuzz.fuzzobjects import FuzzResult
 
 @wfuzz_iterator
+class dirwalk:
+    name = "dirwalk"
+    description = "Returns filename's recursively from a local directory. ie. ~/Downloads/umbraco/umbraco/"
+    category = ["default"]
+    priority = 99
+
+    def __init__(self, directory, extra):
+        self.g = self._my_gen(directory)
+
+    def _my_gen(self, directory):
+        import os
+        import urllib
+
+        for root, dirs, fnames in os.walk(directory):
+            for f in fnames:
+                relative_path = os.path.relpath(os.path.join(root, f), directory)
+                yield urllib.quote(relative_path)
+
+    def next(self):
+	return self.g.next()
+
+    def count(self):
+	return -1
+
+    def __iter__(self):
+	return self
+
+@wfuzz_iterator
 class ipnet:
     name = "ipnet"
     description = "Returns list of IP addresses of a given network. ie. 192.168.1.0/24"
