@@ -70,7 +70,7 @@ class Facade:
 		return self.__iterators
 	    if cat == "payloads":
 		if not self.__payloads:
-		    self.__payloads = BRegistrant(FileLoader(**{"filename": "payloads.py", "base_path": self.get_path("plugins")}))
+		    self.__payloads = BRegistrant(DirLoader(**{"base_dir": "payloads", "base_path": self.get_path("plugins")}))
 		return self.__payloads
 	    else:
 		raise FuzzException(FuzzException.FATAL, "Non-existent plugin category %s" % which)
@@ -94,7 +94,7 @@ class Facade:
 
     def get_payload(self, name):
 	try:
-	    return self._load("payloads").get_plugin("payloads/" + name)
+	    return self._load("payloads").get_plugin("payloads/" + name + "/" + name)
 	except KeyError:
 	    raise FuzzException(FuzzException.FATAL, name + " payload does not exists (-e payloads for a list of available payloads)")
 
