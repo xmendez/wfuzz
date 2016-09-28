@@ -170,7 +170,8 @@ class JobQ(FuzzRRQueue):
         if not lplugins:
             raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
 
-        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins, cache) for i in range(3)])
+        concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
+        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins, cache) for i in range(concurrent)])
 
     def get_name(self):
 	return 'JobQ'
