@@ -6,7 +6,7 @@ import itertools
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzOptions
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 from wfuzz.core import Payload
 from .common import help_banner
 from .common import usage

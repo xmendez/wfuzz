@@ -1,5 +1,5 @@
 from wfuzz.fuzzobjects import PluginResult, PluginRequest
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 from wfuzz.facade import Facade
 from wfuzz.plugin_api.urlutils import parse_url
 
@@ -40,9 +40,6 @@ class BasePlugin():
 	plres.issue = issue
 
 	self.results_queue.put(plres)
-
-    def queue_raw_request(self, raw):
-	self.results_queue.put(raw)
 
     def queue_url(self, url):
 	self.results_queue.put(PluginRequest.from_fuzzRes(self.base_fuzz_res, url, self.name))

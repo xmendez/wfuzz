@@ -10,7 +10,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 from .externals.reqresp import Request
-from .facade import FuzzException
+from .exception import FuzzException
 from .facade import Facade
 from .plugin_api.urlutils import parse_url
 
@@ -691,14 +691,12 @@ class FuzzResult:
 	self.plugins_res = []
 	self.plugins_backfeed = []
 
-    def update(self, exception = None, ftype = None):
+    def update(self, exception = None):
+        self.type = FuzzResult.result
+
         if exception:
             self.exception = exception
             self.description = self.description + "! " + self.exception.msg
-            self.type = FuzzResult.error
-
-        if ftype:
-            self.type = ftype
 
         if self.history and self.history.content:
             m = hashlib.md5()

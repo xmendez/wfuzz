@@ -5,7 +5,7 @@ import itertools
 
 from Queue import PriorityQueue
 from threading import Thread
-from .facade import FuzzException
+from .exception import FuzzException
 from .fuzzobjects import FuzzResult
 
 

@@ -1,14 +1,14 @@
 from .fuzzobjects import FuzzResult
 
 from .myqueues import MyPriorityQueue,QueueManager
-from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue
+from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver
 
 from .externals.reqresp.exceptions import ReqRespException
 from .externals.reqresp.cache import HttpCache
 
 from .fuzzobjects import FuzzResultFactory, FuzzStats
 from .facade import Facade
-from .facade import FuzzException
+from .exception import FuzzException
 
 from .filter import FuzzResFilter
 
@@ -188,7 +188,9 @@ class Fuzzer:
 	if options.get("dryrun"):
             self.qmanager.add("http_queue", DryRunQ(options))
 	else:
+            # http_queue breaks process rules due to being asynchronous. Someone has to collects its sends, for proper fuzzqueue's count and sync purposes
             self.qmanager.add("http_queue", HttpQueue(options))
+            self.qmanager.add("http_receiver", HttpReceiver(options))
 
 	if options.get("script"):
 	    self.qmanager.add("plugins_queue", JobQ(options, cache))

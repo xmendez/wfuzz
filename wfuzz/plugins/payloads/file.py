@@ -1,4 +1,4 @@
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 from wfuzz.plugin_api.base import wfuzz_iterator
 
 @wfuzz_iterator
