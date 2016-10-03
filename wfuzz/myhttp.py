@@ -20,24 +20,29 @@ class HttpPool:
 	self.mutex_multi = Lock()
 	self.mutex_stats = Lock()
 
-	# pycurl Connection pool
 	self.m = None
 	self.freelist = Queue()
-	#self._create_pool(options.get("concurrent"))
-	self._create_pool(10)
 
-	th2 = Thread(target=self.__read_multi_stack)
-	th2.setName('__read_multi_stack')
-	th2.start()
+	self.th2 = Thread(target=self.__read_multi_stack)
+	self.th2.setName('__read_multi_stack')
 
-	#self._proxies = None
-	#if options.get("proxies"):
-	#    self._proxies = self.__get_next_proxy(options.get("proxies"))
+	self._proxies = None
+
+        self.pool_map = {}
+        self.default_poolid = 0
+
+
+    def initialize(self, options):
+	# pycurl Connection pool
+	self._create_pool(options.get("concurrent"))
+
+	if options.get("proxies"):
+	    self._proxies = self.__get_next_proxy(options.get("proxies"))
 
         # internal pool
-        self.pool_map = {}
-
         self.default_poolid = self._new_pool()
+
+	self.th2.start()
 
     def job_stats(self):
 	with self.mutex_stats:

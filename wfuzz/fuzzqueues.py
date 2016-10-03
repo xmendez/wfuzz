@@ -303,6 +303,7 @@ class HttpQueue(FuzzQueue):
 	FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
 
         self.http_pool = Facade().http_pool
+        self.http_pool.initialize(options)
 
 	self.pause = Event()
 	self.pause.set()
