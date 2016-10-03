@@ -336,8 +336,6 @@ class HttpReceiver(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
 
-        self.http_pool = Facade().http_pool
-
     def get_name(self):
 	return 'HttpReceiver'
 
