@@ -31,8 +31,12 @@ class HttpPool:
         self.pool_map = {}
         self.default_poolid = 0
 
+        self.options = None
+
 
     def initialize(self, options):
+        self.options = options
+
 	# pycurl Connection pool
 	self._create_pool(options.get("concurrent"))
 
@@ -75,7 +79,7 @@ class HttpPool:
 
     def enqueue(self, fuzzres, poolid = None):
 	c = fuzzres.history.to_http_object(self.freelist.get())
-	#c = self._set_extra_options(c, fuzzres)
+	c = self._set_extra_options(c, fuzzres)
 
 	c.response_queue = ((StringIO(), StringIO(), fuzzres, self.default_poolid if not poolid else poolid))
 	c.setopt(pycurl.WRITEFUNCTION, c.response_queue[0].write)
