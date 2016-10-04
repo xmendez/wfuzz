@@ -20,6 +20,7 @@ class Settings(SettingsBase):
 	    connection=[("concurrent", '10'),
 		("conn_delay", '90'),
 		("req_delay", '90'),
+		("retries", '3'),
 		("User-Agent", "Wfuzz/%s" % version)
 	    ],
 	    general=[("default_printer", 'raw'),("cancel_on_plugin_except","1"),
@@ -38,7 +39,8 @@ class Facade:
 	self.__payloads = None
 
 	self.sett = Settings()
-        self.http_pool = HttpPool()
+
+        self.http_pool = HttpPool(int(self.sett.get("connection","retries")))
 
     def get_path(self, directory = None):
         abspath = os.path.abspath(__file__)

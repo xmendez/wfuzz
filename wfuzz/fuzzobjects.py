@@ -154,6 +154,7 @@ class FuzzRequest(object):
 	self._proxy = None
 	self._allvars = None
 	self.wf_fuzz_methods = None
+        self.wf_retries = 0
 
 	self.headers.add({"User-Agent": Facade().sett.get("connection","User-Agent").encode('utf-8')})
 

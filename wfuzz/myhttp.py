@@ -12,7 +12,7 @@ class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
     newid = itertools.count(0).next
 
-    def __init__(self):
+    def __init__(self, retries):
     #def __init__(self, options):
 	self.processed = 0
 
@@ -22,9 +22,13 @@ class HttpPool:
 
 	self.m = None
 	self.freelist = Queue()
+	self.retrylist = Queue()
 
 	self.th2 = Thread(target=self.__read_multi_stack)
 	self.th2.setName('__read_multi_stack')
+
+	self.th3 = Thread(target=self.__read_retry_queue)
+	self.th3.setName('__read_retry_queue')
 
 	self._proxies = None
 
@@ -32,6 +36,7 @@ class HttpPool:
         self.default_poolid = 0
 
         self.options = None
+        self.retries = retries
 
 
     def initialize(self, options):
@@ -46,6 +51,7 @@ class HttpPool:
         # internal pool
         self.default_poolid = self._new_pool()
 
+        self.th3.start()
 	self.th2.start()
 
     def job_stats(self):
@@ -80,6 +86,8 @@ class HttpPool:
     def enqueue(self, fuzzres, poolid = None):
 	c = fuzzres.history.to_http_object(self.freelist.get())
 	c = self._set_extra_options(c, fuzzres)
+
+        if self.exit_job: return
 
 	c.response_queue = ((StringIO(), StringIO(), fuzzres, self.default_poolid if not poolid else poolid))
 	c.setopt(pycurl.WRITEFUNCTION, c.response_queue[0].write)
@@ -135,6 +143,14 @@ class HttpPool:
 
 	return c
 
+    def __read_retry_queue(self):
+	while not self.exit_job:
+            res, poolid = self.retrylist.get()
+
+            if res is None: break
+
+            self.enqueue(res, poolid)
+
     def __read_multi_stack(self):
 	# Check for curl objects which have terminated, and add them to the freelist
 	while not self.exit_job:
@@ -183,7 +199,9 @@ class HttpPool:
 		    err_number = ReqRespException.SSL
 		elif errno == 18:
 		    err_number = ReqRespException.SSL
-		elif errno == 28:
+
+                # non-recoverable errors
+		if errno == 28:
 		    err_number = ReqRespException.TIMEOUT
 		elif errno == 7:
 		    err_number = ReqRespException.CONNECT_HOST
@@ -191,6 +209,12 @@ class HttpPool:
 		    err_number = ReqRespException.RESOLVE_HOST
 		elif errno == 5:
 		    err_number = ReqRespException.RESOLVE_PROXY
+                else:
+                    res.history.wf_retries += 1
+
+                    if res.history.wf_retries < self.retries:
+                        self.retrylist.put((res, poolid))
+                        continue
 
 		e = ReqRespException(err_number, "Pycurl error %d: %s" % (errno, errmsg))
                 self.pool_map[poolid].put(res.update(exception=e))
@@ -199,7 +223,9 @@ class HttpPool:
 		    self.processed += 1
 
         self.pool_map[poolid].put(None)
+        self.retrylist.put((None, None))
 	# cleanup multi stack
 	for c in self.m.handles:
 	    c.close()
+            self.freelist.put(c)
 	self.m.close()
