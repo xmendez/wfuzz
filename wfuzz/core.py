@@ -77,8 +77,9 @@ class dictionary:
 	    return self.__generator.next() if self.__encoders else self.__payload.next()
 
 class Payload():
-    def __init__(self):
+    def __init__(self, iterator = None):
         self.payloads = []
+        self.iterator = iterator
 
     def add(self, name, params, extraparams = None, encoders = None, slice = None):
         if extraparams: extraparams = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
@@ -99,8 +100,8 @@ class Payload():
 
         if len(selected_dic) == 1:
             return tupleit(selected_dic[0])
-        elif payload_options["iterator"]:
-            return Facade().get_iterator(payload_options["iterator"])(*selected_dic)
+        elif self.iterator:
+            return Facade().get_iterator(self.iterator)(*selected_dic)
         else:
             return Facade().get_iterator("product")(*selected_dic)
 

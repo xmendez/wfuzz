@@ -243,7 +243,7 @@ class CLParser:
 		options["payloads"].add("file", f, None, encoders)
 
 	if "-m" in optsd:
-	    options["iterator"] = optsd['-m'][0]
+	    options["payloads"].iterator = optsd['-m'][0]
 
     def _parse_seed(self, url, optsd, options):
 	'''
