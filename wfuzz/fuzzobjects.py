@@ -10,7 +10,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 from .externals.reqresp import Request
-from .facade import FuzzException
+from .exception import FuzzException
 from .facade import Facade
 from .plugin_api.urlutils import parse_url
 
@@ -154,6 +154,7 @@ class FuzzRequest(object):
 	self._proxy = None
 	self._allvars = None
 	self.wf_fuzz_methods = None
+        self.wf_retries = 0
 
 	self.headers.add({"User-Agent": Facade().sett.get("connection","User-Agent").encode('utf-8')})
 
@@ -362,6 +363,10 @@ class FuzzRequest(object):
 
     # methods wfuzz needs to perform HTTP requests (this might change in the future).
 
+    def perform(self):
+        res = FuzzResult(self, track_id = False)
+        return Facade().http_pool.perform(res)
+        
     def to_http_object(self, c):
 	return Request.to_pycurl_object(c, self._request)
 
@@ -691,14 +696,12 @@ class FuzzResult:
 	self.plugins_res = []
 	self.plugins_backfeed = []
 
-    def update(self, exception = None, ftype = None):
+    def update(self, exception = None):
+        self.type = FuzzResult.result
+
         if exception:
             self.exception = exception
             self.description = self.description + "! " + self.exception.msg
-            self.type = FuzzResult.error
-
-        if ftype:
-            self.type = ftype
 
         if self.history and self.history.content:
             m = hashlib.md5()

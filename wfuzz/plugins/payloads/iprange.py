@@ -1,5 +1,5 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 
 @wfuzz_iterator
 class iprange:

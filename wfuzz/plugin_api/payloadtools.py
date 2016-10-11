@@ -1,4 +1,4 @@
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 
 import itertools
 import urllib2

@@ -3,18 +3,11 @@ from .externals.moduleman.registrant import BRegistrant
 from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
 from .externals.settings.settings import SettingsBase
+from .myhttp import HttpPool
 
 import os
 
 version = "2.2"
-
-class FuzzException(Exception):
-    FATAL = range(1)
-
-    def __init__(self, etype, msg):
-	self.etype = etype
-	self.msg = msg
-        Exception.__init__(self, msg)
 
 class Settings(SettingsBase):
     def get_config_file(self):
@@ -27,6 +20,7 @@ class Settings(SettingsBase):
 	    connection=[("concurrent", '10'),
 		("conn_delay", '90'),
 		("req_delay", '90'),
+		("retries", '3'),
 		("User-Agent", "Wfuzz/%s" % version)
 	    ],
 	    general=[("default_printer", 'raw'),("cancel_on_plugin_except","1"),
@@ -45,6 +39,8 @@ class Facade:
 	self.__payloads = None
 
 	self.sett = Settings()
+
+        self.http_pool = HttpPool(int(self.sett.get("connection","retries")))
 
     def get_path(self, directory = None):
         abspath = os.path.abspath(__file__)

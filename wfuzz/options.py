@@ -1,4 +1,4 @@
-from .facade import FuzzException
+from .exception import FuzzException
 from .facade import Facade
 
 from .fuzzobjects import FuzzRequest

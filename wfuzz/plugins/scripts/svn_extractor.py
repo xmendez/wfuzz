@@ -1,7 +1,7 @@
 from urlparse import urlparse, urljoin
 
 from wfuzz.plugin_api.base import DiscoveryPlugin
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import tempfile

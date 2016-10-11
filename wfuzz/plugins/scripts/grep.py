@@ -1,7 +1,7 @@
 import re
 
 from wfuzz.plugin_api.base import BasePlugin
-from wfuzz.facade import FuzzException
+from wfuzz.exception import FuzzException
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin

@@ -7,7 +7,7 @@ import sys
 from .core import Fuzzer
 from .facade import Facade
 from .options import FuzzSession
-from .facade import FuzzException
+from .exception import FuzzException
 
 from .ui.console.mvc import Controller, KeyPress, View
 from .ui.console.clparser import CLParser
