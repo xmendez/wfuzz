@@ -66,7 +66,7 @@ class HttpPool:
 
     def perform(self, fuzzreq):
         poolid = self._new_pool()
-        self.enqueue_request(fuzzreq, poolid)
+        self.enqueue(fuzzreq, poolid)
         item = self.pool_map[poolid].get()
         return item
 
@@ -95,6 +95,10 @@ class HttpPool:
 
 	with self.mutex_multi:
 	    self.m.add_handle(c)
+
+    def __stop_to_pools(self):
+        for p in self.pool_map.keys():
+            self.pool_map[p].put(None)
 
     # Pycurl management
     def _create_pool(self, num_conn):
@@ -222,7 +226,7 @@ class HttpPool:
 		with self.mutex_stats:
 		    self.processed += 1
 
-        self.pool_map[poolid].put(None)
+        self.__stop_to_pools()
         self.retrylist.put((None, None))
 	# cleanup multi stack
 	for c in self.m.handles:

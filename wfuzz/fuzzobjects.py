@@ -363,6 +363,10 @@ class FuzzRequest(object):
 
     # methods wfuzz needs to perform HTTP requests (this might change in the future).
 
+    def perform(self):
+        res = FuzzResult(self, track_id = False)
+        return Facade().http_pool.perform(res)
+        
     def to_http_object(self, c):
 	return Request.to_pycurl_object(c, self._request)
 
