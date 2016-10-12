@@ -22,9 +22,8 @@ class FuzzResFilter:
             filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
             special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
             sed_element = Suppress("replace(") + filter_element + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(")"))
-	    digits = "XB0123456789"
-	    integer = Word( digits )#.setParseAction( self.__convertIntegers )
-	    elementRef = Group(element + oneOf("= != < > >= <=") + integer)
+	    keywords = Word("0123456789") | oneOf("XXX BBB")
+	    elementRef = Group(element + oneOf("= != < > >= <=") + keywords)
 	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    filterRef = Group(filter_element + oneOf("= != ~") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    operator = oneOf("and or")
