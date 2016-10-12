@@ -132,6 +132,22 @@ class FuzzResFilter:
 
 	cond = False
 
+        try:
+            for p, f in re.findall("FUZ(\d*)Z(?:\[(.*?)\])?", value, re.DOTALL):
+                i = int(p) - 1 if p else 0
+                if f:
+                    newvalue = self.res.payload[i].get_field(f)
+                else:
+                    newvalue = self.res.payload[i]
+
+                value = value.replace("FUZ%sZ" % (p,), newvalue)
+        except IndexError:
+            raise FuzzException(FuzzException.FATAL, "Non existent FUZZ payload! Use a correct index.")
+        except TypeError:
+            raise FuzzException(FuzzException.FATAL, "Using a complete fuzzresult as a filter, specify field or use string.")
+        except AttributeError:
+            raise FuzzException(FuzzException.FATAL, "A field must be used with a fuzzresult not a string.")
+
 	if adv_element == 'intext':
 	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
 	    cond = False

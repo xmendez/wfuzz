@@ -472,11 +472,14 @@ class FuzzResultFactory:
 	for payload_pos, payload_content in enumerate(payload, start=1):
 	    fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
 
+            newres.payload.append(payload_content)
+
             # substitute entire seed when using a request payload generator without specifying field
             if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ/" and isinstance(payload_content, FuzzResult):
                 # new seed
                 newres = payload_content
 
+                newres.payload = [payload_content]
                 newres.history.update_from_options(seed_options)
                 rawReq = str(newres.history)
                 rawUrl = newres.history.redirect_url
@@ -552,6 +555,7 @@ class FuzzResultFactory:
 
         baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
 	baseline_res.is_baseline = True
+        baseline_res.payload = baseline_payload
 
 	return baseline_res
 
@@ -574,6 +578,7 @@ class FuzzResultFactory:
 	    payload_content = payload[0]
 	    fuzzres = FuzzResult(seed.from_copy())
 	    fuzzres.description = variable + "=" + payload_content
+            fuzzres.payload.append(payload_content)
 
             seed.wf_allvars_set = (variable, payload_content)
 
@@ -696,6 +701,8 @@ class FuzzResult:
 	self.plugins_res = []
 	self.plugins_backfeed = []
 
+        self.payload = []
+
     def update(self, exception = None):
         self.type = FuzzResult.result
 
@@ -767,6 +774,7 @@ class FuzzResult:
 	fr.is_visible = self.is_visible
 	fr.type = self.type
         fr.rlevel = self.rlevel
+        fr.payload = list(self.payload)
 
         return fr
 
