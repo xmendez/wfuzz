@@ -19,16 +19,19 @@ class FuzzResFilter:
 	    element = oneOf("c code l lines w words h chars i index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
+	    operator = oneOf("and or")
+	    not_operator = oneOf("not")
+	    keywords = Word("0123456789") | oneOf("XXX BBB")
+
             filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
             special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
             sed_element = Suppress("replace(") + filter_element + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(")"))
-	    keywords = Word("0123456789") | oneOf("XXX BBB")
+
 	    elementRef = Group(element + oneOf("= != < > >= <=") + keywords)
 	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    filterRef = Group(filter_element + oneOf("= != ~") + QuotedString('\'', unquoteResults=True, escChar='\\'))
-	    operator = oneOf("and or")
-	    not_operator = oneOf("not")
 	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
+
 	    definition = sed_element ^ filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool ^ special_element + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef ^ special_element)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
