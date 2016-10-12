@@ -16,38 +16,40 @@ except ImportError:
 class FuzzResFilter:
     def __init__(self, ffilter = None, filter_string = None):
 	if PYPARSING:
-	    element = oneOf("c code l lines w words h chars i index")
-	    adv_element = oneOf("intext inurl site inheader filetype")
-	    adv_element_bool = oneOf("hasquery ispath")
+	    basic_symbol = oneOf("c code l lines w words h chars i index")
+	    adv_symbol = oneOf("intext inurl site inheader filetype")
+	    adv_symbol_bool = oneOf("hasquery ispath")
+            fuzz_symbol = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
 
+            field_element = Suppress(Literal("FUZ")) + Optional(Word("0123456789"), 0) +  Suppress(Literal("Z")) + Optional(Suppress(Literal("[")) + Word( alphanums + "." ) + Suppress(Literal("]")), "")
+            quoted_str_element = QuotedString('\'', unquoteResults=True, escChar='\\')
+            quoted_str_element_opt = Word(alphanums)| quoted_str_element
+
+	    basic_symbol_values = Word("0123456789") | oneOf("XXX BBB")
+            adv_symbol_values = field_element | quoted_str_element_opt
+
+            unique_operator = Suppress("unique(") + fuzz_symbol + Suppress(Literal(")"))
+            sed_operator = Suppress("replace(") + fuzz_symbol + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(")"))
 	    operator = oneOf("and or")
 	    not_operator = oneOf("not")
 
-	    element_values = Word("0123456789") | oneOf("XXX BBB")
-            field_element = Suppress(Literal("FUZ")) + Optional(Word("0123456789"), 0) +  Suppress(Literal("Z")) + Optional(Suppress(Literal("[")) + Word( alphanums + "." ) + Suppress(Literal("]")), "")
-            adv_element_values = field_element | QuotedString('\'', unquoteResults=True, escChar='\\')
+	    basic_symbol_expr = Group(basic_symbol + oneOf("= != < > >= <=") + basic_symbol_values)
+	    adv_symbol_expr = Group(adv_symbol + oneOf("= !=") + adv_symbol_values)
+	    adv_symbol_bool_expr = Group(Optional(not_operator, "notpresent") + adv_symbol_bool)
+	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != ~") + quoted_str_element_opt)
 
-            filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
-            special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
-            sed_element = Suppress("replace(") + filter_element + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(")"))
-
-	    elementRef = Group(element + oneOf("= != < > >= <=") + element_values)
-	    adv_elementRef = Group(adv_element + oneOf("= !=") + adv_element_values)
-	    filterRef = Group(filter_element + oneOf("= != ~") + QuotedString('\'', unquoteResults=True, escChar='\\'))
-	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
-
-	    definition = sed_element ^ filterRef ^ adv_elementRef ^ elementRef ^ adv_elementRef_bool ^ special_element + ZeroOrMore( operator + filterRef ^  adv_elementRef ^ adv_elementRef_bool ^ elementRef ^ special_element)
+	    definition = sed_operator ^ fuzz_symbol_expr ^ adv_symbol_expr ^ basic_symbol_expr ^ adv_symbol_bool_expr ^ unique_operator + ZeroOrMore( operator + fuzz_symbol_expr ^  adv_symbol_expr ^ adv_symbol_bool_expr ^ basic_symbol_expr ^ unique_operator)
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
 	    field_element.setParseAction(self.__compute_field_element)
-	    elementRef.setParseAction(self.__compute_element)
-	    adv_elementRef.setParseAction(self.__compute_adv_element)
-	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
-	    filterRef.setParseAction(self.__compute_filter_element)
-	    sed_element.setParseAction(self.__compute_sed_element)
+	    basic_symbol_expr.setParseAction(self.__compute_element)
+	    adv_symbol_expr.setParseAction(self.__compute_adv_element)
+	    adv_symbol_bool_expr.setParseAction(self.__compute_adv_element_bool)
+	    fuzz_symbol_expr.setParseAction(self.__compute_filter_element)
+	    sed_operator.setParseAction(self.__compute_sed_element)
 	    nestedformula.setParseAction(self.__compute_formula)
-	    special_element.setParseAction(self.__compute_special_element)
+	    unique_operator.setParseAction(self.__compute_special_element)
 	    self.finalformula.setParseAction(self.__myreduce)
 
         if ffilter is not None and filter_string is not None:
