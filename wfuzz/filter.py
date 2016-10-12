@@ -31,24 +31,30 @@ class FuzzResFilter:
             unique_operator = Suppress("unique(") + fuzz_symbol + Suppress(Literal(")"))
             sed_operator = Suppress("replace(") + fuzz_symbol + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(")"))
 	    operator = oneOf("and or")
-	    not_operator = oneOf("not")
+	    not_operator = Optional(oneOf("not"), "notpresent")
 
 	    basic_symbol_expr = Group(basic_symbol + oneOf("= != < > >= <=") + basic_symbol_values)
 	    adv_symbol_expr = Group(adv_symbol + oneOf("= !=") + adv_symbol_values)
-	    adv_symbol_bool_expr = Group(Optional(not_operator, "notpresent") + adv_symbol_bool)
 	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != ~") + quoted_str_element_opt)
 
-	    definition = sed_operator ^ fuzz_symbol_expr ^ adv_symbol_expr ^ basic_symbol_expr ^ adv_symbol_bool_expr ^ unique_operator + ZeroOrMore( operator + fuzz_symbol_expr ^  adv_symbol_expr ^ adv_symbol_bool_expr ^ basic_symbol_expr ^ unique_operator)
-	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
-	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
+            definition = sed_operator | fuzz_symbol_expr | adv_symbol_expr | basic_symbol_expr | adv_symbol_bool | unique_operator
+            definition_not = not_operator + definition
+	    definition_expr = definition_not + ZeroOrMore( operator + definition_not)
 
+	    nested_definition = Group(Suppress(Optional(Literal("("))) + definition_expr + Suppress(Optional(Literal(")"))))
+	    nested_definition_not = not_operator + nested_definition
+
+	    self.finalformula = nested_definition_not + ZeroOrMore( operator + nested_definition_not)
+
+	    definition_not.setParseAction(self.__compute_not_operator)
+	    nested_definition_not.setParseAction(self.__compute_not_operator)
 	    field_element.setParseAction(self.__compute_field_element)
 	    basic_symbol_expr.setParseAction(self.__compute_element)
 	    adv_symbol_expr.setParseAction(self.__compute_adv_element)
-	    adv_symbol_bool_expr.setParseAction(self.__compute_adv_element_bool)
+	    adv_symbol_bool.setParseAction(self.__compute_adv_element_bool)
 	    fuzz_symbol_expr.setParseAction(self.__compute_filter_element)
 	    sed_operator.setParseAction(self.__compute_sed_element)
-	    nestedformula.setParseAction(self.__compute_formula)
+	    nested_definition.setParseAction(self.__compute_formula)
 	    unique_operator.setParseAction(self.__compute_special_element)
 	    self.finalformula.setParseAction(self.__myreduce)
 
@@ -115,13 +121,15 @@ class FuzzResFilter:
 
 
     def __compute_adv_element_bool(self, tokens):
-	operator, adv_element = tokens[0]
+	adv_element = tokens[0]
 
 	cond = False
 
 	if adv_element == 'hasquery':
 	    if self.res.history.urlparse.query:
 		cond = True
+
+        return cond
 
     def __compute_field_element(self, tokens):
 	i, field = tokens
@@ -223,6 +231,14 @@ class FuzzResFilter:
 		first = (first or elements[i+1])
 
 	return first
+
+    def __compute_not_operator(self, tokens):
+        operator, value = tokens
+
+        if operator == "not":
+            return not value
+
+	return value
 
     def __compute_formula(self, tokens):
 	return self.__myreduce(tokens[0])
