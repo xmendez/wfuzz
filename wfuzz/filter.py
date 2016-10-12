@@ -3,6 +3,7 @@ from .fuzzobjects import FuzzResult
 
 import re
 import collections
+import urllib
 
 
 PYPARSING = True
@@ -27,6 +28,7 @@ class FuzzResFilter:
 
 	    basic_symbol_values = Word("0123456789") | oneOf("XXX BBB")
             adv_symbol_values = field_element | quoted_str_element_opt
+            unquote_operator = Optional("unquote(", "notpresent") + adv_symbol_values + Optional(Suppress(Literal(")")))
 
             unique_operator = Suppress("unique(") + fuzz_symbol + Suppress(Literal(")"))
             sed_operator = Suppress("replace(") + fuzz_symbol + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(")"))
@@ -34,7 +36,7 @@ class FuzzResFilter:
 	    not_operator = Optional(oneOf("not"), "notpresent")
 
 	    basic_symbol_expr = Group(basic_symbol + oneOf("= != < > >= <=") + basic_symbol_values)
-	    adv_symbol_expr = Group(adv_symbol + oneOf("= !=") + adv_symbol_values)
+	    adv_symbol_expr = Group(adv_symbol + oneOf("= !=") + unquote_operator)
 	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != ~") + quoted_str_element_opt)
 
             definition = sed_operator | fuzz_symbol_expr | adv_symbol_expr | basic_symbol_expr | adv_symbol_bool | unique_operator
@@ -46,6 +48,7 @@ class FuzzResFilter:
 
 	    self.finalformula = nested_definition_not + ZeroOrMore( operator + nested_definition_not)
 
+	    unquote_operator.setParseAction(self.__compute_unquote_operator)
 	    definition_not.setParseAction(self.__compute_not_operator)
 	    nested_definition_not.setParseAction(self.__compute_not_operator)
 	    field_element.setParseAction(self.__compute_field_element)
@@ -100,6 +103,12 @@ class FuzzResFilter:
 
     def __convertIntegers(self, tokens):
 	return int(tokens[0])
+
+    def __compute_unquote_operator(self, tokens):
+        operator, value = tokens
+        if operator == "unquote(":
+            return urllib.unquote(value)
+        return value
 
     def __compute_special_element(self, tokens):
 	special_element = tokens[0]
