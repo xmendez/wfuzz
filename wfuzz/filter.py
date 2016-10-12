@@ -19,16 +19,20 @@ class FuzzResFilter:
 	    element = oneOf("c code l lines w words h chars i index")
 	    adv_element = oneOf("intext inurl site inheader filetype")
 	    adv_element_bool = oneOf("hasquery ispath")
+
 	    operator = oneOf("and or")
 	    not_operator = oneOf("not")
-	    keywords = Word("0123456789") | oneOf("XXX BBB")
+
+	    element_values = Word("0123456789") | oneOf("XXX BBB")
+            field_element = Suppress(Literal("FUZ")) + Optional(Word("0123456789"), 0) +  Suppress(Literal("Z")) + Optional(Suppress(Literal("[")) + Word( alphanums + "." ) + Suppress(Literal("]")), "")
+            adv_element_values = field_element | QuotedString('\'', unquoteResults=True, escChar='\\')
 
             filter_element = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
             special_element = Suppress("unique(") + filter_element + Suppress(Literal(")"))
             sed_element = Suppress("replace(") + filter_element + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(",")) + QuotedString('\'', unquoteResults=True, escChar='\\') + Suppress(Literal(")"))
 
-	    elementRef = Group(element + oneOf("= != < > >= <=") + keywords)
-	    adv_elementRef = Group(adv_element + oneOf("= !=") + QuotedString('\'', unquoteResults=True, escChar='\\'))
+	    elementRef = Group(element + oneOf("= != < > >= <=") + element_values)
+	    adv_elementRef = Group(adv_element + oneOf("= !=") + adv_element_values)
 	    filterRef = Group(filter_element + oneOf("= != ~") + QuotedString('\'', unquoteResults=True, escChar='\\'))
 	    adv_elementRef_bool = Group(Optional(not_operator, "notpresent") + adv_element_bool)
 
@@ -36,6 +40,7 @@ class FuzzResFilter:
 	    nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
 	    self.finalformula = nestedformula + ZeroOrMore( operator + nestedformula)
 
+	    field_element.setParseAction(self.__compute_field_element)
 	    elementRef.setParseAction(self.__compute_element)
 	    adv_elementRef.setParseAction(self.__compute_adv_element)
 	    adv_elementRef_bool.setParseAction(self.__compute_adv_element_bool)
@@ -116,6 +121,16 @@ class FuzzResFilter:
 	    if self.res.history.urlparse.query:
 		cond = True
 
+    def __compute_field_element(self, tokens):
+	i, field = tokens
+
+        try:
+            return self.res.payload[int(i)].get_field(field) if field else self.res.payload[int(i)]
+        except IndexError:
+            raise FuzzException(FuzzException.FATAL, "Non existent FUZZ payload! Use a correct index.")
+        except AttributeError:
+            raise FuzzException(FuzzException.FATAL, "A field expression must be used with a fuzzresult payload not a string.")
+
     def __compute_filter_element(self, tokens):
 	filter_element, operator, value = tokens[0]
 
@@ -135,40 +150,27 @@ class FuzzResFilter:
 	cond = False
 
         try:
-            for p, f in re.findall("FUZ(\d*)Z(?:\[(.*?)\])?", value, re.DOTALL):
-                i = int(p) - 1 if p else 0
-                if f:
-                    newvalue = self.res.payload[i].get_field(f)
-                else:
-                    newvalue = self.res.payload[i]
-
-                value = value.replace("FUZ%sZ" % (p,), newvalue)
-        except IndexError:
-            raise FuzzException(FuzzException.FATAL, "Non existent FUZZ payload! Use a correct index.")
+            if adv_element == 'intext':
+                regex = re.compile(value, re.MULTILINE|re.DOTALL)
+                cond = False
+                if regex.search(self.res.history.content): cond = True
+            elif adv_element == 'inurl':
+                regex = re.compile(value, re.MULTILINE|re.DOTALL)
+                cond = False
+                if regex.search(self.res.url): cond = True
+            elif adv_element == 'filetype':
+                if self.res.history.urlparse.file_extension == value:
+                    cond = True
+            elif adv_element == 'site':
+                if self.res.history.urlparse.netloc.rfind(value) >= 0:
+                    cond = True
+            elif adv_element == 'inheader':
+                regex = re.compile(value, re.MULTILINE|re.DOTALL)
+                cond = False
+                
+                if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
         except TypeError:
             raise FuzzException(FuzzException.FATAL, "Using a complete fuzzresult as a filter, specify field or use string.")
-        except AttributeError:
-            raise FuzzException(FuzzException.FATAL, "A field must be used with a fuzzresult not a string.")
-
-	if adv_element == 'intext':
-	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
-	    cond = False
-	    if regex.search(self.res.history.content): cond = True
-	elif adv_element == 'inurl':
-	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
-	    cond = False
-	    if regex.search(self.res.url): cond = True
-	elif adv_element == 'filetype':
-	    if self.res.history.urlparse.file_extension == value:
-		cond = True
-	elif adv_element == 'site':
-	    if self.res.history.urlparse.netloc.rfind(value) >= 0:
-		cond = True
-	elif adv_element == 'inheader':
-	    regex = re.compile(value, re.MULTILINE|re.DOTALL)
-	    cond = False
-	    
-	    if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
 
 	return cond if operator == "=" else not cond
 
