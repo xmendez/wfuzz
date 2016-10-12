@@ -209,6 +209,8 @@ class FuzzRequest(object):
 
     @url.setter
     def url(self, u):
+        if Facade().sett.get("general","encode_space") == "1":
+            u = u.replace(" ", "%20")
 	self._request.setUrl(u)
 
     @property

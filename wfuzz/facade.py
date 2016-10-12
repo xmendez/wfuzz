@@ -24,7 +24,8 @@ class Settings(SettingsBase):
 		("User-Agent", "Wfuzz/%s" % version)
 	    ],
 	    general=[("default_printer", 'raw'),("cancel_on_plugin_except","1"),
-                ("concurrent_plugins", '3')
+                ("concurrent_plugins", '3'),
+                ("encode_space", '1')
             ],
 	)
 
