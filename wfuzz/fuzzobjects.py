@@ -444,9 +444,10 @@ class FuzzRequest(object):
 class FuzzResultFactory:
     @staticmethod
     def replace_fuzz_word(text, fuzz_word, payload):
-	if isinstance(payload, str):
-		return (text.replace(fuzz_word, payload), [payload])
-	elif isinstance(payload, FuzzResult):
+        marker_regex = re.compile("(%s)(?:\[(.*?)\])?" % (fuzz_word,),re.MULTILINE|re.DOTALL)
+
+        for fw, field in marker_regex.findall(text):
+            if field:
 		marker_regex = re.compile("(%s)(?:\[(.*?)\])?" % (fuzz_word,),re.MULTILINE|re.DOTALL)
 		subs_array = []
 
@@ -454,11 +455,17 @@ class FuzzResultFactory:
                         if not field:
                             raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
-			subs = payload.get_field(field)
+                        try:
+                            subs = payload.get_field(field)
+                        except AttributeError:
+                            raise FuzzException(FuzzException.FATAL, "A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
+
 			text = text.replace("%s[%s]" % (fw, field), subs)
 			subs_array.append(subs)
 
 		return (text, subs_array)
+            else:
+		return (text.replace(fuzz_word, payload), [payload])
 
     @staticmethod
     def from_seed(seed, payload, seed_options):
