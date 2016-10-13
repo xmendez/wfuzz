@@ -452,7 +452,7 @@ class FuzzResultFactory:
 
 		for fw, field in marker_regex.findall(text):
                         if not field:
-                            raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ$url$, or use FUZZ only to repeat the same request.")
+                            raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
 			subs = payload.get_field(field)
 			text = text.replace("%s[%s]" % (fw, field), subs)
