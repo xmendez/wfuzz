@@ -4,6 +4,7 @@ from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
 from .externals.settings.settings import SettingsBase
 from .myhttp import HttpPool
+from .exception import FuzzException
 
 import os
 
