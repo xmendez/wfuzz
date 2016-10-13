@@ -530,8 +530,8 @@ class FuzzResultFactory:
 	auth_method, userpass = fuzzresult.history.auth
 
         # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
-        b1 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", rawReq, re.MULTILINE|re.DOTALL)])
-        b2 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:{(.*?)})?", userpass, re.MULTILINE|re.DOTALL)])
+        b1 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", rawReq, re.MULTILINE|re.DOTALL)])
+        b2 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", userpass, re.MULTILINE|re.DOTALL)])
 	baseline_control = dict(b1.items() + b2.items())
         baseline_payload = map(lambda x: x[1], sorted(baseline_control.items(), key=operator.itemgetter(0)))
 
@@ -555,7 +555,26 @@ class FuzzResultFactory:
 	fuzzresult.history.update_from_raw_http(rawReq, scheme)
 	if auth_method: fuzzresult.history.auth = (auth_method, userpass)
 
-        baseline_res = FuzzResultFactory.from_seed(fuzzresult, baseline_payload, None)
+        # create baseline request from seed
+        baseline_res = fuzzresult.from_soft_copy()
+
+	# remove field markers from baseline
+        marker_regex = re.compile("(FUZ\d*Z)\[(.*?)\]", re.DOTALL)
+        results = marker_regex.findall(rawReq)
+        if results:
+            for fw, f in results:
+                rawReq = rawReq.replace("%s[%s]" % (fw, f), fw)
+
+                if fuzzresult.history.wf_fuzz_methods:
+                    fuzzresult.history.wf_fuzz_methods = fuzzresult.history.wf_fuzz_methods.replace("{" + i + "}", '')
+
+                if auth_method:
+                    userpass = userpass.replace("{" + i + "}", '')
+
+            baseline_res.history.update_from_raw_http(rawReq, scheme)
+
+        baseline_res = FuzzResultFactory.from_seed(baseline_res, baseline_payload, None)
+
 	baseline_res.is_baseline = True
         baseline_res.payload = baseline_payload
 
