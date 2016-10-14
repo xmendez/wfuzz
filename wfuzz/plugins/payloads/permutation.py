@@ -1,19 +1,27 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 import sys
 
 @wfuzz_iterator
-class permutation:
+class permutation(BasePayload):
     name = "permutation"
     description = "Returns permutations of the given charset and length. ie. abc-2"
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange, extra):    ## range example --> "abcdef-4"
+    parameters = (
+        ("ch", "", True, "Charset and len to permute in the form of abc-2.")
+    )
+
+    default_parameter = "ch"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
 	self.charset = []
 
 	try:
-	    ran = prange.split("-")
+	    ran = self.params["ch"].split("-")
 	    self.charset = ran[0]
 	    self.width = int(ran[1])
 	except:

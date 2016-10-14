@@ -3,26 +3,40 @@ import gzip
 
 from wfuzz.exception import FuzzException
 from wfuzz.plugin_api.base import wfuzz_iterator
-from wfuzz.plugin_api.payloadtools import FuzzResPayload
 from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class wfuzzp(FuzzResPayload):
+class wfuzzp(BasePayload):
     name = "wfuzzp"
     description = "Returns fuzz results' URL from a previous stored wfuzz session."
     category = ["default"]
     priority = 99
 
-    def __init__(self, default_param, extra_params):
-	FuzzResPayload.__init__(self, default_param, extra_params)
+    parameters = (
+        ("fn", "", True, "Filename of a valid wfuzz result file."),
+        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+    )
+
+    default_parameter = "fn"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	self.__max = -1
-	self._it = self._gen_wfuzz(default_param)
+        self.attr = self.params["attr"]
+	self._it = self._gen_wfuzz(self.params["fn"])
 
     def __iter__(self):
 	return self
 
     def count(self):
 	return self.__max
+
+    def next(self):
+	next_item = self._it.next()
+
+        return next_item if not self.attr else next_item.get_field(self.attr)
 
     def _gen_wfuzz(self, output_fn):
 	try:

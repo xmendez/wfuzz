@@ -1,18 +1,27 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 import os
 import urllib
 
 
 @wfuzz_iterator
-class dirwalk:
+class dirwalk(BasePayload):
     name = "dirwalk"
     description = "Returns filename's recursively from a local directory. ie. ~/Downloads/umbraco/umbraco/"
     category = ["default"]
     priority = 99
 
-    def __init__(self, directory, extra):
-        self.g = self._my_gen(directory)
+    parameters = (
+        ("dir", "", True, "Directory path to walk and generate payload from."),
+    )
+
+    default_parameter = "dir"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
+        self.g = self._my_gen(self.params["dir"])
 
     def _my_gen(self, directory):
         for root, dirs, fnames in os.walk(directory):

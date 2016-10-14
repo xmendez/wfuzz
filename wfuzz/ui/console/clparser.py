@@ -39,7 +39,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zE=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zP=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -148,7 +148,7 @@ class CLParser:
 
     def _check_options(self, optsd):
 	# Check for repeated flags
-	l = [i for i in optsd if i not in ["-z", "--zE", "-w", "-b", "-H"] and len(optsd[i]) > 1]
+	l = [i for i in optsd if i not in ["-z", "--zP", "-w", "-b", "-H"] and len(optsd[i]) > 1]
 	if l:
 	    raise FuzzException(FuzzException.FATAL, "Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
 
@@ -217,30 +217,50 @@ class CLParser:
 	)
 	'''
 
-	if len(optsd["--zE"]) > len(optsd["-z"]):
-	    raise FuzzException(FuzzException.FATAL, "zE must be preceded by a -z swith.")
+	if len(optsd["--zP"]) > len(optsd["-z"]):
+	    raise FuzzException(FuzzException.FATAL, "zP must be preceded by a -z swith.")
 
-	if len(optsd["--slice"]) > len(optsd["-z"]):
-	    raise FuzzException(FuzzException.FATAL, "slice must be preceded by a -z swith.")
+	if len(optsd["--slice"]) > len(optsd["-z"]) + len(optsd["-w"]):
+	    raise FuzzException(FuzzException.FATAL, "slice must be preceded by a -z or -w switch.")
 
         options["payloads"] = Payload()
 
-	for zpayl, extraparams, sliceit in itertools.izip_longest(optsd["-z"], optsd["--zE"], optsd["--slice"]):
+	for zpayl, extraparams, sliceit in itertools.izip_longest(optsd["-z"], optsd["--zP"], optsd["--slice"]):
+            if not zpayl: break # -w switch
+
 	    vals = zpayl.split(",")
-	    name, params = vals[:2]
+
+            default_param = None
+            params = {}
+
+            if len(vals) >= 2:
+                name, default_param = vals[:2]
+            else:
+                name = vals[0]
+
+            if extraparams: params = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
+            if default_param: params['default'] = default_param
+
             encoders = vals[2] if len(vals) == 3 else None
 
-            options["payloads"].add(name, params, extraparams, encoders, sliceit)
+            if encoders:
+                params['encoder'] = encoders.split("-")
+            elif params.has_key("encoder"):
+                params['encoder'] = params['encoder'].split("-")
+
+            options["payloads"].add(name, params, sliceit)
 
 	# Alias por "-z file,Wordlist"
 	if "-w" in optsd:
-	    for i in optsd["-w"]:
+            for i, sliceit in itertools.izip_longest(optsd["-w"], optsd["--slice"]):
 		vals = i.split(",", 1)
 		f, = vals[:1]
 
-		encoders = vals[1] if len(vals) == 2 else None
+		encoders = vals[1].split("-") if len(vals) == 2 else None
 
-		options["payloads"].add("file", f, None, encoders)
+                params = dict(encoder=encoders, default=f)
+
+		options["payloads"].add("file", params, sliceit)
 
 	if "-m" in optsd:
 	    options["payloads"].iterator = optsd['-m'][0]

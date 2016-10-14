@@ -1,16 +1,25 @@
 from wfuzz.exception import FuzzException
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class range:
+class range(BasePayload):
     name = "range"
     description = "Returns each number of the given range. ie. 0-10"
     category = ["default"]
     priority = 99
 
-    def __init__(self, whatrange, extra):    ## range example --> "23-56"
+    parameters = (
+        ("range", "", True, "Range of numbers in the form 0-10."),
+    )
+
+    default_parameter = "range"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	try:
-	    ran = whatrange.split("-")
+	    ran = self.params["range"].split("-")
 	    self.minimum = int(ran[0])
 	    self.maximum = int(ran[1])
 	    self.__count = self.maximum - self.minimum + 1

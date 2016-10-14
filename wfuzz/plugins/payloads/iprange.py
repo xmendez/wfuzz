@@ -1,21 +1,33 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.exception import FuzzException
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class iprange:
+class iprange(BasePayload):
     name = "iprange"
     description = "Returns list of IP addresses of a given range. ie. 192.168.1.0-192.168.1.12"
     category = ["default"]
     priority = 99
 
-    def __init__(self, whatrange, extra):
+    parameters = (
+        ("iprange", "", True, "IP address range int the form 192.168.1.0-192.168.1.12"),
+    )
+
+    default_parameter = "iprange"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	try:
             from netaddr import IPRange
+            from netaddr.core import AddrFormatError
 
-            ran = whatrange.split("-")
+            ran = self.params["iprange"].split("-")
             net = IPRange(ran[0], ran[1])
             self.f = iter(net)
             self.__count = net.size
+	except AddrFormatError:
+	    raise FuzzException(FuzzException.FATAL, "The specified network range has an incorrect format.")
 	except IndexError:
 	    raise FuzzException(FuzzException.FATAL, "The specified network range has an incorrect format.")
 	except ImportError:

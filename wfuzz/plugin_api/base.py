@@ -92,3 +92,27 @@ def wfuzz_iterator(cls):
     cls.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
 
     return cls
+
+class BasePayload:
+    def __init__(self, params):
+        self.params = params
+
+        # default params
+        if self.params.has_key("default"):
+            self.params[self.default_parameter] = self.params["default"]
+
+            if not self.default_parameter:
+                raise FuzzException(FuzzException.FATAL, "Too many plugin parameters specified")
+
+        # Check for allowed parameters
+        if [k for k in self.params.keys() if k not in map(lambda x: x[0], self.parameters) and k not in ["encoder", "default"]]:
+            raise FuzzException(FuzzException.FATAL, "Plugin %s, unknown parameter specified!" % (self.name))
+
+
+        # check mandatory params, assign default values
+        for name, default_value, required, description in self.parameters:
+            if required and not self.params.has_key(name):
+                raise FuzzException(FuzzException.FATAL, "Plugin %s, missing parameter %s!" % (self.name, name))
+
+            if not self.params.has_key(name):
+                self.params[name] = default_value

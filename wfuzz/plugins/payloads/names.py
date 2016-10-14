@@ -1,18 +1,25 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class names:
+class names(BasePayload):
     name = "names"
     description = "Returns possible usernames by mixing the given words, separated by -, using known typical constructions. ie. jon-smith"
     category = ["default"]
     priority = 99
 
-    def __init__(self, startnames, extra):
-	self.startnames = startnames
-	from sets import Set
+    parameters = (
+        ("name", "", True, "Name and surname in the form of name-surname."),
+    )
+
+    default_parameter = "name"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	possibleusernames = []
 	name = ""
-	llist = self.startnames.split("-")
+	llist = self.params["name"].split("-")
 
 	for x in llist:
 	    if name == "":

@@ -101,10 +101,10 @@ verbose_usage ='''%s\n\nOptions:
 \t--script-args n1=v1,...     : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
 \t
 \t-m iterator		    : Specify an iterator for combining payloads (product by default)
-\t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
+\t-z payload		    : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
-\t--zE <params>		    : Extra arguments for a given payload (it must be preceded by -z).
+\t--zP <params>		    : Arguments for the specified payload (it must be preceded by -z or -w).
 \t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline). It must be preceded by -z. 
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).

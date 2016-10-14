@@ -1,24 +1,36 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.exception import FuzzException
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class ipnet:
+class ipnet(BasePayload):
     name = "ipnet"
     description = "Returns a list of IP addresses of a given network. ie. 192.168.1.0/24"
     category = ["default"]
     priority = 99
 
-    def __init__(self, network, extra):
+    parameters = (
+        ("net", "", True, "Network range in the form ip/mask."),
+    )
+
+    default_parameter = "net"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	try:
             from netaddr import IPNetwork
+            from netaddr.core import AddrFormatError
 
-            net = IPNetwork(u'%s' % network)
+            net = IPNetwork(u'%s' % self.params["net"])
             self.f = net.iter_hosts()
             self.__count = net.size - 2
 
             if self.__count <= 0:
                 raise FuzzException(FuzzException.FATAL, "There are not hosts in the specified network")
 
+	except AddrFormatError:
+	    raise FuzzException(FuzzException.FATAL, "The specified network has an incorrect format.")
 	except ValueError:
 	    raise FuzzException(FuzzException.FATAL, "The specified network has an incorrect format.")
 	except ImportError:

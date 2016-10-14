@@ -1,15 +1,24 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class hexrange:
+class hexrange(BasePayload):
     name = "hexrange"
     description = "Returns each hex number of the given hex range. ie. 00-ff"
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange, extra):    ## range example --> "0-ffa"
+    parameters = (
+        ("range", "", True, "Range of hex numbers to generate in the form of 00-ff."),
+    )
+
+    default_parameter = "range"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	try:
-	    ran = prange.split("-")
+	    ran = self.params["range"].split("-")
 	    self.minimum = int(ran[0],16)
 	    self.maximum = int(ran[1],16)
 	    self.__count = self.maximum - self.minimum + 1

@@ -1,20 +1,29 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 import random
 
 @wfuzz_iterator
-class hexrand:
+class hexrand(BasePayload):
     name = "hexrand"
     description = "Returns random hex numbers."
     category = ["default"]
     priority = 99
 
-    def __init__(self, prange, extra):    ## range example --> "0-ffa"
+    parameters = (
+        ("range", "", True, "Range of hex numbers to randomly generate in the form of 00-ff."),
+    )
+
+    default_parameter = "range"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
 	try:
-	    ran = prange.split("-")
-	    self.minimum=int(ran[0],16)
-	    self.maximum=int(ran[1],16)
-	    self.__count=-1
+	    ran = self.params["range"].split("-")
+	    self.minimum = int(ran[0],16)
+	    self.maximum = int(ran[1],16)
+	    self.__count = -1
 	except:
 	    raise Exception, "Bad range format (eg. \"0-ffa\")"
 	    

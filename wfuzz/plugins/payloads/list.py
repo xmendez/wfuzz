@@ -1,24 +1,33 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class list:
+class list(BasePayload):
     name = "list"
     description = "Returns each element of the given word list separated by -. ie word1-word2"
     category = ["default"]
     priority = 99
 
-    def __init__(self, l, extra):   
-	if l.find("\\") >= 0:
-	    l = l.replace("\\-", "$SEP$")
-	    l = l.replace("\\\\", "$SCAP$")
+    parameters = (
+        ("values", "", True, "Values separated by - to return as a dictionary."),
+    )
 
-	    self.l = l.split("-")
+    default_parameter = "values"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
+	if self.params["values"].find("\\") >= 0:
+            self.params["values"] = self.params["values"].replace("\\-", "$SEP$")
+	    self.params["values"] = self.params["values"].replace("\\\\", "$SCAP$")
+
+	    self.l = self.params["values"].split("-")
 
 	    for i in range(len(self.l)):
 		self.l[i] = self.l[i].replace("$SEP$", "-")
 		self.l[i] = self.l[i].replace("$SCAP$", "\\")
 	else:
-	    self.l = l.split("-")
+	    self.l = self.params["values"].split("-")
 	    
 	self.__count = len(self.l)
 	self.current = 0

@@ -58,26 +58,26 @@ def fuzz(url, payloads, **kwargs):
 
     return Fuzzer(FuzzSession.from_options(FuzzOptions(url=url, payloads=payloads, **kwargs)))
 
-def payload(name, params, encoders = None, extraparams = None, slice = None):
-    """Constructs and sends a :class:`Request <Request>`.
+def payload(name, params, encoders = None, slice = None):
+    """Constructs a :class:`Payload <Payload>`.
 
     :param name: name of the payload
-    :param params: payload params
-    :param encoders: (Optional) payload encoder
-    :param extraparams: (Optional) payload extraparameters
-    :param slice: (Optional) paylosd's filter
-    :return: list containing payload's parameters
+    :param params: payload params in a dictionary
+    :param encoders: (Optional) payload encoder list
+    :param slice: (Optional) paylosd's filter string
+    :return: Payload object
 
-    Usage::
+    Usage:
     
 
       >>> import wfuzz
-      >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', wfuzz.payload("range", "0-10"))
+      >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', wfuzz.payload("range", dict(range="0-10"), ["md5", "sha1"]))
     """
 
+    params['encoder'] = encoders
 
     p = Payload()
-    p.add(name, params, extraparams, encoders, slice)
+    p.add(name, params, slice)
 
     return p
 

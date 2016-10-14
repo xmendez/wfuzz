@@ -1,14 +1,23 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class buffer_overflow:
+class buffer_overflow(BasePayload):
     name = "buffer_overflow"
     description = "Returns a string using the following pattern A * given number."
     category = ["default"]
     priority = 99
 
-    def __init__(self, n, extra):   
-	self.l = ['A' * int(n)]
+    parameters = (
+        ("size", "", True, "Size of the overflow string."),
+    )
+
+    default_parameter = "size"
+
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
+	self.l = ['A' * int(self.params["size"])]
 	self.current = 0
 
     def __iter__(self):

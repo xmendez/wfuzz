@@ -1,24 +1,7 @@
 from wfuzz.exception import FuzzException
 
-import itertools
 import urllib2
 import json
-
-class FuzzResPayload:
-    def __init__(self, default_param, extra_params):
-	self._it = None
-
-	self._attr = None
-	self._params = []
-
-	if extra_params: 
-	    if 'attr' in extra_params:
-		self._attr = extra_params['attr']
-
-    def next(self):
-	next_item = self._it.next()
-
-        return next_item if not self._attr else next_item.get_field(self._attr)
 
 class BingIter:
     def __init__(self, dork, offset = 0, limit = 0, key = None):

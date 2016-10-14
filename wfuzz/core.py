@@ -81,18 +81,18 @@ class Payload():
         self.payloads = []
         self.iterator = iterator
 
-    def add(self, name, params, extraparams = None, encoders = None, slice = None):
-        if extraparams: extraparams = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
-        if encoders: encoders = encoders.split("-")
+    def add(self, name, params, sliceit = None):
+        if not params.has_key("encoder"):
+            params['encoder'] = None
 
-        self.payloads.append((name, params, extraparams, encoders, slice))
+        self.payloads.append((name, params, sliceit))
 
     def to_dictio(self):
         selected_dic = []
 
-        for name, params, extra, encoders, slicestr in self.payloads:
-            p = Facade().get_payload(name)(params, extra)
-            pp = dictionary(p, encoders) if encoders else p
+        for name, params, slicestr in self.payloads:
+            p = Facade().get_payload(name)(params)
+            pp = dictionary(p, params["encoder"]) if params["encoder"] else p
             selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
         if not selected_dic:

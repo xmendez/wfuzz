@@ -1,8 +1,9 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.plugin_api.payloadtools import BingIter
+from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
-class bing:
+class bing(BasePayload):
     '''
     Some examples of bing hacking:
     - http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html
@@ -11,18 +12,22 @@ class bing:
     description = "Returns URL results of a given bing API search (needs api key). ie, intitle:\"JBoss JMX Management Console\"-10"
     category = ["default"]
     priority = 99
-    def __init__(self, default_param, extra):
-	offset = 0
-	limit = 0
 
-	if extra:
-	    if extra.has_key("offset"):
-		offset = int(extra["offset"])
+    parameters = (
+        ("dork", "", True, "Google dork search string.", None),
+        ("offset", "0", False, "Offset index, starting at zero."),
+        ("limit", "0", False, "Number of results. Zero for all."),
+    )
 
-	    if extra.has_key("limit"):
-		limit = int(extra["limit"])
+    default_parameter = "dork"
 
-	self._it = BingIter(default_param, offset, limit)
+    def __init__(self, params):
+        BasePayload.__init__(self, params)
+
+        offset = int(params["offset"])
+        limit = int(params["limit"])
+
+	self._it = BingIter(params["dork"], offset, limit)
 
     def __iter__(self):
 	return self
