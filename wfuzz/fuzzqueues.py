@@ -161,7 +161,7 @@ class SliceQ(FuzzQueue):
 class JobQ(FuzzRRQueue):
     def __init__(self, options, cache):
 	# Get active plugins
-        lplugins = Facade().get_parsers(options.get("script"))
+        lplugins = Facade().scripts.get_plugins(options.get("script"))
 
         if not lplugins:
             raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")

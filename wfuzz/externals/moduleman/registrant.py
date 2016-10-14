@@ -96,7 +96,20 @@ class BRegistrant(IRegistrant):
 	return l
 
     def get_plugin(self, identifier):
-	return self.__plugins[identifier]
+        # strict and fuzzy search
+	if self.__plugins.has_key(identifier):
+            return self.__plugins[identifier]
+        else:
+            l = [plg for plg_id, plg in self.__get_plugins("$all$", True) if identifier in plg_id]
+
+            if not l:
+                raise Exception, "No plugins found!"
+            elif len(l) == 1:
+                return l[0]
+            else:
+                raise Exception, "Multiple plugins found: %s" % ','.join([plg.name for plg in l])
+
+        raise Exception, "No plugins found!"
 
     def get_plugins(self, category="$all$", sorting="true"):
 	return [plg for plg_id, plg in self.__get_plugins(category, sorting)]
@@ -115,4 +128,9 @@ class BRegistrant(IRegistrant):
     def get_plugins_ids(self, category="$all$", sorting="true"):
 	return [plg_id for plg_id, plg in self.__get_plugins(category, sorting)]
 
+
+class MulRegistrant(BRegistrant):
+    def load(self):
+        for l in self.loader:
+            l.load(self)
 

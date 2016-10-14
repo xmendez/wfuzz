@@ -63,7 +63,7 @@ class dictionary:
 		    if name.find('@') > 0:
 			string = pl
 			for i in reversed(name.split("@")):
-			    string = Facade().get_encoder(i).encode(string)
+			    string = Facade().encoders.get_plugin(i).encode(string)
 			yield string
 		    else:
 			l = Facade().encoders.get_plugins(name)
@@ -91,7 +91,7 @@ class Payload():
         selected_dic = []
 
         for name, params, slicestr in self.payloads:
-            p = Facade().get_payload(name)(params)
+            p = Facade().payloads.get_plugin(name)(params)
             pp = dictionary(p, params["encoder"]) if params["encoder"] else p
             selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
@@ -101,9 +101,9 @@ class Payload():
         if len(selected_dic) == 1:
             return tupleit(selected_dic[0])
         elif self.iterator:
-            return Facade().get_iterator(self.iterator)(*selected_dic)
+            return Facade().iterators.get_plugin(self.iterator)(*selected_dic)
         else:
-            return Facade().get_iterator("product")(*selected_dic)
+            return Facade().iterator.get_plugin("product")(*selected_dic)
 
 class requestGenerator:
 	def __init__(self, options):

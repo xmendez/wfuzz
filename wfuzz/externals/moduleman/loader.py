@@ -37,8 +37,9 @@ class FileLoader(IModuleLoader):
 	filepath, filename = os.path.split(filename)
 
 	fn = os.path.splitext(filename)[0]
-	identifier = filepath.split(self.base_path)[1][1:] + '/' + fn + '/' + objname
-	if identifier.startswith('/'): identifier = identifier[1:]
+        relative_path = os.path.relpath(filepath, os.path.join(self.base_path, self.base_dir))
+	identifier = relative_path + '/' + objname
+	if identifier.startswith('./'): identifier = identifier[2:]
 
 	return identifier
 	

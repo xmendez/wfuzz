@@ -119,7 +119,7 @@ class CLParser:
 	    if script_string == "":
 		script_string = "$all$"
 
-	    self.show_plugins_help("parsers", 2, script_string)
+	    self.show_plugins_help("scripts", 2, script_string)
 
 	if "-e" in optsd:
 	    if "payloads" in optsd["-e"]:
@@ -131,7 +131,7 @@ class CLParser:
 	    elif "printers" in optsd["-e"]:
 		self.show_plugins_help("printers")
 	    elif "scripts" in optsd["-e"]:
-		self.show_plugins_help("parsers", 2)
+		self.show_plugins_help("scripts", 2)
 	    else:
 		raise FuzzException(FuzzException.FATAL, "Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
 
@@ -398,7 +398,7 @@ class CLParser:
             else:
                 filename, printer = vals
 
-            options["printer"] = Facade().get_printer(printer)(filename)
+            options["printer"] = Facade().printers.get_plugin(printer)(filename)
                 
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]

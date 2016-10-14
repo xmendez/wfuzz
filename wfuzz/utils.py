@@ -1,16 +1,17 @@
-'''
-Created on 20/01/2011
-v0.2 (C) Gerald Storer
-MIT License
-Based on JSON.minify.js:
-https://github.com/getify/JSON.minify
-Contributers:
- - Pradyun S. Gedam (conditions and variable names changed)
-'''
-
 import re
+import os
 
 def json_minify(string, strip_space=True):
+    '''
+    Created on 20/01/2011
+    v0.2 (C) Gerald Storer
+    MIT License
+    Based on JSON.minify.js:
+    https://github.com/getify/JSON.minify
+    Contributers:
+    - Pradyun S. Gedam (conditions and variable names changed)
+    '''
+
     tokenizer = re.compile('"|(/\*)|(\*/)|(//)|\n|\r')
     end_slashes_re = re.compile(r'(\\)*$')
 
@@ -85,3 +86,19 @@ class Singleton(type):
     def hasInstance(class_):
         ''' Has the (only) instance been created already? '''
         return hasattr(class_, 'instance')
+
+
+def get_home(check = False, directory = None):
+    path = os.path.join(os.path.expanduser("~"), ".wfuzz")
+    if check:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    return os.path.join(path, directory) if directory else path
+
+def get_path(directory = None):
+    abspath = os.path.abspath(__file__)
+    ret = os.path.dirname(abspath)
+
+    return os.path.join(ret, directory) if directory else ret
+

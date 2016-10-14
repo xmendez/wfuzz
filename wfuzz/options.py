@@ -205,12 +205,12 @@ class FuzzSession:
 		    if value[0] == "+":
 			value = value[1:]
 
-			Facade().parsers.kbase.add(k, v + "-" + value)
+			Facade().scripts.kbase.add(k, v + "-" + value)
 		    else:
-			Facade().parsers.kbase.add(k, value)
+			Facade().scripts.kbase.add(k, value)
 
 		else:
-		    Facade().parsers.kbase.add(k, v)
+		    Facade().scripts.kbase.add(k, v)
 
 	# grl options
 	if options["save"]:
