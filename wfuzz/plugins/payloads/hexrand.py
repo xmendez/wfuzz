@@ -6,7 +6,10 @@ import random
 @wfuzz_iterator
 class hexrand(BasePayload):
     name = "hexrand"
-    description = "Returns random hex numbers."
+    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    version = "0.1"
+    description = ()
+    summary = "Returns random hex numbers from the given range."
     category = ["default"]
     priority = 99
 

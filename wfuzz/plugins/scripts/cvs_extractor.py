@@ -12,7 +12,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class cvs_extractor(DiscoveryPlugin):
     name = "cvs_extractor"
-    description = "Parses CVS/Entries file. Optional: discovery.bl=\".txt,.gif\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Parses CVS/Entries file. Optional: discovery.bl=\".txt,.gif\""
     category = ["default", "active", "discovery"]
     priority = 99
 

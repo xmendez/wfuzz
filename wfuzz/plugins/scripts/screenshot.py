@@ -8,7 +8,9 @@ import pipes
 @moduleman_plugin
 class screenshot(BasePlugin):
     name = "screenshot"
-    description = "Performs a screen capture using linux cutycapt tool"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Performs a screen capture using linux cutycapt tool"
     category = ["active"]
     priority = 99
     

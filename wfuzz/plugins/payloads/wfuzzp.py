@@ -9,7 +9,14 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class wfuzzp(BasePayload):
     name = "wfuzzp"
-    description = "Returns fuzz results' URL from a previous stored wfuzz session."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ("This payload uses pickle.",
+    "Warning: The pickle module is not intended to be secure against erroneous or maliciously constructed data.",
+    "Never unpickle data received from an untrusted or unauthenticated source.",
+    "See: https://blog.nelhage.com/2011/03/exploiting-pickle/", 
+    )
+    summary = "Returns fuzz results' URL from a previous stored wfuzz session."
     category = ["default"]
     priority = 99
 

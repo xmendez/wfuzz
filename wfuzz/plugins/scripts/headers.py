@@ -5,7 +5,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class headers(BasePlugin):
     name = "headers"
-    description = "Looks for server headers"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Looks for server headers"
     category = ["default", "passive"]
     priority = 99
 

@@ -1,5 +1,5 @@
 def moduleman_plugin(*args):
-    method_args = ["name", "description", "priority", "category"]
+    method_args = ["name", "summary", "priority", "category", "author", "version"]
 
     def inner_decorator(cls):
 	for method in method_args:

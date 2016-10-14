@@ -5,7 +5,10 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class file(BasePayload):
     name = "file"
-    description = "Returns each word from a file."
+    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    version = "0.1"
+    description = ()
+    summary = "Returns each word from a file."
     category = ["default"]
     priority = 99
 

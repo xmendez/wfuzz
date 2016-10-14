@@ -4,7 +4,10 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class hexrange(BasePayload):
     name = "hexrange"
-    description = "Returns each hex number of the given hex range. ie. 00-ff"
+    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    version = "0.1"
+    description = ()
+    summary = "Returns each hex number of the given hex range."
     category = ["default"]
     priority = 99
 

@@ -4,7 +4,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class cookies(BasePlugin):
     name = "cookies"
-    description = "Looks for new cookies"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Looks for new cookies"
     category = ["default", "passive"]
     priority = 99
 

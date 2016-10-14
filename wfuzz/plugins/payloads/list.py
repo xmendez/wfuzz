@@ -4,7 +4,10 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class list(BasePayload):
     name = "list"
-    description = "Returns each element of the given word list separated by -. ie word1-word2"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ("ie word1-word2")
+    summary = "Returns each element of the given word list separated by -."
     category = ["default"]
     priority = 99
 

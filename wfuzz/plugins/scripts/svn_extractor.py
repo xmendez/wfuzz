@@ -10,7 +10,9 @@ import sqlite3
 @moduleman_plugin
 class svn_extractor(DiscoveryPlugin):
     name = "svn_extractor"
-    description = "Parses .svn/entries file. Optional: discovery.bl=\".txt,.gif\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Parses .svn/entries file. Optional: discovery.bl=\".txt,.gif\""
     category = ["default", "active", "discovery"]
     priority = 99
 
@@ -58,7 +60,9 @@ class svn_extractor(DiscoveryPlugin):
 @moduleman_plugin
 class wcdb_extractor(DiscoveryPlugin):
     name = "wc_extractor"
-    description = "Parses subversion's wc.db file. Optional: discovery.bl=\".txt,.gif\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Parses subversion's wc.db file. Optional: discovery.bl=\".txt,.gif\""
     category = ["default", "active", "discovery"]
     priority = 99
 

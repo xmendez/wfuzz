@@ -6,7 +6,10 @@ import sys
 @wfuzz_iterator
 class stdin(BasePayload):
     name = "stdin"
-    description = "Returns each item read from stdin."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ()
+    summary = "Returns each item read from stdin."
     category = ["default"]
     priority = 99
 

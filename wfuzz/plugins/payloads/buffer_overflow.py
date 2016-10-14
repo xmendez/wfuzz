@@ -4,7 +4,10 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class buffer_overflow(BasePayload):
     name = "buffer_overflow"
-    description = "Returns a string using the following pattern A * given number."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ()
+    summary = "Returns a string using the following pattern A * given number."
     category = ["default"]
     priority = 99
 

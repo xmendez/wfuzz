@@ -7,7 +7,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class grep(BasePlugin):
     name = "grep"
-    description = "Extracts the given pattern from the HTTP response. Parameters: grep.regex=\"<exp>\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Extracts the given pattern from the HTTP response. Parameters: grep.regex=\"<exp>\""
     category = ["passive"]
     priority = 99
 

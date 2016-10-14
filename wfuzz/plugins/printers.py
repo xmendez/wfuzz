@@ -8,7 +8,9 @@ from wfuzz.plugin_api.base import BasePrinter
 @moduleman_plugin("header", "footer", "result")
 class magictree(BasePrinter):
     name = "magictree"
-    description = "Prints results in magictree format"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Prints results in magictree format"
     category = ["default"]
     priority = 99
 
@@ -89,7 +91,9 @@ class magictree(BasePrinter):
 @moduleman_plugin("header", "footer", "result")
 class html(BasePrinter):
     name = "html"
-    description = "Prints results in html format"
+    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    version = "0.1"
+    summary = "Prints results in html format"
     category = ["default"]
     priority = 99
 
@@ -126,7 +130,9 @@ class html(BasePrinter):
 @moduleman_plugin("header", "footer", "result")
 class json(BasePrinter):
     name = "json"
-    description = "Results in json format"
+    summary = "Results in json format"
+    author = ("Federico (@misterade)",)
+    version = "0.1"
     category = ["default"]
     priority = 99
 
@@ -163,7 +169,9 @@ class json(BasePrinter):
 @moduleman_plugin("header", "footer", "result")
 class raw(BasePrinter):
     name = "raw"
-    description = "Raw output format"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Raw output format"
     category = ["default"]
     priority = 99
 

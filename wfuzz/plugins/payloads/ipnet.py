@@ -5,7 +5,10 @@ from wfuzz.plugin_api.base import BasePayload
 @wfuzz_iterator
 class ipnet(BasePayload):
     name = "ipnet"
-    description = "Returns a list of IP addresses of a given network. ie. 192.168.1.0/24"
+    author = "Xavi Mendez (@xmendez)"
+    version = "0.1"
+    description = ("ie. 192.168.1.0/24", "Requires: netaddr module")
+    summary = "Returns filename's recursively from a local directory."
     category = ["default"]
     priority = 99
 

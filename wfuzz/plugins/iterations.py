@@ -6,7 +6,9 @@ import itertools
 @wfuzz_iterator
 class zip:
     name = "zip"
-    description = "Returns an iterator that aggregates elements from each of the iterables."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Returns an iterator that aggregates elements from each of the iterables."
     category = ["default"]
     priority = 99
 
@@ -26,7 +28,9 @@ class zip:
 @wfuzz_iterator
 class product:
     name = "product"
-    description = "Returns an iterator cartesian product of input iterables."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Returns an iterator cartesian product of input iterables."
     category = ["default"]
     priority = 99
 
@@ -46,7 +50,9 @@ class product:
 @wfuzz_iterator
 class chain:
     name = "chain"
-    description = "Returns an iterator returns elements from the first iterable until it is exhausted, then proceeds to the next iterable, until all of the iterables are exhausted."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Returns an iterator returns elements from the first iterable until it is exhausted, then proceeds to the next iterable, until all of the iterables are exhausted."
     category = ["default"]
     priority = 99
 

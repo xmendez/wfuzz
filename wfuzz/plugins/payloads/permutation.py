@@ -6,7 +6,10 @@ import sys
 @wfuzz_iterator
 class permutation(BasePayload):
     name = "permutation"
-    description = "Returns permutations of the given charset and length. ie. abc-2"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ()
+    summary = "Returns permutations of the given charset and length."
     category = ["default"]
     priority = 99
 

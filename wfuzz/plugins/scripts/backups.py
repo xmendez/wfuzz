@@ -6,7 +6,9 @@ from urlparse import urljoin
 @moduleman_plugin
 class backups(BasePlugin):
     name = "backups"
-    description = "Looks for knowb backup filenames."
+    summary = "Looks for knowb backup filenames."
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
     category = ["default", "active", "discovery"]
     priority = 99
 

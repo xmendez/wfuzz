@@ -6,7 +6,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class errors(BasePlugin):
     name = "errors"
-    description = "Looks for error messages"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Looks for error messages"
     category = ["default", "passive"]
     priority = 99
 

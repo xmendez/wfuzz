@@ -9,9 +9,15 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class robots(DiscoveryPlugin):
     name = "robots"
-    description = "Parses robots.txt looking for new content. Optional: discovery.bl=\".txt,.gif\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Parses robots.txt looking for new content. Optional: discovery.bl=\".txt,.gif\""
     category = ["default", "active", "discovery"]
     priority = 99
+
+    parameters = (
+        ("bl", "", False, "Range of numbers in the form 0-10."),
+    )
 
     def validate(self, fuzzresult):
 	return fuzzresult.history.urlparse.file_fullname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')

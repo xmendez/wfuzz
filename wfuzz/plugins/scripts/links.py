@@ -8,7 +8,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class links(DiscoveryPlugin):
     name = "links"
-    description = "Parses HTML looking for new content. Optional: discovery.bl=\".txt,.gif\""
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Parses HTML looking for new content. Optional: discovery.bl=\".txt,.gif\""
     category = ["default", "active", "discovery"]
     priority = 99
 

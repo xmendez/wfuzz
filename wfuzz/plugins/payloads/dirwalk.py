@@ -8,7 +8,10 @@ import urllib
 @wfuzz_iterator
 class dirwalk(BasePayload):
     name = "dirwalk"
-    description = "Returns filename's recursively from a local directory. ie. ~/Downloads/umbraco/umbraco/"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    description = ()
+    summary = "Returns filename's recursively from a local directory."
     category = ["default"]
     priority = 99
 

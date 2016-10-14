@@ -102,10 +102,10 @@ class BRegistrant(IRegistrant):
 	return [plg for plg_id, plg in self.__get_plugins(category, sorting)]
 
     def get_plugins_ext(self, category="$all$", sorting="true"):
-	l = [['Id', 'Priority', 'Category', 'Name', 'Description']]
+	l = [['Id', 'Priority', 'Category', 'Name', 'Summary']]
 
 	for plg_id, plg in self.__get_plugins(category, sorting):
-	    l.append([plg_id, str(plg.priority), ', '.join(plg.category), str(plg.name), str(plg.description) ])
+	    l.append([plg_id, str(plg.priority), ', '.join(plg.category), str(plg.name), str(plg.summary) ])
 
 	return l
 

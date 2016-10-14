@@ -6,7 +6,9 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 @moduleman_plugin
 class listing(BasePlugin):
     name = "listing"
-    description = "Looks for directory listing vulnerabilities"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Looks for directory listing vulnerabilities"
     category = ["default", "passive"]
     priority = 99
 
