@@ -11,8 +11,15 @@ import os
 version = "2.2"
 
 class Settings(SettingsBase):
+    def get_home(self):
+        path = os.path.join(os.path.expanduser("~"), ".wfuzz")
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        return path
+
     def get_config_file(self):
-	return "wfuzz.ini"
+        return os.path.join(self.get_home(), "wfuzz.ini")
 
     def set_defaults(self):
 	return dict(
