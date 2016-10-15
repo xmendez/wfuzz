@@ -655,7 +655,7 @@ class FuzzStats:
 	self.backfeed = MyCounter()
 	self.filtered = MyCounter()
 
-	self._totaltime = 0
+	self.totaltime = 0
 	self.__starttime = 0
 
 	self._cancelled = False
