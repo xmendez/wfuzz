@@ -74,11 +74,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	raise NotImplemented
 
     def _throw(self, e):
-	if isinstance(e, FuzzException):
-	    self.send_first(FuzzResult.to_new_exception(e))
-	else:
-	    msg = "%s\n\n%s" %(str(e), traceback.format_exc())
-	    self.send_first(FuzzResult.to_new_exception(FuzzException(FuzzException.FATAL, msg)))
+        self.send_first(FuzzResult.to_new_exception(e))
 
     def get_stats(self):
         return {self.get_name(): self.qsize()}
