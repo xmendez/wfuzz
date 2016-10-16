@@ -245,7 +245,7 @@ class CLParser:
 
             if encoders:
                 params['encoder'] = encoders.split("-")
-            elif params.has_key("encoder"):
+            elif "encoder" in params:
                 params['encoder'] = params['encoder'].split("-")
 
             options["payloads"].add(name, params, sliceit)

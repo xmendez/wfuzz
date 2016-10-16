@@ -97,7 +97,7 @@ class BRegistrant(IRegistrant):
 
     def get_plugin(self, identifier):
         # strict and fuzzy search
-	if self.__plugins.has_key(identifier):
+	if identifier in self.__plugins:
             return self.__plugins[identifier]
         else:
             l = [plg for plg_id, plg in self.__get_plugins("$all$", True) if identifier in plg_id]

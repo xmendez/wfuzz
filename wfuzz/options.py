@@ -97,7 +97,7 @@ class FuzzOptions(UserDict):
         # fixme!
 
 	try:
-	    if js['version'] == "0.1" and js.has_key('wfuzz_recipe'):
+	    if js['version'] == "0.1" and 'wfuzz_recipe' in js:
 		for section in js['wfuzz_recipe'].keys():
 		    if section in ['grl_options', 'conn_options', 'seed_options', 'payload_options', 'script_options', 'filter_options']:
 			for k, v in js['wfuzz_recipe'][section].items():
@@ -105,7 +105,7 @@ class FuzzOptions(UserDict):
 
 			# fix pycurl error when using unicode url
 			if section == 'seed_options':
-			    if js['wfuzz_recipe']['seed_options'].has_key('url'):
+			    if "url" in js['wfuzz_recipe']['seed_options']:
 				self.data['seed_options']['url'] = self._convert_from_unicode(js['wfuzz_recipe']['seed_options']['url'])
 		    else:
 			raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
@@ -131,7 +131,7 @@ class FuzzOptions(UserDict):
 		    tmp['wfuzz_recipe'][section][k] = self.data[section][k]
 
 	# don't dump recipe
-	if tmp['wfuzz_recipe'].has_key("recipe"):
+	if "recipe" in tmp['wfuzz_recipe']
 	    del(tmp['wfuzz_recipe']["recipe"])
 	    if len(tmp['wfuzz_recipe']["grl_options"]) == 0:
 		del(tmp['wfuzz_recipe']["grl_options"])
@@ -199,7 +199,7 @@ class FuzzSession:
 
 	if script:
 	    for k, v in Facade().sett.get_section("kbase"):
-		if script_args.has_key(k):
+		if k in script_args:
 		    value = script_args[k]
 
 		    if value[0] == "+":

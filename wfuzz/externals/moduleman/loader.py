@@ -19,9 +19,9 @@ class FileLoader(IModuleLoader):
 	self.__logger = logging.getLogger("libraries.FileLoader")
 
     def set_params(self, **params):
-	if not params.has_key("base_path"):
+	if not "base_path" in params:
 	    return
-	elif not params.has_key("filename"):
+	elif not "filename" in params:
 	    return
 
 	self.filename = params["filename"]
@@ -88,9 +88,9 @@ class DirLoader(FileLoader):
 	self.__logger = logging.getLogger("libraries.DirLoader")
 	
     def set_params(self, **params):
-	if not params.has_key("base_dir"):
+	if not "base_dir" in params:
 	    return
-	elif not params.has_key("base_path"):
+	elif not "base_path" in params:
 	    return
 
 	self.base_dir = params["base_dir"]

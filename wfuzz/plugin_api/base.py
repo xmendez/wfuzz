@@ -98,7 +98,7 @@ class BasePayload:
         self.params = params
 
         # default params
-        if self.params.has_key("default"):
+        if "default" in self.params:
             self.params[self.default_parameter] = self.params["default"]
 
             if not self.default_parameter:
@@ -111,8 +111,8 @@ class BasePayload:
 
         # check mandatory params, assign default values
         for name, default_value, required, description in self.parameters:
-            if required and not self.params.has_key(name):
+            if required and not name in self.params:
                 raise FuzzException(FuzzException.FATAL, "Plugin %s, missing parameter %s!" % (self.name, name))
 
-            if not self.params.has_key(name):
+            if not name in self.params:
                 self.params[name] = default_value

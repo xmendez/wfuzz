@@ -60,7 +60,7 @@ class SettingsBase:
 	# dump entire config file
 	for section in self.cparser.sections():
 	    for option in self.cparser.options(section):
-		if not sett.has_key(section):
+		if not section in sett:
 		    sett[section] = []
 		sett[section].append( (option, self.cparser.get(section, option) ) )
 										  

@@ -76,7 +76,7 @@ class cookies:
 
     @property
     def request(self):
-        if self._req.headers.request.has_key('Cookie'):
+        if 'Cookie' in self._req.headers.request:
             c = self._req.headers.request['Cookie'].split("; ")
             if c[0]:
                 #cc['request'] = dict(map(lambda x: x.split("=", 1), c))

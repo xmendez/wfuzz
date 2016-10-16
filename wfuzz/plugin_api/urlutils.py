@@ -43,7 +43,7 @@ def parse_url(url):
 
 def check_content_type(fuzzresult, which):
     ctype = None
-    if fuzzresult.history.headers.response.has_key('Content-Type'):
+    if 'Content-Type' in fuzzresult.history.headers.response:
 	ctype = fuzzresult.history.headers.response['Content-Type']
 
     if which == 'text':

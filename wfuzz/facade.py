@@ -56,7 +56,7 @@ class Facade:
 
     def _load(self, cat):
 	try:
-	    if not self.__plugins.has_key(cat):
+	    if not cat in self.__plugins:
 		raise FuzzException(FuzzException.FATAL, "Non-existent plugin category %s" % cat)
 
             if not self.__plugins[cat]:

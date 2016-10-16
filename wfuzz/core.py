@@ -82,7 +82,7 @@ class Payload():
         self.iterator = iterator
 
     def add(self, name, params, sliceit = None):
-        if not params.has_key("encoder"):
+        if not "encoder" in params:
             params['encoder'] = None
 
         self.payloads.append((name, params, sliceit))
