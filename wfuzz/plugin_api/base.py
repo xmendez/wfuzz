@@ -44,24 +44,12 @@ class BasePlugin():
     def queue_url(self, url):
 	self.results_queue.put(PluginRequest.from_fuzzRes(self.base_fuzz_res, url, self.name))
 
-    def get_kbase(self, key):
-	v = self.kbase.get(key)
-	if not v:
-	    raise FuzzException(FuzzException.FATAL, "Key not in kbase")
-	return v
-
-    def has_kbase(self, key):
-	return self.kbase.has(key)
-
-    def add_kbase(self, key, value):
-	self.kbase.add(key, value)
-
 # Plugins specializations with common methods useful for their own type
 
 class DiscoveryPlugin(BasePlugin):
     def __init__(self):
 	BasePlugin.__init__(self)
-	self.black_list = self.get_kbase("discovery.blacklist")[0].split("-")
+	self.black_list = self.kbase["discovery.blacklist"][0].split("-")
 
     def blacklisted_extension(self, url):
 	return parse_url(url).file_extension in self.black_list
