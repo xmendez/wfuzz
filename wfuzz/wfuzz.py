@@ -49,6 +49,8 @@ def main():
         if fz: fz.cancel_job()
     except NotImplementedError, e:
         print "\nFatal exception: Error importing wfuzz extensions"
+    except Exception, e:
+        print "\nUnhandled exception: %s" % e.msg
     finally:
         if kb: kb.cancel_job()
         Facade().sett.save()

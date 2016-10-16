@@ -6,8 +6,6 @@ from Queue import Queue
 
 from .exception import FuzzException
 
-from .externals.reqresp.exceptions import ReqRespException
-
 class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
     newid = itertools.count(0).next
@@ -198,29 +196,15 @@ class HttpPool:
 		#Exception in perform (28, 'SSL connection timeout')
 		#5 Couldn't resolve proxy 'aaa'
 
-		err_number = ReqRespException.FATAL
-		if errno == 35:
-		    err_number = ReqRespException.SSL
-		elif errno == 18:
-		    err_number = ReqRespException.SSL
-
-                # non-recoverable errors
-		if errno == 28:
-		    err_number = ReqRespException.TIMEOUT
-		elif errno == 7:
-		    err_number = ReqRespException.CONNECT_HOST
-		elif errno == 6:
-		    err_number = ReqRespException.RESOLVE_HOST
-		elif errno == 5:
-		    err_number = ReqRespException.RESOLVE_PROXY
-                else:
+                # retry requests with recoverable errors
+                if errno not in [28, 7, 6, 5]:
                     res.history.wf_retries += 1
 
                     if res.history.wf_retries < self.retries:
                         self.retrylist.put((res, poolid))
                         continue
 
-		e = ReqRespException(err_number, "Pycurl error %d: %s" % (errno, errmsg))
+		e = FuzzException(FuzzException.FATAL, "Pycurl error %d: %s" % (errno, errmsg))
                 self.pool_map[poolid].put(res.update(exception=e))
 
 		with self.mutex_stats:
