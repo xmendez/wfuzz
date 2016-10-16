@@ -131,7 +131,7 @@ class FuzzOptions(UserDict):
 		    tmp['wfuzz_recipe'][section][k] = self.data[section][k]
 
 	# don't dump recipe
-	if "recipe" in tmp['wfuzz_recipe']
+	if "recipe" in tmp['wfuzz_recipe']:
 	    del(tmp['wfuzz_recipe']["recipe"])
 	    if len(tmp['wfuzz_recipe']["grl_options"]) == 0:
 		del(tmp['wfuzz_recipe']["grl_options"])
