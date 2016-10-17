@@ -103,7 +103,7 @@ class Payload():
         elif self.iterator:
             return Facade().iterators.get_plugin(self.iterator)(*selected_dic)
         else:
-            return Facade().iterator.get_plugin("product")(*selected_dic)
+            return Facade().iterators.get_plugin("product")(*selected_dic)
 
 class requestGenerator:
 	def __init__(self, options):
