@@ -77,6 +77,8 @@ class BRegistrant(IRegistrant):
     def modify_instance(self, module):
         module.kbase = self.kbase
 
+        return module
+
     # ------------------------------------------------
     # plugin management functions
     # ------------------------------------------------
@@ -112,13 +114,13 @@ class BRegistrant(IRegistrant):
             l = [plg for plg_id, plg in self.__get_plugins("$all$", True) if identifier in plg_id]
 
             if not l:
-                raise Exception, "No plugins found!"
+                raise KeyError, "No plugins found!"
             elif len(l) == 1:
                 return l[0]
             else:
-                raise Exception, "Multiple plugins found: %s" % ','.join([plg.name for plg in l])
+                raise KeyError, "Multiple plugins found: %s" % ','.join([plg.name for plg in l])
 
-        raise Exception, "No plugins found!"
+        raise KeyError, "No plugins found!"
 
     def get_plugins(self, category="$all$", sorting="true"):
 	return [plg for plg_id, plg in self.__get_plugins(category, sorting)]

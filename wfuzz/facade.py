@@ -34,7 +34,7 @@ class MyRegistrant(MulRegistrant):
     def get_plugin(self, identifier):
         try:
             return MulRegistrant.get_plugin(self, identifier)
-        except Exception, e:
+        except KeyError, e:
             raise FuzzException(FuzzException.FATAL, str(e))
 
 class Facade:
