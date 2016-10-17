@@ -55,3 +55,4 @@ class links(DiscoveryPlugin):
 			# file path
 			self.queue_url(urljoin(fuzzresult.url, i))
 
+
