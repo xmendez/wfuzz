@@ -26,16 +26,16 @@ class headers(BasePlugin):
 
         if serverh != "":
 	    if not "server" in self.kbase:
-		self.kbase["server"].add(serverh)
+		self.kbase["server"] = serverh
 		self.add_result("Server header first set - " + serverh)
 	    elif serverh not in self.kbase["server"]:
-		self.kbase["server"].add(serverh)
+		self.kbase["server"] = serverh
 		self.add_result("New Server header - " + serverh)
 
         if poweredby != "":
 	    if not "poweredby" in self.kbase:
-		self.kbase["poweredby"].add(poweredby)
+		self.kbase["poweredby"] = poweredby
 		self.add_result("Powered-by header first set - " + poweredby)
 	    elif poweredby not in self.kbase["poweredby"]:
-		self.kbase["poweredby"].add(poweredby)
+		self.kbase["poweredby"] = poweredby
 		self.add_result("New X-Powered-By header - " + poweredby)

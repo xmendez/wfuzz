@@ -1,6 +1,6 @@
 import operator
 from modulefilter import Filter
-from collections import defaultdict
+from collections import defaultdict, MutableMapping
 from threading import Lock
 
 
@@ -25,22 +25,33 @@ class IRegistrant():
     def end_loading(self):
 	raise NotImplemented	
 
-class KnowledgeBase:
-    def __init__(self):
+    def modify_instance(self, module):
+	raise NotImplemented
+
+
+class KnowledgeBase(MutableMapping):
+    def __init__(self, *args, **kwargs):
 	self.__data = defaultdict(list)
-	self.mutex = Lock()
+        self.mutex = Lock()
 
-    def get(self, key):
-	with self.mutex:
-	    return self.__data[key]
+    def __getitem__(self, key):
+        with self.mutex:
+            return self.__data[key]
 
-    def add(self, key, value):
-	with self.mutex:
-	    self.__data[key].append(value)
+    def __setitem__(self, key, value):
+        with self.mutex:
+            self.__data[key].append(value)
 
-    def has(self, key):
-	with self.mutex:
-	    return key in self.__data
+    def __delitem__(self, key):
+        with self.mutex:
+            del self.__data[key]
+
+    def __len__(self):
+        with self.mutex:
+            return len(self.__data)
+
+    def __iter__(self):
+        return iter(self.__data)
 
 class BRegistrant(IRegistrant):
     def __init__(self, loader, plg_filter = Filter()):
@@ -51,7 +62,7 @@ class BRegistrant(IRegistrant):
 	IRegistrant.__init__(self, loader, plg_filter)
 
     def register(self, identifier, module):
-	self.__plugins[identifier] = self._modify_instance(module)
+	self.__plugins[identifier] = self.modify_instance(module)
 	self.__active_plugins[identifier] = True
 
     def load(self):
@@ -63,11 +74,9 @@ class BRegistrant(IRegistrant):
     def end_loading(self):
 	pass
 
-    def _modify_instance(self, module):
-	module.kbase = self.kbase
+    def modify_instance(self, module):
+        module.kbase = self.kbase
 
-	return module
-	
     # ------------------------------------------------
     # plugin management functions
     # ------------------------------------------------

@@ -205,21 +205,21 @@ class FuzzSession:
 		    if value[0] == "+":
 			value = value[1:]
 
-			Facade().scripts.kbase.add(k, v + "-" + value)
+			Facade().scripts.kbase[k] = v + "-" + value
 		    else:
-			Facade().scripts.kbase.add(k, value)
+			Facade().scripts.kbase[k] = value
 
 		else:
-		    Facade().scripts.kbase.add(k, v)
+		    Facade().scripts.kbase[k] = v
 
 	# grl options
 	if options["save"]:
 	    fuzz_options.set("save", options["save"])
 	if options["colour"]:
-	    Facade().printers.kbase.add("colour", True)
+	    Facade().printers.kbase["colour"] = True
             fuzz_options.set("colour", options["colour"])
 	if options["verbose"]:
-	    Facade().printers.kbase.add("verbose", True)
+	    Facade().printers.kbase["verbose"] = True
             fuzz_options.set("verbose", options["verbose"])
 
 	fuzz_options.set("printer", options["printer"])
