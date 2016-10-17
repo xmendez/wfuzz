@@ -12,7 +12,7 @@ from collections import defaultdict
 from .externals.reqresp import Request
 from .exception import FuzzException
 from .facade import Facade
-from .plugin_api.urlutils import parse_url
+from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
 auth_header = namedtuple("auth_header", "method credentials")
 
@@ -147,7 +147,7 @@ class parameters(object):
         else:
             raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
 
-class FuzzRequest(object):
+class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def __init__(self):
 	self._request = Request()
 
@@ -280,41 +280,7 @@ class FuzzRequest(object):
         else:
             raise FuzzException(FuzzException.FATAL, "Unknown FuzzResult attribute: %s." % (field,))
 
-    # urlparse functions
-    @property
-    def urlparse(self):
-        return parse_url(self.url)
-
-    @property
-    def is_path(self):
-	if self.code == 200 and self.url[-1] == '/':
-	    return True
-	elif self.code >= 300 and self.code < 400:
-	    if "Location" in self.headers.response and self.headers.response["Location"][-1]=='/':
-		return True
-	elif self.code == 401:
-	    if self.url[-1] == '/':
-		return True
-
-	return False
-
-    @property
-    def recursive_url(self):
-	if self.code >= 300 and self.code < 400 and "Location" in self.headers.response:
-	    new_url = self.headers.response["Location"]
-	    if not new_url[-1] == '/': new_url += "/"
-	    # taking into consideration redirections to /xxx/ without full URL
-	    new_url = urljoin(self.url, new_url)
-	elif self.code == 401 or self.code == 200:
-	    new_url = self.url
-	    if not self.url[-1] == '/': new_url = "/"
-	else:
-	    raise Exception, "Error generating recursive url"
-
-	return new_url + "FUZZ"
-
     # Info extra that wfuzz needs within an HTTP request
-
     @property
     def wf_allvars_set(self):
 	if self.wf_allvars == "allvars":
