@@ -35,7 +35,7 @@ class MyRegistrant(MulRegistrant):
         try:
             return MulRegistrant.get_plugin(self, identifier)
         except KeyError, e:
-            raise FuzzException(FuzzException.FATAL, str(e))
+            raise FuzzException(FuzzException.FATAL, "Requested plugin %s. Error: %s" % (identifier, str(e)))
 
 class Facade:
     __metaclass__ = utils.Singleton 
