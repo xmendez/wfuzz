@@ -1,14 +1,16 @@
-from urlparse import urlparse, urljoin
+from urlparse import urljoin
 
-from wfuzz.plugin_api.base import DiscoveryPlugin
+from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
+from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.exception import FuzzException
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import tempfile
 import sqlite3
 
+
 @moduleman_plugin
-class wcdb_extractor(DiscoveryPlugin):
+class wcdb_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "wc_extractor"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
@@ -56,3 +58,4 @@ class wcdb_extractor(DiscoveryPlugin):
 		u = urljoin(fuzzresult.url.replace("/.svn/wc.db", "/"), f)
 		if self.queue_url(u):
 		    self.add_result("SVN %s source code in %s" % (f, pristine))
+

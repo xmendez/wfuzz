@@ -2,12 +2,13 @@ import re
 from urlparse import urlparse, urljoin
 
 
-from wfuzz.plugin_api.base import DiscoveryPlugin
+from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
+from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.plugin_api.urlutils import check_content_type
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
-class robots(DiscoveryPlugin):
+class robots(BasePlugin, DiscoveryPluginMixin):
     name = "robots"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"

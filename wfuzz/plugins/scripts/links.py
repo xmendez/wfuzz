@@ -1,12 +1,13 @@
 import re
 from urlparse import urlparse, urljoin
 
-from wfuzz.plugin_api.base import DiscoveryPlugin
+from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
+from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.plugin_api.urlutils import parse_url
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
-class links(DiscoveryPlugin):
+class links(BasePlugin, DiscoveryPluginMixin):
     name = "links"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"

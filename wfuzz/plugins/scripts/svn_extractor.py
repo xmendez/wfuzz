@@ -1,10 +1,12 @@
-from urlparse import urlparse, urljoin
+from urlparse import urljoin
 
-from wfuzz.plugin_api.base import DiscoveryPlugin
+from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
+from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.exception import FuzzException
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
-class svn_extractor(DiscoveryPlugin):
+@moduleman_plugin
+class svn_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "svn_extractor"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
