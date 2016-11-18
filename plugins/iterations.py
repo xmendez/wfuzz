@@ -6,24 +6,24 @@ class piterator_void:
     text="void"
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def __init__(self, *i):
-	self._dic = i
-	self.__count = max(map(lambda x:x.count(), i))
-	self.it = self._dic[0]
+        self._dic = i
+        self.__count = max(map(lambda x:x.count(), i))
+        self.it = self._dic[0]
 
     def next(self):
-	return (self.it.next(),)
+        return (self.it.next(),)
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
-	self.it = self._dic[0]
+        for dic in self._dic: 
+            dic.restart()
+        self.it = self._dic[0]
 
     def __iter__(self):
-	self.restart()
-	return self
+        self.restart()
+        return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
 class zip:
@@ -33,24 +33,24 @@ class zip:
     priority = 99
 
     def __init__(self, *i):
-	self._dic = i
-	self.it = itertools.izip(*self._dic)
-	self.__count = max(map(lambda x:x.count(), i))
+        self._dic = i
+        self.it = itertools.izip(*self._dic)
+        self.__count = min(map(lambda x:x.count(), i))  # Only possible match counted.
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
-	self.it = itertools.izip.__init__(self, *self._dic)
+        for dic in self._dic: 
+            dic.restart()
+        self.it = itertools.izip.__init__(self, *self._dic)
 
     def next(self):
-	return self.it.next()
+        return self.it.next()
 
     def __iter__(self):
-	self.restart()
-	return self
+        self.restart()
+        return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
 class product:
@@ -60,24 +60,24 @@ class product:
     priority = 99
 
     def __init__(self, *i):
-	self._dic = i
-	self.it = itertools.product(*self._dic)
-	self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
+        self._dic = i
+        self.it = itertools.product(*self._dic)
+        self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
-	self.it = itertools.product(*self._dic)
+        for dic in self._dic: 
+            dic.restart()
+        self.it = itertools.product(*self._dic)
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def next(self):
-	return self.it.next()
+        return self.it.next()
 
     def __iter__(self):
-	self.restart()
-	return self
+        self.restart()
+        return self
 
 @moduleman_plugin("restart", "count", "next", "__iter__")
 class chain:
@@ -87,21 +87,21 @@ class chain:
     priority = 99
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def __init__(self, *i):
-	self.__count = sum(map(lambda x:x.count(), i))
-	self._dic = i
-	self.it = itertools.chain(*i)
+        self.__count = sum(map(lambda x:x.count(), i))
+        self._dic = i
+        self.it = itertools.chain(*i)
 
     def restart(self):
-	for dic in self._dic: 
-	    dic.restart()
-	self.it = itertools.chain(*self._dic)
+        for dic in self._dic: 
+            dic.restart()
+        self.it = itertools.chain(*self._dic)
 
     def next(self):
-	return (self.it.next(),)
+        return (self.it.next(),)
 
     def __iter__(self):
-	self.restart()
-	return self
+        self.restart()
+        return self
