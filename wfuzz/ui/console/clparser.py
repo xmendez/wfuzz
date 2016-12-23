@@ -251,7 +251,7 @@ class CLParser:
             options["payloads"].add(name, params, sliceit)
 
 	# Alias por "-z file,Wordlist"
-	if "-w" in optsd:
+	if optsd["-w"]:
             for i, sliceit in itertools.izip_longest(optsd["-w"], optsd["--slice"]):
 		vals = i.split(",", 1)
 		f, = vals[:1]
