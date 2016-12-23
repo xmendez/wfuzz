@@ -8,7 +8,7 @@ class iprange(BasePayload):
     author = "Xavi Mendez (@xmendez)"
     version = "0.1"
     description = ("ie. 192.168.1.0-192.168.1.12", "Requires: netaddr module",)
-    summary = "Returns list of IP addresses of a given range."
+    summary = "Returns list of IP addresses of a given IP range."
     category = ["default"]
     priority = 99
 
