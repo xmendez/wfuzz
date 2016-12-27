@@ -138,6 +138,10 @@ class FuzzResFilter:
 	    if self.res.history.urlparse.query:
 		cond = True
 
+	elif adv_element == 'ispath':
+	    if self.res.history.is_path:
+		cond = True
+
         return cond
 
     def __compute_field_element(self, tokens):
