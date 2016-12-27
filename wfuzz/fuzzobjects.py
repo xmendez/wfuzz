@@ -289,8 +289,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 	    return self._request.getPOSTVars()
 	elif self.wf_allvars == "allheaders":
 	    return self._request.getHeaders()
-	else:
-	    return None
+        else:
+            raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + self.wf_allvars)
 
     @wf_allvars_set.setter
     def wf_allvars_set(self, varset):
@@ -564,17 +564,17 @@ class FuzzResultFactory:
 	if len(payload) > 1:
 	    raise FuzzException(FuzzException.FATAL, "Only one payload is allowed when fuzzing all parameters!")
 
-	if len(seed.wf_allvars_set) == 0:
+	if len(seed.history.wf_allvars_set) == 0:
 	    raise FuzzException(FuzzException.FATAL, "No variables on specified variable set: " + seed.wf_allvars)
 
-	for v in seed.wf_allvars_set:
+	for v in seed.history.wf_allvars_set:
 	    variable = v.name
 	    payload_content = payload[0]
-	    fuzzres = FuzzResult(seed.from_copy())
+	    fuzzres = FuzzResult(seed.history.from_copy())
 	    fuzzres.description = variable + "=" + payload_content
             fuzzres.payload.append(payload_content)
 
-            seed.wf_allvars_set = (variable, payload_content)
+            seed.history.wf_allvars_set = (variable, payload_content)
 
 	    yield fuzzres
 

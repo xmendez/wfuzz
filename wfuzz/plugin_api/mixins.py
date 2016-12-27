@@ -1,6 +1,6 @@
 # Plugins specializations with common methods useful for their own type
 
-class DiscoveryPluginMixin(BasePlugin):
+class DiscoveryPluginMixin:
     def __init__(self):
 	BasePlugin.__init__(self)
 	self.black_list = self.kbase["discovery.blacklist"][0].split("-")

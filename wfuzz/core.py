@@ -43,6 +43,10 @@ class tupleit:
     def next(self):
         return (self.parent.next(),)
 
+    def __iter__(self):
+        return self
+
+
 class dictionary:
 	def __init__(self, payload, encoders_list):
 	    self.__payload = payload
