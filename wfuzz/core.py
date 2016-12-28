@@ -80,41 +80,31 @@ class dictionary:
 	def next(self):
 	    return self.__generator.next() if self.__encoders else self.__payload.next()
 
-class Payload():
-    def __init__(self, iterator = None):
-        self.payloads = []
-        self.iterator = iterator
+        @staticmethod
+        def from_options(options):
+            selected_dic = []
 
-    def add(self, name, params, sliceit = None):
-        if not "encoder" in params:
-            params['encoder'] = None
+            for name, params, slicestr in options["payloads"]:
+                p = Facade().payloads.get_plugin(name)(params)
+                pp = dictionary(p, params["encoder"]) if params["encoder"] else p
+                selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
-        self.payloads.append((name, params, sliceit))
+            if not selected_dic:
+                raise FuzzException(FuzzException.FATAL, "Empty dictionary! Check payload and filter")
 
-    def to_dictio(self):
-        selected_dic = []
-
-        for name, params, slicestr in self.payloads:
-            p = Facade().payloads.get_plugin(name)(params)
-            pp = dictionary(p, params["encoder"]) if params["encoder"] else p
-            selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
-
-        if not selected_dic:
-            raise FuzzException(FuzzException.FATAL, "Empty dictionary! Check payload and filter")
-
-        if len(selected_dic) == 1:
-            return tupleit(selected_dic[0])
-        elif self.iterator:
-            return Facade().iterators.get_plugin(self.iterator)(*selected_dic)
-        else:
-            return Facade().iterators.get_plugin("product")(*selected_dic)
+            if len(selected_dic) == 1:
+                return tupleit(selected_dic[0])
+            elif options["iterator"]:
+                return Facade().iterators.get_plugin(options["iterator"])(*selected_dic)
+            else:
+                return Facade().iterators.get_plugin("product")(*selected_dic)
 
 class requestGenerator:
 	def __init__(self, options):
             self.options = options
 	    self.seed = FuzzResultFactory.from_options(options)
 	    self._baseline = FuzzResultFactory.from_baseline(self.seed)
-	    self.dictio = options['payloads'].to_dictio()
+	    self.dictio = dictionary.from_options(self.options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
@@ -127,7 +117,7 @@ class requestGenerator:
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio = self.options['payloads'].to_dictio()
+	    self.dictio = dictionary.from_options(self.options)
 
         def _check_dictio_len(self, element):
             marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)

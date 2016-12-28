@@ -97,45 +97,31 @@ class FuzzOptions(UserDict):
         # fixme!
 
 	try:
-	    if js['version'] == "0.1" and 'wfuzz_recipe' in js:
+	    if js['version'] == "0.2" and 'wfuzz_recipe' in js:
 		for section in js['wfuzz_recipe'].keys():
-		    if section in ['grl_options', 'conn_options', 'seed_options', 'payload_options', 'script_options', 'filter_options']:
-			for k, v in js['wfuzz_recipe'][section].items():
-			    self.data[section][k] = self._convert_from_unicode(v)
-
-			# fix pycurl error when using unicode url
-			if section == 'seed_options':
-			    if "url" in js['wfuzz_recipe']['seed_options']:
-				self.data['seed_options']['url'] = self._convert_from_unicode(js['wfuzz_recipe']['seed_options']['url'])
-		    else:
-			raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
+                    for k, v in js['wfuzz_recipe'].items():
+			    self.data[k] = self._convert_from_unicode(v)
 	    else:
 		raise FuzzException(FuzzException.FATAL, "Unsupported recipe version.")
 	except KeyError:
 	    raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
 
     def export_json(self):
-        # fixme!
-
-
 	tmp = dict(
-	    version = "0.1",
+	    version = "0.2",
 	    wfuzz_recipe = defaultdict(dict)
 	)
 	defaults = self._defaults()
 
 	# Only dump the non-default options
-	for section, d in self.data.items():
-	    for k, v in d.items():
-		if v != defaults[section][k]:
-		    tmp['wfuzz_recipe'][section][k] = self.data[section][k]
+	for k, v in self.data.items():
+            if v != defaults[k]:
+                tmp['wfuzz_recipe'][k] = self.data[k]
 
 	# don't dump recipe
 	if "recipe" in tmp['wfuzz_recipe']:
 	    del(tmp['wfuzz_recipe']["recipe"])
-	    if len(tmp['wfuzz_recipe']["grl_options"]) == 0:
-		del(tmp['wfuzz_recipe']["grl_options"])
-	    
+
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
 
 class FuzzSession:

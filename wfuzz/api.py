@@ -1,4 +1,4 @@
-from .core import Fuzzer, Payload
+from .core import Fuzzer
 from .options import FuzzSession, FuzzOptions
 
 '''
@@ -53,31 +53,7 @@ def fuzz(url, payloads, **kwargs):
     
 
       >>> import wfuzz
-      >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [1,2,3])
+      >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [("range", dict(range="0-10"), ["md5", "sha1"])])
     """
 
     return Fuzzer(FuzzSession.from_options(FuzzOptions(url=url, payloads=payloads, **kwargs)))
-
-def payload(name, params, encoders = None, slice = None):
-    """Constructs a :class:`Payload <Payload>`.
-
-    :param name: name of the payload
-    :param params: payload params in a dictionary
-    :param encoders: (Optional) payload encoder list
-    :param slice: (Optional) paylosd's filter string
-    :return: Payload object
-
-    Usage:
-    
-
-      >>> import wfuzz
-      >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', wfuzz.payload("range", dict(range="0-10"), ["md5", "sha1"]))
-    """
-
-    params['encoder'] = encoders
-
-    p = Payload()
-    p.add(name, params, slice)
-
-    return p
-
