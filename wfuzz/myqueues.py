@@ -196,12 +196,14 @@ class FuzzRRQueue(FuzzListQueue):
 class QueueManager:
     def __init__(self):
         self._queues = collections.OrderedDict()
+        self._lastq = None
 
     def add(self, name, q):
         self._queues[name] = q
 
     def bind(self, lastq):
         l = self._queues.values()
+        self._lastq = lastq
 
         for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
             first.next_queue(second)
@@ -213,27 +215,33 @@ class QueueManager:
     def __getitem__(self, key):
         return self._queues[key]
 
-    def join(self):
-	for q in self._queues.values():
+    def join(self, remove = False):
+	for k, q in self._queues.items():
             q.join()
+            if remove: del(self._queues[k])
 
     def start(self):
-        self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
+        if self._queues:
+            self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def stop(self):
-        self._queues.values()[0].put_last(None)
+        if self._queues:
+            self._queues.values()[0].put_last(None)
     
     def cancel(self):
-	# stop processing pending items
-	for q in self._queues.values():
-	    q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
+        # stop processing pending items
+        for q in self._queues.values():
+            q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
-	# wait for cancel to be processed
-	for q in self._queues.values():
-	    q.join()
+        # wait for cancel to be processed
+        self.join()
 
-	# send None to stop (almost nicely)
-	self._queues.values()[0].put_last(None)
+        # send None to stop (almost nicely)
+        self.stop()
+        self.join(remove=True)
+
+        # send none to stop receiving results
+        self._lastq.put_last(None)
 
     def get_stats(self):
         l = []
