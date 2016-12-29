@@ -124,9 +124,9 @@ class FuzzOptions(UserDict):
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
 
-class FuzzSession:
+class FuzzSession(UserDict):
     def __init__(self):
-	self._values = {
+	self.data = {
 	    "filter": None,
 	    "prefilter": None,
 	    "printer": Facade().sett.get('general', 'default_printer'),
@@ -146,35 +146,29 @@ class FuzzSession:
 	    "save": "",
 	    }
 
-    def set(self, name, value):
-	self._values[name] = value
-
-    def get(self, name):
-	return self._values[name]
-
     @staticmethod
     def from_options(options):
 	fuzz_options = FuzzSession()
 
         # filter options
-	fuzz_options.set("filter", FuzzResFilter.from_options(options))
-	fuzz_options.set("prefilter", FuzzResFilter(filter_string = options['prefilter']))
+	fuzz_options["filter"] = FuzzResFilter.from_options(options)
+	fuzz_options["prefilter"] = FuzzResFilter(filter_string = options['prefilter'])
 
 	# conn options
-	fuzz_options.set('proxies', options["proxies"])
-	fuzz_options.set("conn_delay", options["conn_delay"])
-	fuzz_options.set("req_delay", options["req_delay"])
-	fuzz_options.set("rlevel", options["rlevel"])
-	fuzz_options.set("scanmode", options["scanmode"])
-	fuzz_options.set("delay", options["delay"])
-	fuzz_options.set("concurrent", options["concurrent"])
+	fuzz_options['proxies'] = options["proxies"]
+	fuzz_options["conn_delay"] = options["conn_delay"]
+	fuzz_options["req_delay"] = options["req_delay"]
+	fuzz_options["rlevel"] = options["rlevel"]
+	fuzz_options["scanmode"] = options["scanmode"]
+	fuzz_options["delay"] = options["delay"]
+	fuzz_options["concurrent"] = options["concurrent"]
 
 	# seed
-	fuzz_options.set("genreq", requestGenerator(options))
+	fuzz_options["genreq"] = requestGenerator(options)
 
 	# scripts
 	script = options["script"]
-	fuzz_options.set("script", script)
+	fuzz_options["script"] = script
 
 	try:
 	    script_args = {}
@@ -200,16 +194,16 @@ class FuzzSession:
 
 	# grl options
 	if options["save"]:
-	    fuzz_options.set("save", options["save"])
+	    fuzz_options["save"] = options["save"]
 	if options["colour"]:
 	    Facade().printers.kbase["colour"] = True
-            fuzz_options.set("colour", options["colour"])
+            fuzz_options["colour"] = options["colour"]
 	if options["verbose"]:
 	    Facade().printers.kbase["verbose"] = True
-            fuzz_options.set("verbose", options["verbose"])
+            fuzz_options["verbose"] = options["verbose"]
 
-	fuzz_options.set("printer", options["printer"])
-	fuzz_options.set("interactive", options["interactive"])
-	fuzz_options.set("dryrun", options["dryrun"])
+	fuzz_options["printer"] = options["printer"]
+	fuzz_options["interactive"] = options["interactive"]
+	fuzz_options["dryrun"] = options["dryrun"]
 
 	return fuzz_options

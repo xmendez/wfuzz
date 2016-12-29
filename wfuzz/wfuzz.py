@@ -25,7 +25,7 @@ def main():
         # Create fuzzer's engine
         fz = Fuzzer(session_options)
 
-        if session_options.get("interactive"):
+        if session_options["interactive"]:
             # initialise controller
             try:
                 kb = KeyPress()
@@ -35,7 +35,7 @@ def main():
                 mc = Controller(fz, kb)
                 kb.start()
 
-        printer = View(session_options.get("colour"), session_options.get("verbose"))
+        printer = View(session_options["colour"], session_options["verbose"])
         printer.header(fz.genReq.stats)
 
         for res in fz:
