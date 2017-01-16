@@ -22,11 +22,7 @@ class HttpPool:
 	self.freelist = Queue()
 	self.retrylist = Queue()
 
-	self.th2 = Thread(target=self.__read_multi_stack)
-	self.th2.setName('__read_multi_stack')
-
-	self.th3 = Thread(target=self.__read_retry_queue)
-	self.th3.setName('__read_retry_queue')
+	self.ths = None
 
 	self._proxies = None
 
@@ -36,6 +32,16 @@ class HttpPool:
         self.options = None
         self.retries = retries
 
+    def _start_threads(self):
+        l = []
+
+        for fn in ("_read_multi_stack", "_read_retry_queue"):
+            th = Thread(target=getattr(self, fn))
+            th.setName(fn)
+            l.append(th)
+            th.start()
+
+        return l
 
     def initialize(self, options):
         self.options = options
@@ -44,13 +50,12 @@ class HttpPool:
 	self._create_pool(options.get("concurrent"))
 
 	if options.get("proxies"):
-	    self._proxies = self.__get_next_proxy(options.get("proxies"))
+	    self._proxies = self._get_next_proxy(options.get("proxies"))
 
         # internal pool
         self.default_poolid = self._new_pool()
 
-        self.th3.start()
-	self.th2.start()
+        self.ths = self._start_threads()
 
     def job_stats(self):
 	with self.mutex_stats:
@@ -94,7 +99,7 @@ class HttpPool:
 	with self.mutex_multi:
 	    self.m.add_handle(c)
 
-    def __stop_to_pools(self):
+    def _stop_to_pools(self):
         for p in self.pool_map.keys():
             self.pool_map[p].put(None)
 
@@ -111,8 +116,10 @@ class HttpPool:
 
     def _cleanup(self):
 	self.exit_job = True
+        for th in self.ths:
+            th.join()
 
-    def __get_next_proxy(self, proxy_list):
+    def _get_next_proxy(self, proxy_list):
 	i = 0
 	while 1:
 	    yield proxy_list[i]
@@ -145,7 +152,7 @@ class HttpPool:
 
 	return c
 
-    def __read_retry_queue(self):
+    def _read_retry_queue(self):
 	while not self.exit_job:
             res, poolid = self.retrylist.get()
 
@@ -153,7 +160,7 @@ class HttpPool:
 
             self.enqueue(res, poolid)
 
-    def __read_multi_stack(self):
+    def _read_multi_stack(self):
 	# Check for curl objects which have terminated, and add them to the freelist
 	while not self.exit_job:
 	    with self.mutex_multi:
@@ -210,7 +217,7 @@ class HttpPool:
 		with self.mutex_stats:
 		    self.processed += 1
 
-        self.__stop_to_pools()
+        self._stop_to_pools()
         self.retrylist.put((None, None))
 	# cleanup multi stack
 	for c in self.m.handles:
