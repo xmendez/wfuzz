@@ -4,7 +4,6 @@ from .myqueues import MyPriorityQueue,QueueManager
 from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver
 
 from .externals.reqresp.exceptions import ReqRespException
-from .externals.reqresp.cache import HttpCache
 
 from .fuzzobjects import FuzzResultFactory, FuzzStats
 from .facade import Facade
@@ -167,7 +166,6 @@ class Fuzzer:
     def __init__(self, options):
 	self.genReq = options.get("genreq")
 
-	cache = HttpCache()
 
 	# Create queues
 	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
@@ -188,10 +186,10 @@ class Fuzzer:
             self.qmanager.add("http_receiver", HttpReceiver(options))
 
 	if options.get("script"):
-	    self.qmanager.add("plugins_queue", JobQ(options, cache))
+	    self.qmanager.add("plugins_queue", JobQ(options))
 
 	if options.get("script") or options.get("rlevel") > 0:
-            self.qmanager.add("recursive_queue", RecursiveQ(options, cache))
+            self.qmanager.add("recursive_queue", RecursiveQ(options))
             rq = RoutingQ(options, {
 		FuzzResult.seed: self.qmanager["seed_queue"],
 		FuzzResult.backfeed: self.qmanager["http_queue"]

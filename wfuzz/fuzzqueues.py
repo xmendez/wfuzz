@@ -159,7 +159,7 @@ class SliceQ(FuzzQueue):
             self.stats.pending_fuzz.dec()
 
 class JobQ(FuzzRRQueue):
-    def __init__(self, options, cache):
+    def __init__(self, options):
 	# Get active plugins
         lplugins = Facade().scripts.get_plugins(options.get("script"))
 
@@ -167,7 +167,7 @@ class JobQ(FuzzRRQueue):
             raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
 
         concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
-        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins, cache) for i in range(concurrent)])
+        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins) for i in range(concurrent)])
 
     def get_name(self):
 	return 'JobQ'
@@ -179,11 +179,11 @@ class JobQ(FuzzRRQueue):
 	self.send(item)
 
 class JobMan(FuzzQueue):
-    def __init__(self, options, selected_plugins, cache):
+    def __init__(self, options, selected_plugins):
 	FuzzQueue.__init__(self, options)
 	self.__walking_threads = Queue(20)
 	self.selected_plugins = selected_plugins
-	self.cache = cache
+	self.cache = options.cache
 
     def get_name(self):
 	return 'Jobman'
@@ -232,10 +232,10 @@ class JobMan(FuzzQueue):
 	self.send(res)
 
 class RecursiveQ(FuzzQueue):
-    def __init__(self, options, cache):
+    def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-	self.cache = cache
+	self.cache = options.cache
 	self.max_rlevel = options.get("rlevel")
 
     def get_name(self):

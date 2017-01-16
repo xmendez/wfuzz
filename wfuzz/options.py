@@ -9,6 +9,8 @@ from .utils import json_minify
 from .core import Fuzzer
 from .myhttp import HttpPool
 
+from .externals.reqresp.cache import HttpCache
+
 from UserDict import UserDict
 from collections import defaultdict
 import json
@@ -153,8 +155,12 @@ class FuzzSession(UserDict):
 	    "save": "",
 	    }
 
+        # common objects
+
         self.http_pool = HttpPool(int(Facade().sett.get("connection","retries")))
         self.http_pool.initialize(self)
+
+	self.cache = HttpCache()
 
     @staticmethod
     def from_options(options):
