@@ -725,7 +725,11 @@ class FuzzResult:
             return self.history.get_field(field)
 
     def __str__(self):
-        return "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
+        if self.type == FuzzResult.result:
+            return "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
+        else:
+            return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel")[self.type]
+
 
     # parameters in common with fuzzrequest
     @property
