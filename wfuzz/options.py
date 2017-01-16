@@ -7,6 +7,7 @@ from .core import requestGenerator
 from .utils import json_minify
 
 from .core import Fuzzer
+from .myhttp import HttpPool
 
 from UserDict import UserDict
 from collections import defaultdict
@@ -151,6 +152,9 @@ class FuzzSession(UserDict):
 	    "genreq": None,
 	    "save": "",
 	    }
+
+        self.http_pool = HttpPool(int(Facade().sett.get("connection","retries")))
+        self.http_pool.initialize(self)
 
     @staticmethod
     def from_options(options):

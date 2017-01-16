@@ -3,7 +3,6 @@ from .externals.moduleman.registrant import MulRegistrant
 from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
 from .externals.settings.settings import SettingsBase
-from .myhttp import HttpPool
 from .exception import FuzzException
 
 import os
@@ -51,8 +50,6 @@ class Facade:
         )
 
 	self.sett = Settings()
-
-        self.http_pool = HttpPool(int(self.sett.get("connection","retries")))
 
     def _load(self, cat):
 	try:
