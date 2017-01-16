@@ -57,3 +57,7 @@ def fuzz(url, payloads, **kwargs):
     """
 
     return Fuzzer(FuzzSession.from_options(FuzzOptions(url=url, payloads=payloads, **kwargs)))
+
+
+def session(**kwargs):
+    return FuzzOptions(**kwargs)

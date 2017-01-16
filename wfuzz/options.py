@@ -6,6 +6,8 @@ from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import json_minify
 
+from .core import Fuzzer
+
 from UserDict import UserDict
 from collections import defaultdict
 import json
@@ -123,6 +125,10 @@ class FuzzOptions(UserDict):
 	    del(tmp['wfuzz_recipe']["recipe"])
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
+
+    def fuzz(self, **kwargs):
+        self.data.update(kwargs)
+        return Fuzzer(FuzzSession.from_options(self))
 
 class FuzzSession(UserDict):
     def __init__(self):
