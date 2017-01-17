@@ -166,6 +166,11 @@ class FuzzCompiledSession(UserDict):
     def compile(options):
 	fuzz_options = FuzzCompiledSession()
 
+        # Validate options
+        error = options.validate()
+        if error:
+            raise FuzzException(FuzzException.FATAL, error)
+
         # filter options
 	fuzz_options["filter"] = FuzzResFilter.from_options(options)
 	fuzz_options["prefilter"] = FuzzResFilter(filter_string = options['prefilter'])
