@@ -221,10 +221,8 @@ class Fuzzer:
 
 	# done! (None sent has gone through all queues).
 	if not res:
-	    self.qmanager.stop()
 	    raise StopIteration
         elif res.type == FuzzResult.error:
-            self.cancel_job()
 	    raise res.exception
 
 	return res

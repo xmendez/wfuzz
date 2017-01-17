@@ -29,12 +29,10 @@ class MyPriorityQueue(PriorityQueue):
         self._put_priority(self.max_prio + 1, item)
 
 class FuzzQueue(MyPriorityQueue, Thread):
-    first, last, duplicated, undefined = range(4)
-
     def __init__(self, options, queue_out = None, limit = 0):
         MyPriorityQueue.__init__(self, limit)
 	self.queue_out = queue_out
-        self.type = FuzzQueue.undefined
+        self.duplicated = False
 
         self.stats = options.get("genreq").stats
         self.options = options
@@ -79,11 +77,6 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def get_stats(self):
         return {self.get_name(): self.qsize()}
 
-    def _check_finish(self):
-	if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
-	    self.stats.mark_end()
-	    self.send_last(None)
-
     def run(self):
 	cancelling = False
 
@@ -92,9 +85,8 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
 	    try:
                 if item == None:
-                    if self.type != FuzzQueue.last:
-                        if not self.type == self.duplicated: self.send_last(None)
-                        if not cancelling: self.qout_join()
+                    if not self.duplicated: self.send_last(None)
+                    if not cancelling: self.qout_join()
                     self.task_done()
                     break
                 elif cancelling:
@@ -103,11 +95,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
                 elif item.type == FuzzResult.startseed:
                     self.stats.mark_start()
                 elif item.type == FuzzResult.endseed:
-                    if self.type == FuzzQueue.last:
-                        self.stats.pending_seeds.dec()
-                        self._check_finish()
-                    else:
-                        if not self.type == self.duplicated: self.send_last(item)
+                    if not self.duplicated: self.send_last(item)
                     self.task_done()
                     continue
                 elif item.type == FuzzResult.error:
@@ -116,18 +104,11 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     continue
                 elif item.type == FuzzResult.cancel:
                     cancelling = True
-                    if self.type != FuzzQueue.last: self.send_first(item)
+                    self.send_first(item)
                     self.task_done()
                     continue
 
 		self.process(prio, item)
-
-                if self.type == FuzzQueue.last:
-                    if item.type == FuzzResult.result:
-                        self.stats.processed.inc()
-                        self.stats.pending_fuzz.dec()
-                        if not item.is_visible: self.stats.filtered.inc()
-                    self._check_finish()
 
 		self.task_done()
 	    except Exception, e:
@@ -136,13 +117,67 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
 	self._cleanup()
 
+class LastFuzzQueue(FuzzQueue):
+    def get_name(self):
+        return "LastFuzzQueue"
+
+    def process(self):
+        pass
+
+    def _cleanup(self):
+        self.qmanager.cleanup()
+
+    def run(self):
+	cancelling = False
+
+	while 1:
+	    prio, item = self.get(True, 365 * 24 * 60 * 60)
+
+	    try:
+                self.task_done()
+
+                if item == None:
+                    break
+                elif cancelling:
+                    continue
+                #elif item.type == FuzzResult.startseed:
+                    #self.stats.mark_start()
+                elif item.type == FuzzResult.endseed:
+                    self.stats.pending_seeds.dec()
+                    if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
+                        self.qmanager.stop()
+                    continue
+                elif item.type == FuzzResult.error:
+                    self.qmanager.cancel()
+                    self.send_first(item)
+                    continue
+                elif item.type == FuzzResult.cancel:
+                    cancelling = True
+                    continue
+
+		self.send(item)
+
+                if item.type == FuzzResult.result:
+                    self.stats.processed.inc()
+                    self.stats.pending_fuzz.dec()
+                    if not item.is_visible: self.stats.filtered.inc()
+
+                if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
+                    self.qmanager.stop()
+
+	    except Exception, e:
+		self._throw(e)
+                self.qmanager.cancel()
+
+	self._cleanup()
+
 class FuzzListQueue(FuzzQueue):
     def __init__(self, options, queues_out, limit = 0):
         FuzzQueue.__init__(self, options, queues_out, limit)
 
-	# not to convert a None/Exception to various elements, thus only propagate in one queue
+	# not to propagate a None/Exception to various queueas at the same level, only propagate through one queue
 	for q in self.queue_out[1:]:
-	    q.type = FuzzQueue.duplicated
+	    q.duplicated = True
 
     def send_first(self, item):
 	for q in self.queue_out:
@@ -208,9 +243,10 @@ class QueueManager:
         for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
             first.next_queue(second)
 
-        l[-1].next_queue(lastq) 
-        l[-1].type = FuzzQueue.last
-        l[0].type = FuzzQueue.first
+        sync_queue = LastFuzzQueue(l[-1].options, lastq)
+        sync_queue.qmanager = self
+
+        l[-1].next_queue(sync_queue)
 
     def __getitem__(self, key):
         return self._queues[key]
@@ -227,21 +263,27 @@ class QueueManager:
     def stop(self):
         if self._queues:
             self._queues.values()[0].put_last(None)
+
+    def cleanup(self):
+        if self._queues:
+            self.join(remove=True)
+            self._lastq.put_last(None)
+
+            self._queues = collections.OrderedDict()
+            self._lastq = None
     
     def cancel(self):
-        # stop processing pending items
-        for q in self._queues.values():
-            q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
+        if self._queues:
+            # stop processing pending items
+            for q in self._queues.values():
+                q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
-        # wait for cancel to be processed
-        self.join()
+            # wait for cancel to be processed
+            self.join()
 
-        # send None to stop (almost nicely)
-        self.stop()
-        self.join(remove=True)
-
-        # send none to stop receiving results
-        self._lastq.put_last(None)
+            # send None to stop (almost nicely)
+            self.stop()
+            self.cleanup()
 
     def get_stats(self):
         l = []
