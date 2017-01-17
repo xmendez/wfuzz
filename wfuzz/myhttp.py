@@ -10,8 +10,7 @@ class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
     newid = itertools.count(0).next
 
-    def __init__(self, retries):
-    #def __init__(self, options):
+    def __init__(self, options):
 	self.processed = 0
 
 	self.exit_job = False
@@ -29,8 +28,7 @@ class HttpPool:
         self.pool_map = {}
         self.default_poolid = 0
 
-        self.options = None
-        self.retries = retries
+        self.options = options
 
     def _start_threads(self):
         l = []
@@ -43,14 +41,12 @@ class HttpPool:
 
         return l
 
-    def initialize(self, options):
-        self.options = options
-
+    def initialize(self):
 	# pycurl Connection pool
-	self._create_pool(options.get("concurrent"))
+	self._create_pool(self.options.get("concurrent"))
 
-	if options.get("proxies"):
-	    self._proxies = self._get_next_proxy(options.get("proxies"))
+	if self.options.get("proxies"):
+	    self._proxies = self._get_next_proxy(self.options.get("proxies"))
 
         # internal pool
         self.default_poolid = self._new_pool()
@@ -207,7 +203,7 @@ class HttpPool:
                 if errno not in [28, 7, 6, 5]:
                     res.history.wf_retries += 1
 
-                    if res.history.wf_retries < self.retries:
+                    if res.history.wf_retries < self.options.get("retries"):
                         self.retrylist.put((res, poolid))
                         continue
 

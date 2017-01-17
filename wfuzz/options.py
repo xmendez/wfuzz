@@ -47,6 +47,7 @@ class FuzzSession(UserDict):
             proxies = None,
             conn_delay = int(Facade().sett.get('connection', 'conn_delay')),
             req_delay = int(Facade().sett.get('connection', 'req_delay')),
+            retries = int(Facade().sett.get('connection', 'retries')),
             rlevel = 0,
             scanmode = False,
             delay = None,
@@ -151,14 +152,15 @@ class FuzzCompiledSession(UserDict):
 	    "concurrent": int(Facade().sett.get('connection', 'concurrent')),
 	    "req_delay": int(Facade().sett.get('connection', 'req_delay')),
 	    "conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
+            "retries": int(Facade().sett.get('connection', 'retries')),
 	    "genreq": None,
 	    "save": "",
 	    }
 
         # common objects
 
-        self.http_pool = HttpPool(int(Facade().sett.get("connection","retries")))
-        self.http_pool.initialize(self)
+        self.http_pool = HttpPool(self)
+        self.http_pool.initialize()
 
 	self.cache = HttpCache()
 
@@ -183,6 +185,7 @@ class FuzzCompiledSession(UserDict):
 	fuzz_options["scanmode"] = options["scanmode"]
 	fuzz_options["delay"] = options["delay"]
 	fuzz_options["concurrent"] = options["concurrent"]
+	fuzz_options["retries"] = options["retries"]
 
 	# seed
 	fuzz_options["genreq"] = requestGenerator(options)
