@@ -1,5 +1,5 @@
 from .core import Fuzzer
-from .options import FuzzSession, FuzzOptions
+from .options import FuzzCompiledSession, FuzzSession
 
 '''
 Wfuzz API
@@ -32,8 +32,8 @@ with wfuzz.session() as s:
 def fuzz(url, payloads, **kwargs):
     """Constructs and sends a :class:`Request <Request>`.
 
-    :param url: URL for the new :class:`FuzzOptions` object.
-    :param payload: payload for the new :class:`FuzzOptions` object.
+    :param url: URL for the new :class:`FuzzSession` object.
+    :param payload: payload for the new :class:`FuzzSession` object.
     :param filter: (Optional) filter the shown results with the provided filter string.
     :param prefilter: (Optional) filter the given payload with the provided prefilter string.
     :param hs: (Optional) Hide :class:`FuzzResult` using the provided regex.
@@ -56,8 +56,8 @@ def fuzz(url, payloads, **kwargs):
       >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [("range", dict(range="0-10"), ["md5", "sha1"])])
     """
 
-    return Fuzzer(FuzzSession.from_options(FuzzOptions(url=url, payloads=payloads, **kwargs)))
+    return Fuzzer(FuzzCompiledSession.compile(FuzzSession(url=url, payloads=payloads, **kwargs)))
 
 
 def session(**kwargs):
-    return FuzzOptions(**kwargs)
+    return FuzzSession(**kwargs)

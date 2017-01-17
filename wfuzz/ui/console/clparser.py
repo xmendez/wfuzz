@@ -5,7 +5,7 @@ import itertools
 
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
-from wfuzz.options import FuzzOptions
+from wfuzz.options import FuzzSession
 from wfuzz.exception import FuzzException
 from .common import help_banner
 from .common import usage
@@ -55,7 +55,7 @@ class CLParser:
 	    elif len(args) > 1:
 		raise FuzzException(FuzzException.FATAL, "Too many arguments.")
 
-	    options = FuzzOptions()
+	    options = FuzzSession()
 
 	    # check command line options correctness
 	    self._check_options(optsd)

@@ -16,7 +16,7 @@ from collections import defaultdict
 import json
 import re
 
-class FuzzOptions(UserDict):
+class FuzzSession(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
         self.data.update(kwargs)
@@ -131,9 +131,9 @@ class FuzzOptions(UserDict):
 
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
-        return Fuzzer(FuzzSession.from_options(self))
+        return Fuzzer(FuzzCompiledSession.compile(self))
 
-class FuzzSession(UserDict):
+class FuzzCompiledSession(UserDict):
     def __init__(self):
 	self.data = {
 	    "filter": None,
@@ -163,8 +163,8 @@ class FuzzSession(UserDict):
 	self.cache = HttpCache()
 
     @staticmethod
-    def from_options(options):
-	fuzz_options = FuzzSession()
+    def compile(options):
+	fuzz_options = FuzzCompiledSession()
 
         # filter options
 	fuzz_options["filter"] = FuzzResFilter.from_options(options)

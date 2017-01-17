@@ -6,7 +6,7 @@ import sys
 
 from .core import Fuzzer
 from .facade import Facade
-from .options import FuzzSession
+from .options import FuzzCompiledSession
 from .exception import FuzzException
 
 from .ui.console.mvc import Controller, KeyPress, View
@@ -20,7 +20,7 @@ def main():
 
     try:
         # parse command line 
-        session_options = FuzzSession.from_options(CLParser(sys.argv).parse_cl())
+        session_options = FuzzCompiledSession.compile(CLParser(sys.argv).parse_cl())
 
         # Create fuzzer's engine
         fz = Fuzzer(session_options)
