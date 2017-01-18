@@ -1,5 +1,5 @@
 from .core import Fuzzer
-from .options import FuzzCompiledSession, FuzzSession
+from .options import FuzzSession
 
 '''
 Wfuzz API
@@ -56,7 +56,7 @@ def fuzz(url, payloads, **kwargs):
       >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [("range", dict(range="0-10"), ["md5", "sha1"])])
     """
 
-    return Fuzzer(FuzzCompiledSession.compile(FuzzSession(url=url, payloads=payloads, **kwargs)))
+    return Fuzzer(FuzzSession(url=url, payloads=payloads **kwargs).compile())
 
 
 def session(**kwargs):

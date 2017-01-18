@@ -36,8 +36,6 @@ class FuzzSession(UserDict):
             sw = [],
             sl = [],
             sh = [],
-            filter = "",
-            prefilter = "",
             payloads = None,
             iterator = None,
             printer = None,
@@ -65,6 +63,11 @@ class FuzzSession(UserDict):
             allvars = None,
             script= "",
             script_args = [],
+
+            # these will be compiled
+            genreq = None,
+            filter = "",
+            prefilter = "",
 	)
 
     def validate(self):
@@ -139,7 +142,7 @@ class FuzzSession(UserDict):
         fz = None
 
         try:
-            fz = Fuzzer(FuzzCompiledSession.compile(self))
+            fz = Fuzzer(self.compile())
 
             for f in fz:
                 yield f
@@ -155,80 +158,32 @@ class FuzzSession(UserDict):
     def __exit__(self, *args):
         self.http_pool.deregister()
 
-class FuzzCompiledSession(UserDict):
-    def __init__(self):
-	self.data = {
-	    "filter": None,
-	    "prefilter": None,
-	    "printer": Facade().sett.get('general', 'default_printer'),
-	    "rlevel": 0,
-	    "script": "",
-	    "delay": None,
-	    "proxies": None,
-	    "scanmode": False,
-	    "interactive": False,
-	    "colour": False,
-	    "verbose": False,
-	    "dryrun": False,
-	    "concurrent": int(Facade().sett.get('connection', 'concurrent')),
-	    "req_delay": int(Facade().sett.get('connection', 'req_delay')),
-	    "conn_delay": int(Facade().sett.get('connection', 'conn_delay')),
-            "retries": int(Facade().sett.get('connection', 'retries')),
-	    "genreq": None,
-	    "save": "",
-	    }
-
-        # common objects
-
-        self.http_pool = None
-	self.cache = None
-
-    @staticmethod
-    def compile(options):
-	fuzz_options = FuzzCompiledSession()
-
+    def compile(self):
         # Validate options
-        error = options.validate()
+        error = self.validate()
         if error:
             raise FuzzException(FuzzException.FATAL, error)
 
 
-        fuzz_options.cache = options.cache
-
-        if options.http_pool:
-            fuzz_options.http_pool = options.http_pool
-        else:
-            fuzz_options.http_pool = HttpPool(fuzz_options)
+        if not self.http_pool:
+            self.http_pool = HttpPool(self)
 
         # filter options
-	fuzz_options["filter"] = FuzzResFilter.from_options(options)
-	fuzz_options["prefilter"] = FuzzResFilter(filter_string = options['prefilter'])
-
-	# conn options
-	fuzz_options['proxies'] = options["proxies"]
-	fuzz_options["conn_delay"] = options["conn_delay"]
-	fuzz_options["req_delay"] = options["req_delay"]
-	fuzz_options["rlevel"] = options["rlevel"]
-	fuzz_options["scanmode"] = options["scanmode"]
-	fuzz_options["delay"] = options["delay"]
-	fuzz_options["concurrent"] = options["concurrent"]
-	fuzz_options["retries"] = options["retries"]
+	self.data["filter"] = FuzzResFilter.from_options(self)
+	self.data["prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
 
 	# seed
-	fuzz_options["genreq"] = requestGenerator(options)
+	self.data["genreq"] = requestGenerator(self)
 
-	# scripts
-	script = options["script"]
-	fuzz_options["script"] = script
 
 	try:
 	    script_args = {}
-	    if options['script_args']:
-		script_args = dict(map(lambda x: x.split("=", 1), options['script_args'].split(",")))
+	    if self.data['script_args']:
+		script_args = dict(map(lambda x: x.split("=", 1), self.data['script_args'].split(",")))
 	except ValueError:
 	    raise FuzzException(FuzzException.FATAL, "Incorrect arguments format supplied.")
 
-	if script:
+	if self.data["script"]:
 	    for k, v in Facade().sett.get_section("kbase"):
 		if k in script_args:
 		    value = script_args[k]
@@ -243,18 +198,10 @@ class FuzzCompiledSession(UserDict):
 		else:
 		    Facade().scripts.kbase[k] = v
 
-	# grl options
-	if options["save"]:
-	    fuzz_options["save"] = options["save"]
-	if options["colour"]:
+	if self.data["colour"]:
 	    Facade().printers.kbase["colour"] = True
-            fuzz_options["colour"] = options["colour"]
-	if options["verbose"]:
+
+	if self.data["verbose"]:
 	    Facade().printers.kbase["verbose"] = True
-            fuzz_options["verbose"] = options["verbose"]
 
-	fuzz_options["printer"] = options["printer"]
-	fuzz_options["interactive"] = options["interactive"]
-	fuzz_options["dryrun"] = options["dryrun"]
-
-	return fuzz_options
+        return self
