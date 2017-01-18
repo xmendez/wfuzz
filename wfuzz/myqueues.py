@@ -137,6 +137,7 @@ class LastFuzzQueue(FuzzQueue):
                 self.task_done()
 
                 if item == None:
+                    self.stats.mark_end()
                     break
                 elif cancelling:
                     continue
