@@ -15,18 +15,18 @@ class MyPriorityQueue(PriorityQueue):
 
 	self.max_prio = 0
 
-    def _put_priority(self, prio, item):
+    def _put_priority(self, prio, item, wait):
 	self.max_prio = max(prio, self.max_prio)
-	PriorityQueue.put(self, (prio, item))
+        PriorityQueue.put(self, (prio, item), wait)
 
-    def put(self, item):
-        self._put_priority(item.rlevel, item)
+    def put(self, item, wait = True):
+        self._put_priority(item.rlevel, item, wait)
 
-    def put_first(self, item):
-        self._put_priority(0, item)
+    def put_first(self, item, wait = True):
+        self._put_priority(0, item, wait)
 
-    def put_last(self, item):
-        self._put_priority(self.max_prio + 1, item)
+    def put_last(self, item, wait = True):
+        self._put_priority(self.max_prio + 1, item, wait)
 
 class FuzzQueue(MyPriorityQueue, Thread):
     def __init__(self, options, queue_out = None, limit = 0):
@@ -276,7 +276,7 @@ class QueueManager:
     def cleanup(self):
         if self._queues:
             self.join(remove=True)
-            self._lastq.put_last(None)
+            self._lastq.put_last(None, wait = False)
 
             self._queues = collections.OrderedDict()
             self._lastq = None
