@@ -50,6 +50,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def get_name(self):
 	raise NotImplemented
 
+    def cancel(self):
+	raise NotImplemented
+
     def send_first(self, item):
 	self.queue_out.put_first(item)
 
@@ -103,6 +106,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     self.task_done()
                     continue
                 elif item.type == FuzzResult.cancel:
+                    #self.cancel()
                     cancelling = True
                     self.send_first(item)
                     self.task_done()
@@ -126,6 +130,9 @@ class LastFuzzQueue(FuzzQueue):
 
     def _cleanup(self):
         self.qmanager.cleanup()
+
+    def cancel():
+        pass
 
     def run(self):
 	cancelling = False
@@ -153,6 +160,7 @@ class LastFuzzQueue(FuzzQueue):
                     self.send_first(item)
                     continue
                 elif item.type == FuzzResult.cancel:
+                    #self.cancel()
                     cancelling = True
                     continue
 
@@ -277,6 +285,7 @@ class QueueManager:
         if self._queues:
             # stop processing pending items
             for q in self._queues.values():
+                q.cancel()
                 q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
             # wait for cancel to be processed

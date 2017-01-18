@@ -23,6 +23,9 @@ class SeedQ(FuzzQueue):
     def _cleanup(self):
 	pass
 
+    def cancel(self):
+        self.genReq.stop()
+
     def process(self, prio, item):
 	if item.type == FuzzResult.startseed:
 	    self.genReq.stats.pending_seeds.inc()
@@ -74,6 +77,9 @@ class SaveQ(FuzzQueue):
     def get_name(self):
 	return 'SaveQ'
 
+    def cancel(self):
+        pass
+
     def _cleanup(self):
         self.output_fn.close()
 
@@ -87,6 +93,9 @@ class PrinterQ(FuzzQueue):
 
         self.printer = options.get("printer")
         self.printer.header(self.stats)
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'PrinterQ'
@@ -104,6 +113,9 @@ class RoutingQ(FuzzQueue):
     def __init__(self, options, routes):
 	FuzzQueue.__init__(self, options)
 	self.routes = routes
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'RoutingQ'
@@ -123,6 +135,9 @@ class FilterQ(FuzzQueue):
 
 	self.setName('filter_thread')
 	self.ffilter = options.get("filter")
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'filter_thread'
@@ -145,6 +160,9 @@ class SliceQ(FuzzQueue):
 
 	self.setName('slice_thread')
 	self.ffilter = options.get("prefilter")
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'slice_thread'
@@ -169,6 +187,9 @@ class JobQ(FuzzRRQueue):
         concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
         FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins) for i in range(concurrent)])
 
+    def cancel(self):
+        pass
+
     def get_name(self):
 	return 'JobQ'
 
@@ -184,6 +205,9 @@ class JobMan(FuzzQueue):
 	self.__walking_threads = Queue(20)
 	self.selected_plugins = selected_plugins
 	self.cache = options.cache
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'Jobman'
@@ -238,6 +262,9 @@ class RecursiveQ(FuzzQueue):
 	self.cache = options.cache
 	self.max_rlevel = options.get("rlevel")
 
+    def cancel(self):
+        pass
+
     def get_name(self):
 	return 'RecursiveQ'
 
@@ -289,6 +316,9 @@ class DryRunQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 	self.pause = Event()
 
+    def cancel(self):
+        pass
+
     def get_name(self):
 	return 'DryRunQ'
 
@@ -307,6 +337,9 @@ class HttpQueue(FuzzQueue):
 	self.pause = Event()
 	self.pause.set()
 	self.exit_job = False
+
+    def cancel(self):
+        self.pause.set()
 
     def next_queue(self, q):
         self.queue_out = q
@@ -339,6 +372,9 @@ class HttpQueue(FuzzQueue):
 class HttpReceiver(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
+
+    def cancel(self):
+        pass
 
     def get_name(self):
 	return 'HttpReceiver'

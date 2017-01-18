@@ -231,10 +231,6 @@ class Fuzzer:
 	return dict(self.qmanager.get_stats().items() + self.qmanager["http_queue"].job_stats().items() + self.genReq.stats.get_stats().items())
 
     def cancel_job(self):
-	# stop generating items
-	self.qmanager["http_queue"].pause.set()
-	self.genReq.stop()
-
         self.qmanager.cancel()
 
     def pause_job(self):
