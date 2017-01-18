@@ -6,6 +6,8 @@ from Queue import Queue
 
 from .exception import FuzzException
 
+from .fuzzobjects import FuzzResult
+
 class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
     newid = itertools.count(0).next
@@ -16,6 +18,7 @@ class HttpPool:
 	self.exit_job = False
 	self.mutex_multi = Lock()
 	self.mutex_stats = Lock()
+	self.mutex_reg = Lock()
 
 	self.m = None
 	self.freelist = Queue()
@@ -30,6 +33,8 @@ class HttpPool:
 
         self.options = options
 
+        self._registered = 0
+
     def _start_threads(self):
         l = []
 
@@ -41,7 +46,7 @@ class HttpPool:
 
         return l
 
-    def initialize(self):
+    def _initialize(self):
 	# pycurl Connection pool
 	self._create_pool(self.options.get("concurrent"))
 
@@ -110,10 +115,21 @@ class HttpPool:
 	    self.m.handles.append(c)
 	    self.freelist.put(c)
 
-    def _cleanup(self):
-	self.exit_job = True
-        for th in self.ths:
-            th.join()
+    def cleanup(self):
+        with self.mutex_reg:
+            self._registered -= 1
+
+            if self._registered <= 0:
+                self.exit_job = True
+                for th in self.ths:
+                    th.join()
+
+    def register(self):
+        with self.mutex_reg:
+            self._registered += 1
+
+            if not self.pool_map:
+                self._initialize()
 
     def _get_next_proxy(self, proxy_list):
 	i = 0

@@ -21,6 +21,9 @@ class FuzzSession(UserDict):
 	self.data = self._defaults()
         self.data.update(kwargs)
 
+        self.cache = HttpCache()
+        self.http_pool = None
+
     def _defaults(self):
 	return dict(
             hs = None,
@@ -134,6 +137,14 @@ class FuzzSession(UserDict):
         self.data.update(kwargs)
         return Fuzzer(FuzzCompiledSession.compile(self))
 
+    def __enter__(self):
+        self.http_pool = HttpPool(self)
+        self.http_pool.register()
+        return self
+
+    def __exit__(self, *args):
+        self.http_pool.cleanup()
+
 class FuzzCompiledSession(UserDict):
     def __init__(self):
 	self.data = {
@@ -159,10 +170,8 @@ class FuzzCompiledSession(UserDict):
 
         # common objects
 
-        self.http_pool = HttpPool(self)
-        self.http_pool.initialize()
-
-	self.cache = HttpCache()
+        self.http_pool = None
+	self.cache = None
 
     @staticmethod
     def compile(options):
@@ -172,6 +181,14 @@ class FuzzCompiledSession(UserDict):
         error = options.validate()
         if error:
             raise FuzzException(FuzzException.FATAL, error)
+
+
+        fuzz_options.cache = options.cache
+
+        if options.http_pool:
+            fuzz_options.http_pool = options.http_pool
+        else:
+            fuzz_options.http_pool = HttpPool(fuzz_options)
 
         # filter options
 	fuzz_options["filter"] = FuzzResFilter.from_options(options)

@@ -308,6 +308,11 @@ class HttpQueue(FuzzQueue):
 	self.pause.set()
 	self.exit_job = False
 
+    def next_queue(self, q):
+        self.queue_out = q
+
+        self.http_pool.register()
+
 	th2 = Thread(target=self.__read_http_results)
 	th2.setName('__read_http_results')
 	th2.start()
@@ -316,7 +321,7 @@ class HttpQueue(FuzzQueue):
 	return 'HttpQueue'
 
     def _cleanup(self):
-	self.http_pool.exit_job = True
+	self.http_pool.cleanup()
 	self.exit_job = True
 
     def process(self, prio, obj):
