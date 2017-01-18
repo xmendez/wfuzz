@@ -311,7 +311,7 @@ class HttpQueue(FuzzQueue):
     def next_queue(self, q):
         self.queue_out = q
 
-        self.http_pool.register()
+        self.poolid = self.http_pool.register()
 
 	th2 = Thread(target=self.__read_http_results)
 	th2.setName('__read_http_results')
@@ -321,17 +321,17 @@ class HttpQueue(FuzzQueue):
 	return 'HttpQueue'
 
     def _cleanup(self):
-	self.http_pool.cleanup()
+	self.http_pool.deregister()
 	self.exit_job = True
 
     def process(self, prio, obj):
 	self.pause.wait()
-        self.http_pool.enqueue(obj)
+        self.http_pool.enqueue(obj, self.poolid)
 
     def __read_http_results(self):
         try:
             while not self.exit_job:
-                res = self.http_pool.iter_results().next()
+                res = self.http_pool.iter_results(self.poolid).next()
                 self.send(res)
         except StopIteration:
             pass

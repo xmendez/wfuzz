@@ -143,7 +143,7 @@ class FuzzSession(UserDict):
         return self
 
     def __exit__(self, *args):
-        self.http_pool.cleanup()
+        self.http_pool.deregister()
 
 class FuzzCompiledSession(UserDict):
     def __init__(self):

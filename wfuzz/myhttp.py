@@ -35,17 +35,6 @@ class HttpPool:
 
         self._registered = 0
 
-    def _start_threads(self):
-        l = []
-
-        for fn in ("_read_multi_stack", "_read_retry_queue"):
-            th = Thread(target=getattr(self, fn))
-            th.setName(fn)
-            l.append(th)
-            th.start()
-
-        return l
-
     def _initialize(self):
 	# pycurl Connection pool
 	self._create_pool(self.options.get("concurrent"))
@@ -56,7 +45,14 @@ class HttpPool:
         # internal pool
         self.default_poolid = self._new_pool()
 
-        self.ths = self._start_threads()
+        # create threads
+        self.ths = []
+
+        for fn in ("_read_multi_stack", "_read_retry_queue"):
+            th = Thread(target=getattr(self, fn))
+            th.setName(fn)
+            self.ths.append(th)
+            th.start()
 
     def job_stats(self):
 	with self.mutex_stats:
@@ -74,8 +70,8 @@ class HttpPool:
         item = self.pool_map[poolid].get()
         return item
 
-    def iter_results(self):
-        item = self.pool_map[self.default_poolid].get()
+    def iter_results(self, poolid = None):
+        item = self.pool_map[self.default_poolid if not poolid else poolid].get()
 
         if not item: raise StopIteration
 
@@ -116,13 +112,10 @@ class HttpPool:
 	    self.freelist.put(c)
 
     def cleanup(self):
-        with self.mutex_reg:
-            self._registered -= 1
+        self.exit_job = True
+        for th in self.ths:
+            th.join()
 
-            if self._registered <= 0:
-                self.exit_job = True
-                for th in self.ths:
-                    th.join()
 
     def register(self):
         with self.mutex_reg:
@@ -130,6 +123,16 @@ class HttpPool:
 
             if not self.pool_map:
                 self._initialize()
+                return self.default_poolid
+            else:
+                return self._new_pool()
+
+    def deregister(self):
+        with self.mutex_reg:
+            self._registered -= 1
+
+        if self._registered <= 0:
+            self.cleanup()
 
     def _get_next_proxy(self, proxy_list):
 	i = 0
