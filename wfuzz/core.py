@@ -83,10 +83,14 @@ class dictionary:
         def from_options(options):
             selected_dic = []
 
-            for name, params, slicestr in options["payloads"]:
-                p = Facade().payloads.get_plugin(name)(params)
-                pp = dictionary(p, params["encoder"]) if params["encoder"] else p
-                selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
+            if options["dictio"]:
+                for d in options["dictio"]:
+                    selected_dic.append(d)
+            else:
+                for name, params, slicestr in options["payloads"]:
+                    p = Facade().payloads.get_plugin(name)(params)
+                    pp = dictionary(p, params["encoder"]) if params["encoder"] else p
+                    selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
             if not selected_dic:
                 raise FuzzException(FuzzException.FATAL, "Empty dictionary! Check payload and filter")

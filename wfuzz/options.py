@@ -64,6 +64,8 @@ class FuzzSession(UserDict):
             script= "",
             script_args = [],
 
+            dictio = None,
+
             # these will be compiled
             genreq = None,
             filter = "",
@@ -71,6 +73,9 @@ class FuzzSession(UserDict):
 	)
 
     def validate(self):
+        if self.data['dictio'] and self.data['payloads']:
+	    return "Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified."
+
 	if self.data['rlevel'] > 0 and self.data['dryrun']:
 	    return "Bad usage: Recursion cannot work without making any HTTP request."
 
@@ -80,7 +85,7 @@ class FuzzSession(UserDict):
 	if not self.data['url']:
 	    return "Bad usage: You must specify an URL."
 
-	if self.data['payloads'] is None:
+	if not self.data['payloads'] and not self.data["dictio"]:
 	    return "Bad usage: You must specify a payload."
 
 	if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \

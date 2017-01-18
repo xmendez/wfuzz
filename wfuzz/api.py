@@ -29,7 +29,7 @@ with wfuzz.session() as s:
 
 '''
 
-def fuzz(url, payloads, **kwargs):
+def fuzz(url, **kwargs):
     """Constructs and sends a :class:`Request <Request>`.
 
     :param url: URL for the new :class:`FuzzSession` object.
@@ -56,8 +56,27 @@ def fuzz(url, payloads, **kwargs):
       >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [("range", dict(range="0-10"), ["md5", "sha1"])])
     """
 
-    return Fuzzer(FuzzSession(url=url, payloads=payloads **kwargs).compile())
+    return Fuzzer(FuzzSession(url=url, **kwargs).compile())
 
 
 def session(**kwargs):
     return FuzzSession(**kwargs)
+
+def get_payloads(iterator):
+    class wrapper:
+        def __init__(self, iterator):
+            self._it = iter(iterator)
+
+        def __iter__(self):
+            return self
+
+        def count(self):
+            return -1
+
+        def next(self):
+            return str(self._it.next())
+
+    return FuzzSession(dictio=map(lambda x: wrapper(x), iterator))
+
+def get_payload(iterator):
+    return get_payloads([iterator])
