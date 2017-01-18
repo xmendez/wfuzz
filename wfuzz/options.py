@@ -135,7 +135,17 @@ class FuzzSession(UserDict):
 
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
-        return Fuzzer(FuzzCompiledSession.compile(self))
+
+        fz = None
+
+        try:
+            fz = Fuzzer(FuzzCompiledSession.compile(self))
+
+            for f in fz:
+                yield f
+
+        finally:
+            if fz: fz.cancel_job()
 
     def __enter__(self):
         self.http_pool = HttpPool(self)
