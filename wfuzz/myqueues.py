@@ -4,7 +4,7 @@ import collections
 import itertools
 
 from Queue import PriorityQueue
-from threading import Thread
+from threading import Thread, RLock
 from .exception import FuzzException
 from .fuzzobjects import FuzzResult
 
@@ -241,59 +241,67 @@ class QueueManager:
     def __init__(self):
         self._queues = collections.OrderedDict()
         self._lastq = None
+        self._mutex = RLock()
 
     def add(self, name, q):
         self._queues[name] = q
 
     def bind(self, lastq):
-        l = self._queues.values()
-        self._lastq = lastq
+        with self._mutex:
 
-        for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
-            first.next_queue(second)
+            l = self._queues.values()
+            self._lastq = lastq
 
-        sync_queue = LastFuzzQueue(l[-1].options, lastq)
-        sync_queue.qmanager = self
+            for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
+                first.next_queue(second)
 
-        l[-1].next_queue(sync_queue)
+            sync_queue = LastFuzzQueue(l[-1].options, lastq)
+            sync_queue.qmanager = self
+
+            l[-1].next_queue(sync_queue)
 
     def __getitem__(self, key):
         return self._queues[key]
 
     def join(self, remove = False):
-	for k, q in self._queues.items():
-            q.join()
-            if remove: del(self._queues[k])
+        with self._mutex:
+            for k, q in self._queues.items():
+                q.join()
+                if remove: del(self._queues[k])
 
     def start(self):
-        if self._queues:
-            self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
+        with self._mutex:
+            if self._queues:
+                self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def stop(self):
-        if self._queues:
-            self._queues.values()[0].put_last(None)
+        with self._mutex:
+            if self._queues:
+                self._queues.values()[0].put_last(None)
 
     def cleanup(self):
-        if self._queues:
-            self.join(remove=True)
-            self._lastq.put_last(None, wait = False)
+        with self._mutex:
+            if self._queues:
+                self.join(remove=True)
+                self._lastq.put_last(None, wait = False)
 
-            self._queues = collections.OrderedDict()
-            self._lastq = None
+                self._queues = collections.OrderedDict()
+                self._lastq = None
     
     def cancel(self):
-        if self._queues:
-            # stop processing pending items
-            for q in self._queues.values():
-                q.cancel()
-                q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
+        with self._mutex:
+            if self._queues:
+                # stop processing pending items
+                for q in self._queues.values():
+                    q.cancel()
+                    q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
-            # wait for cancel to be processed
-            self.join()
+                # wait for cancel to be processed
+                self.join()
 
-            # send None to stop (almost nicely)
-            self.stop()
-            self.cleanup()
+                # send None to stop (almost nicely)
+                self.stop()
+                self.cleanup()
 
     def get_stats(self):
         l = []
