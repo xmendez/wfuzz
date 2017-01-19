@@ -187,24 +187,24 @@ class CLParser:
 	    filter_params['filter'] = optsd["--filter"][0]
 
 	if "--hc" in optsd:
-	    filter_params['hc'] = optsd["--hc"][0].split(",")
+	    filter_params['hc'] = map(lambda x: int(x), optsd["--hc"][0].split(","))
 	if "--hw" in optsd:
-	    filter_params['hw'] = optsd["--hw"][0].split(",")
+	    filter_params['hw'] = map(lambda x: int(x), optsd["--hw"][0].split(","))
 	if "--hl" in optsd:
-	    filter_params['hl'] = optsd["--hl"][0].split(",")
+	    filter_params['hl'] = map(lambda x: int(x), optsd["--hl"][0].split(","))
 	if "--hh" in optsd:
-	    filter_params['hh'] = optsd["--hh"][0].split(",")
+	    filter_params['hh'] = map(lambda x: int(x), optsd["--hh"][0].split(","))
 	if "--hs" in optsd:
 	    filter_params['hs'] = optsd["--hs"][0]
 
 	if "--sc" in optsd:
-	    filter_params['sc'] = optsd["--sc"][0].split(",")
+	    filter_params['sc'] = map(lambda x: int(x), optsd["--sc"][0].split(","))
 	if "--sw" in optsd:
-	    filter_params['sw'] = optsd["--sw"][0].split(",")
+	    filter_params['sw'] = map(lambda x: int(x), optsd["--sw"][0].split(","))
 	if "--sl" in optsd:
-	    filter_params['sl'] = optsd["--sl"][0].split(",")
+	    filter_params['sl'] = map(lambda x: int(x), optsd["--sl"][0].split(","))
 	if "--sh" in optsd:
-	    filter_params['sh'] = optsd["--sh"][0].split(",")
+	    filter_params['sh'] = map(lambda x: int(x), optsd["--sh"][0].split(","))
 	if "--ss" in optsd:
 	    filter_params['ss'] = optsd["--ss"][0]
 
