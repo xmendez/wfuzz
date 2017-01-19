@@ -87,7 +87,9 @@ class dictionary:
                 for d in options["dictio"]:
                     selected_dic.append(d)
             else:
-                for name, params, slicestr in options["payloads"]:
+                for payload in options["payloads"]:
+                    name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
+
                     p = Facade().payloads.get_plugin(name)(params)
                     pp = dictionary(p, params["encoder"]) if "encoder" in params else p
                     selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)

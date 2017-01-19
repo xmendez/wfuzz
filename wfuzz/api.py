@@ -29,6 +29,7 @@ with wfuzz.session() as s:
 
 '''
 
+
 def fuzz(url, **kwargs):
     """Constructs and sends a :class:`Request <Request>`.
 
