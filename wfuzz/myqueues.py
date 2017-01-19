@@ -50,8 +50,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def get_name(self):
 	raise NotImplemented
 
+    # Override this method if needed. This will be called just before cancelling the job.
     def cancel(self):
-	raise NotImplemented
+	pass
 
     def send_first(self, item):
 	self.queue_out.put_first(item)
@@ -71,8 +72,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def tjoin(self):
 	Thread.join(self)
 
+    # Override this method if needed. This will be called after job's thread dies.
     def _cleanup(self):
-	raise NotImplemented
+	pass
 
     def _throw(self, e):
         self.send_first(FuzzResult.to_new_exception(e))
@@ -130,9 +132,6 @@ class LastFuzzQueue(FuzzQueue):
 
     def _cleanup(self):
         self.qmanager.cleanup()
-
-    def cancel():
-        pass
 
     def run(self):
 	cancelling = False

@@ -20,9 +20,6 @@ class SeedQ(FuzzQueue):
     def get_name(self):
 	return 'SeedQ'
 
-    def _cleanup(self):
-	pass
-
     def cancel(self):
         self.genReq.stop()
 
@@ -77,9 +74,6 @@ class SaveQ(FuzzQueue):
     def get_name(self):
 	return 'SaveQ'
 
-    def cancel(self):
-        pass
-
     def _cleanup(self):
         self.output_fn.close()
 
@@ -93,9 +87,6 @@ class PrinterQ(FuzzQueue):
 
         self.printer = options.get("printer")
         self.printer.header(self.stats)
-
-    def cancel(self):
-        pass
 
     def get_name(self):
 	return 'PrinterQ'
@@ -114,14 +105,8 @@ class RoutingQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 	self.routes = routes
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'RoutingQ'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, item):
         if item.type in self.routes:
@@ -133,17 +118,10 @@ class FilterQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-	self.setName('filter_thread')
 	self.ffilter = options.get("filter")
-
-    def cancel(self):
-        pass
 
     def get_name(self):
 	return 'filter_thread'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, item):
 	if item.is_baseline:
@@ -158,17 +136,10 @@ class SliceQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-	self.setName('slice_thread')
 	self.ffilter = options.get("prefilter")
-
-    def cancel(self):
-        pass
 
     def get_name(self):
 	return 'slice_thread'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, item):
 	if item.is_baseline or self.ffilter.is_visible(item):
@@ -187,14 +158,8 @@ class JobQ(FuzzRRQueue):
         concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
         FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins) for i in range(concurrent)])
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'JobQ'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, item):
 	self.send(item)
@@ -206,14 +171,8 @@ class JobMan(FuzzQueue):
 	self.selected_plugins = selected_plugins
 	self.cache = options.cache
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'Jobman'
-
-    def _cleanup(self):
-	pass
 
     # ------------------------------------------------
     # threading
@@ -262,14 +221,8 @@ class RecursiveQ(FuzzQueue):
 	self.cache = options.cache
 	self.max_rlevel = options.get("rlevel")
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'RecursiveQ'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, fuzz_res):
 	# Getting results from plugins or directly from http if not activated
@@ -316,14 +269,8 @@ class DryRunQ(FuzzQueue):
 	FuzzQueue.__init__(self, options)
 	self.pause = Event()
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'DryRunQ'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, item):
 	self.send(item)
@@ -373,14 +320,8 @@ class HttpReceiver(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
 
-    def cancel(self):
-        pass
-
     def get_name(self):
 	return 'HttpReceiver'
-
-    def _cleanup(self):
-	pass
 
     def process(self, prio, res):
         if res.exception and not self.options.get("scanmode"):
