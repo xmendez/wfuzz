@@ -91,14 +91,18 @@ class FuzzSession(UserDict):
 	if not self.data['payloads'] and not self.data["dictio"]:
 	    return "Bad usage: You must specify a payload."
 
-	if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
-	 filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"]): 
-	    return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
+        try:
+            if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
+            filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"]): 
+                return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
 
-	if (filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) or \
-	 filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"])) and \
-	 self.data['filter']:
-	    return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
+            if (filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) or \
+            filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"])) and \
+            self.data['filter']:
+                return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
+        except TypeError:
+            return "Bad options: Filter must be specified in the form of [int, ... , int]."
+
 
     # pycurl does not like unicode strings
     def _convert_from_unicode(self, input):
@@ -197,12 +201,16 @@ class FuzzSession(UserDict):
         if not self.http_pool:
             self.http_pool = HttpPool(self)
 
-        # filter options
-	self.data["compiled_filter"] = FuzzResFilter.from_options(self)
-	self.data["compiled_prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
+        try:
+            # filter options
+            self.data["compiled_filter"] = FuzzResFilter.from_options(self)
+            self.data["compiled_prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
 
-	# seed
-	self.data["compiled_genreq"] = requestGenerator(self)
+            # seed
+            self.data["compiled_genreq"] = requestGenerator(self)
+        except Exception, e:
+            raise FuzzException(FuzzException.FATAL, "Bad options supplied: %s" % str(e))
+            
 
 
 	try:
@@ -210,7 +218,7 @@ class FuzzSession(UserDict):
 	    if self.data['script_args']:
 		script_args = dict(map(lambda x: x.split("=", 1), self.data['script_args'].split(",")))
 	except ValueError:
-	    raise FuzzException(FuzzException.FATAL, "Incorrect arguments format supplied.")
+	    raise FuzzException(FuzzException.FATAL, "Script arguments: Incorrect arguments format supplied.")
 
 	if self.data["script"]:
 	    for k, v in Facade().sett.get_section("kbase"):

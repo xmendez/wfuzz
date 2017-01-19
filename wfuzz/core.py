@@ -88,7 +88,13 @@ class dictionary:
                     selected_dic.append(d)
             else:
                 for payload in options["payloads"]:
-                    name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
+                    try:
+                        name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
+                    except ValueError:
+                        raise FuzzException(FuzzException.FATAL, "You must supply a list of payloads in the form of [(name, {params}), ... ]")
+
+                    if not params:
+                        raise FuzzException(FuzzException.FATAL, "You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
                     p = Facade().payloads.get_plugin(name)(params)
                     pp = dictionary(p, params["encoder"]) if "encoder" in params else p
