@@ -89,7 +89,7 @@ class dictionary:
             else:
                 for name, params, slicestr in options["payloads"]:
                     p = Facade().payloads.get_plugin(name)(params)
-                    pp = dictionary(p, params["encoder"]) if params["encoder"] else p
+                    pp = dictionary(p, params["encoder"]) if "encoder" in params else p
                     selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
             if not selected_dic:
