@@ -15,7 +15,7 @@ class SeedQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 	self.delay = options.get("delay")
-	self.genReq = options.get("genreq")
+	self.genReq = options.get("compiled_genreq")
 
     def get_name(self):
 	return 'SeedQ'
@@ -118,7 +118,7 @@ class FilterQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-	self.ffilter = options.get("filter")
+	self.ffilter = options.get("compiled_filter")
 
     def get_name(self):
 	return 'filter_thread'
@@ -136,7 +136,7 @@ class SliceQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-	self.ffilter = options.get("prefilter")
+	self.ffilter = options.get("compiled_prefilter")
 
     def get_name(self):
 	return 'slice_thread'

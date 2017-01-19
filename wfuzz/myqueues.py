@@ -34,7 +34,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self.queue_out = queue_out
         self.duplicated = False
 
-        self.stats = options.get("genreq").stats
+        self.stats = options.get("compiled_genreq").stats
         self.options = options
 
 	Thread.__init__(self)

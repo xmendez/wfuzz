@@ -64,12 +64,15 @@ class FuzzSession(UserDict):
             script= "",
             script_args = [],
 
+            # this is equivalent to payloads but in a different format
             dictio = None,
 
             # these will be compiled
-            genreq = None,
             filter = "",
             prefilter = "",
+            compiled_genreq = None,
+            compiled_filter = None,
+            compiled_prefilter = None,
 	)
 
     def validate(self):
@@ -174,11 +177,11 @@ class FuzzSession(UserDict):
             self.http_pool = HttpPool(self)
 
         # filter options
-	self.data["filter"] = FuzzResFilter.from_options(self)
-	self.data["prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
+	self.data["compiled_filter"] = FuzzResFilter.from_options(self)
+	self.data["compiled_prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
 
 	# seed
-	self.data["genreq"] = requestGenerator(self)
+	self.data["compiled_genreq"] = requestGenerator(self)
 
 
 	try:

@@ -168,7 +168,7 @@ class requestGenerator:
 
 class Fuzzer:
     def __init__(self, options):
-	self.genReq = options.get("genreq")
+	self.genReq = options.get("compiled_genreq")
 
 
 	# Create queues
@@ -179,7 +179,7 @@ class Fuzzer:
 
         self.qmanager.add("seed_queue", SeedQ(options))
 
-        if options.get('prefilter').is_active():
+        if options.get('compiled_prefilter').is_active():
             self.qmanager.add("slice_queue", SliceQ(options))
 
 	if options.get("dryrun"):
@@ -201,7 +201,7 @@ class Fuzzer:
 
             self.qmanager.add("routing_queue", rq)
 
-	if options.get('filter').is_active():
+	if options.get('compiled_filter').is_active():
             self.qmanager.add("filter_queue", FilterQ(options))
 
 	if options.get('save'):
