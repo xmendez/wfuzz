@@ -288,9 +288,7 @@ class HttpQueue(FuzzQueue):
     def cancel(self):
         self.pause.set()
 
-    def next_queue(self, q):
-        self.queue_out = q
-
+    def mystart(self):
         self.poolid = self.http_pool.register()
 
 	th2 = Thread(target=self.__read_http_results)

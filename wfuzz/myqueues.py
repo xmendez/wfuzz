@@ -39,7 +39,6 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
 	Thread.__init__(self)
 	self.setName(self.get_name())
-	self.start()
 
     def next_queue(self, q):
         self.queue_out = q
@@ -53,6 +52,14 @@ class FuzzQueue(MyPriorityQueue, Thread):
     # Override this method if needed. This will be called just before cancelling the job.
     def cancel(self):
 	pass
+
+    # Override this method if needed. This will be called just before starting the job.
+    def mystart(self):
+        pass
+
+    def qstart(self):
+        self.mystart()
+        self.start()
 
     def send_first(self, item):
 	self.queue_out.put_first(item)
@@ -187,6 +194,12 @@ class FuzzListQueue(FuzzQueue):
 	for q in self.queue_out[1:]:
 	    q.duplicated = True
 
+    def qstart(self):
+	for q in self.queue_out:
+            q.mystart()
+            q.start()
+        self.start()
+
     def send_first(self, item):
 	for q in self.queue_out:
 	    q.put_first(item)
@@ -240,6 +253,7 @@ class QueueManager:
     def __init__(self):
         self._queues = collections.OrderedDict()
         self._lastq = None
+        self._syncq = None
         self._mutex = RLock()
 
     def add(self, name, q):
@@ -254,10 +268,11 @@ class QueueManager:
             for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
                 first.next_queue(second)
 
-            sync_queue = LastFuzzQueue(l[-1].options, lastq)
-            sync_queue.qmanager = self
+            self._syncq = LastFuzzQueue(l[-1].options, lastq)
+            self._syncq.qmanager = self
 
-            l[-1].next_queue(sync_queue)
+
+            l[-1].next_queue(self._syncq)
 
     def __getitem__(self, key):
         return self._queues[key]
@@ -271,6 +286,10 @@ class QueueManager:
     def start(self):
         with self._mutex:
             if self._queues:
+                self._syncq.qstart()
+                for q in self._queues.values():
+                    q.qstart()
+
                 self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def stop(self):
