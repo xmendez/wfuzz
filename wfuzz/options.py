@@ -158,6 +158,27 @@ class FuzzSession(UserDict):
         finally:
             if fz: fz.cancel_job()
 
+    def get_payloads(self, iterator):
+        class wrapper:
+            def __init__(self, iterator):
+                self._it = iter(iterator)
+
+            def __iter__(self):
+                return self
+
+            def count(self):
+                return -1
+
+            def next(self):
+                return str(self._it.next())
+
+        self.data["dictio"] = map(lambda x: wrapper(x), iterator)
+
+        return self
+
+    def get_payload(self, iterator):
+        return self.get_payloads([iterator])
+
     def __enter__(self):
         self.http_pool = HttpPool(self)
         self.http_pool.register()
