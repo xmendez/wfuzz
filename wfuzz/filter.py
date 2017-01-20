@@ -1,4 +1,4 @@
-from .exception import FuzzException
+from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError
 from .fuzzobjects import FuzzResult
 
 import re
@@ -62,7 +62,7 @@ class FuzzResFilter:
 	    self.finalformula.setParseAction(self.__myreduce)
 
         if ffilter is not None and filter_string is not None:
-            raise FuzzException(FuzzException.FATAL, "A filter must be initilized with a filter string or an object, not both")
+            raise FuzzExceptInternalError(FuzzException.FATAL, "A filter must be initilized with a filter string or an object, not both")
 
 	self.res = None
         if ffilter:
@@ -150,9 +150,9 @@ class FuzzResFilter:
         try:
             return self.res.payload[int(i)].get_field(field) if field else self.res.payload[int(i)]
         except IndexError:
-            raise FuzzException(FuzzException.FATAL, "Non existent FUZZ payload! Use a correct index.")
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError:
-            raise FuzzException(FuzzException.FATAL, "A field expression must be used with a fuzzresult payload not a string.")
+            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string.")
 
     def __compute_filter_element(self, tokens):
 	filter_element, operator, value = tokens[0]
@@ -193,7 +193,7 @@ class FuzzResFilter:
                 
                 if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
         except TypeError:
-            raise FuzzException(FuzzException.FATAL, "Using a complete fuzzresult as a filter, specify field or use string.")
+            raise FuzzExceptIncorrectFilter("Using a complete fuzzresult as a filter, specify field or use string.")
 
 	return cond if operator == "=" else not cond
 
@@ -201,7 +201,7 @@ class FuzzResFilter:
 	element, operator, value = tokens[0]
 	
 	if value == 'BBB' and self.baseline == None:
-	    raise FuzzException(FuzzException.FATAL, "FilterQ: specify a baseline value when using BBB")
+	    raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
 
 	if element == 'c' and value == 'XXX':
 	    value = FuzzResult.ERROR_CODE
@@ -270,15 +270,15 @@ class FuzzResFilter:
 	    try:
 		return self.finalformula.parseString(filter_string)[0]
 	    except ParseException, e:
-		raise FuzzException(FuzzException.FATAL, "Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+		raise FuzzExceptIncorrectFilter("Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
             except AttributeError, e:
-		raise FuzzException(FuzzException.FATAL, "It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
+		raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 	else:
 	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
 		    or 'BBB' in self.hideparams['lines'] \
 		    or 'BBB' in self.hideparams['words'] \
 		    or 'BBB' in self.hideparams['chars']):
-			raise FuzzException(FuzzException.FATAL, "FilterQ: specify a baseline value when using BBB")
+			raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
 
 	    if self.hideparams['codes_show'] is None:
 		cond1 = True
@@ -317,7 +317,7 @@ class FuzzResFilter:
 		ffilter.hideparams['regex_show'] = False
 		ffilter.hideparams['regex'] = re.compile(filter_options['hs'], re.MULTILINE|re.DOTALL)
 	except Exception, e:
-	    raise FuzzException(FuzzException.FATAL, "Invalied regex expression: %s" % str(e))
+	    raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
 
 	if filter(lambda x: len(filter_options[x]) > 0, ["sc", "sw", "sh", "sl"]):
 	    ffilter.hideparams['codes_show'] = True

@@ -49,4 +49,4 @@ def check_content_type(fuzzresult, which):
     if which == 'text':
 	return not ctype or (ctype and any(map(lambda x: ctype.find(x) >= 0, ['text/plain'])))
     else:
-	raise FuzzException(FuzzException.FATAL, "Unknown content type")
+	raise FuzzExceptBadAPI("Unknown content type")

@@ -7,7 +7,7 @@ from .externals.reqresp.exceptions import ReqRespException
 
 from .fuzzobjects import FuzzResultFactory, FuzzStats
 from .facade import Facade
-from .exception import FuzzException
+from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 
 from .filter import FuzzResFilter
 
@@ -71,7 +71,7 @@ class dictionary:
 		    else:
 			l = Facade().encoders.get_plugins(name)
 			if not l:
-			    raise FuzzException(FuzzException.FATAL, name + " encoder does not exists (-e encodings for a list of available encoders)")
+			    raise FuzzExceptNoPluginError(name + " encoder does not exists (-e encodings for a list of available encoders)")
 
 			for e in l:
 			    yield e().encode(pl)
@@ -91,17 +91,17 @@ class dictionary:
                     try:
                         name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
                     except ValueError:
-                        raise FuzzException(FuzzException.FATAL, "You must supply a list of payloads in the form of [(name, {params}), ... ]")
+                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
                     if not params:
-                        raise FuzzException(FuzzException.FATAL, "You must supply a list of payloads in the form of [(name, {params}), ... ]")
+                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
                     p = Facade().payloads.get_plugin(name)(params)
                     pp = dictionary(p, params["encoder"]) if "encoder" in params else p
                     selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 
             if not selected_dic:
-                raise FuzzException(FuzzException.FATAL, "Empty dictionary! Check payload and filter")
+                raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
 
             if len(selected_dic) == 1:
                 return tupleit(selected_dic[0])
@@ -139,7 +139,7 @@ class requestGenerator:
                 fuzz_words += marker_regex.findall(userpass)
 
             if len(element) != len(set(fuzz_words)):
-                raise FuzzException(FuzzException.FATAL, "FUZZ words and number of payloads do not match!")
+                raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
 
 	def count(self):
 	    v = self.dictio.count()

@@ -10,7 +10,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 from .externals.reqresp import Request
-from .exception import FuzzException
+from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
 from .facade import Facade
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
@@ -42,9 +42,9 @@ class headers:
             elif attr[1] == "response":
                 return str(self.response)
             else:
-                raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
         elif num_fields != 3:
-            raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+            raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
 
         ret = ""
         try:
@@ -53,7 +53,7 @@ class headers:
             elif attr[1] == "response":
                 ret = self.response[attr[2]]
             else:
-                raise FuzzException(FuzzException.FATAL, "headers must be specified as headers.[request|response].<header name>")
+                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
         except KeyError:
             pass
 
@@ -89,7 +89,7 @@ class cookies:
         num_fields = len(attr)
 
         if num_fields != 2:
-            raise FuzzException(FuzzException.FATAL, "Cookie must be specified as cookies.[request|response]")
+            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
 
         if attr[1] == "response":
             if self._req.response:
@@ -97,7 +97,7 @@ class cookies:
         elif attr[1] == "request":
             return self._req['COOKIE']
         else:
-            raise FuzzException(FuzzException.FATAL, "Cookie must be specified as cookies.[request|response]")
+            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
 
         return ""
 
@@ -130,7 +130,7 @@ class parameters(object):
             elif attr[1] == "post":
                 return str(self.post)
             else:
-                raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
+                raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
         elif num_fields == 3:
             ret = ""
             try:
@@ -139,13 +139,13 @@ class parameters(object):
                 elif attr[1] == "post":
                     ret = self.post[attr[2]]
                 else:
-                    raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
+                    raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
             except KeyError:
                 pass
 
             return ret
         else:
-            raise FuzzException(FuzzException.FATAL, "Parameters must be specified as parameters.[get/post].<name>")
+            raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
 
 class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def __init__(self):
@@ -269,16 +269,16 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "domain", "file_fullname", "file_extension", "file_name"]
 
             if len(attr) != 2:
-                raise FuzzException(FuzzException.FATAL, "Url must be specified as url.<field>")
+                raise FuzzExceptBadAPI("Url must be specified as url.<field>")
 
             if attr[1] in allowed_attr:
                 return getattr(self.urlparse, attr[1])
             else:
-                raise FuzzException(FuzzException.FATAL, "Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
+                raise FuzzExceptBadAPI("Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
 
             return ""
         else:
-            raise FuzzException(FuzzException.FATAL, "Unknown FuzzResult attribute: %s." % (field,))
+            raise FuzzExceptBadAPI("Unknown FuzzResult attribute: %s." % (field,))
 
     # Info extra that wfuzz needs within an HTTP request
     @property
@@ -290,7 +290,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 	elif self.wf_allvars == "allheaders":
 	    return self._request.getHeaders()
         else:
-            raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + self.wf_allvars)
+            raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
 
     @wf_allvars_set.setter
     def wf_allvars_set(self, varset):
@@ -303,9 +303,9 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             elif self.wf_allvars == "allheaders":
                 self._request.headers.add({variable: payload_content})
             else:
-                raise FuzzException(FuzzException.FATAL, "Unknown variable set: " + self.wf_allvars)
+                raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
         except TypeError, e:
-            raise FuzzException(FuzzException.FATAL, "It is not possible to use all fuzzing with duplicated parameters.")
+            raise FuzzExceptBadOptions("It is not possible to use all fuzzing with duplicated parameters.")
         
     @property
     def wf_allvars(self):
@@ -314,7 +314,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     @wf_allvars.setter
     def wf_allvars(self, bl):
 	if bl is not None and bl not in ['allvars', 'allpost','allheaders']: 
-	    raise FuzzException(FuzzException.FATAL, "Incorrect all parameters brute forcing type specified, correct values are allvars, allpost or allheaders.")
+	    raise FuzzExceptBadOptions("Incorrect all parameters brute forcing type specified, correct values are allvars, allpost or allheaders.")
 
 	self._allvars = bl
 
@@ -419,12 +419,12 @@ class FuzzResultFactory:
 
 		for fw, field in marker_regex.findall(text):
                         if not field:
-                            raise FuzzException(FuzzException.FATAL, "You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
+                            raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
                         try:
                             subs = payload.get_field(field)
                         except AttributeError:
-                            raise FuzzException(FuzzException.FATAL, "A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
+                            raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
 
 			text = text.replace("%s[%s]" % (fw, field), subs)
 			subs_array.append(subs)
@@ -482,7 +482,7 @@ class FuzzResultFactory:
             if desc:
                 descr_array += desc
             else:
-		raise FuzzException(FuzzException.FATAL, "No %s word!" % fuzz_word)
+		raise FuzzExceptBadOptions("No %s word!" % fuzz_word)
 
 	newres.history.update_from_raw_http(rawReq, scheme)
 	newres.history.url = rawUrl
@@ -515,7 +515,7 @@ class FuzzResultFactory:
 	## remove baseline marker from seed request
 	for i in baseline_payload:
             if not i:
-                raise FuzzException(FuzzException.FATAL, "You must supply a baseline value for all the FUZZ words.")
+                raise FuzzExceptBadOptions("You must supply a baseline value for all the FUZZ words.")
 	    rawReq = rawReq.replace("{" + i + "}", '')
 
             if fuzzresult.history.wf_fuzz_methods:
@@ -558,14 +558,14 @@ class FuzzResultFactory:
 	# no FUZZ keyword allowed
 	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
 	if len(marker_regex.findall(str(seed))) > 0:
-	    raise FuzzException(FuzzException.FATAL, "FUZZ words not allowed when using all parameters brute forcing.")
+	    raise FuzzExceptBadOptions("FUZZ words not allowed when using all parameters brute forcing.")
 
 	# only a fuzz payload is allowed using this technique
 	if len(payload) > 1:
-	    raise FuzzException(FuzzException.FATAL, "Only one payload is allowed when fuzzing all parameters!")
+	    raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
 	if len(seed.history.wf_allvars_set) == 0:
-	    raise FuzzException(FuzzException.FATAL, "No variables on specified variable set: " + seed.wf_allvars)
+	    raise FuzzExceptBadOptions("No variables on specified variable set: " + seed.wf_allvars)
 
 	for v in seed.history.wf_allvars_set:
 	    variable = v.name
@@ -702,7 +702,7 @@ class FuzzResult:
 
         if exception:
             self.exception = exception
-            self.description = self.description + "! " + self.exception.msg
+            self.description = self.description + "! " + str(self.exception)
 
         if self.history and self.history.content:
             m = hashlib.md5()
@@ -755,7 +755,7 @@ class FuzzResult:
         seed = self.from_soft_copy(False)
 
         if seed.type == FuzzResult.error:
-            raise FuzzException(FuzzException.FATAL, "A new seed cannot be created with a Fuzz item representing an error.")
+            raise FuzzExceptInternalError("A new seed cannot be created with a Fuzz item representing an error.")
 
         seed.history.url = self.history.recursive_url
 	seed.rlevel += 1

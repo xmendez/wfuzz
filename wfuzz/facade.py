@@ -3,7 +3,7 @@ from .externals.moduleman.registrant import MulRegistrant
 from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
 from .externals.settings.settings import SettingsBase
-from .exception import FuzzException
+from .exception import FuzzExceptNoPluginError, FuzzExceptPluginLoadError
 
 import os
 
@@ -34,7 +34,7 @@ class MyRegistrant(MulRegistrant):
         try:
             return MulRegistrant.get_plugin(self, identifier)
         except KeyError, e:
-            raise FuzzException(FuzzException.FATAL, "Requested plugin %s. Error: %s" % (identifier, str(e)))
+            raise FuzzExceptNoPluginError("Requested plugin %s. Error: %s" % (identifier, str(e)))
 
 class Facade:
     __metaclass__ = utils.Singleton 
@@ -54,7 +54,7 @@ class Facade:
     def _load(self, cat):
 	try:
 	    if not cat in self.__plugins:
-		raise FuzzException(FuzzException.FATAL, "Non-existent plugin category %s" % cat)
+		raise FuzzExceptNoPluginError("Non-existent plugin category %s" % cat)
 
             if not self.__plugins[cat]:
                 l = []
@@ -64,7 +64,7 @@ class Facade:
 
             return self.__plugins[cat]
 	except Exception, e:
-	    raise FuzzException(FuzzException.FATAL, "Error loading plugins: %s" % str(e))
+	    raise FuzzExceptPluginLoadError("Error loading plugins: %s" % str(e))
 
     def proxy(self, which):
 	return self._load(which)

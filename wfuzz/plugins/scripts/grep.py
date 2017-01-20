@@ -1,7 +1,7 @@
 import re
 
 from wfuzz.plugin_api.base import BasePlugin
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptPluginBadParams
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin
@@ -17,7 +17,7 @@ class grep(BasePlugin):
 	try:
 	    self.regex = re.compile(self.kbase["grep.regex"][0], re.MULTILINE|re.DOTALL)
 	except Exception, e:
-	    raise FuzzException(FuzzException.FATAL, "Incorrect regex or missing regex parameter.")
+	    raise FuzzExceptPluginBadParams("Incorrect regex or missing regex parameter.")
 	    
     def validate(self, fuzzresult):
 	return True

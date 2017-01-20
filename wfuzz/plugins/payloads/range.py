@@ -1,4 +1,4 @@
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptPluginBadParams
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.plugin_api.base import BasePayload
 
@@ -29,7 +29,7 @@ class range(BasePayload):
 	    self.width = len(ran[0])
 	    self.current = self.minimum
 	except:
-	    raise FuzzException(FuzzException.FATAL, "Bad range format (eg. \"23-56\")")
+	    raise FuzzExceptPluginBadParams("Bad range format (eg. \"23-56\")")
 		
     def next(self):
 	if self.current>self.maximum:

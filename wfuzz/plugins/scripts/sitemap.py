@@ -1,7 +1,7 @@
 from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
 from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.plugin_api.urlutils import parse_url
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptResourceParseError
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import xml.dom.minidom
@@ -25,7 +25,7 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
 	try:
 	    dom = xml.dom.minidom.parseString(fuzzresult.history.content)
 	except:
-	    raise FuzzException(FuzzException.FATAL, 'Error while parsing %s.' % fuzzresult.url)
+	    raise FuzzExceptResourceParseError('Error while parsing %s.' % fuzzresult.url)
 
 	urlList = dom.getElementsByTagName("loc")
 	for url in urlList:

@@ -1,5 +1,5 @@
 from wfuzz.plugin_api.base import wfuzz_iterator
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptPluginBadParams, FuzzExceptBadInstall
 from wfuzz.plugin_api.base import BasePayload
 
 @wfuzz_iterator
@@ -30,14 +30,14 @@ class ipnet(BasePayload):
             self.__count = net.size - 2
 
             if self.__count <= 0:
-                raise FuzzException(FuzzException.FATAL, "There are not hosts in the specified network")
+                raise FuzzExceptPluginBadParams("There are not hosts in the specified network")
 
 	except AddrFormatError:
-	    raise FuzzException(FuzzException.FATAL, "The specified network has an incorrect format.")
+	    raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 	except ValueError:
-	    raise FuzzException(FuzzException.FATAL, "The specified network has an incorrect format.")
+	    raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 	except ImportError:
-	    raise FuzzException(FuzzException.FATAL, "ipnet plugin requires netaddr module. Please install it using pip.")
+	    raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
 
     def next(self):
 	return str(self.f.next())

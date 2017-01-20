@@ -1,7 +1,7 @@
 import cPickle as pickle
 import gzip
 
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.plugin_api.base import BasePayload
@@ -52,11 +52,11 @@ class wfuzzp(BasePayload):
 		while 1:
 		    item = pickle.load(output)
                     if not isinstance(item, FuzzResult):
-                        raise FuzzException(FuzzException.FATAL, "Wrong wfuzz payload format, the read object is not a valid fuzz result.")
+                        raise FuzzExceptBadFile("Wrong wfuzz payload format, the object read is not a valid fuzz result.")
 
 		    yield item
 	except IOError, e:
-	    raise FuzzException(FuzzException.FATAL, "Error opening wfuzz payload file. %s" % str(e))
+	    raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
 	except EOFError:
 	    raise StopIteration
 

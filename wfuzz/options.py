@@ -1,4 +1,4 @@
-from .exception import FuzzException
+from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions
 from .facade import Facade
 
 from .fuzzobjects import FuzzRequest
@@ -126,9 +126,9 @@ class FuzzSession(UserDict):
                     for k, v in js['wfuzz_recipe'].items():
 			    self.data[k] = self._convert_from_unicode(v)
 	    else:
-		raise FuzzException(FuzzException.FATAL, "Unsupported recipe version.")
+		raise FuzzExceptBadRecipe("Unsupported recipe version.")
 	except KeyError:
-	    raise FuzzException(FuzzException.FATAL, "Incorrect recipe format.")
+	    raise FuzzExceptBadRecipe("Incorrect recipe format.")
 
     def export_json(self):
 	tmp = dict(
@@ -195,30 +195,25 @@ class FuzzSession(UserDict):
         # Validate options
         error = self.validate()
         if error:
-            raise FuzzException(FuzzException.FATAL, error)
+            raise FuzzExceptBadOptions(error)
 
 
         if not self.http_pool:
             self.http_pool = HttpPool(self)
 
-        try:
-            # filter options
-            self.data["compiled_filter"] = FuzzResFilter.from_options(self)
-            self.data["compiled_prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
+        # filter options
+        self.data["compiled_filter"] = FuzzResFilter.from_options(self)
+        self.data["compiled_prefilter"] = FuzzResFilter(filter_string = self.data['prefilter'])
 
-            # seed
-            self.data["compiled_genreq"] = requestGenerator(self)
-        except Exception, e:
-            raise FuzzException(FuzzException.FATAL, "Bad options supplied: %s" % str(e))
-            
-
+        # seed
+        self.data["compiled_genreq"] = requestGenerator(self)
 
 	try:
 	    script_args = {}
 	    if self.data['script_args']:
 		script_args = dict(map(lambda x: x.split("=", 1), self.data['script_args'].split(",")))
 	except ValueError:
-	    raise FuzzException(FuzzException.FATAL, "Script arguments: Incorrect arguments format supplied.")
+	    raise FuzzExceptBadOptions("Script arguments: Incorrect arguments format supplied.")
 
 	if self.data["script"]:
 	    for k, v in Facade().sett.get_section("kbase"):

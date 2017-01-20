@@ -5,7 +5,6 @@ import itertools
 
 from Queue import PriorityQueue
 from threading import Thread, RLock
-from .exception import FuzzException
 from .fuzzobjects import FuzzResult
 
 

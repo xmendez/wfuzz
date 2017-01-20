@@ -6,7 +6,7 @@ import sys
 
 from .core import Fuzzer
 from .facade import Facade
-from .exception import FuzzException
+from .exception import FuzzException, FuzzExceptBadInstall
 
 from .ui.console.mvc import Controller, KeyPress, View
 from .ui.console.clparser import CLParser
@@ -29,7 +29,7 @@ def main():
             try:
                 kb = KeyPress()
             except ImportError, e:
-                raise FuzzException(FuzzException.FATAL, "Error importing necessary modules for interactive mode: %s" % str(e))
+                raise FuzzExceptBadInstall("Error importing necessary modules for interactive mode: %s" % str(e))
             else:
                 mc = Controller(fz, kb)
                 kb.start()
@@ -42,7 +42,7 @@ def main():
 
         printer.footer(fz.genReq.stats)
     except FuzzException, e:
-        print "\nFatal exception: %s" % e.msg
+        print "\nFatal exception: %s" % str(e)
     except KeyboardInterrupt:
         print "\nFinishing pending requests..."
         if fz: fz.cancel_job()

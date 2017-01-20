@@ -2,7 +2,6 @@ from urlparse import urljoin
 
 from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
 from wfuzz.plugin_api.base import BasePlugin
-from wfuzz.exception import FuzzException
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 @moduleman_plugin

@@ -4,7 +4,7 @@ from threading import Thread, Lock, Event
 import itertools
 from Queue import Queue
 
-from .exception import FuzzException
+from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
 from .fuzzobjects import FuzzResult
 
@@ -155,7 +155,7 @@ class HttpPool:
 	    elif ptype == "HTML":
 		pass
 	    else:
-		raise FuzzException(FuzzException.FATAL, "Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+		raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 
 	mdelay = self.options.get("req_delay")
 	if mdelay is not None:
@@ -226,7 +226,7 @@ class HttpPool:
                         self.retrylist.put((res, poolid))
                         continue
 
-		e = FuzzException(FuzzException.FATAL, "Pycurl error %d: %s" % (errno, errmsg))
+		e = FuzzExceptNetError("Pycurl error %d: %s" % (errno, errmsg))
                 self.pool_map[poolid].put(res.update(exception=e))
 
 		with self.mutex_stats:

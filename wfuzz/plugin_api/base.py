@@ -1,5 +1,5 @@
 from wfuzz.fuzzobjects import PluginResult, PluginRequest
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions
 from wfuzz.facade import Facade
 from wfuzz.plugin_api.urlutils import parse_url
 
@@ -50,7 +50,7 @@ class BasePrinter:
         try:
             self.f = open(output,'w')
         except IOError, e:
-            raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
+            raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
 # decorator for iterator plugins
 def wfuzz_iterator(cls):
@@ -73,17 +73,17 @@ class BasePayload:
             self.params[self.default_parameter] = self.params["default"]
 
             if not self.default_parameter:
-                raise FuzzException(FuzzException.FATAL, "Too many plugin parameters specified")
+                raise FuzzExceptBadOptions("Too many plugin parameters specified")
 
         # Check for allowed parameters
         if [k for k in self.params.keys() if k not in map(lambda x: x[0], self.parameters) and k not in ["encoder", "default"]]:
-            raise FuzzException(FuzzException.FATAL, "Plugin %s, unknown parameter specified!" % (self.name))
+            raise FuzzExceptBadOptions("Plugin %s, unknown parameter specified!" % (self.name))
 
 
         # check mandatory params, assign default values
         for name, default_value, required, description in self.parameters:
             if required and not name in self.params:
-                raise FuzzException(FuzzException.FATAL, "Plugin %s, missing parameter %s!" % (self.name, name))
+                raise FuzzExceptBadOptions("Plugin %s, missing parameter %s!" % (self.name, name))
 
             if not name in self.params:
                 self.params[name] = default_value

@@ -6,7 +6,7 @@ import itertools
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzException, FuzzExceptBadFile, FuzzExceptBadOptions
 from .common import help_banner
 from .common import usage
 from .common import brief_usage
@@ -49,11 +49,11 @@ class CLParser:
 
 	    url = None
 	    if len(args) == 0 and "--recipe" not in optsd:
-		raise FuzzException(FuzzException.FATAL, "You must specify a payload and a URL")
+		raise FuzzExceptBadOptions("You must specify a payload and a URL")
 	    elif len(args) == 1:
 		url = args[0]
 	    elif len(args) > 1:
-		raise FuzzException(FuzzException.FATAL, "Too many arguments.")
+		raise FuzzExceptBadOptions("Too many arguments.")
 
 	    options = FuzzSession()
 
@@ -64,8 +64,8 @@ class CLParser:
 	    if "--recipe" in optsd:
 		try:
 		    f = open(optsd["--recipe"][0],'r')
-		except Exception:
-		    raise FuzzException(FuzzException.FATAL, "Error loading recipe file.")
+		except IOError:
+		    raise FuzzExceptBadFile("Error loading recipe file.")
 
 		options.import_json(f.read())
 		
@@ -80,7 +80,7 @@ class CLParser:
 	    # Validate options
 	    error = options.validate()
 	    if error:
-		raise FuzzException(FuzzException.FATAL, error)
+		raise FuzzExceptBadOptions(error)
 
 	    if "--dump-recipe" in optsd:
 		print options.export_json()
@@ -93,11 +93,11 @@ class CLParser:
 	    raise e
 	except ValueError:
 	    self.show_brief_usage()
-	    raise FuzzException(FuzzException.FATAL, "Incorrect options, please check help.")
+	    raise FuzzExceptBadOptions("Incorrect options, please check help.")
 	except getopt.GetoptError, qw:
 	    self.show_brief_usage()
 	    #self.show_usage()
-	    raise FuzzException(FuzzException.FATAL, "%s." % str(qw))
+	    raise FuzzExceptBadOptions("%s." % str(qw))
 
     def _parse_help_opt(self, optsd):
 	if "--version" in optsd:
@@ -132,7 +132,7 @@ class CLParser:
 	    elif "scripts" in optsd["-e"]:
 		self.show_plugins_help("scripts", 2)
 	    else:
-		raise FuzzException(FuzzException.FATAL, "Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
+		raise FuzzExceptBadOptions("Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
 
 	if "-o" in optsd:
 	    if "help" in optsd["-o"]:
@@ -149,11 +149,11 @@ class CLParser:
 	# Check for repeated flags
 	l = [i for i in optsd if i not in ["-z", "--zP", "-w", "-b", "-H"] and len(optsd[i]) > 1]
 	if l:
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
+	    raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
 
 	#-A and script not allowed at the same time
 	if "--script" in optsd.keys() and "-A" in optsd.keys():
-	    raise FuzzException(FuzzException.FATAL, "Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
+	    raise FuzzExceptBadOptions("Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
 
 	if "-s" in optsd.keys() and "-t" in optsd.keys():
 	    print "WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored."
@@ -178,12 +178,12 @@ class CLParser:
 
 	if "--prefilter" in optsd:
 	    if not PYPARSING:
-		raise FuzzException(FuzzException.FATAL, "--prefilter switch needs pyparsing module.")
+		raise FuzzExceptBadInstall("--prefilter switch needs pyparsing module.")
 	    filter_params['prefilter'] = optsd["--prefilter"][0]
 
 	if "--filter" in optsd:
 	    if not PYPARSING:
-		raise FuzzException(FuzzException.FATAL, "--filter switch needs pyparsing module.")
+		raise FuzzExceptBadInstall("--filter switch needs pyparsing module.")
 	    filter_params['filter'] = optsd["--filter"][0]
 
 	if "--hc" in optsd:
@@ -217,10 +217,10 @@ class CLParser:
 	'''
 
 	if len(optsd["--zP"]) > len(optsd["-z"]):
-	    raise FuzzException(FuzzException.FATAL, "zP must be preceded by a -z swith.")
+	    raise FuzzExceptBadOptions("zP must be preceded by a -z swith.")
 
 	if len(optsd["--slice"]) > len(optsd["-z"]) + len(optsd["-w"]):
-	    raise FuzzException(FuzzException.FATAL, "slice must be preceded by a -z or -w switch.")
+	    raise FuzzExceptBadOptions("slice must be preceded by a -z or -w switch.")
 
 
         payloads_list = []
@@ -313,13 +313,13 @@ class CLParser:
 	for x in optsd["-H"]:
 	    splitted = x.partition(":")
 	    if splitted[1] != ":":
-		raise FuzzException(FuzzException.FATAL, "Wrong header specified, it should be in the format \"name: value\".")
+		raise FuzzExceptBadOptions("Wrong header specified, it should be in the format \"name: value\".")
 	    options['headers'].append((splitted[0], splitted[2].strip()))
 
 	if "-V" in optsd:
 	    varset = str(optsd["-V"][0])
             if varset not in ['allvars','allpost','allheaders']: 
-                raise FuzzException(FuzzException.FATAL, "Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
+                raise FuzzExceptBadOptions("Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
 
 	    options['allvars'] = varset
 
@@ -346,10 +346,10 @@ class CLParser:
 		    proxy.append((vals[0], vals[1], "HTML"))
 		elif len(vals) == 3:
 		    if vals[2] not in ("SOCKS5","SOCKS4","HTML"):
-			raise FuzzException(FuzzException.FATAL, "Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+			raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 		    proxy.append((vals[0], vals[1], vals[2]))
 		else:
-		    raise FuzzException(FuzzException.FATAL, "Bad proxy parameter specified.")
+		    raise FuzzExceptBadOptions("Bad proxy parameter specified.")
 
 	    conn_options['proxies'] = proxy
 

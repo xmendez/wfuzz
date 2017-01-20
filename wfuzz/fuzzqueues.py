@@ -6,7 +6,7 @@ from Queue import Queue
 
 from .fuzzobjects import FuzzResult
 from .myqueues import FuzzQueue
-from .exception import FuzzException
+from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
 from .myqueues import FuzzRRQueue
 from .facade import Facade
 from .fuzzobjects import PluginResult, PluginItem
@@ -29,7 +29,7 @@ class SeedQ(FuzzQueue):
 	elif item.type == FuzzResult.seed:
 	    self.genReq.restart(item)
 	else:
-	    raise FuzzException(FuzzException.FATAL, "SeedQ: Unknown item type in queue!")
+	    raise FuzzExceptInternalError("SeedQ: Unknown item type in queue!")
 
 	# Empty dictionary?
 	try:
@@ -47,7 +47,7 @@ class SeedQ(FuzzQueue):
 		fuzzres = self.genReq.next()
 
 	except StopIteration:
-	    raise FuzzException(FuzzException.FATAL, "Empty dictionary! Please check payload or filter.")
+	    raise FuzzExceptBadOptions("Empty dictionary! Please check payload or filter.")
 
 	# Enqueue requests
 	try:
@@ -69,7 +69,7 @@ class SaveQ(FuzzQueue):
         try:
             self.output_fn = gzip.open(options.get("save"), 'w+b')
         except IOError, e:
-            raise FuzzException(FuzzException.FATAL, "Error opening results file!. %s" % str(e))
+            raise FuzzExceptBadFile("Error opening results file!. %s" % str(e))
 
     def get_name(self):
 	return 'SaveQ'
@@ -153,7 +153,7 @@ class JobQ(FuzzRRQueue):
         lplugins = Facade().scripts.get_plugins(options.get("script"))
 
         if not lplugins:
-            raise FuzzException(FuzzException.FATAL, "No plugin selected, check the --script name or category introduced.")
+            raise FuzzExceptBadOptions("No plugin selected, check the --script name or category introduced.")
 
         concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
         FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins) for i in range(concurrent)])
@@ -191,7 +191,7 @@ class JobMan(FuzzQueue):
 			    continue
 			th = Thread(target = pl.run, kwargs={"fuzzresult": res, "control_queue": self.__walking_threads, "results_queue": plugins_res_queue})
 		    except Exception, e:
-			raise FuzzException(FuzzException.FATAL, "Error initialising plugin %s: %s " % (plugin_class.name, str(e)))
+			raise FuzzExceptPluginLoadError("Error initialising plugin %s: %s " % (plugin_class.name, str(e)))
 		    self.__walking_threads.put(th)
 		    th.start()
 
@@ -203,13 +203,13 @@ class JobMan(FuzzQueue):
 
                     if item.plugintype == PluginItem.result:
 			if Facade().sett.get("general","cancel_on_plugin_except") == "1" and item.source == "$$exception$$":
-			    self._throw(FuzzException(FuzzException.FATAL, item.issue))
+			    self._throw(FuzzExceptPluginError(item.issue))
 			res.plugins_res.append(item)
                     elif item.plugintype == PluginItem.backfeed:
 			if self.cache.update_cache(item.fuzzitem.history, "backfeed"):
 			    res.plugins_backfeed.append(item)
                     else:
-                        raise FuzzException(FuzzException.FATAL, "Jobman: Unknown pluginitem type in queue!")
+                        raise FuzzExceptInternalError("Jobman: Unknown pluginitem type in queue!")
 
 	# add result to results queue
 	self.send(res)

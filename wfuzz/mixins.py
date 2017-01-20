@@ -1,11 +1,12 @@
 from .plugin_api.urlutils import parse_url
+from .exception import FuzzExceptBadInstall
 
 class FuzzRequestSoupMixing:
     def get_soup(self):
         try:
             from bs4 import BeautifulSoup
         except ImportError:
-            raise FuzzException(FuzzException.FATAL, "You need to install beautifulsoup4 first!")
+            raise FuzzExceptBadInstall("You need to install beautifulsoup4 first!")
 
         soup = BeautifulSoup(self.content, 'html.parser')
 

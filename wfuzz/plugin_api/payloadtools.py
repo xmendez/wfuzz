@@ -1,4 +1,4 @@
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptMissingAPIKey, FuzzExceptResourceParseError
 
 import urllib2
 import json
@@ -9,7 +9,7 @@ class BingIter:
 	    key = Facade().sett.get('plugins', 'bing_apikey')
 
 	if not key:
-	    raise FuzzException(FuzzException.FATAL, "An api Bing key is needed. Please chek wfuzz.ini.")
+	    raise FuzzExceptMissingAPIKey("An api Bing key is needed. Please chek wfuzz.ini.")
 
 	self._key = key
 	self._dork = dork
@@ -61,7 +61,7 @@ class BingIter:
 	    requestor = urllib2.build_opener()
 	    result = requestor.open(request)
 	except Exception, e:
-	    raise FuzzException(FuzzException.FATAL, "Error when retrieving Bing API results: %s." % e.msg)
+	    raise FuzzExceptResourceParseError("Error when retrieving Bing API results: %s." % str(e))
 
 	results = json.loads(result.read())
 

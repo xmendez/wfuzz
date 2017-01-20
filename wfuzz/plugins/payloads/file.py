@@ -1,4 +1,4 @@
-from wfuzz.exception import FuzzException
+from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.plugin_api.base import BasePayload
 
@@ -24,7 +24,7 @@ class file(BasePayload):
 	try:
 	    self.f = open(self.params["fn"],"r")
 	except IOError, e:
-	    raise FuzzException(FuzzException.FATAL, "Error opening file. %s" % str(e))
+	    raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
 	self.__count = len(self.f.readlines())
 	self.f.seek(0)
