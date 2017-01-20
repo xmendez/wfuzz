@@ -1,7 +1,7 @@
 from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions
 from .facade import Facade
 
-from .fuzzobjects import FuzzRequest
+from .fuzzobjects import FuzzRequest, FuzzResult
 from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import json_minify
@@ -197,6 +197,15 @@ class FuzzSession(UserDict):
         if error:
             raise FuzzExceptBadOptions(error)
 
+        self.data['hc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hc']]
+        self.data['hw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hw']]
+        self.data['hl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hl']]
+        self.data['hh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hh']]
+
+        self.data['sc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sc']]
+        self.data['sw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sw']]
+        self.data['sl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sl']]
+        self.data['sh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sh']]
 
         if not self.http_pool:
             self.http_pool = HttpPool(self)

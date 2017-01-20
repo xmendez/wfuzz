@@ -82,22 +82,19 @@ class FuzzResFilter:
         if filter_string:
             self.hideparams['filter_string'] = filter_string
 
-	if "XXX" in self.hideparams['codes']:
-	    self.hideparams['codes'].append(str(FuzzResult.ERROR_CODE))
-
 	self.baseline = None
 
         self._cache = collections.defaultdict(set)
 
     def set_baseline(self, res):
-	if "BBB" in self.hideparams['lines']:
-	    self.hideparams['lines'].append(str(res.lines))
-	if "BBB" in self.hideparams['codes']:
-	    self.hideparams['codes'].append(str(res.code))
-	if "BBB" in self.hideparams['words']:
-	    self.hideparams['words'].append(str(res.words))
-	if "BBB" in self.hideparams['chars']:
-	    self.hideparams['chars'].append(str(res.chars))
+	if FuzzResult.BASELINE_CODE in self.hideparams['lines']:
+	    self.hideparams['lines'].append(res.lines)
+	if FuzzResult.BASELINE_CODE in self.hideparams['codes']:
+	    self.hideparams['codes'].append(res.code)
+	if FuzzResult.BASELINE_CODE in self.hideparams['words']:
+	    self.hideparams['words'].append(res.words)
+	if FuzzResult.BASELINE_CODE in self.hideparams['chars']:
+	    self.hideparams['chars'].append(res.chars)
 
 	self.baseline = res
 
@@ -274,10 +271,10 @@ class FuzzResFilter:
             except AttributeError, e:
 		raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 	else:
-	    if self.baseline == None and ('BBB' in self.hideparams['codes'] \
-		    or 'BBB' in self.hideparams['lines'] \
-		    or 'BBB' in self.hideparams['words'] \
-		    or 'BBB' in self.hideparams['chars']):
+	    if self.baseline == None and (FuzzResult.BASELINE_CODE in self.hideparams['codes'] \
+		    or FuzzResult.BASELINE_CODE in self.hideparams['lines'] \
+		    or FuzzResult.BASELINE_CODE in self.hideparams['words'] \
+		    or FuzzResult.BASELINE_CODE in self.hideparams['chars']):
 			raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
 
 	    if self.hideparams['codes_show'] is None:
@@ -332,7 +329,5 @@ class FuzzResFilter:
 	    ffilter.hideparams['lines'] = filter_options["hl"]
 	    ffilter.hideparams['chars'] = filter_options["hh"]
 
-	if "XXX" in ffilter.hideparams['codes']:
-	    ffilter.hideparams['codes'].append(str(FuzzResult.ERROR_CODE))
 
         return ffilter

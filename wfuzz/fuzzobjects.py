@@ -673,6 +673,7 @@ class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel = range(7)
     newid = itertools.count(0).next
     ERROR_CODE = -1
+    BASELINE_CODE = -2
 
     def __init__(self, history = None, exception = None, track_id = True):
 	self.history = history
@@ -740,8 +741,8 @@ class FuzzResult:
     def code(self):
         if self.history and self.history.code >= 0 and not self.exception:
             return int(self.history.code)
-        elif not self.history.code:
-            return 0
+        #elif not self.history.code:
+            #return 0
         else:
             return FuzzResult.ERROR_CODE
 
