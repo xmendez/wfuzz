@@ -1,6 +1,8 @@
 from .plugin_api.urlutils import parse_url
 from .exception import FuzzExceptBadInstall
 
+from urlparse import urljoin
+
 class FuzzRequestSoupMixing:
     def get_soup(self):
         try:
