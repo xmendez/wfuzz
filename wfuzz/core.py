@@ -104,6 +104,8 @@ class dictionary:
                 raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
 
             if len(selected_dic) == 1:
+                if options["iterator"]:
+                    raise FuzzExceptBadOptions("Several dictionaries must be used when specifying an iterator")
                 return tupleit(selected_dic[0])
             elif options["iterator"]:
                 return Facade().iterators.get_plugin(options["iterator"])(*selected_dic)

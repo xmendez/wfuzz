@@ -91,6 +91,13 @@ class FuzzSession(UserDict):
 	if not self.data['payloads'] and not self.data["dictio"]:
 	    return "Bad usage: You must specify a payload."
 
+        if self.data["hs"] and self.data["ss"]:
+            return "Bad usage: Hide and show regex filters flags are mutually exclusive. Only one could be specified."
+
+        if self.data["rlevel"] < 0:
+            return "Bad usage: Recursion level must be a positive int."
+
+
         try:
             if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
             filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"]): 
@@ -197,15 +204,18 @@ class FuzzSession(UserDict):
         if error:
             raise FuzzExceptBadOptions(error)
 
-        self.data['hc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hc']]
-        self.data['hw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hw']]
-        self.data['hl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hl']]
-        self.data['hh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hh']]
+        try:
+            self.data['hc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hc']]
+            self.data['hw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hw']]
+            self.data['hl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hl']]
+            self.data['hh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hh']]
 
-        self.data['sc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sc']]
-        self.data['sw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sw']]
-        self.data['sl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sl']]
-        self.data['sh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sh']]
+            self.data['sc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sc']]
+            self.data['sw'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sw']]
+            self.data['sl'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sl']]
+            self.data['sh'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['sh']]
+        except ValueError, e:
+	    raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
 
         if not self.http_pool:
             self.http_pool = HttpPool(self)
