@@ -38,7 +38,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zP=','oF=','recipe=', 'dump-recipe', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 	    for i,j in opts:
 		optsd[i].append(j)
@@ -62,12 +62,7 @@ class CLParser:
 
 	    # parse options from recipe first
 	    if "--recipe" in optsd:
-		try:
-		    f = open(optsd["--recipe"][0],'r')
-		except IOError:
-		    raise FuzzExceptBadFile("Error loading recipe file.")
-
-		options.import_json(f.read())
+                options.import_from_file(optsd["--recipe"][0])
 		
 	    # command line has priority over recipe
 	    self._parse_options(optsd, options)
@@ -83,7 +78,9 @@ class CLParser:
 		raise FuzzExceptBadOptions(error)
 
 	    if "--dump-recipe" in optsd:
-		print options.export_json()
+                options.export_to_file(optsd["--dump-recipe"][0])
+                print help_banner
+                print "Recipe written to %s." % (optsd["--dump-recipe"][0],)
 		sys.exit(0)
 
 	    return options

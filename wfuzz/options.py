@@ -1,4 +1,4 @@
-from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions
+from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
 from .facade import Facade
 
 from .fuzzobjects import FuzzRequest, FuzzResult
@@ -121,6 +121,20 @@ class FuzzSession(UserDict):
 	    return input.encode('utf-8')
 	else:
 	    return input
+
+    def export_to_file(self, filename):
+        try:
+            f = open(filename,'w')
+            f.write(self.export_json())
+        except IOError:
+            raise FuzzExceptBadFile("Error writing recipe file.")
+
+    def import_from_file(self, filename):
+        try:
+            f = open(filename,'r')
+            self.import_json(f.read())
+        except IOError:
+            raise FuzzExceptBadFile("Error loading recipe file.")
 
     def import_json(self, data):
 	js = json.loads(json_minify(data))
