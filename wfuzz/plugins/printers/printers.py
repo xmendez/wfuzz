@@ -180,12 +180,46 @@ class raw(BasePrinter):
 
     def header(self, summary):
 	self.f.write("Target: %s\n" % summary.url)
-	self.f.write("Total requests: %d\n" % summary.total_req)
-	self.f.write("==================================================================\n")
-	self.f.write("ID	Response   Lines      Word         Chars          Payload    \n")
-	self.f.write("==================================================================\n")
 
-    def result(self, res):
+	if summary.total_req > 0:
+	    self.f.write("Total requests: %d\n" % summary.total_req)
+	else:
+            self.f.write("Total requests: <<unknown>>\n")
+
+        if self.verbose:
+            self.f.write("==============================================================================================================================================\n")
+            self.f.write("ID	C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \n")
+            self.f.write("==============================================================================================================================================\n")
+        else:
+            self.f.write("==================================================================\n")
+            self.f.write("ID	Response   Lines      Word         Chars          Request    \n")
+            self.f.write("==================================================================\n")
+
+    def _print_verbose(self, res):
+	self.f.write("%05d:  " % res.nres)
+	self.f.write("%.3fs   C=" % res.timer)
+
+	location = ""
+	if 'Location' in res.history.headers.response:
+	    location = res.history.headers.response['Location']
+	elif res.history.url != res.history.redirect_url:
+	    location = "(*) %s" % res.history.url
+
+	server = ""
+	if 'Server' in res.history.headers.response:
+	    server = res.history.headers.response['Server']
+
+	if res.exception:
+	    self.f.write("XXX")
+	else:
+	    self.f.write("%05d:  C=%03d" % (res.nres, res.code))
+
+	self.f.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"\n" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description))
+
+	for i in res.plugins_res:
+		self.f.write("  |_ %s\n" % i.issue)
+
+    def _print(self, res):
 	if res.exception:
 	    self.f.write("XXX")
 	else:
@@ -196,6 +230,11 @@ class raw(BasePrinter):
 	for i in res.plugins_res:
 		self.f.write("  |_ %s\n" % i.issue)
 
+    def result(self, res):
+        if self.verbose:
+            self._print_verbose(res)
+        else:
+            self._print(res)
 
     def footer(self, summary):
 	self.f.write("\n")

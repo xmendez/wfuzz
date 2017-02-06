@@ -52,6 +52,8 @@ class BasePrinter:
         except IOError, e:
             raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
+        self.verbose = Facade().printers.kbase["verbose"]
+
 # decorator for iterator plugins
 def wfuzz_iterator(cls):
     method_args = ["count", "next", "__iter__"]
