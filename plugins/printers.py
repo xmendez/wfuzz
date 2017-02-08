@@ -1,3 +1,4 @@
+import csv as csvmod
 import socket
 import sys
 import json as jjson
@@ -379,3 +380,36 @@ class raw:
 	    print "Processed Requests: %s\r" % (str(summary.processed)[:8])
 	print "Filtered Requests: %s\r" % (str(summary.filtered)[:8])
 	print "Requests/sec.: %s\r\n" % str(summary.processed/summary.totaltime if summary.totaltime > 0 else 0)[:8]
+
+@moduleman_plugin("header", "footer", "noresult", "result")
+class csv:
+    name = "csv"
+    description = "CSV output format"
+    category = ["default"]
+    priority = 99
+
+    def __init__(self):
+        self.csv_writer = csvmod.writer(sys.stdout)
+
+    def header(self, summary):
+	self._print_csv(["id", "response", "lines", "word", "chars", "request", "success"])
+
+    def result(self, res):
+        line = [ res.nres,
+                 res.code,
+                 res.lines,
+                 res.words,
+                 res.chars,
+                 res.description,
+                 0 if res.exception else 1]
+        self._print_csv(line)
+
+    def noresult(self, res):
+        pass
+
+    def footer(self, summary):
+        pass
+
+    def _print_csv(self, values):
+	self.csv_writer.writerow(values)
+
