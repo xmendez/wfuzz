@@ -139,6 +139,10 @@ class LastFuzzQueue(FuzzQueue):
     def _cleanup(self):
         self.qmanager.cleanup()
 
+    def send(self, item):
+        if item.type == FuzzResult.result:
+            self.queue_out.put(item)
+
     def run(self):
 	cancelling = False
 
@@ -153,13 +157,6 @@ class LastFuzzQueue(FuzzQueue):
                     break
                 elif cancelling:
                     continue
-                #elif item.type == FuzzResult.startseed:
-                    #self.stats.mark_start()
-                elif item.type == FuzzResult.endseed:
-                    self.stats.pending_seeds.dec()
-                    if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
-                        self.qmanager.stop()
-                    continue
                 elif item.type == FuzzResult.error:
                     self.qmanager.cancel()
                     self.send_first(item)
@@ -169,9 +166,11 @@ class LastFuzzQueue(FuzzQueue):
                     cancelling = True
                     continue
 
-		self.send(item)
+                self.send(item)
 
-                if item.type == FuzzResult.result:
+                if item.type == FuzzResult.endseed:
+                    self.stats.pending_seeds.dec()
+                elif item.type == FuzzResult.result:
                     self.stats.processed.inc()
                     self.stats.pending_fuzz.dec()
                     if not item.is_visible: self.stats.filtered.inc()
