@@ -670,7 +670,7 @@ class FuzzStats:
             self._cancelled = v
 
 class FuzzResult:
-    seed, backfeed, result, error, startseed, endseed, cancel = range(7)
+    seed, backfeed, result, error, startseed, endseed, cancel, discarded = range(8)
     newid = itertools.count(0).next
     ERROR_CODE = -1
     BASELINE_CODE = -2
@@ -682,7 +682,6 @@ class FuzzResult:
 	self.exception = exception
         self.description = ""
         self.is_baseline = False
-	self.is_visible = True
         self.rlevel = 1
         self.nres = FuzzResult.newid() if  track_id else 0
 
@@ -733,7 +732,7 @@ class FuzzResult:
 
             return res
         else:
-            return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel")[self.type]
+            return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel", "discarded")[self.type]
 
 
     # parameters in common with fuzzrequest
@@ -774,7 +773,6 @@ class FuzzResult:
 	fr.exception = self.exception
         fr.description = self.description
         fr.is_baseline = self.is_baseline
-	fr.is_visible = self.is_visible
 	fr.type = self.type
         fr.rlevel = self.rlevel
         fr.payload = list(self.payload)

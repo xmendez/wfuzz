@@ -207,11 +207,10 @@ class View:
         else:
             self._print(res)
 
-        if res.is_visible: 
-            sys.stdout.write("\n\r")
+        sys.stdout.write("\n\r")
 
-            for i in res.plugins_res:
-                print "  |_ %s\r" % i.issue
+        for i in res.plugins_res:
+            print "  |_ %s\r" % i.issue
 
     def footer(self, summary):
         self.term.delete_line()

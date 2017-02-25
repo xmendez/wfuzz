@@ -32,6 +32,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
         MyPriorityQueue.__init__(self, limit)
 	self.queue_out = queue_out
         self.duplicated = False
+        self.syncq = None
 
         self.stats = options.get("compiled_genreq").stats
         self.options = options
@@ -71,6 +72,13 @@ class FuzzQueue(MyPriorityQueue, Thread):
 
     def send(self, item):
 	self.queue_out.put(item)
+
+    def discard(self, item):
+        if item.type == FuzzResult.result:
+            item.type = FuzzResult.discarded
+            self.syncq.put(item)
+        else:
+            raise FuzzExceptInternalError(FuzzException.FATAL, "Only results can be discarded")
 
     def join(self):
 	MyPriorityQueue.join(self)
@@ -170,10 +178,10 @@ class LastFuzzQueue(FuzzQueue):
 
                 if item.type == FuzzResult.endseed:
                     self.stats.pending_seeds.dec()
-                elif item.type == FuzzResult.result:
+                elif item.type in [FuzzResult.result, FuzzResult.discarded]:
                     self.stats.processed.inc()
                     self.stats.pending_fuzz.dec()
-                    if not item.is_visible: self.stats.filtered.inc()
+                    if item.type == FuzzResult.discarded: self.stats.filtered.inc()
 
                 if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
                     self.qmanager.stop()
@@ -263,14 +271,16 @@ class QueueManager:
             l = self._queues.values()
             self._lastq = lastq
 
-            for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
-                first.next_queue(second)
-
             self._syncq = LastFuzzQueue(l[-1].options, lastq)
             self._syncq.qmanager = self
 
+            for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
+                first.next_queue(second)
+                first.syncq = self._syncq
+
 
             l[-1].next_queue(self._syncq)
+            l[-1].syncq = self._syncq
 
     def __getitem__(self, key):
         return self._queues[key]

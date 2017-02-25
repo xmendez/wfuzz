@@ -95,9 +95,7 @@ class PrinterQ(FuzzQueue):
         self.printer.footer(self.stats)
 
     def process(self, prio, item):
-        if item.is_visible:
-            self.printer.result(item)
-
+        self.printer.result(item)
         self.send(item)
 
 class RoutingQ(FuzzQueue):
@@ -126,11 +124,11 @@ class FilterQ(FuzzQueue):
     def process(self, prio, item):
 	if item.is_baseline:
 	    self.ffilter.set_baseline(item)
-            item.is_visible = True
-        else:
-            item.is_visible = self.ffilter.is_visible(item)
 
-	self.send(item)
+        if self.ffilter.is_visible(item):
+            self.send(item)
+        else:
+            self.discard(item)
 
 class SliceQ(FuzzQueue):
     def __init__(self, options):
@@ -145,7 +143,7 @@ class SliceQ(FuzzQueue):
 	if item.is_baseline or self.ffilter.is_visible(item):
             self.send(item)
         else:
-            self.stats.pending_fuzz.dec()
+            self.discard(item)
 
 class JobQ(FuzzRRQueue):
     def __init__(self, options):
@@ -179,7 +177,7 @@ class JobMan(FuzzQueue):
     # ------------------------------------------------
     def process(self, prio, res):
 	# process request through plugins
-	if res.is_visible and not res.exception:
+	if not res.exception:
 	    if self.cache.update_cache(res.history, "processed"):
 
 		plugins_res_queue = Queue()
