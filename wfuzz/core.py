@@ -184,7 +184,7 @@ class Fuzzer:
 	# Create queues
 	# genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
 
-        self.qmanager = QueueManager()
+        self.qmanager = QueueManager(options)
         self.results_queue = MyPriorityQueue()
 
         self.qmanager.add("seed_queue", SeedQ(options))

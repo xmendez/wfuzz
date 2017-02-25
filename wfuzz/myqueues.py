@@ -91,7 +91,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	pass
 
     def _throw(self, e):
-        self.send_first(FuzzResult.to_new_exception(e))
+        self.syncq.put_first(FuzzResult.to_new_exception(e))
 
     def get_stats(self):
         return {self.get_name(): self.qsize()}
@@ -115,10 +115,6 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     self.stats.mark_start()
                 elif item.type == FuzzResult.endseed:
                     if not self.duplicated: self.send_last(item)
-                    self.task_done()
-                    continue
-                elif item.type == FuzzResult.error:
-                    self.send_first(item)
                     self.task_done()
                     continue
                 elif item.type == FuzzResult.cancel:
@@ -256,11 +252,13 @@ class FuzzRRQueue(FuzzListQueue):
 	    i = i % len(self.queue_out)
 
 class QueueManager:
-    def __init__(self):
+    def __init__(self, options):
         self._queues = collections.OrderedDict()
         self._lastq = None
         self._syncq = None
         self._mutex = RLock()
+
+        self.options = options
 
     def add(self, name, q):
         self._queues[name] = q
@@ -271,7 +269,7 @@ class QueueManager:
             l = self._queues.values()
             self._lastq = lastq
 
-            self._syncq = LastFuzzQueue(l[-1].options, lastq)
+            self._syncq = LastFuzzQueue(self.options, lastq)
             self._syncq.qmanager = self
 
             for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
