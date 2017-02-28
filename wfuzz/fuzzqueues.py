@@ -125,7 +125,7 @@ class FilterQ(FuzzQueue):
 	if item.is_baseline:
 	    self.ffilter.set_baseline(item)
 
-        if self.ffilter.is_visible(item):
+        if self.ffilter.is_visible(item) or item.is_baseline:
             self.send(item)
         else:
             self.discard(item)
