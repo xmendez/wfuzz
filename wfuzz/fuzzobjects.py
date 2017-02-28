@@ -726,9 +726,9 @@ class FuzzResult:
 
     def __str__(self):
         if self.type == FuzzResult.result:
-            res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\n" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
+            res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
             for i in self.plugins_res:
-                res += "  |_ %s\n" % i.issue
+                res += "\n  |_ %s" % i.issue
 
             return res
         else:
