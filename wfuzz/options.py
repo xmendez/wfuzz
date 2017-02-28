@@ -242,6 +242,12 @@ class FuzzSession(UserDict):
         # seed
         self.data["compiled_genreq"] = requestGenerator(self)
 
+        if self.data["compiled_genreq"].baseline == None and (FuzzResult.BASELINE_CODE in self.data['hc'] \
+                or FuzzResult.BASELINE_CODE in self.data['hl'] \
+                or FuzzResult.BASELINE_CODE in self.data['hw'] \
+                or FuzzResult.BASELINE_CODE in self.data['hh']):
+                    raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
+
 	try:
 	    script_args = {}
 	    if self.data['script_args']:

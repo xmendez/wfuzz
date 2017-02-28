@@ -116,7 +116,7 @@ class requestGenerator:
 	def __init__(self, options):
             self.options = options
 	    self.seed = FuzzResultFactory.from_options(options)
-	    self._baseline = FuzzResultFactory.from_baseline(self.seed)
+	    self.baseline = FuzzResultFactory.from_baseline(self.seed)
 	    self.dictio = dictionary.from_options(self.options)
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
@@ -148,7 +148,7 @@ class requestGenerator:
 	    if self.seed.history.wf_allvars is not None:
 		v *= len(self.seed.history.wf_allvars_set)
 
-	    if self._baseline: v += 1
+	    if self.baseline: v += 1
 
 	    return v
 
@@ -164,14 +164,14 @@ class requestGenerator:
 	    if self.stats.cancelled:
 		raise StopIteration
 
-	    if self._baseline and self.stats.processed() == 0 and self.stats.pending_seeds() <= 1:
-		return self._baseline
+	    if self.baseline and self.stats.processed() == 0 and self.stats.pending_seeds() <= 1:
+		return self.baseline
 
 	    if self.seed.history.wf_allvars is not None:
 		return self._allvar_gen.next()
 	    else:
 		n = self.dictio.next()
-                if self.stats.processed() == 0 or (self._baseline and self.stats.processed() == 1): 
+                if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1): 
                     self._check_dictio_len(n)
 
 		return FuzzResultFactory.from_seed(self.seed, n, self.options)

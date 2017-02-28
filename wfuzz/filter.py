@@ -271,12 +271,6 @@ class FuzzResFilter:
             except AttributeError, e:
 		raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 	else:
-	    if self.baseline == None and (FuzzResult.BASELINE_CODE in self.hideparams['codes'] \
-		    or FuzzResult.BASELINE_CODE in self.hideparams['lines'] \
-		    or FuzzResult.BASELINE_CODE in self.hideparams['words'] \
-		    or FuzzResult.BASELINE_CODE in self.hideparams['chars']):
-			raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
-
 	    if self.hideparams['codes_show'] is None:
 		cond1 = True
 	    else:
