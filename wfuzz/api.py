@@ -68,4 +68,5 @@ def get_payloads(iterator):
     return fs.get_payloads(iterator)
 
 def get_payload(iterator):
-    return get_payload(iterator)
+    fs = FuzzSession()
+    return fs.get_payload(iterator)
