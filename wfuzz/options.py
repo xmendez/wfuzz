@@ -24,6 +24,8 @@ class FuzzSession(UserDict):
         self.cache = HttpCache()
         self.http_pool = None
 
+        self.fz = None
+
     def _defaults(self):
 	return dict(
             hs = None,
@@ -172,16 +174,14 @@ class FuzzSession(UserDict):
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
 
-        fz = None
-
         try:
-            fz = Fuzzer(self.compile())
+            self.fz = Fuzzer(self.compile())
 
-            for f in fz:
+            for f in self.fz:
                 yield f
 
         finally:
-            if fz: fz.cancel_job()
+            if self.fz: self.fz.cancel_job()
 
     def get_payloads(self, iterator):
         class wrapper:
@@ -211,6 +211,7 @@ class FuzzSession(UserDict):
 
     def __exit__(self, *args):
         self.http_pool.deregister()
+        if self.fz: self.fz.cancel_job()
 
     def compile(self):
         # Validate options

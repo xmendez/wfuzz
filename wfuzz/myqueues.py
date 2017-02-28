@@ -105,7 +105,6 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	    try:
                 if item == None:
                     if not self.duplicated: self.send_last(None)
-                    if not cancelling: self.qout_join()
                     self.task_done()
                     break
                 elif cancelling:
@@ -141,7 +140,7 @@ class LastFuzzQueue(FuzzQueue):
         pass
 
     def _cleanup(self):
-        self.qmanager.cleanup()
+        pass
 
     def send(self, item):
         if item.type == FuzzResult.result:
@@ -180,7 +179,7 @@ class LastFuzzQueue(FuzzQueue):
                     if item.type == FuzzResult.discarded: self.stats.filtered.inc()
 
                 if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
-                    self.qmanager.stop()
+                    self.qmanager.cleanup()
 
 	    except Exception, e:
 		self._throw(e)
@@ -298,14 +297,10 @@ class QueueManager:
 
                 self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
 
-    def stop(self):
-        with self._mutex:
-            if self._queues:
-                self._queues.values()[0].put_last(None)
-
     def cleanup(self):
         with self._mutex:
             if self._queues:
+                self._queues.values()[0].put_last(None)
                 self.join(remove=True)
                 self._lastq.put_last(None, wait = False)
 
@@ -324,7 +319,6 @@ class QueueManager:
                 self.join()
 
                 # send None to stop (almost nicely)
-                self.stop()
                 self.cleanup()
 
     def get_stats(self):
