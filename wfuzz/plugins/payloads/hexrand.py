@@ -1,9 +1,9 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
 import random
 
-@wfuzz_iterator
+@moduleman_plugin
 class hexrand(BasePayload):
     name = "hexrand"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")

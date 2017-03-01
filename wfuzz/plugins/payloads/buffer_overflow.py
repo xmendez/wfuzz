@@ -1,7 +1,7 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
-@wfuzz_iterator
+@moduleman_plugin
 class buffer_overflow(BasePayload):
     name = "buffer_overflow"
     author = ("Xavi Mendez (@xmendez)",)

@@ -1,8 +1,8 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptPluginBadParams, FuzzExceptBadInstall
 from wfuzz.plugin_api.base import BasePayload
 
-@wfuzz_iterator
+@moduleman_plugin
 class ipnet(BasePayload):
     name = "ipnet"
     author = "Xavi Mendez (@xmendez)"

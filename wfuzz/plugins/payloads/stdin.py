@@ -1,9 +1,9 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
 import sys
 
-@wfuzz_iterator
+@moduleman_plugin
 class stdin(BasePayload):
     name = "stdin"
     author = ("Xavi Mendez (@xmendez)",)

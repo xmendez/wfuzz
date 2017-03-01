@@ -1,8 +1,8 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.payloadtools import BingIter
 from wfuzz.plugin_api.base import BasePayload
 
-@wfuzz_iterator
+@moduleman_plugin
 class bing(BasePayload):
     name = "bing"
     author = ("Xavi Mendez (@xmendez)")

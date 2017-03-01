@@ -34,6 +34,9 @@ class BasePlugin():
 	'''
 	raise NotImplemented
 
+    def validate(self):
+        raise FuzzExceptPluginError("Method count not implemented")
+
     def add_result(self, issue):
 	plres = PluginResult()
 	plres.source = self.name
@@ -54,17 +57,14 @@ class BasePrinter:
 
         self.verbose = Facade().printers.kbase["verbose"]
 
-# decorator for iterator plugins
-def wfuzz_iterator(cls):
-    method_args = ["count", "next", "__iter__"]
+    def header(self):
+        raise FuzzExceptPluginError("Method header not implemented")
 
-    for method in method_args:
-	if (not (method in dir(cls))):
-	    raise Exception("Required method %s not implemented" % method)
+    def footer(self):
+        raise FuzzExceptPluginError("Method footer not implemented")
 
-    cls.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
-
-    return cls
+    def result(self):
+        raise FuzzExceptPluginError("Method result not implemented")
 
 class BasePayload:
     def __init__(self, params):
@@ -89,3 +89,13 @@ class BasePayload:
 
             if not name in self.params:
                 self.params[name] = default_value
+
+    def next(self):
+        raise FuzzExceptPluginError("Method next not implemented")
+
+    def count(self):
+        raise FuzzExceptPluginError("Method count not implemented")
+
+    def __iter__(self):
+        raise FuzzExceptPluginError("Method iter not implemented")
+

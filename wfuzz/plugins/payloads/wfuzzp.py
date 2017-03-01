@@ -1,12 +1,12 @@
 import cPickle as pickle
 import gzip
 
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
-from wfuzz.plugin_api.base import wfuzz_iterator
 from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.plugin_api.base import BasePayload
 
-@wfuzz_iterator
+@moduleman_plugin
 class wfuzzp(BasePayload):
     name = "wfuzzp"
     author = ("Xavi Mendez (@xmendez)",)

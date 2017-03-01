@@ -1,11 +1,10 @@
-from wfuzz.plugin_api.base import wfuzz_iterator
+from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
 import os
 import urllib
 
-
-@wfuzz_iterator
+@moduleman_plugin
 class dirwalk(BasePayload):
     name = "dirwalk"
     author = ("Xavi Mendez (@xmendez)",)

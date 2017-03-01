@@ -1,9 +1,8 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
-from wfuzz.plugin_api.base import wfuzz_iterator
 
 import itertools
 
-@wfuzz_iterator
+@moduleman_plugin
 class zip:
     name = "zip"
     author = ("Xavi Mendez (@xmendez)",)
@@ -25,7 +24,7 @@ class zip:
     def __iter__(self):
 	return self
 
-@wfuzz_iterator
+@moduleman_plugin
 class product:
     name = "product"
     author = ("Xavi Mendez (@xmendez)",)
@@ -47,7 +46,7 @@ class product:
     def __iter__(self):
 	return self
 
-@wfuzz_iterator
+@moduleman_plugin
 class chain:
     name = "chain"
     author = ("Xavi Mendez (@xmendez)",)

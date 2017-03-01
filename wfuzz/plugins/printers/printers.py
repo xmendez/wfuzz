@@ -5,7 +5,7 @@ from xml.dom import minidom
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
 
-@moduleman_plugin("header", "footer", "result")
+@moduleman_plugin
 class magictree(BasePrinter):
     name = "magictree"
     author = ("Xavi Mendez (@xmendez)",)
@@ -88,7 +88,7 @@ class magictree(BasePrinter):
     def footer(self, summary):
 	self.f.write(self.node_mt.toxml())
 
-@moduleman_plugin("header", "footer", "result")
+@moduleman_plugin
 class html(BasePrinter):
     name = "html"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
@@ -127,7 +127,7 @@ class html(BasePrinter):
     def footer(self, summary):
 	self.f.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
 
-@moduleman_plugin("header", "footer", "result")
+@moduleman_plugin
 class json(BasePrinter):
     name = "json"
     summary = "Results in json format"
@@ -166,7 +166,7 @@ class json(BasePrinter):
 
 
 
-@moduleman_plugin("header", "footer", "result")
+@moduleman_plugin
 class raw(BasePrinter):
     name = "raw"
     author = ("Xavi Mendez (@xmendez)",)
