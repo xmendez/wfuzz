@@ -146,6 +146,9 @@ class LastFuzzQueue(FuzzQueue):
         if item.type == FuzzResult.result:
             self.queue_out.put(item)
 
+    def _throw(self, e):
+        self.queue_out.put_first(FuzzResult.to_new_exception(e))
+
     def run(self):
 	cancelling = False
 
