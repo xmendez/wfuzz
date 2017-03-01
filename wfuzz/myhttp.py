@@ -26,8 +26,6 @@ class HttpPool:
 
 	self.ths = None
 
-	self._proxies = None
-
         self.pool_map = {}
         self.default_poolid = 0
 
@@ -38,9 +36,6 @@ class HttpPool:
     def _initialize(self):
 	# pycurl Connection pool
 	self._create_pool(self.options.get("concurrent"))
-
-	if self.options.get("proxies"):
-	    self._proxies = self._get_next_proxy(self.options.get("proxies"))
 
         # internal pool
         self.default_poolid = self._new_pool()
@@ -67,11 +62,11 @@ class HttpPool:
     def perform(self, fuzzreq):
         poolid = self._new_pool()
         self.enqueue(fuzzreq, poolid)
-        item = self.pool_map[poolid].get()
+        item = self.pool_map[poolid]["queue"].get()
         return item
 
     def iter_results(self, poolid = None):
-        item = self.pool_map[self.default_poolid if not poolid else poolid].get()
+        item = self.pool_map[self.default_poolid if not poolid else poolid]["queue"].get()
 
         if not item: raise StopIteration
 
@@ -79,13 +74,18 @@ class HttpPool:
 
     def _new_pool(self):
         poolid = self.newid()
-        self.pool_map[poolid] = Queue()
+        self.pool_map[poolid] = {}
+        self.pool_map[poolid]["queue"] = Queue()
+        self.pool_map[poolid]["proxy"] = None
+
+	if self.options.get("proxies"):
+            self.pool_map[poolid]["proxy"] = self._get_next_proxy(self.options.get("proxies"))
 
         return poolid
 
     def enqueue(self, fuzzres, poolid = None):
 	c = fuzzres.history.to_http_object(self.freelist.get())
-	c = self._set_extra_options(c, fuzzres)
+	c = self._set_extra_options(c, fuzzres, self.default_poolid if not poolid else poolid)
 
         if self.exit_job: return
 
@@ -98,7 +98,7 @@ class HttpPool:
 
     def _stop_to_pools(self):
         for p in self.pool_map.keys():
-            self.pool_map[p].put(None)
+            self.pool_map[p]["queue"].put(None)
 
     # Pycurl management
     def _create_pool(self, num_conn):
@@ -141,9 +141,9 @@ class HttpPool:
 	    i += 1
 	    i = i % len(proxy_list)
 
-    def _set_extra_options(self, c, freq):
-	if self._proxies:
-	    ip, port, ptype = self._proxies.next()
+    def _set_extra_options(self, c, freq, poolid):
+	if self.pool_map[poolid]["proxy"]:
+	    ip, port, ptype = self.pool_map[poolid]["proxy"].next()
 
 	    freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
@@ -192,7 +192,7 @@ class HttpPool:
 		res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
 
                 # reset type to result otherwise backfeed items will enter an infinite loop
-                self.pool_map[poolid].put(res.update())
+                self.pool_map[poolid]["queue"].put(res.update())
 
 		self.m.remove_handle(c)
 		self.freelist.put(c)
@@ -227,7 +227,7 @@ class HttpPool:
                         continue
 
 		e = FuzzExceptNetError("Pycurl error %d: %s" % (errno, errmsg))
-                self.pool_map[poolid].put(res.update(exception=e))
+                self.pool_map[poolid]["queue"].put(res.update(exception=e))
 
 		with self.mutex_stats:
 		    self.processed += 1
