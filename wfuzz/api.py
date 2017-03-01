@@ -56,7 +56,7 @@ def fuzz(**kwargs):
       >>> results = wfuzz.fuzz('http://www.google.com/FUZZ', [("range", dict(range="0-10"), ["md5", "sha1"])])
     """
 
-    return Fuzzer(FuzzSession(**kwargs).compile())
+    return FuzzSession(**kwargs).fuzz()
 
 
 def session(**kwargs):
