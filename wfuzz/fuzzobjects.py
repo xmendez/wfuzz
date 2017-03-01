@@ -669,6 +669,31 @@ class FuzzStats:
         with self.mutex:
             self._cancelled = v
 
+    def __str__(self):
+        string = ""
+
+        string += "Total time: %s\n" % str(self.totaltime)[:8]
+
+	if self.backfeed() > 0:
+	    string += "Processed Requests: %s (%d + %d)\n" % (str(self.processed())[:8], (self.processed() - self.backfeed()), self.backfeed())
+	else:
+	    string += "Processed Requests: %s\n" % (str(self.processed())[:8])
+	string += "Filtered Requests: %s\n" % (str(self.filtered())[:8])
+	string += "Requests/sec.: %s\n" % str(self.processed()/self.totaltime if self.totaltime > 0 else 0)[:8]
+
+        return string
+
+    def update(self, fuzzstats2):
+        self.url = fuzzstats2.url
+        self.total_req += fuzzstats2.total_req
+        self.totaltime += fuzzstats2.totaltime
+
+        self.backfeed._operation(fuzzstats2.backfeed())
+        self.processed._operation(fuzzstats2.processed())
+        self.pending_fuzz._operation(fuzzstats2.pending_fuzz())
+        self.filtered._operation(fuzzstats2.filtered())
+        self.pending_seeds._operation(fuzzstats2.pending_seeds())
+
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel, discarded = range(8)
     newid = itertools.count(0).next

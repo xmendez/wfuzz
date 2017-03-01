@@ -1,7 +1,7 @@
 from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
 from .facade import Facade
 
-from .fuzzobjects import FuzzRequest, FuzzResult
+from .fuzzobjects import FuzzRequest, FuzzResult, FuzzStats
 from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import json_minify
@@ -25,6 +25,7 @@ class FuzzSession(UserDict):
         self.http_pool = None
 
         self.fz = None
+        self.stats = FuzzStats()
 
     def _defaults(self):
 	return dict(
@@ -189,6 +190,7 @@ class FuzzSession(UserDict):
 
         finally:
             if self.fz: self.fz.cancel_job()
+            self.stats.update(self.fz.genReq.stats)
 
     def get_payloads(self, iterator):
         class wrapper:

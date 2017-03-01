@@ -216,12 +216,5 @@ class View:
         self.term.delete_line()
 	sys.stdout.write("\r\n")
 
-	print "Total time: %s\r" % str(summary.totaltime)[:8]
-
-	if summary.backfeed() > 0:
-	    print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed())
-	else:
-	    print "Processed Requests: %s\r" % (str(summary.processed())[:8])
-	print "Filtered Requests: %s\r" % (str(summary.filtered())[:8])
-	print "Requests/sec.: %s\r\n" % str(summary.processed()/summary.totaltime if summary.totaltime > 0 else 0)[:8]
+        print summary
 
