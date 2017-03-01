@@ -72,12 +72,11 @@ class CLParser:
 	    self._parse_payload(optsd, options)
 	    self._parse_scripts(optsd, options)
 
-	    # Validate options
-	    error = options.validate()
-	    if error:
-		raise FuzzExceptBadOptions(error)
-
 	    if "--dump-recipe" in optsd:
+                error = options.validate()
+                if error:
+                    raise FuzzExceptBadOptions(error)
+
                 options.export_to_file(optsd["--dump-recipe"][0])
                 print help_banner
                 print "Recipe written to %s." % (optsd["--dump-recipe"][0],)
@@ -314,11 +313,7 @@ class CLParser:
 	    options['headers'].append((splitted[0], splitted[2].strip()))
 
 	if "-V" in optsd:
-	    varset = str(optsd["-V"][0])
-            if varset not in ['allvars','allpost','allheaders']: 
-                raise FuzzExceptBadOptions("Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
-
-	    options['allvars'] = varset
+	    options['allvars'] = str(optsd["-V"][0])
 
     def _parse_conn_options(self, optsd, conn_options):
 	'''
@@ -342,8 +337,6 @@ class CLParser:
 		if len(vals) == 2:
 		    proxy.append((vals[0], vals[1], "HTML"))
 		elif len(vals) == 3:
-		    if vals[2] not in ("SOCKS5","SOCKS4","HTML"):
-			raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 		    proxy.append((vals[0], vals[1], vals[2]))
 		else:
 		    raise FuzzExceptBadOptions("Bad proxy parameter specified.")

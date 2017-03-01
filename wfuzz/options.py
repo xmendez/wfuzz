@@ -99,6 +99,13 @@ class FuzzSession(UserDict):
         if self.data["rlevel"] < 0:
             return "Bad usage: Recursion level must be a positive int."
 
+        if self.data['allvars'] not in [None, 'allvars','allpost','allheaders']: 
+            raise FuzzExceptBadOptions("Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
+
+        if self.data['proxies']:
+            for ip, port, ttype in self.data['proxies']:
+                if ttype not in ("SOCKS5","SOCKS4","HTML"):
+                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 
         try:
             if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
