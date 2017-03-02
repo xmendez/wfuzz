@@ -219,8 +219,7 @@ class FuzzSession(UserDict):
         return self
 
     def __exit__(self, *args):
-        self.http_pool.deregister()
-        if self.fz: self.fz.cancel_job()
+        self.close()
 
     def compile(self):
         # Validate options
@@ -286,3 +285,7 @@ class FuzzSession(UserDict):
 	    Facade().printers.kbase["verbose"] = True
 
         return self
+
+    def close(self):
+        self.http_pool.deregister()
+        if self.fz: self.fz.cancel_job()
