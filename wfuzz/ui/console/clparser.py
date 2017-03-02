@@ -143,7 +143,7 @@ class CLParser:
 
     def _check_options(self, optsd):
 	# Check for repeated flags
-	l = [i for i in optsd if i not in ["-z", "--zP", "-w", "-b", "-H"] and len(optsd[i]) > 1]
+	l = [i for i in optsd if i not in ["-z", "--zP", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
 	if l:
 	    raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
 
@@ -331,7 +331,7 @@ class CLParser:
 	if "-p" in optsd:
 	    proxy = []
 
-	    for p in optsd["-p"][0].split('-'):
+            for p in optsd["-p"]:
 		vals = p.split(":")
 
 		if len(vals) == 2:
