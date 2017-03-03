@@ -38,9 +38,9 @@ class headers:
 
         if num_fields == 2:
             if attr[1] == "request":
-                return str(self.request)
+                return ", ".join(map(lambda x: "%s:%s" % (x[0],x[1]), self.request.items()))
             elif attr[1] == "response":
-                return str(self.response)
+                return ", ".join(map(lambda x: "%s:%s" % (x[0],x[1]), self.response.items()))
             else:
                 raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
         elif num_fields != 3:
@@ -126,9 +126,9 @@ class parameters(object):
 
         if num_fields == 2:
             if attr[1] == "get":
-                return str(self.get)
+                return ", ".join(map(lambda x: "%s=%s" % (x[0],x[1]), self.get.items()))
             elif attr[1] == "post":
-                return str(self.post)
+                return ", ".join(map(lambda x: "%s=%s" % (x[0],x[1]), self.post.items()))
             else:
                 raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
         elif num_fields == 3:
