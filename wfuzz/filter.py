@@ -18,7 +18,7 @@ class FuzzResFilter:
     def __init__(self, ffilter = None, filter_string = None):
 	if PYPARSING:
 	    basic_symbol = oneOf("c code l lines w words h chars i index")
-	    adv_symbol = oneOf("intext inurl site inheader filetype")
+	    adv_symbol = oneOf("intext inurl site inheader inrheader filetype")
 	    adv_symbol_bool = oneOf("hasquery ispath")
             fuzz_symbol = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
 
@@ -189,6 +189,11 @@ class FuzzResFilter:
                 cond = False
                 
                 if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
+            elif adv_element == 'inrheader':
+                regex = re.compile(value, re.MULTILINE|re.DOTALL)
+                cond = False
+                
+                if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.request.items()])): cond = True
         except TypeError:
             raise FuzzExceptIncorrectFilter("Using a complete fuzzresult as a filter, specify field or use string.")
 
