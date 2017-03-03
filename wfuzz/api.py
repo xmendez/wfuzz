@@ -1,5 +1,6 @@
 from .core import Fuzzer
 from .options import FuzzSession
+from .facade import Facade
 
 '''
 Wfuzz API
@@ -70,3 +71,9 @@ def get_payloads(iterator):
 def get_payload(iterator):
     fs = FuzzSession()
     return fs.get_payload(iterator)
+
+def encode(name, value):
+    return Facade().encoders.get_plugin(name)().encode(value)
+
+def decode(name, value):
+    return Facade().encoders.get_plugin(name)().decode(value)

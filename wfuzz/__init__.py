@@ -27,4 +27,4 @@ except ImportError, e:
     print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
     sys.exit(1)
 
-from .api import fuzz, session, get_payload, get_payloads
+from .api import fuzz, session, get_payload, get_payloads, encode, decode
