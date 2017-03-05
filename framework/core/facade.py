@@ -7,7 +7,7 @@ from externals.settings.settings import SettingsBase
 
 import os
 
-version = "2.1.3"
+version = "2.1.5"
 
 class Settings(SettingsBase):
     def get_config_file(self):
