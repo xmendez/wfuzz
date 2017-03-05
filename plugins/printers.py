@@ -367,7 +367,7 @@ class raw:
 
 
     def noresult(self, res):
-	self._print(res, "")
+	pass
 
     def footer(self, summary):
 	print "\r\n"
