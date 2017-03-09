@@ -60,9 +60,6 @@ def fuzz(**kwargs):
     return FuzzSession(**kwargs).fuzz()
 
 
-def session(**kwargs):
-    return FuzzSession(**kwargs)
-
 def get_payloads(iterator):
     fs = FuzzSession()
 
