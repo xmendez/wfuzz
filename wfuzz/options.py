@@ -41,7 +41,7 @@ class FuzzSession(UserDict):
             sh = [],
             payloads = None,
             iterator = None,
-            printer = None,
+            printer = (None, None),
             colour = False,
             verbose = False,
             interactive = False,
@@ -76,6 +76,7 @@ class FuzzSession(UserDict):
             compiled_genreq = None,
             compiled_filter = None,
             compiled_prefilter = None,
+            compiled_printer = None,
 	)
 
     def validate(self):
@@ -226,6 +227,12 @@ class FuzzSession(UserDict):
         error = self.validate()
         if error:
             raise FuzzExceptBadOptions(error)
+
+        # printer
+        filename, printer = self.data["printer"]
+        if filename:
+            if printer == "default" or not printer: printer = Facade().sett.get('general', 'default_printer')
+            self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)
 
         try:
             self.data['hc'] = [FuzzResult.BASELINE_CODE if i=="BBB" else FuzzResult.ERROR_CODE if i=="XXX" else int(i) for i in self.data['hc']]

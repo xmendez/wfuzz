@@ -364,7 +364,7 @@ class CLParser:
     def _parse_options(self, optsd, options):
 	'''
 	options = dict(
-	    printer = "default",
+	    printer = (None,None),
 	    colour = False,
 	    interactive = False,
 	    dryrun = False,
@@ -389,12 +389,9 @@ class CLParser:
 	    vals = optsd['-o'][0].split(",", 1)
 
             if len(vals) == 1:
-                filename = vals[0]
-                printer = Facade().sett.get('general', 'default_printer')
+                options["printer"] = (vals[0], None)
             else:
-                filename, printer = vals
-
-            options["printer"] = Facade().printers.get_plugin(printer)(filename)
+                options["printer"] = vals
                 
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]

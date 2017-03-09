@@ -85,7 +85,7 @@ class PrinterQ(FuzzQueue):
     def __init__(self, options):
 	FuzzQueue.__init__(self, options)
 
-        self.printer = options.get("printer")
+        self.printer = options.get("compiled_printer")
         self.printer.header(self.stats)
 
     def get_name(self):

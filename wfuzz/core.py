@@ -217,7 +217,7 @@ class Fuzzer:
 	if options.get('save'):
             self.qmanager.add("save_queue", SaveQ(options))
 
-	if options.get('printer'):
+	if options.get('compiled_printer'):
             self.qmanager.add("printer_queue", PrinterQ(options))
 
         self.qmanager.bind(self.results_queue)
