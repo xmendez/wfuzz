@@ -91,8 +91,8 @@ verbose_usage ='''%s\n\nOptions:
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
 \t--follow		    : Follow HTTP redirections
 \t-Z			    : Scan mode (Connection errors will be ignored).
-\t--req-delay		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
-\t--conn-delay		    : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
+\t--req-delay N		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
+\t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
 \t-A			    : Alias for --script=default -v -c
 \t--script=		    : Equivalent to --script=default
