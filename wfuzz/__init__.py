@@ -28,4 +28,4 @@ except ImportError, e:
     sys.exit(1)
 
 from .options import FuzzSession
-from .api import fuzz, get_payload, get_payloads, encode, decode
+from .api import fuzz, get_payload, get_payloads, encode, decode, get_dictio

@@ -1,4 +1,5 @@
 from .core import Fuzzer
+from .core import dictionary
 from .options import FuzzSession
 from .facade import Facade
 
@@ -74,3 +75,11 @@ def encode(name, value):
 
 def decode(name, value):
     return Facade().encoders.get_plugin(name)().decode(value)
+
+def get_dictio(name, params, sliceit = None):
+    payloads_list = []
+    payloads_list.append((name, params, sliceit))
+    options = dict(dictio=None, payloads=payloads_list, iterator="")
+
+    return dictionary.from_options(options)
+
