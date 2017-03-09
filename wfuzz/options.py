@@ -65,7 +65,7 @@ class FuzzSession(UserDict):
             cookie = [],
             allvars = None,
             script= "",
-            script_args = [],
+            script_args = {},
 
             # this is equivalent to payloads but in a different format
             dictio = None,
@@ -263,17 +263,10 @@ class FuzzSession(UserDict):
                 or FuzzResult.BASELINE_CODE in self.data['hh']):
                     raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
 
-	try:
-	    script_args = {}
-	    if self.data['script_args']:
-		script_args = dict(map(lambda x: x.split("=", 1), self.data['script_args'].split(",")))
-	except ValueError:
-	    raise FuzzExceptBadOptions("Script arguments: Incorrect arguments format supplied.")
-
 	if self.data["script"]:
 	    for k, v in Facade().sett.get_section("kbase"):
-		if k in script_args:
-		    value = script_args[k]
+		if k in self.data["script_args"]:
+		    value = self.data["script_args"][k]
 
 		    if value[0] == "+":
 			value = value[1:]

@@ -406,7 +406,7 @@ class CLParser:
 	'''
 	options = dict(
 	    script = "",
-	    script_args = [],
+	    script_args = {},
 	)
 	'''
 
@@ -417,4 +417,7 @@ class CLParser:
 	    options["script"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]
 
 	if "--script-args" in optsd:
-	    options['script_args'] = optsd["--script-args"][0]
+            try:
+                options['script_args'] = dict(map(lambda x: x.split("=", 1), optsd["--script-args"][0].split(",")))
+            except ValueError:
+                raise FuzzExceptBadOptions("Script arguments: Incorrect arguments format supplied.")
