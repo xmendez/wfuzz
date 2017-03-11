@@ -36,8 +36,8 @@ class FuzzResFilter:
 	    not_operator = Optional(oneOf("not"), "notpresent")
 
 	    basic_symbol_expr = Group(basic_symbol + oneOf("= != < > >= <=") + basic_symbol_values)
-	    adv_symbol_expr = Group(adv_symbol + oneOf("= !=") + unquote_operator)
-	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != ~") + quoted_str_element_opt)
+	    adv_symbol_expr = Group(adv_symbol + oneOf("= != =~ !~ ~") + unquote_operator)
+	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != =~ !~ ~") + quoted_str_element_opt)
 
             definition = sed_operator | fuzz_symbol_expr | adv_symbol_expr | basic_symbol_expr | adv_symbol_bool | unique_operator
             definition_not = not_operator + definition
@@ -162,7 +162,13 @@ class FuzzResFilter:
 	elif operator == "!=":
 	    return value != leftvalue
 	elif operator == "~":
-	    return leftvalue.find(value) >= 0
+	    return value in leftvalue
+	elif operator == "=~":
+            regex = re.compile(value, re.MULTILINE|re.DOTALL)
+            return regex.search(leftvalue) is not None
+	elif operator == "!~":
+            regex = re.compile(value, re.MULTILINE|re.DOTALL)
+            return regex.search(leftvalue) is None
 
     def __compute_adv_element(self, tokens):
 	adv_element, operator, value = tokens[0]
@@ -171,29 +177,30 @@ class FuzzResFilter:
 
         try:
             if adv_element == 'intext':
-                regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                cond = False
-                if regex.search(self.res.history.content): cond = True
+                test = self.res.history.content
             elif adv_element == 'inurl':
-                regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                cond = False
-                if regex.search(self.res.url): cond = True
+                test = self.res.url
             elif adv_element == 'filetype':
-                if self.res.history.urlparse.file_extension == value:
-                    cond = True
+                test = self.res.history.urlparse.file_extension
             elif adv_element == 'site':
-                if self.res.history.urlparse.netloc.rfind(value) >= 0:
-                    cond = True
+                test = self.res.history.urlparse.netloc
             elif adv_element == 'inheader':
-                regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                cond = False
-                
-                if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.response.items()])): cond = True
+                test = "\n".join([': '.join(k) for k in self.res.history.headers.response.items()])
             elif adv_element == 'inrheader':
+                test = "\n".join([': '.join(k) for k in self.res.history.headers.request.items()])
+
+            if operator == "=":
+                return test == value
+            elif operator == "!=":
+                return test != value
+            elif operator == "=~":
                 regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                cond = False
-                
-                if regex.search("\n".join([': '.join(k) for k in self.res.history.headers.request.items()])): cond = True
+                return regex.search(test) is not None
+            elif operator == "!~":
+                regex = re.compile(value, re.MULTILINE|re.DOTALL)
+                return regex.search(test) is None
+            elif operator == "~":
+                return value in test
         except TypeError:
             raise FuzzExceptIncorrectFilter("Using a complete fuzzresult as a filter, specify field or use string.")
 
