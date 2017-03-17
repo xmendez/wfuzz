@@ -40,10 +40,23 @@ class CLParser:
 	try:
 	    opts, args = getopt.getopt(self.argv[1:], "hAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
+
+
+            payload_cache = {}
 	    for i,j in opts:
-		optsd[i].append(j)
+                if i in ["-z", "--zP", "--slice", "-w"]:
+                    if i in ["-z", "-w"]:
+                        if payload_cache:
+                            optsd["payload"].append(payload_cache)
+                            payload_cache = {}
 
+                    payload_cache[i] = j
+                else:
+                    optsd[i].append(j)
 
+            if payload_cache:
+                optsd["payload"].append(payload_cache)
+                payload_cache = {}
 
 	    self._parse_help_opt(optsd)
 
@@ -143,7 +156,7 @@ class CLParser:
 
     def _check_options(self, optsd):
 	# Check for repeated flags
-	l = [i for i in optsd if i not in ["-z", "--zP", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
+	l = [i for i in optsd if i not in ["-z", "--zP", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
 	if l:
 	    raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(l))
 
@@ -212,17 +225,15 @@ class CLParser:
 	)
 	'''
 
-	if len(optsd["--zP"]) > len(optsd["-z"]):
-	    raise FuzzExceptBadOptions("zP must be preceded by a -z swith.")
-
-	if len(optsd["--slice"]) > len(optsd["-z"]) + len(optsd["-w"]):
-	    raise FuzzExceptBadOptions("slice must be preceded by a -z or -w switch.")
-
-
         payloads_list = []
 
-	for zpayl, extraparams, sliceit in itertools.izip_longest(optsd["-z"], optsd["--zP"], optsd["--slice"]):
-            if not zpayl: break # -w switch
+        for payload in optsd["payload"]:
+            if "-z" not in payload and "-w" not in payload: 
+                raise FuzzExceptBadOptions("--zP and --slice must be preceded by a -z or -w switch.")
+
+            zpayl = payload["-z"] if "-z" in payload else "file,%s" % payload["-w"]
+            extraparams = payload["--zP"] if "--zP" in payload else None
+            sliceit = payload["--slice"] if "--slice" in payload else None
 
 	    vals = zpayl.split(",")
 
@@ -247,18 +258,6 @@ class CLParser:
                 params['encoder'] = None
 
             payloads_list.append((name, params, sliceit))
-
-	# Alias por "-z file,Wordlist"
-	if optsd["-w"]:
-            for i, sliceit in itertools.izip_longest(optsd["-w"], optsd["--slice"]):
-		vals = i.split(",", 1)
-		f, = vals[:1]
-
-		encoders = vals[1].split("-") if len(vals) == 2 else None
-
-                params = dict(encoder=encoders, default=f)
-
-		payloads_list.append(("file", params, sliceit))
 
 	if "-m" in optsd:
 	    options["iterator"] = optsd['-m'][0]
