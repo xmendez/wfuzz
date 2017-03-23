@@ -1,8 +1,8 @@
-# Wfuzz - The Web Bruteforcer
+# Wfuzz - The Web fuzzer
 
 ## What is this?
 
-Wfuzz is a tool designed to brutefore web applications, it's very flexible, it supports:
+Wfuzz is a tool designed to fuzz web applications, it's very flexible, it supports:
 	
 - Recursion (when doing directory discovery)
 - Post data bruteforcing
