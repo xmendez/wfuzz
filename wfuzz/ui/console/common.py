@@ -48,7 +48,7 @@ usage ='''%s\n\nOptions:
 \t-t N			    : Specify the number of concurrent connections (10 default)
 \t-s N			    : Specify time delay between requests (0 default)
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
-\t--follow		    : Follow HTTP redirections
+\t-L, --follow  	    : Follow HTTP redirections
 \t
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
