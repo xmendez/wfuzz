@@ -9,7 +9,7 @@ from threading import Lock
 from collections import namedtuple
 from collections import defaultdict
 
-from .externals.reqresp import Request
+from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
 from .facade import Facade
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
@@ -219,7 +219,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @property
     def code(self):
-	return self._request.response.code if self._request.response else None
+	return self._request.response.code if self._request.response else 0
 
     @code.setter
     def code(self, c):
@@ -341,8 +341,15 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def from_http_object(self, c, bh, bb):
 	return self._request.response_from_conn_object(c, bh, bb)
 
-    def update_from_raw_http(self, raw, scheme):
-        return self._request.parseRequest(raw, scheme)
+    def update_from_raw_http(self, raw, scheme, raw_response = None):
+        self._request.parseRequest(raw, scheme)
+
+        if raw_response:
+            rp=Response()
+            rp.parseResponse(raw_response)
+            self._request.response=rp
+
+        return self._request
 
     def to_cache_key(self):
 	key = self._request.urlWithoutVariables
