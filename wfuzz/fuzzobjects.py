@@ -256,6 +256,11 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             self.url = value
 
     def get_field(self, field):
+        alias = dict([('c', 'code')])
+
+        if field in alias:
+            field = alias[field]
+
         if field in ["url", "method", "scheme", "host", "content", "code"]:
             return str(getattr(self, field))
         elif field.startswith("cookies"):
@@ -751,7 +756,12 @@ class FuzzResult:
         return self.history.set_field(field, value)
 
     def get_field(self, field):
-        if field in ["description", "nres", "chars", "lines", "words", "md5"]:
+        alias = dict([('l', 'lines'), ('h', 'chars'), ('w', 'words'), ('c', 'code')])
+
+        if field in alias:
+            field = alias[field]
+
+        if field in ["code", "description", "nres", "chars", "lines", "words", "md5"]:
             return str(getattr(self, field))
         else:
             return self.history.get_field(field)

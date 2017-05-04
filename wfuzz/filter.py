@@ -5,10 +5,12 @@ import re
 import collections
 import urllib
 
+from .facade import Facade
+
 
 PYPARSING = True
 try:
-    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphanums, Or, OneOrMore, QuotedString, printables
+    from  pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, alphanums, Or, OneOrMore, QuotedString, printables
     from  pyparsing import ParseException
 except ImportError:
     PYPARSING = False
@@ -17,48 +19,47 @@ except ImportError:
 class FuzzResFilter:
     def __init__(self, ffilter = None, filter_string = None):
 	if PYPARSING:
-	    basic_symbol = oneOf("c code l lines w words h chars i index")
-	    adv_symbol = oneOf("intext inurl site inheader inrheader filetype")
-	    adv_symbol_bool = oneOf("hasquery ispath")
-            fuzz_symbol = Suppress("FUZZ[") + Word( alphanums + "." ) + Suppress(Literal("]"))
+            quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
+            int_values = Word("0123456789")
+            error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
+            bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
+            field_value = Word(alphas + ".")
 
-            field_element = Suppress(Literal("FUZ")) + Optional(Word("0123456789"), 0) +  Suppress(Literal("Z")) + Optional(Suppress(Literal("[")) + Word( alphanums + "." ) + Suppress(Literal("]")), "")
-            quoted_str_element = QuotedString('\'', unquoteResults=True, escChar='\\')
-            quoted_str_element_opt = Word(alphanums)| quoted_str_element
+            basic_primitives = int_values | quoted_str_value
 
-	    basic_symbol_values = Word("0123456789") | oneOf("XXX BBB")
-            adv_symbol_values = field_element | quoted_str_element_opt
-            unquote_operator = Optional("unquote(", "notpresent") + adv_symbol_values + Optional(Suppress(Literal(")")))
+            operator_names = oneOf("m d e u r l decode encode unquote replace lower upper")
 
-            unique_operator = Suppress("unique(") + fuzz_symbol + Suppress(Literal(")"))
-            sed_operator = Suppress("replace(") + fuzz_symbol + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(",")) + quoted_str_element + Suppress(Literal(")"))
-	    operator = oneOf("and or")
-	    not_operator = Optional(oneOf("not"), "notpresent")
+            fuzz_symbol = (Suppress(Literal("FUZ")) + Optional(Word("23456789"), 1).setParseAction( lambda s,l,t: [ int(t[0])-1 ] ) +  Suppress(Literal("Z"))).setParseAction(self.__compute_fuzz_symbol)
+            operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
-	    basic_symbol_expr = Group(basic_symbol + oneOf("= != < > >= <=") + basic_symbol_values)
-	    adv_symbol_expr = Group(adv_symbol + oneOf("= != =~ !~ ~") + unquote_operator)
-	    fuzz_symbol_expr = Group(fuzz_symbol + oneOf("= != =~ !~ ~") + quoted_str_element_opt)
+            fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
+            fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
 
-            definition = sed_operator | fuzz_symbol_expr | adv_symbol_expr | basic_symbol_expr | adv_symbol_bool | unique_operator
+            res_value_op = (Word(alphas + ".").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+            basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+
+            fuzz_statement = fuzz_value ^ fuzz_value_op ^ res_value_op ^ basic_primitives_op
+
+            adv_symbol_bool = (Optional(fuzz_symbol + Suppress("["), None) + oneOf("hasquery ispath") + Optional(Suppress("]"))).setParseAction(self.__compute_adv_sym_bool)
+            unique_operator = (oneOf("unique u").setParseAction(lambda s,l,t: [ l ]) + Suppress(Literal("(")) + fuzz_statement + Suppress(Literal(")"))).setParseAction(self.__compute_unique_op)
+
+            operator = oneOf("and or")
+            not_operator = Optional(oneOf("not"), "notpresent")
+
+            symbol_expr = Group(fuzz_statement + oneOf("= != < > >= <= =~ !~ ~") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
+
+            definition = symbol_expr ^ adv_symbol_bool ^ unique_operator
             definition_not = not_operator + definition
-	    definition_expr = definition_not + ZeroOrMore( operator + definition_not)
+            definition_expr = definition_not + ZeroOrMore( operator + definition_not)
 
-	    nested_definition = Group(Suppress(Optional(Literal("("))) + definition_expr + Suppress(Optional(Literal(")"))))
-	    nested_definition_not = not_operator + nested_definition
+            nested_definition = Group(Suppress(Optional("(")) + definition_expr + Suppress(Optional(")")))
+            nested_definition_not = not_operator + nested_definition
 
-	    self.finalformula = nested_definition_not + ZeroOrMore( operator + nested_definition_not)
+            self.finalformula = nested_definition_not + ZeroOrMore( operator + nested_definition_not)
 
-	    unquote_operator.setParseAction(self.__compute_unquote_operator)
 	    definition_not.setParseAction(self.__compute_not_operator)
 	    nested_definition_not.setParseAction(self.__compute_not_operator)
-	    field_element.setParseAction(self.__compute_field_element)
-	    basic_symbol_expr.setParseAction(self.__compute_element)
-	    adv_symbol_expr.setParseAction(self.__compute_adv_element)
-	    adv_symbol_bool.setParseAction(self.__compute_adv_element_bool)
-	    fuzz_symbol_expr.setParseAction(self.__compute_filter_element)
-	    sed_operator.setParseAction(self.__compute_sed_element)
 	    nested_definition.setParseAction(self.__compute_formula)
-	    unique_operator.setParseAction(self.__compute_special_element)
 	    self.finalformula.setParseAction(self.__myreduce)
 
         if ffilter is not None and filter_string is not None:
@@ -83,6 +84,7 @@ class FuzzResFilter:
             self.hideparams['filter_string'] = filter_string
 
 	self.baseline = None
+        self.stack = {}
 
         self._cache = collections.defaultdict(set)
 
@@ -98,151 +100,135 @@ class FuzzResFilter:
 
 	self.baseline = res
 
-    def __convertIntegers(self, tokens):
-	return int(tokens[0])
+    def __compute_unique_op(self, tokens):
+	index, item = tokens
 
-    def __compute_unquote_operator(self, tokens):
-        operator, value = tokens
-        if operator == "unquote(":
-            return urllib.unquote(value)
-        return value
-
-    def __compute_special_element(self, tokens):
-	special_element = tokens[0]
-
-        item = self.res.get_field(special_element)
-
-        if item not in self._cache[special_element]:
-            self._cache[special_element].add(item)
+        if item not in self._cache[index]:
+            self._cache[index].add(item)
             return True
         else:
             return False
 
-    def __compute_sed_element(self, tokens):
-	field, old, new = tokens
+    def __compute_adv_sym_bool(self, tokens):
+	fuzz_val, adv_element = tokens
 
-        self.res.set_field(field, self.res.get_field(field).replace(old, new))
-
-        return True
-
-
-    def __compute_adv_element_bool(self, tokens):
-	adv_element = tokens[0]
+        if not fuzz_val:
+            fuzz_val = self.res
 
 	cond = False
 
 	if adv_element == 'hasquery':
-	    if self.res.history.urlparse.query:
+	    if fuzz_val.history.urlparse.query:
 		cond = True
 
 	elif adv_element == 'ispath':
-	    if self.res.history.is_path:
+	    if fuzz_val.history.is_path:
 		cond = True
 
         return cond
 
-    def __compute_field_element(self, tokens):
-	i, field = tokens
+    def __compute_res_value(self, tokens):
+        self.stack["field"] = tokens[0]
+
+        return self.res.get_field(self.stack["field"])
+
+    def __compute_fuzz_symbol(self, tokens):
+	i = tokens[0]
 
         try:
-            return self.res.payload[int(i)].get_field(field) if field else self.res.payload[int(i)]
+            return self.res.payload[i]
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string.")
 
-    def __compute_filter_element(self, tokens):
-	filter_element, operator, value = tokens[0]
+    def __compute_fuzz_value(self, tokens):
+	fuzz_val, field = tokens
 
-        leftvalue = self.res.get_field(filter_element)
-	cond = False
-
-	if operator == "=":
-	    return value == leftvalue
-	elif operator == "!=":
-	    return value != leftvalue
-	elif operator == "~":
-	    return value in leftvalue
-	elif operator == "=~":
-            regex = re.compile(value, re.MULTILINE|re.DOTALL)
-            return regex.search(leftvalue) is not None
-	elif operator == "!~":
-            regex = re.compile(value, re.MULTILINE|re.DOTALL)
-            return regex.search(leftvalue) is None
-
-    def __compute_adv_element(self, tokens):
-	adv_element, operator, value = tokens[0]
-
-	cond = False
+        self.stack["field"] = field
 
         try:
-            if adv_element == 'intext':
-                test = self.res.history.content
-            elif adv_element == 'inurl':
-                test = self.res.url
-            elif adv_element == 'filetype':
-                test = self.res.history.urlparse.file_extension
-            elif adv_element == 'site':
-                test = self.res.history.urlparse.netloc
-            elif adv_element == 'inheader':
-                test = "\n".join([': '.join(k) for k in self.res.history.headers.response.items()])
-            elif adv_element == 'inrheader':
-                test = "\n".join([': '.join(k) for k in self.res.history.headers.request.items()])
+            return fuzz_val.get_field(field) if field else fuzz_val
+        except IndexError:
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+        except AttributeError:
+            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string.")
 
-            if operator == "=":
-                return test == value
-            elif operator == "!=":
-                return test != value
-            elif operator == "=~":
-                regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                return regex.search(test) is not None
-            elif operator == "!~":
-                regex = re.compile(value, re.MULTILINE|re.DOTALL)
-                return regex.search(test) is None
-            elif operator == "~":
-                return value in test
-        except TypeError:
-            raise FuzzExceptIncorrectFilter("Using a complete fuzzresult as a filter, specify field or use string.")
+    def __compute_bbb_value(self, tokens):
+        element = self.stack["field"]
 
-	return cond if operator == "=" else not cond
-
-    def __compute_element(self, tokens):
-	element, operator, value = tokens[0]
-	
-	if value == 'BBB' and self.baseline == None:
+	if self.baseline == None:
 	    raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
 
-	if element == 'c' and value == 'XXX':
-	    value = FuzzResult.ERROR_CODE
+        if element == 'l' or element == 'lines':
+            ret = self.baseline.lines
+        elif element == 'c' or element == 'code':
+            ret = self.baseline.code
+        elif element == 'w' or element == 'words':
+            ret = self.baseline.words
+        elif element == 'h' or element == 'chars':
+            return self.baseline.chars
+        elif element == 'index' or element == 'i':
+            ret = self.baseline.nres
 
-	if value == 'BBB':
-	    if element == 'l' or element == 'lines':
-		value = self.baseline.lines
-	    elif element == 'c' or element == 'code':
-		value = self.baseline.code
-	    elif element == 'w' or element == 'words':
-		value = self.baseline.words
-	    elif element == 'h' or element == 'chars':
-		value = self.baseline.chars
-	    elif element == 'index' or element == 'i':
-		value = self.baseline.nres
+        return str(ret)
 
-	test = dict(w=self.res.words, c=self.res.code, l=self.res.lines, h=self.res.chars, i=self.res.nres, \
-                words=self.res.words, code=self.res.code, lines=self.res.lines, chars=self.res.chars, index=self.res.nres)
-	value = int(value)
+    def __compute_perl_value(self, tokens):
+        leftvalue, exp = tokens 
 
-	if operator == "=":
-	    return test[element] == value
-	elif operator == "<=":
-	    return test[element] <= value
-	elif operator == ">=":
-	    return test[element] >= value
-	elif operator == "<":
-	    return test[element] < value
-	elif operator == ">":
-	    return test[element] > value
-	elif operator == "!=":
-	    return test[element] != value
+        if exp:
+            op, middlevalue, rightvalue = exp
+        else:
+            return leftvalue
+
+        if (op == "u" or op == "unquote") and middlevalue == None and rightvalue == None:
+            ret = urllib.unquote(leftvalue)
+        elif (op == "e" or op == "encode") and middlevalue != None and rightvalue == None:
+            ret = Facade().encoders.get_plugin(middlevalue)().encode(leftvalue)
+        elif (op == "d" or op == "decode") and middlevalue != None and rightvalue == None:
+            ret = Facade().encoders.get_plugin(middlevalue)().decode(leftvalue)
+        elif op == "r" or op == "replace":
+            return leftvalue.replace(middlevalue, rightvalue)
+        elif op == "upper":
+            return leftvalue.upper()
+        elif op == "lower" or op == "l":
+            return leftvalue.lower()
+        else:
+            raise FuzzExceptBadOptions("Bad format, expression should be m,d,e,r,s(value,value)")
+
+        return ret
+
+    def __compute_xxx_value(self, tokens):
+        return FuzzResult.ERROR_CODE
+        
+    def __compute_expr(self, tokens):
+	leftvalue, operator, rightvalue = tokens[0]
+
+        try:
+            if operator == "=":
+                return leftvalue == rightvalue
+            elif operator == "<=":
+                return leftvalue <= rightvalue
+            elif operator == ">=":
+                return leftvalue >= rightvalue
+            elif operator == "<":
+                return leftvalue < rightvalue
+            elif operator == ">":
+                return leftvalue > rightvalue
+            elif operator == "!=":
+                return leftvalue != rightvalue
+            elif operator == "=~":
+                regex = re.compile(rightvalue, re.MULTILINE|re.DOTALL)
+                return regex.search(leftvalue) is not None
+            elif operator == "!~":
+                regex = re.compile(rightvalue, re.MULTILINE|re.DOTALL)
+                return regex.search(leftvalue) is None
+            elif operator == "~":
+                return rightvalue in leftvalue
+        except TypeError,e:
+	    raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+        except ParseException, e:
+	    raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
 
     def __myreduce(self, elements):
 	first = elements[0]
@@ -277,7 +263,7 @@ class FuzzResFilter:
 	if filter_string and PYPARSING:
 	    self.res = res
 	    try:
-		return self.finalformula.parseString(filter_string)[0]
+		return self.finalformula.parseString(filter_string, parseAll = True)[0]
 	    except ParseException, e:
 		raise FuzzExceptIncorrectFilter("Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
             except AttributeError, e:
