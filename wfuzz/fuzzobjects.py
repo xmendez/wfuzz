@@ -278,9 +278,9 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             return str(getattr(self, field))
         elif field.startswith("cookies"):
             return self.cookies.get_field(field).strip()
-        elif field.startswith("headers.request") or field.startswith("headers.response"):
+        elif field.startswith("headers"):
             return self.headers.get_field(field)
-        elif field.startswith("parameters."):
+        elif field.startswith("parameters"):
             return self.parameters.get_field(field)
         elif field.startswith("url."):
             attr = field.split(".")
