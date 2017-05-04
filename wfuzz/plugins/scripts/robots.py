@@ -21,7 +21,7 @@ class robots(BasePlugin, DiscoveryPluginMixin):
     )
 
     def validate(self, fuzzresult):
-	return fuzzresult.history.urlparse.file_fullname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
+	return fuzzresult.history.urlparse.ffname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
 
     def process(self, fuzzresult):
 	# Shamelessly (partially) copied from w3af's plugins/discovery/robotsReader.py

@@ -6,7 +6,7 @@ class DiscoveryPluginMixin:
 	self.black_list = self.kbase["discovery.blacklist"][0].split("-")
 
     def blacklisted_extension(self, url):
-	return parse_url(url).file_extension in self.black_list
+	return parse_url(url).fext in self.black_list
 
     def queue_url(self, url):
 	if not self.blacklisted_extension(url):

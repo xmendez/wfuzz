@@ -17,7 +17,7 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
     priority = 99
 
     def validate(self, fuzzresult):
-	return fuzzresult.history.urlparse.file_fullname == "sitemap.xml" and fuzzresult.code == 200
+	return fuzzresult.history.urlparse.ffname == "sitemap.xml" and fuzzresult.code == 200
 
     def process(self, fuzzresult):
 	base_url = fuzzresult.url

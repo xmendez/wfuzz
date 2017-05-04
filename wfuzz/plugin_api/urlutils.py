@@ -11,7 +11,7 @@ class FuzzRequestParse(urlparse.ParseResult):
 	return '.'.join(self.netloc.split(":")[0].split(".")[-2:])
 
     @property
-    def file_fullname(self):
+    def ffname(self):
 	'''
 	Returns script plus extension from an URL. ie. http://www.localhost.com/kk/index.html?id=3
 	will return index.html
@@ -21,20 +21,20 @@ class FuzzRequestParse(urlparse.ParseResult):
 	return u
 
     @property
-    def file_extension(self):
+    def fext(self):
 	'''
 	Returns script extension from an URL. ie. http://www.localhost.com/kk/index.html?id=3
 	will return .html
 	'''
-	return os.path.splitext(self.file_fullname)[1]
+	return os.path.splitext(self.ffname)[1]
 
     @property
-    def file_name(self):
+    def fname(self):
 	'''
 	Returns script name from an URL. ie. http://www.localhost.com/kk/index.html?id=3
 	will return index
 	'''
-	return os.path.splitext(self.file_fullname)[0]
+	return os.path.splitext(self.ffname)[0]
 
 
 def parse_url(url):
