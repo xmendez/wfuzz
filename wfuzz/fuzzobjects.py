@@ -291,6 +291,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
             if attr[1] in allowed_attr:
                 return getattr(self.urlparse, attr[1])
+            elif attr[1] == "pstrip":
+                return self.to_cache_key()
             else:
                 raise FuzzExceptBadAPI("Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
 
