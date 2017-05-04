@@ -224,7 +224,7 @@ class FuzzResFilter:
                 regex = re.compile(rightvalue, re.MULTILINE|re.DOTALL)
                 return regex.search(leftvalue) is None
             elif operator == "~":
-                return rightvalue in leftvalue
+                return rightvalue.lower() in leftvalue.lower()
         except TypeError,e:
 	    raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
         except ParseException, e:
