@@ -76,8 +76,9 @@ class cookies:
 
     @property
     def request(self):
-        if 'Cookie' in self._req.headers.request:
-            c = self._req.headers.request['Cookie'].split("; ")
+        if 'Cookie' in self._req._headers:
+            #.request['COOKIE'].split("; ")
+            c = self._req._headers['Cookie'].split("; ")
             if c[0]:
                 #cc['request'] = dict(map(lambda x: x.split("=", 1), c))
                 return dict(map(lambda x:[x[0],x[2]],map(lambda x:x.partition("="), c)))
@@ -88,16 +89,28 @@ class cookies:
         attr = field.split(".")
         num_fields = len(attr)
 
-        if num_fields != 2:
-            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
+        if num_fields == 2:
 
-        if attr[1] == "response":
-            if self._req.response:
-                return self._req.response.getCookie()
-        elif attr[1] == "request":
-            return self._req['COOKIE']
+            if attr[1] == "response":
+                if self._req.response:
+                    return self._req.response.getCookie()
+            elif attr[1] == "request":
+                return self._req['COOKIE']
+            else:
+                raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
+        elif num_fields == 3:
+            try:
+                if attr[1] == "request":
+                    return self.request[attr[2]]
+                elif attr[1] == "response":
+                    return self.response[attr[2]]
+                else:
+                    raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
+            except KeyError:
+                return ""
+
         else:
-            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
+            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response].<<name>>")
 
         return ""
 
