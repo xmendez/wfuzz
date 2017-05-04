@@ -52,10 +52,10 @@ class FuzzResFilter:
             definition_not = not_operator + definition
             definition_expr = definition_not + ZeroOrMore( operator + definition_not)
 
-            nested_definition = Group(Suppress(Optional("(")) + definition_expr + Suppress(Optional(")")))
+            nested_definition = Group(Suppress("(") + definition_expr + Suppress(")"))
             nested_definition_not = not_operator + nested_definition
 
-            self.finalformula = nested_definition_not + ZeroOrMore( operator + nested_definition_not)
+            self.finalformula = (nested_definition_not ^ definition_expr) + ZeroOrMore( operator + (nested_definition_not ^ definition_expr))
 
 	    definition_not.setParseAction(self.__compute_not_operator)
 	    nested_definition_not.setParseAction(self.__compute_not_operator)
