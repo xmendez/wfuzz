@@ -137,7 +137,10 @@ class parameters(object):
         attr = field.split(".")
         num_fields = len(attr)
 
-        if num_fields == 2:
+        if num_fields == 1 and attr[0] == "parameters":
+                pp = ", ".join(map(lambda x: "%s:%s" % (x[0],x[1]), dict(self.get.items() + self.post.items()).items()))
+                return "" if not pp else pp
+        elif num_fields == 2:
             if attr[1] == "get":
                 return ", ".join(map(lambda x: "%s=%s" % (x[0],x[1]), self.get.items()))
             elif attr[1] == "post":
