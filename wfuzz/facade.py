@@ -16,7 +16,7 @@ class Settings(SettingsBase):
     def set_defaults(self):
 	return dict(
 	    plugins=[("bing_apikey", '')],
-	    kbase=[("discovery.blacklist", '.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
+	    kbase=[("discovery.blacklist", '.svg-.css-.js-.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
 	    connection=[("concurrent", '10'),
 		("conn_delay", '90'),
 		("req_delay", '90'),

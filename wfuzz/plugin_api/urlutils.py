@@ -1,6 +1,9 @@
 import os
 import urlparse
 
+
+from wfuzz.facade import Facade
+
 class FuzzRequestParse(urlparse.ParseResult):
     @property
     def domain(self):
@@ -36,6 +39,10 @@ class FuzzRequestParse(urlparse.ParseResult):
 	'''
 	return os.path.splitext(self.ffname)[0]
 
+    @property
+    def bllist(self):
+        fext = self.fext
+	return fext != "." and fext in Facade().sett.get("kbase", "discovery.blacklist").split("-")
 
 def parse_url(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)

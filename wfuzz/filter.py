@@ -40,7 +40,7 @@ class FuzzResFilter:
 
             fuzz_statement = fuzz_value ^ fuzz_value_op ^ res_value_op ^ basic_primitives_op
 
-            adv_symbol_bool = (Optional(fuzz_symbol + Suppress("["), None) + oneOf("hasquery ispath") + Optional(Suppress("]"))).setParseAction(self.__compute_adv_sym_bool)
+            adv_symbol_bool = (Optional(fuzz_symbol + Suppress("["), None) + oneOf("hasquery ispath bllist") + Optional(Suppress("]"))).setParseAction(self.__compute_adv_sym_bool)
             unique_operator = (oneOf("unique u").setParseAction(lambda s,l,t: [ l ]) + Suppress(Literal("(")) + fuzz_statement + Suppress(Literal(")"))).setParseAction(self.__compute_unique_op)
 
             operator = oneOf("and or")
@@ -120,9 +120,11 @@ class FuzzResFilter:
 	if adv_element == 'hasquery':
 	    if fuzz_val.history.urlparse.query:
 		cond = True
-
 	elif adv_element == 'ispath':
 	    if fuzz_val.history.is_path:
+		cond = True
+	elif adv_element == 'bllist':
+	    if fuzz_val.history.urlparse.bllist:
 		cond = True
 
         return cond

@@ -3,6 +3,7 @@ from .exception import FuzzExceptBadInstall
 
 from urlparse import urljoin
 
+
 class FuzzRequestSoupMixing:
     def get_soup(self):
         try:
@@ -48,4 +49,6 @@ class FuzzRequestUrlMixing:
 
 	return new_url + "FUZZ"
 
-
+    @property
+    def has_params(self):
+        print self.parameters
