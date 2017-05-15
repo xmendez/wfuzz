@@ -54,5 +54,22 @@ def main():
         if kb: kb.cancel_job()
         Facade().sett.save()
 
+def main_filter():
+    from .core import dictionary
 
+    session_options = CLParser(sys.argv).parse_cl(check_args=False)
 
+    try:
+        for res in dictionary.from_options(session_options):
+            r = res[0]
+            if "FuzzResult" in str(r.__class__):
+                r.description = r.url
+
+            print r
+
+    except KeyboardInterrupt:
+        pass
+    except FuzzException, e:
+        print "\nFatal exception: %s" % str(e)
+    except Exception, e:
+        print "\nUnhandled exception: %s" % str(e)
