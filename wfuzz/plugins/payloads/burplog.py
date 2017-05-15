@@ -53,7 +53,7 @@ class burplog(BasePayload):
         burp_file = None
 
         try:
-            burp_file = open(burp_log, 'rb')
+            burp_file = open(self.find_file(burp_log), 'rb')
             buf = burp_file.read()
 
         except IOError, e:

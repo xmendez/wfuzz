@@ -102,3 +102,10 @@ def get_path(directory = None):
 
     return os.path.join(ret, directory) if directory else ret
 
+
+def find_file_in_paths(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
+    return None

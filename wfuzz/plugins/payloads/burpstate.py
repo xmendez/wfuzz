@@ -102,7 +102,7 @@ class burpstate(BasePayload):
             '''Unzip Burp's file, remove non-printable characters, CDATA any HTML,
             include a valid XML header and trailer, and return a valid XML string.'''
 
-            z = zipfile.ZipFile(filename) # Open Burp's zip file
+            z = zipfile.ZipFile(self.find_file(filename)) # Open Burp's zip file
             burp = z.read('burp','rb') # Read-in the main burp file		
             m = TAG.match(burp,0) # Match a tag at the start of the string
             while m:		

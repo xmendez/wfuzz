@@ -47,7 +47,7 @@ class wfuzzp(BasePayload):
 
     def _gen_wfuzz(self, output_fn):
 	try:
-	    with gzip.open(output_fn, 'r+b') as output:
+	    with gzip.open(self.find_file(output_fn), 'r+b') as output:
 	    #with open(self.output_fn, 'r+b') as output:
 		while 1:
 		    item = pickle.load(output)

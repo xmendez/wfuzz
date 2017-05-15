@@ -22,7 +22,7 @@ class file(BasePayload):
         BasePayload.__init__(self, params)
 
 	try:
-	    self.f = open(self.params["fn"],"r")
+	    self.f = open(self.find_file(self.params["fn"]), "r")
 	except IOError, e:
 	    raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 

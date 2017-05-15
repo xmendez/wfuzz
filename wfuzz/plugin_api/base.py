@@ -3,6 +3,10 @@ from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions
 from wfuzz.facade import Facade
 from wfuzz.plugin_api.urlutils import parse_url
 
+from wfuzz.utils import find_file_in_paths
+
+import os
+
 # Util methods for accessing search results
 class BasePlugin():
     def __init__(self):
@@ -99,3 +103,15 @@ class BasePayload:
     def __iter__(self):
         raise FuzzExceptPluginError("Method iter not implemented")
 
+    def find_file(self, name):
+        if os.path.exists(name):
+            return name
+
+        for pa in Facade().sett.get('general', 'lookup_dirs').split(","):
+            fn = find_file_in_paths(name, pa)
+
+            if fn is not None:
+                return fn
+
+        return name
+        
