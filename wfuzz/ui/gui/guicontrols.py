@@ -72,13 +72,15 @@ class ConsolePanel(wx.Panel):
 
     def __bind_events(self,e):
         if e.GetKeyCode() == 13:
+            self.index = len(self.history) - 1
+
             self.value = (self.textctrl.GetValue())
             ln = self.get_last_line()
 
             ln = ln.strip()
+            if ln not in self.history: self.history.append(ln)
+            self.index += 1
             if ln:
-                self.history.append(ln)
-
                 import shlex
                 cmd = shlex.split(ln)
                 # out en retvalue
@@ -93,18 +95,22 @@ class ConsolePanel(wx.Panel):
         elif e.GetKeyCode() == 317:
             self.index += 1
 
-            if self.index > len(self.history):
-                self.index = len(self.history)
+            if self.index >= len(self.history):
+                self.index = len(self.history) - 1
+
+            self.textctrl.WriteText("\n")
+            self.textctrl.WriteText(self.prompt)
+            self.textctrl.WriteText(self.history[self.index])
 
         #up
         elif e.GetKeyCode() == 315:
-            self.index = len(self.history)
-
             self.index -= 1
 
             if self.index < 0:
                 self.index = 0
 
+            self.textctrl.WriteText("\n")
+            self.textctrl.WriteText(self.prompt)
             self.textctrl.WriteText(self.history[self.index])
 
 
