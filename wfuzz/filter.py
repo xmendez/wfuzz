@@ -142,7 +142,10 @@ class FuzzResFilter:
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError:
-            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string.")
+            if i == 0:
+                return self.res
+            else:
+                raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
     def __compute_fuzz_value(self, tokens):
 	fuzz_val, field = tokens
@@ -153,8 +156,8 @@ class FuzzResFilter:
             return fuzz_val.get_field(field) if field else fuzz_val
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
-        except AttributeError:
-            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % e)
+        except AttributeError, e:
+            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
     def __compute_bbb_value(self, tokens):
         element = self.stack["field"]
