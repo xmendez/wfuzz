@@ -23,7 +23,7 @@ class FuzzResFilter:
             int_values = Word("0123456789")
             error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
             bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
-            field_value = Word(alphas + "." + "_")
+            field_value = Word(alphas + "." + "_" + "-")
 
             basic_primitives = int_values | quoted_str_value
 
@@ -35,7 +35,7 @@ class FuzzResFilter:
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
             fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
 
-            res_value_op = (Word(alphas + "." + "_").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+            res_value_op = (Word(alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
             basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
 
             fuzz_statement = fuzz_value ^ fuzz_value_op ^ res_value_op ^ basic_primitives_op
