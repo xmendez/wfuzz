@@ -73,3 +73,17 @@ def main_filter():
         print "\nFatal exception: %s" % str(e)
     except Exception, e:
         print "\nUnhandled exception: %s" % str(e)
+
+def main_gui():
+    import wx
+    from .ui.gui.guicontrols import WfuzzFrame
+    from .ui.gui.controller import GUIController
+    from .ui.gui.model import GUIModel
+
+    app = wx.App(False)
+
+    frame = WfuzzFrame(None, wx.ID_ANY, "WFuzz wxPython Console", size=(750, 590))
+    gc = GUIController(frame)
+
+    frame.Show()
+    app.MainLoop()

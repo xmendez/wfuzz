@@ -180,6 +180,13 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return self._request.getAll()
 
     @property
+    def raw_content(self):
+        if self._request.response:
+            return self._request.response.getAll()
+
+        return ""
+
+    @property
     def headers(self):
         return headers(self._request)
 

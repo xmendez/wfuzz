@@ -21,6 +21,9 @@ setup(
             'wfuzz = wfuzz.wfuzz:main',
             'wfpayload = wfuzz.wfuzz:main_filter',
         ],
+        'gui_scripts': [
+            'wxfuzz = wfuzz.wfuzz:main_gui',
+        ]
     }
     version = version,
     description = "Wfuzz - The web fuzzer",
