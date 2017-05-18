@@ -20,6 +20,10 @@ Wfuzz global options can be tweaked by modifying the "wfuzz.ini" at the user's h
     cancel_on_plugin_except = 1
     concurrent_plugins = 3
     encode_space = 1
+    lookup_dirs = .,/home/xxx/tools/fuzzdb
+
+
+A useful option is "lookup_dirs". This option will indicate Wfuzz, which directories to look for files, avoiding to specify a full path in the command line. For example, when fuzzing using a dictionary.
 
 Iterators: Combining payloads
 -----------------------------
@@ -80,7 +84,7 @@ In Wfuzz, a encoder is a transformation of a payload from one format to another.
 
     $ python wfuzz.py -e encoders
 
-Specifying an encoder:
+Specifying an encoder
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Encoders are specified as a payload parameter. There are two equivalent ways of specifying an encoder within a payload:
@@ -108,7 +112,7 @@ Encoders are specified as a payload parameter. There are two equivalent ways of 
 
     $ wfuzz -z file,wordlist/general/common.txt,md5 http://testphp.vulnweb.com/FUZZ
 
-Specifying multiple encoders:
+Specifying multiple encoders
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Several encoders can be specified at once, using "-" as a separator::
@@ -373,7 +377,8 @@ Name          Short version Description
 ============= ============= =============================================
 hasquery                    True when the URL contains a query string.
 ispath                      True when the URL path refers to a directory.
-unique(value) u(value)      Returns if a value is unique.
+bllist                      True when the URL file extension is included in the configuration discovery's blacklist
+unique(value) u(value)      Returns True if a value is unique.
 ============= ============= =============================================
 
 * Expression Operators
@@ -385,28 +390,8 @@ Operator     Description
 ============ ====================================================================
 =~           True when the regular expression specified matches the value.
 !~           True when the regular expression specified does not match the value.
-~            Equivalent to Python's "str1" in "str2"
+~            Equivalent to Python's "str1" in "str2" (case insensitive)
 ============ ====================================================================
-
-Parenthesis, "( )", could also be used to group expressions.
-
-* Language Symbols:
-
-============ ============= ====================
-Long Name    Short Name    Description
-============ ============= ====================
-code         c             HTTP response code
-lines        l             HTTP response content's lines
-words        w             HTTP response content's words
-chars        c             HTTP response content's chars
-index        i             Wfuzz's response identifier number
-intext                     Regular expression to be matched against HTTP response's content
-inurl                      Regular expression to be matched against URL's content
-site                       Regular expression to be matched against URL's domain
-filetype                   URL's file extension
-inheader                   Regular expression to be matched against HTTP response's headers
-inrheader                  Regular expression to be matched against HTTP request's headers
-============ ============= ====================
 
 Where values could be:
 
@@ -419,48 +404,36 @@ Long Name    Description
 0..9+        Integer values
 XXX          HTTP request error code
 BBB          Baseline
-
-* Instrospection values
-
-============ ==============================================
-Name         Description
-============ ==============================================
-FUZnZ        Allows to access the Nth payload string
-FUZnZ[field] Allows to access the Nth payload attributes
-RES[field]   Allows to access the current result attributes
-============ ==============================================
-
-Fields are described in the sections below.
+============ ====================
 
 * Values can also be modified using the following operators:
 
-=============================== ============== =============================================
-Name                            Short version  Description
-=============================== ============== =============================================
-value.unquote()                 value.u()      Unquotes the value
-value.encode('encoder')         value.e('enc') Returns encoder.encode(value)
-value.decode('decoder')         value.d('dec') Returns encoder.decode(value)
-=============================== ============== =============================================
+================================ ======================= =============================================
+Name                             Short version           Description
+================================ ======================= =============================================
+value|unquote()                  value|u()               Unquotes the value
+value|lower()                    value|l()               lowercase of the value
+value|upper()                                            uppercase of the value
+value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
+value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
+value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
+================================ ======================= =============================================
 
-Payload instrospection
-^^^^^^^^^^^^^^^^^^^^^^
+* When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
 
-When using a payload that generates full HTTP requests/responses, you could perform runtime introspection of the payload objects using the following expressions "FUZZ[field]" or "FUZnZ[field]".
+============ ============== =============================================
+Name         Short version  Description
+============ ============== =============================================
+description                 Wfuzz's result description
+nres                        Wfuzz's result identifier
+code         c              HTTP response's code
+chars        h              Wfuzz's result HTTP response chars
+lines        l              Wfuzz's result HTTP response lines
+words        w              Wfuzz's result HTTP response words
+md5                         Wfuzz's result HTTP response md5 hash
+============ ============== =============================================
 
-Where field is a FuzzResult object's attribute such as:
-
-============ =============================================
-Name         Description
-============ =============================================
-description  Wfuzz's result description
-nres         Wfuzz's result identifier
-chars        Wfuzz's result HTTP response chars
-lines        Wfuzz's result HTTP response lines
-words        Wfuzz's result HTTP response words
-md5          Wfuzz's result HTTP response md5 hash
-============ =============================================
-
-Or field is a FuzzRequest object's attribute such as:
+Or FuzzRequest object's attribute such as:
 
 ============================ =============================================
 Name                         Description
@@ -470,7 +443,7 @@ method                       HTTP request's verb
 scheme                       HTTP request's scheme
 host                         HTTP request's host
 content                      HTTP response's content
-code                         HTTP response's code
+raw_content                  HTTP response's content including headers
 cookies.request              HTTP request cookie
 cookies.response             HTTP response cookie
 cookies.request.<<name>>              HTTP request cookie
@@ -479,6 +452,7 @@ headers.request              All HTTP request headers
 headers.response             All HTTP response headers
 headers.request.<<name>>     HTTP request given header
 headers.response.<<name>>    HTTP response given header
+parameters                   All HTTP request GET and POST parameters
 parameters.get               All HTTP request GET parameters
 parameters.post              All HTTP request POST parameters
 parameters.get/post.<<name>> A given HTTP request GET/POST parameter
@@ -501,16 +475,19 @@ url.domain          google.com
 url.ffname          test.php
 url.fext            .php
 url.fname           test
-url.pstrip
+url.pstrip          Returns a hash of the request using the parameter's names without values (useful for unique operations)
 =================== =============================================
 
-Result instrospection
-^^^^^^^^^^^^^^^^^^^^^^
+Payload instrospection can also be performed by using the keyword FUZZ:
 
-You could perform runtime introspection of the result objects using the following expressions "RES[field]".
+============ ==============================================
+Name         Description
+============ ==============================================
+FUZnZ        Allows to access the Nth payload string
+FUZnZ[field] Allows to access the Nth payload attributes
+============ ==============================================
 
-Where field is a FuzzResult or FuzzRequest object's attribute as described above.
-
+Where field is one of the described above.
 
 Filtering results
 ^^^^^^^^^^^^^^^^^
@@ -539,18 +516,13 @@ An example below::
     Filtered Requests: 9
     Requests/sec.: 7.572076
 
-Using result instrospection to look for specific content returned in the response::
+Using result and payload instrospection to look for specific content returned in the response::
 
-    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --filter "RES[content]~FUZZ"  http://testphp.vulnweb.com/search.php?test=query
+    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
 Which is equivalent to::
 
-    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --filter "intext~FUZZ"  http://testphp.vulnweb.com/search.php?test=query
-
-Or, in this particular case to::
-
-    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --filter "intext~'echoedback'"  http://testphp.vulnweb.com/search.php?test=query
-    $ python wfuzz-cli.py -z list,echoedback -d searchFor=FUZZ --ss "echoedback" http://testphp.vulnweb.com/search.php?test=query
+    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --ss "echoedback" http://testphp.vulnweb.com/search.php?test=query
 
 A more interesting variation of the above examples could be::
 
@@ -559,14 +531,47 @@ A more interesting variation of the above examples could be::
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-blah, blah
+Slice
+"""""""
+
+The --slice command line parameter in conjuntion with the described filter language allows you to filter a payload.
+The specific payload to filter, specified by the -z switch must preceed --slice.
+
+An example is shown below::
+
+    $ python wfuzz-cli.py -z list,one-two-one-one --slice "u(FUZZ)" http://localhost:9000/FUZZ
+
+    ********************************************************
+    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    ********************************************************
+
+    Target: http://localhost:9000/FUZZ
+    Total requests: <<unknown>>
+
+    ==================================================================
+    ID      Response   Lines      Word         Chars          Request    
+    ==================================================================
+
+    00001:  C=404      9 L        32 W          277 Ch        "one"
+    00002:  C=404      9 L        32 W          277 Ch        "two"
+
+    Total time: 0.031817
+    Processed Requests: 2
+    Filtered Requests: 0
+    Requests/sec.: 62.85908
+    
+It is worth noting that the type of payload dictates the available language symbols. For example, a dictionary payload such as the one in the example
+above does not have a full FuzzResult object context and therefore object fields cannot be used.
 
 Prefilter
-^^^^^^^^^
+""""""""
 
-Feeding
+The --prefilter command line parameter is similar to --slice but is not associated to any payload. The filtering is
+performed just before any HTTP request is done. 
 
-Reutilising previous request/responses
+In this context you are filtering the FuzzResult which is built as a result of combining all the input payloads.
+
+Reutilising previous results
 --------------------------------------
 
 Previously performed HTTP requests/responses contain a treasure trove of data. Wfuzz payloads and object instrospection (explained in the filter grammar section) exposes a Python object interface to requests/responses recorded by Wfuzz or other tools.
@@ -605,14 +610,14 @@ $ python wfuzz.py -z wfuzzp,/tmp/session FUZZ
 
 This could be used, for example, to perform new requests based on stored values::
 
-    $ python wfuzz.py -z wfuzzp,/tmp/session -p localhost:8080 http://testphp.vulnweb.com/FUZZ[url.path]FUZZ[url.query]
+    $ python wfuzz.py -z wfuzzp,/tmp/session -p localhost:8080 http://testphp.vulnweb.com/FUZZ[url.path]?FUZZ[url.query]
     00001:  C=200     25 L       155 W         1362 Ch        "/dir/test.php - id=0"
     ...
     00002:  C=200     25 L       155 W         1362 Ch        "/dir/test.php - id=1"
 
 The above command will generate HTTP requests such as the following::
 
-    GET /dir/test.phpid=10 HTTP/1.1
+    GET /dir/test.php?id=10 HTTP/1.1
     Host: testphp.vulnweb.com
     Accept: */*
     Content-Type:  application/x-www-form-urlencoded
@@ -621,7 +626,13 @@ The above command will generate HTTP requests such as the following::
 
 You can filter the payload using the filter grammar as described before.
 
-hablar de replace y set o eso quiza en prefilter.
+burpstate and burplog payloads
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-(wfuzzenv) javi@nanroig:~/dev/wfuzz$ python wfuzz.py -z wfuzzp,/tmp/session --prefilter "replace(FUZZ[url.domain],'google.com','evil.com')" --dry-run -p localhost:8080 FUZZ
+Wfuzz can read burp's log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
+For example, the following will return a unique list of HTTP requests including the authtoken as a GET parameter::
+
+    $ python wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and u(url.pstrip)"
+
+Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
