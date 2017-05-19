@@ -226,8 +226,7 @@ class FuzzResFilter:
                 regex = re.compile(rightvalue, re.MULTILINE|re.DOTALL)
                 return regex.search(leftvalue) is not None
             elif operator == "!~":
-                regex = re.compile(rightvalue, re.MULTILINE|re.DOTALL)
-                return regex.search(leftvalue) is None
+                return rightvalue.lower() not in leftvalue.lower()
             elif operator == "~":
                 return rightvalue.lower() in leftvalue.lower()
         except TypeError,e:
