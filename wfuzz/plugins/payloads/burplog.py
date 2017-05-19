@@ -181,7 +181,7 @@ class burplog(BasePayload):
                         raw_response = ""
 
                     fr = FuzzRequest()
-                    fr.update_from_raw_http(raw_request, "http", raw_response)
+                    fr.update_from_raw_http(raw_request, host[:host.find("://")], raw_response)
                     frr = FuzzResult(history=fr)
                     
 
