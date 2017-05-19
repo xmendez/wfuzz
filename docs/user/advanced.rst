@@ -389,8 +389,8 @@ Expressions operators such as "= != < > >= <=" could be used to check values. Ad
 Operator     Description
 ============ ====================================================================
 =~           True when the regular expression specified matches the value.
-!~           True when the regular expression specified does not match the value.
-~            Equivalent to Python's "str1" in "str2" (case insensitive)
+~            Equivalent to Python's "str2" in "str1" (case insensitive)
+!~           Equivalent to Python's "str2" not in "str1" (case insensitive)
 ============ ====================================================================
 
 Where values could be:
@@ -535,7 +535,7 @@ Slice
 """""""
 
 The --slice command line parameter in conjuntion with the described filter language allows you to filter a payload.
-The specific payload to filter, specified by the -z switch must preceed --slice.
+The payload to filter, specified by the -z switch must preceed --slice comamand line parameter.
 
 An example is shown below::
 
@@ -566,10 +566,10 @@ above does not have a full FuzzResult object context and therefore object fields
 Prefilter
 """"""""
 
-The --prefilter command line parameter is similar to --slice but is not associated to any payload. The filtering is
+The --prefilter command line parameter is similar to --slice but is not associated to any payload. It is a general filtering 
 performed just before any HTTP request is done. 
 
-In this context you are filtering the FuzzResult which is built as a result of combining all the input payloads.
+In this context you are filtering a FuzzResult object, which is the result of combining all the input payloads, that is has not been updated with the result of performing its associated HTTP request yet and therefore lacking some information.
 
 Reutilising previous results
 --------------------------------------
@@ -581,11 +581,9 @@ This allows you to perform manual and semi-automatic tests with full context and
 Some ideas:
 
 * Replaying individual requests as-is
-* Replaying sequences of requests (such as a login or a checkout operation)
-* Comparing two proxy logs, returning a diff output of the URLs and parameters submitted
-* Fuzzing requests (creating a Burp object) and appending them to the original's replayed list
 * Comparing response bodies and headers of fuzzed requests against their original
-* Using difflib module in Python standard library to return a diff-formatted HTML output of two response bodies
+* Looking for requests with the CSRF token exposed in the URL
+* Looking for responses with JSON content with an incorrect content type
 
 wfuzzp payload
 ^^^^^^^^^^^^^^
@@ -629,10 +627,23 @@ You can filter the payload using the filter grammar as described before.
 burpstate and burplog payloads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Wfuzz can read burp's log or saved states. This allows to filter or reutilise burp proxy requests and responses.
+Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
-For example, the following will return a unique list of HTTP requests including the authtoken as a GET parameter::
+For example, the following will repeat again all the saved burp request as is::
 
-    $ python wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and u(url.pstrip)"
+    $ wfuzz -z burplog,a_burp_log.burp FUZZ
+
+Same for a saved burp state::
+
+    $ wfuzz -z burpstate,a_burp_state.burp FUZZ
+
+wfpayload
+^^^^^^^^^
+
+If you do not want to perform any request, just find some specific HTTP request you can use the wfpayload executable.
+
+For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
+
+    $ wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and u(url.pstrip)"
 
 Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
