@@ -1,5 +1,5 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
-from wfuzz.exception import FuzzExceptBadFile
+from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions
 from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 
@@ -21,7 +21,9 @@ class burpstate(BasePayload):
 
     parameters = (
         ("fn", "", True, "Filename of a valid Burp state file."),
-        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+        ("attr", None, False, "Fuzzresult attribute to return. If not specified the whole object is returned."),
+        ("source", "proxy,target", False, "A list of separated Burp sources to get the HTTP requests and responses from. It could be proxy or target tool."),
+        ("checkversion", True, False, "If the Burp log file version is unknown an exception will be raised and execution will fail. My burp log file versino is 65."),
     )
 
     default_parameter = "fn"
@@ -32,6 +34,20 @@ class burpstate(BasePayload):
 	self.__max = -1
         self.attr = self.params["attr"]
         self._it = self.burp_to_xml(self.params["fn"])
+
+        if any(i not in ["proxy","target"] for i in self.params["source"].split(",")):
+            raise FuzzExceptBadOptions("Unknown burp source parameter")
+
+        self.request_tags = []
+        self.response_tags = []
+
+        if "proxy" in self.params["source"]:
+            self.request_tags.append("</originalRequest>")
+            self.response_tags.append("</originalResponse>")
+
+        if "target" in self.params["source"]:
+            self.request_tags.append("</request>")
+            self.response_tags.append("</response>")
 
     def __iter__(self):
 	return self
@@ -118,14 +134,21 @@ class burpstate(BasePayload):
                             index += length + len(etag) # Point our index to the next tag
                             m = TAG.match(burp,index) # And retrieve it
 
-                            if etag == "</request>":
+                            if self.params["checkversion"] and etag == "</version>" and value != "65":
+                                    raise FuzzExceptBadFile("Unknown burp log version %s" % value)
+
+                            if etag == "</https>":
+                                https_tag = value == "True" 
+
+                            if etag in self.request_tags:
                                 raw_request = self.strip_cdata(value)
 
-                            elif etag == "</response>":
+                            if etag in self.response_tags:
                                 fr = FuzzRequest()
-                                fr.update_from_raw_http(raw_request, "http", self.strip_cdata(value))
+                                fr.update_from_raw_http(raw_request, "http" if not https_tag else "https", self.strip_cdata(value))
                                 frr = FuzzResult(history=fr)
 
                                 raw_request = ""
+                                https_tag = ""
                         
                                 yield frr.update()
