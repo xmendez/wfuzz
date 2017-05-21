@@ -40,9 +40,13 @@ class FuzzRequestParse(urlparse.ParseResult):
 	return os.path.splitext(self.ffname)[0]
 
     @property
-    def bllist(self):
+    def isbllist(self):
         fext = self.fext
 	return fext != "." and fext in Facade().sett.get("kbase", "discovery.blacklist").split("-")
+
+    @property
+    def hasquery(self):
+        return self.query != "" 
 
 def parse_url(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)

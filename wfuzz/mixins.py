@@ -48,7 +48,3 @@ class FuzzRequestUrlMixing:
 	    raise Exception, "Error generating recursive url"
 
 	return new_url + "FUZZ"
-
-    @property
-    def has_params(self):
-        print self.parameters

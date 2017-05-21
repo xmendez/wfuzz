@@ -27,28 +27,26 @@ class FuzzResFilter:
 
             basic_primitives = int_values | quoted_str_value
 
-            operator_names = oneOf("m d e u r l decode encode unquote replace lower upper")
+            operator_names = oneOf("m d e un u r l sw unique startswith decode encode unquote replace lower upper").setParseAction(lambda s,l,t: [ (l,t[0])])
 
-            fuzz_symbol = (Suppress(Literal("FUZ")) + Optional(Word("23456789"), 1).setParseAction( lambda s,l,t: [ int(t[0])-1 ] ) +  Suppress(Literal("Z"))).setParseAction(self.__compute_fuzz_symbol)
+            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction( lambda s,l,t: [ int(t[0])-1 ] ) +  Suppress("Z")).setParseAction(self.__compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
             fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
+            fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
 
             res_value_op = (Word(alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
             basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
 
-            fuzz_statement = fuzz_value ^ fuzz_value_op ^ res_value_op ^ basic_primitives_op
-
-            adv_symbol_bool = (Optional(fuzz_symbol + Suppress("["), None) + oneOf("hasquery ispath bllist") + Optional(Suppress("]"))).setParseAction(self.__compute_adv_sym_bool)
-            unique_operator = (oneOf("unique u").setParseAction(lambda s,l,t: [ l ]) + Suppress(Literal("(")) + fuzz_statement + Suppress(Literal(")"))).setParseAction(self.__compute_unique_op)
+            fuzz_statement = fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op ^ basic_primitives_op
 
             operator = oneOf("and or")
             not_operator = Optional(oneOf("not"), "notpresent")
 
             symbol_expr = Group(fuzz_statement + oneOf("= != < > >= <= =~ !~ ~") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
 
-            definition = symbol_expr ^ adv_symbol_bool ^ unique_operator
+            definition = fuzz_statement ^ symbol_expr
             definition_not = not_operator + definition
             definition_expr = definition_not + ZeroOrMore( operator + definition_not)
 
@@ -99,35 +97,6 @@ class FuzzResFilter:
 	    self.hideparams['chars'].append(res.chars)
 
 	self.baseline = res
-
-    def __compute_unique_op(self, tokens):
-	index, item = tokens
-
-        if item not in self._cache[index]:
-            self._cache[index].add(item)
-            return True
-        else:
-            return False
-
-    def __compute_adv_sym_bool(self, tokens):
-	fuzz_val, adv_element = tokens
-
-        if not fuzz_val:
-            fuzz_val = self.res
-
-	cond = False
-
-	if adv_element == 'hasquery':
-	    if fuzz_val.history.urlparse.query:
-		cond = True
-	elif adv_element == 'ispath':
-	    if fuzz_val.history.is_path:
-		cond = True
-	elif adv_element == 'bllist':
-	    if fuzz_val.history.urlparse.bllist:
-		cond = True
-
-        return cond
 
     def __compute_res_value(self, tokens):
         self.stack["field"] = tokens[0]
@@ -180,13 +149,15 @@ class FuzzResFilter:
 
     def __compute_perl_value(self, tokens):
         leftvalue, exp = tokens 
-
+        
         if exp:
-            op, middlevalue, rightvalue = exp
+            loc_op, middlevalue, rightvalue = exp
+            loc, op = loc_op
         else:
             return leftvalue
 
-        if (op == "u" or op == "unquote") and middlevalue == None and rightvalue == None:
+
+        if (op == "un" or op == "unquote") and middlevalue == None and rightvalue == None:
             ret = urllib.unquote(leftvalue)
         elif (op == "e" or op == "encode") and middlevalue != None and rightvalue == None:
             ret = Facade().encoders.get_plugin(middlevalue)().encode(leftvalue)
@@ -198,6 +169,14 @@ class FuzzResFilter:
             return leftvalue.upper()
         elif op == "lower" or op == "l":
             return leftvalue.lower()
+	elif op == 'startswith' or op == "sw":
+            return leftvalue.strip().startswith(middlevalue)
+	elif op == 'unique' or op == "u":
+            if leftvalue not in self._cache[loc]:
+                self._cache[loc].add(leftvalue)
+                return True
+            else:
+                return False
         else:
             raise FuzzExceptBadOptions("Bad format, expression should be m,d,e,r,s(value,value)")
 
@@ -269,7 +248,7 @@ class FuzzResFilter:
 	    try:
 		return self.finalformula.parseString(filter_string, parseAll = True)[0]
 	    except ParseException, e:
-		raise FuzzExceptIncorrectFilter("Incorrect filter expression. It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+		raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation.")
             except AttributeError, e:
 		raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 	else:

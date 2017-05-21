@@ -370,17 +370,6 @@ A filter expression must be built using the following symbols and operators:
 
 "and", "or" and "not" operators could be used to build conditional expressions.
 
-Additionally, the following boolean operators are also supported:
-
-============= ============= =============================================
-Name          Short version Description
-============= ============= =============================================
-hasquery                    True when the URL contains a query string.
-ispath                      True when the URL path refers to a directory.
-bllist                      True when the URL file extension is included in the configuration discovery's blacklist
-unique(value) u(value)      Returns True if a value is unique.
-============= ============= =============================================
-
 * Expression Operators
 
 Expressions operators such as "= != < > >= <=" could be used to check values. Additionally, the following for matching text are available:
@@ -411,12 +400,14 @@ BBB          Baseline
 ================================ ======================= =============================================
 Name                             Short version           Description
 ================================ ======================= =============================================
-value|unquote()                  value|u()               Unquotes the value
+value|unquote()                  value|un()              Unquotes the value
 value|lower()                    value|l()               lowercase of the value
 value|upper()                                            uppercase of the value
 value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
 value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
 value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
+value|unique(value)              value|u(value)          Returns True if a value is unique.
+value|startswith('value')        value|sw('param')       Returns true if the value string starts with param
 ================================ ======================= =============================================
 
 * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
@@ -476,6 +467,9 @@ url.ffname          test.php
 url.fext            .php
 url.fname           test
 url.pstrip          Returns a hash of the request using the parameter's names without values (useful for unique operations)
+url.hasquery        Returns true when the URL contains a query string.
+url.ispath          Returns true when the URL path refers to a directory.
+url.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
 =================== =============================================
 
 Payload instrospection can also be performed by using the keyword FUZZ:
@@ -539,7 +533,7 @@ The payload to filter, specified by the -z switch must preceed --slice comamand 
 
 An example is shown below::
 
-    $ python wfuzz-cli.py -z list,one-two-one-one --slice "u(FUZZ)" http://localhost:9000/FUZZ
+    $ python wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Bruteforcer                      *
@@ -644,6 +638,6 @@ If you do not want to perform any request, just find some specific HTTP request 
 
 For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
 
-    $ wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and u(url.pstrip)"
+    $ wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and url.pstrip|u()"
 
 Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
