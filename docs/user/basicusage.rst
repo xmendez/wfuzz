@@ -35,7 +35,7 @@ If you want to fuzz some form-encoded data like an HTML form will do, simply pas
 
     $ python wfuzz.py -z file,wordlist/others/common_pass.txt -d "uname=FUZZ&pass=FUZZ"  --hc 302 http://testphp.vulnweb.com/userinfo.php
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/userinfo.php
@@ -120,7 +120,7 @@ HTTP verbs fuzzing can be specified using the -X swith::
 
     $ python wfuzz.py -z list,GET-HEAD-POST-TRACE-OPTIONS -X FUZZ http://testphp.vulnweb.com/
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/
@@ -169,7 +169,7 @@ For example, a protected resource using Basic authentication can be fuzzed using
 
     $ python wfuzz.py -z list,nonvalid-httpwatch --basic FUZZ:FUZZ https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx
@@ -197,7 +197,7 @@ The -R swith can be used to specify a payload recursion's depth. For example, if
 
     $ python wfuzz.py -z list,"admin-CVS-cgi\-bin"  -R1 http://testphp.vulnweb.com/FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/FUZZ

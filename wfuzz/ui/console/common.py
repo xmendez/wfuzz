@@ -11,11 +11,11 @@ examples_banner = '''Examples:\n\twfuzz.py -c -z file,users.txt -z file,pass.txt
 \n\tMore examples in the README.'''
 
 exec_banner = '''********************************************************\r
-* Wfuzz %s - The Web Bruteforcer                      *\r
+* Wfuzz %s - The Web Fuzzer                           *\r
 ********************************************************\r\n''' % version
 
 help_banner = '''********************************************************
-* Wfuzz %s - The Web Bruteforcer                      *
+* Wfuzz %s - The Web Fuzzer                           *
 *                                                      *
 * Version up to 1.4c coded by:                         *
 * Christian Martorella (cmartorella@edge-security.com) *

@@ -9,7 +9,7 @@ A typical Wfuzz command line execution, specifying a dictionary payload and a UR
 The obtained output is shown below::
 
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/FUZZ
@@ -87,7 +87,7 @@ The stdin payload could be used when using a external wordlist generator::
     0 PB
     Crunch will now generate the following number of lines: 4 
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/FUZZ
@@ -143,7 +143,7 @@ Below is shown an example::
 
     $ python wfuzz.py -w wordlist/general/common.txt --hc 404 http://datalayer.io/FUZZ  
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://datalayer.io/FUZZ

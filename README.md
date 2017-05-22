@@ -1,4 +1,4 @@
-# Wfuzz - The Web Bruteforcer
+# Wfuzz - The Web Fuzzer
 
 ## What is this?
 

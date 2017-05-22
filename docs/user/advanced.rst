@@ -93,7 +93,7 @@ Encoders are specified as a payload parameter. There are two equivalent ways of 
 
     $ python wfuzz.py -z file --zP fn=wordlist/general/common.txt,encoder=md5  http://testphp.vulnweb.com/FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/FUZZ
@@ -119,7 +119,7 @@ Specifying multiple encoders
 
     $ python wfuzz.py -z list,1-2-3,md5-sha1-none http://webscantest.com/FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://webscantest.com/FUZZ
@@ -148,7 +148,7 @@ Specifying multiple encoders
 
     $ python wfuzz.py -z list,1-2-3,sha1-sha1@none http://webscantest.com/FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://webscantest.com/FUZZ
@@ -215,7 +215,7 @@ An example, parsing a "robots.txt" file is shown below::
 
     $ python wfuzz.py --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://www.webscantest.com/FUZZ
@@ -256,7 +256,7 @@ Then, execute Wfuzz using the stored options by using the "--recipe" option::
 
     $ python wfuzz.py --recipe /tmp/recipe 
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://www.webscantest.com/FUZZ
@@ -291,7 +291,7 @@ In the event of a network problem (e.g. DNS failure, refused connection, etc), W
 
     $ python wfuzz.py -z list,support-web-none http://FUZZ.google.com/
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://FUZZ.google.com/
@@ -309,7 +309,7 @@ You can tell Wfuzz to continue execution, ignoring errors by supplying the -Z sw
 
     $ python wfuzz.py -z list,support-web-none -Z http://FUZZ.google.com/
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://FUZZ.google.com/
@@ -332,7 +332,7 @@ Errors are shown as a result with the XXX code, the payload used followed by an 
 
     $ python wfuzz.py -z list,support-web-none -Z --hc XXX http://FUZZ.google.com/
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://FUZZ.google.com/
@@ -492,7 +492,7 @@ An example below::
 
     $ python wfuzz.py -z range,0-10 --filter "c=200 and l>97" http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
@@ -536,7 +536,7 @@ An example is shown below::
     $ python wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
-    * Wfuzz 2.2 - The Web Bruteforcer                      *
+    * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
 
     Target: http://localhost:9000/FUZZ
@@ -558,7 +558,7 @@ It is worth noting that the type of payload dictates the available language symb
 above does not have a full FuzzResult object context and therefore object fields cannot be used.
 
 Prefilter
-""""""""
+"""""""""
 
 The --prefilter command line parameter is similar to --slice but is not associated to any payload. It is a general filtering 
 performed just before any HTTP request is done. 
@@ -619,7 +619,7 @@ The above command will generate HTTP requests such as the following::
 You can filter the payload using the filter grammar as described before.
 
 burpstate and burplog payloads
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
