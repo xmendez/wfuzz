@@ -598,7 +598,7 @@ $ python wfuzz.py -z wfuzzp,/tmp/session FUZZ
 
 * Or by specyfing the FUZZ keyword and a field name in the form of FUZZ[field]::
 
-    $ python wfuzz.py -z wfuzzp,/tmp/session  --dry-run FUZZ[url]
+    $ python wfuzz.py -z wfuzzp,/tmp/session FUZZ[url]
 
 This could be used, for example, to perform new requests based on stored values::
 

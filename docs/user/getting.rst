@@ -177,7 +177,7 @@ Thus, we can improve our "--hc 404" filter by using this information (various fi
     00913:  C=302      0 L         0 W            0 Ch        "template"
 
 Showing responses
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 Showing results works the same way but using the command line parameters preceded by an "s": "--sc, --sl, --sw, --sh".
 
