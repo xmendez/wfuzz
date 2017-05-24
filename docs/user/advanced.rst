@@ -437,16 +437,16 @@ content                      HTTP response's content
 raw_content                  HTTP response's content including headers
 cookies.request              HTTP request cookie
 cookies.response             HTTP response cookie
-cookies.request.<<name>>              HTTP request cookie
-cookies.response.<<name>>             HTTP response cookie
+cookies.request.<<name>>     HTTP request cookie
+cookies.response.<<name>>    HTTP response cookie
 headers.request              All HTTP request headers
 headers.response             All HTTP response headers
 headers.request.<<name>>     HTTP request given header
 headers.response.<<name>>    HTTP response given header
-parameters                   All HTTP request GET and POST parameters
-parameters.get               All HTTP request GET parameters
-parameters.post              All HTTP request POST parameters
-parameters.get/post.<<name>> A given HTTP request GET/POST parameter
+params                       All HTTP request GET and POST parameters
+params.get                   All HTTP request GET parameters
+params.post                  All HTTP request POST parameters
+params.get/post.<<name>>     A given HTTP request GET/POST parameter
 ============================ =============================================
 
 URL field is broken in smaller parts using the urlparse Python's module, which parses a URL into: scheme://netloc/path;parameters?query#fragment.
@@ -638,6 +638,6 @@ If you do not want to perform any request, just find some specific HTTP request 
 
 For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
 
-    $ wfpayload -z burplog,a_burp_log.log --slice "parameters.get~'authtoken' and url.pstrip|u()"
+    $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
 
 Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.

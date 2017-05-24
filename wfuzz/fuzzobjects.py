@@ -114,7 +114,7 @@ class cookies:
 
         return ""
 
-class parameters(object):
+class params(object):
     def __init__(self, req):
         self._req = req
 
@@ -137,7 +137,7 @@ class parameters(object):
         attr = field.split(".")
         num_fields = len(attr)
 
-        if num_fields == 1 and attr[0] == "parameters":
+        if num_fields == 1 and attr[0] == "params":
                 pp = ", ".join(map(lambda x: "%s:%s" % (x[0],x[1]), dict(self.get.items() + self.post.items()).items()))
                 return "" if not pp else pp
         elif num_fields == 2:
@@ -146,7 +146,7 @@ class parameters(object):
             elif attr[1] == "post":
                 return ", ".join(map(lambda x: "%s=%s" % (x[0],x[1]), self.post.items()))
             else:
-                raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
+                raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
         elif num_fields == 3:
             ret = ""
             try:
@@ -155,13 +155,13 @@ class parameters(object):
                 elif attr[1] == "post":
                     ret = self.post[attr[2]]
                 else:
-                    raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
+                    raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
             except KeyError:
                 pass
 
             return ret
         else:
-            raise FuzzExceptBadAPI("Parameters must be specified as parameters.[get/post].<name>")
+            raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
 
 class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def __init__(self):
@@ -191,8 +191,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return headers(self._request)
 
     @property
-    def parameters(self):
-	return parameters(self._request)
+    def params(self):
+	return params(self._request)
 
     @property
     def cookies(self):
@@ -290,8 +290,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             return self.cookies.get_field(field).strip()
         elif field.startswith("headers"):
             return self.headers.get_field(field)
-        elif field.startswith("parameters"):
-            return self.parameters.get_field(field)
+        elif field.startswith("params"):
+            return self.params.get_field(field)
         elif field.startswith("url."):
             attr = field.split(".")
             allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "domain", "ffname", "fext", "fname", "isbllist", "hasquery"]
@@ -412,7 +412,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 	    self.follow = options['follow']
 
         if options['postdata']:
-            self.parameters.post = options['postdata']
+            self.params.post = options['postdata']
 
         if options['method']:
             self.method = options['method']
@@ -435,7 +435,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
 
         newreq.headers.add(self.headers.request)
-        newreq.parameters.post = self.parameters.post
+        newreq.params.post = self.params.post
 
 	newreq.follow = self.follow
 	newreq.auth = self.auth

@@ -117,7 +117,7 @@ class html(BasePrinter):
 
 	if fuzz_result.history.method.lower() == "post":
 	    inputs=""
-	    for n, v in fuzz_result.history.parameters.post.items():
+	    for n, v in fuzz_result.history.params.post.items():
 		inputs+="<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
 
 	    self.f.write ("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" %(fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
@@ -155,7 +155,7 @@ class json(BasePrinter):
 	    location = "(*) %s" % res.history.url
         post_data = {}
 	if res.history.method.lower() == "post":
-	    for n, v in res.history.parameters.post.items():
+	    for n, v in res.history.params.post.items():
                 post_data[n] = v
 
         res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}
