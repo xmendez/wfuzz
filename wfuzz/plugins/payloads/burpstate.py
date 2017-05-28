@@ -13,7 +13,12 @@ class burpstate(BasePayload):
     name = "burpstate"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("Returns fuzz results' from a Burp saved state file.",
+    description = ("Returns fuzz results' from a Burp saved state file. This payload's code is based on burp2xml.py:",
+                    "Developed by Paul Haas, <phaas AT redspin DOT com> under Redspin. Inc.",
+                    "Licensed under the GNU Public License version 3.0 (2008-2009)",
+                    "Process Burp Suite Professional's output into a well-formed XML document.",
+                    "",
+                    "Currently, the whole burp state file is read, in the future this needs to be changed to be more memory efficient.",
     )
     summary = "Returns fuzz results from a Burp state."
     category = ["default"]
@@ -23,7 +28,7 @@ class burpstate(BasePayload):
         ("fn", "", True, "Filename of a valid Burp state file."),
         ("attr", None, False, "Fuzzresult attribute to return. If not specified the whole object is returned."),
         ("source", "proxy,target", False, "A list of separated Burp sources to get the HTTP requests and responses from. It could be proxy or target tool."),
-        ("checkversion", True, False, "If the Burp log file version is unknown an exception will be raised and execution will fail. My burp log file versino is 65."),
+        ("checkversion", False, False, "If the Burp log file version is unknown an exception will be raised and execution will fail. Checked with burp state file version 65, 67."),
     )
 
     default_parameter = "fn"
@@ -134,7 +139,7 @@ class burpstate(BasePayload):
                             index += length + len(etag) # Point our index to the next tag
                             m = TAG.match(burp,index) # And retrieve it
 
-                            if self.params["checkversion"] and etag == "</version>" and value != "65":
+                            if self.params["checkversion"] and etag == "</version>" and value not in ["65", "67"]:
                                     raise FuzzExceptBadFile("Unknown burp log version %s" % value)
 
                             if etag == "</https>":
