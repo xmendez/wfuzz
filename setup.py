@@ -1,21 +1,20 @@
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
-from wfuzz.facade import version
- 
- 
 with open("README.md", "rb") as f:
     long_descr = f.read().decode("utf-8")
+
+
+version = re.search(
+    '^__version__\s*=\s*"(.*)"',
+    open('wfuzz/__init__.py').read(),
+    re.M
+    ).group(1)
  
  
 setup(
     name = "wfuzz",
-    packages = ["wfuzz"],
-    entry_points = {
-        "console_scripts": [
-        },
-
-
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'wfuzz = wfuzz.wfuzz:main',
@@ -24,7 +23,7 @@ setup(
         'gui_scripts': [
             'wxfuzz = wfuzz.wfuzz:main_gui',
         ]
-    }
+    },
     version = version,
     description = "Wfuzz - The web fuzzer",
     long_description = long_descr,

@@ -11,7 +11,7 @@ from .common import help_banner
 from .common import usage
 from .common import brief_usage
 from .common import verbose_usage
-from .common import version
+from wfuzz import __version__ as version
 from .output import table_print
 
 class CLParser:

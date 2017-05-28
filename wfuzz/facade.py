@@ -1,4 +1,5 @@
 from . import utils
+from . import __version__ as version
 from .externals.moduleman.registrant import MulRegistrant
 from .externals.moduleman.loader import FileLoader
 from .externals.moduleman.loader import DirLoader
@@ -6,8 +7,6 @@ from .externals.settings.settings import SettingsBase
 from .exception import FuzzExceptNoPluginError, FuzzExceptPluginLoadError
 
 import os
-
-version = "2.2"
 
 class Settings(SettingsBase):
     def get_config_file(self):
