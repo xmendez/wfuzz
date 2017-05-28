@@ -12,7 +12,7 @@ See Wfuzz in action:
 
     $ wfuzz -w wordlist/general/common.txt --hc 404 http://testphp.vulnweb.com/FUZZ                                                                                              
     ********************************************************
-    * Wfuzz 2.1.4 - The Web Bruteforcer                    *
+    * Wfuzz 2.2 - The Web Bruteforcer                      *
     ********************************************************
 
     Target: http://testphp.vulnweb.com/FUZZ
@@ -33,6 +33,17 @@ See Wfuzz in action:
     Filtered Requests: 945
     Requests/sec.: 172.1247
 
+* Wfuzz library::
+
+    >>> import wfuzz
+    >>> for r in wfuzz.get_payload(range(100)).fuzz(hl=[97], url="http://testphp.vulnweb.com/listproducts.php?cat=FUZZ"):
+    ...     print r
+    ... 
+    00125:  C=200    102 L       434 W         7011 Ch        "1"
+    00126:  C=200     99 L       302 W         4442 Ch        "2"
+
+rther tools included in the wfuzz framework.
+
 * Wfuzz payload generator::
 
     $ wfpayload -z range,0-10
@@ -51,16 +62,6 @@ See Wfuzz in action:
 * Wfuzz encoder/decoder::
     
     $ wfencode blah blah
-
-* Wfuzz library::
-
-    >>> import wfuzz
-    >>> for r in wfuzz.get_payload(range(100)).fuzz(hl=[97], url="http://testphp.vulnweb.com/listproducts.php?cat=FUZZ"):
-    ...     print r
-    ... 
-    00125:  C=200    102 L       434 W         7011 Ch        "1"
-    00126:  C=200     99 L       302 W         4442 Ch        "2"
-
 
 Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 

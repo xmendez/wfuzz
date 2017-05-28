@@ -30,7 +30,7 @@ Iterators: Combining payloads
 
 Payloads can be combined by using the -m parameter, in wfuzz this functionality is provided by what is called iterators, the following types are provided by default::
 
-    $ python wfuzz.py -e iterators
+    $ wfuzz -e iterators
 
     Available iterators:
 
@@ -46,7 +46,7 @@ Below are shown some examples using two different payloads containing the elemen
 
 * zip::
 
-    wfuzz.py -z list,a-b-c -z list,1-2-3 -m zip http://google.com/FUZZ/FUZ2Z
+    wfuzz -z list,a-b-c -z list,1-2-3 -m zip http://google.com/FUZZ/FUZ2Z
 
     00001:  C=404      9 L        32 W          276 Ch        "a - 1"
     00002:  C=404      9 L        32 W          276 Ch        "c - 3"
@@ -54,7 +54,7 @@ Below are shown some examples using two different payloads containing the elemen
 
 * chain::
 
-    wfuzz.py -z list,a-b-c -z list,1-2-3 -m chain http://google.com/FUZZ
+    wfuzz -z list,a-b-c -z list,1-2-3 -m chain http://google.com/FUZZ
 
     00001:  C=404      9 L        32 W          280 Ch        "b"
     00002:  C=404      9 L        32 W          280 Ch        "a"
@@ -65,7 +65,7 @@ Below are shown some examples using two different payloads containing the elemen
 
 * product::
 
-    wfuzz.py -z list,a-b-c -z list,1-2-3 http://mysite.com/FUZZ/FUZ2Z
+    wfuzz -z list,a-b-c -z list,1-2-3 http://mysite.com/FUZZ/FUZ2Z
 
     00001:  C=404      9 L        32 W          276 Ch        "a - 2"
     00002:  C=404      9 L        32 W          276 Ch        "a - 1"
@@ -82,7 +82,7 @@ Encoders
 
 In Wfuzz, a encoder is a transformation of a payload from one format to another. A list of the available encoders can be obtained using the following command::
 
-    $ python wfuzz.py -e encoders
+    $ wfuzz -e encoders
 
 Specifying an encoder
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -91,7 +91,7 @@ Encoders are specified as a payload parameter. There are two equivalent ways of 
 
 * The long way::
 
-    $ python wfuzz.py -z file --zP fn=wordlist/general/common.txt,encoder=md5  http://testphp.vulnweb.com/FUZZ
+    $ wfuzz -z file --zP fn=wordlist/general/common.txt,encoder=md5  http://testphp.vulnweb.com/FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -117,7 +117,7 @@ Specifying multiple encoders
 
 * Several encoders can be specified at once, using "-" as a separator::
 
-    $ python wfuzz.py -z list,1-2-3,md5-sha1-none http://webscantest.com/FUZZ
+    $ wfuzz -z list,1-2-3,md5-sha1-none http://webscantest.com/FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -146,7 +146,7 @@ Specifying multiple encoders
 
 * Encoders can also be chained using the "@" char::
 
-    $ python wfuzz.py -z list,1-2-3,sha1-sha1@none http://webscantest.com/FUZZ
+    $ wfuzz -z list,1-2-3,sha1-sha1@none http://webscantest.com/FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -169,7 +169,7 @@ The above "sha1@none" parameter specification will encode the payload using the 
 
 * Encoders are grouped by categories. This allows to select several encoders by category, for example::
 
-    $ python wfuzz.py -z list,1-2-3,hashes http://webscantest.com/FUZZ
+    $ wfuzz -z list,1-2-3,hashes http://webscantest.com/FUZZ
 
     00000:  C=200     38 L       121 W         1486 Ch        "Mw=="
     00001:  C=200     38 L       121 W         1486 Ch        "c81e728d9d4c2f636f067f89cc14862c"
@@ -188,7 +188,7 @@ Wfuzz is more than a Web Content Scanner. Wfuzz could help you to secure your we
 
 Wfuzz's web application vulnerability scanner is supported by plugins. A list of scanning plugins can be obtained using the following command::
 
-    $ python wfuzz.py -e scripts
+    $ wfuzz -e scripts
 
 Scripts are grouped in categories. A script could belong to several categories at the same time.
 
@@ -209,11 +209,11 @@ The -A switch is an alias for --script=default.
 
 Script's detailed information can be obtained using --scrip-help, for example::
 
-    $ python wfuzz.py --script-help=default
+    $ wfuzz --script-help=default
 
 An example, parsing a "robots.txt" file is shown below::
 
-    $ python wfuzz.py --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
+    $ wfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -250,11 +250,11 @@ You could save Wfuzz command line options to a file for later execution or for e
 
 To create a recipe, execute the following::
 
-    $ python wfuzz.py --script=robots -z list,robots.txt --dump-recipe /tmp/recipe http://www.webscantest.com/FUZZ
+    $ wfuzz --script=robots -z list,robots.txt --dump-recipe /tmp/recipe http://www.webscantest.com/FUZZ
 
 Then, execute Wfuzz using the stored options by using the "--recipe" option::
 
-    $ python wfuzz.py --recipe /tmp/recipe 
+    $ wfuzz --recipe /tmp/recipe 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -280,7 +280,7 @@ Then, execute Wfuzz using the stored options by using the "--recipe" option::
 
 You can combine a recipe with additional command line options, for example::
 
-    $ python wfuzz.py --recipe /tmp/recipe -b cookie1=value
+    $ wfuzz --recipe /tmp/recipe -b cookie1=value
 
 In case of repeated options, command line options have precedence over options included in the recipe.
 
@@ -289,7 +289,7 @@ Scan Mode: Ignore Errors and Exceptions
 
 In the event of a network problem (e.g. DNS failure, refused connection, etc), Wfuzz will raise an exception and stop execution as shown below::
 
-    $ python wfuzz.py -z list,support-web-none http://FUZZ.google.com/
+    $ wfuzz -z list,support-web-none http://FUZZ.google.com/
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -307,7 +307,7 @@ In the event of a network problem (e.g. DNS failure, refused connection, etc), W
 
 You can tell Wfuzz to continue execution, ignoring errors by supplying the -Z switch. The latter command in scan mode will get the following results::
 
-    $ python wfuzz.py -z list,support-web-none -Z http://FUZZ.google.com/
+    $ wfuzz -z list,support-web-none -Z http://FUZZ.google.com/
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -330,7 +330,7 @@ You can tell Wfuzz to continue execution, ignoring errors by supplying the -Z sw
 
 Errors are shown as a result with the XXX code, the payload used followed by an exclamation mark and the companion exception message. Error codes can be filtered using the "XXX" expression. For example::
 
-    $ python wfuzz.py -z list,support-web-none -Z --hc XXX http://FUZZ.google.com/
+    $ wfuzz -z list,support-web-none -Z --hc XXX http://FUZZ.google.com/
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -490,7 +490,7 @@ The --filter command line parameter in conjuntion with the described filter lang
 
 An example below::
 
-    $ python wfuzz.py -z range,0-10 --filter "c=200 and l>97" http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
+    $ wfuzz -z range,0-10 --filter "c=200 and l>97" http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -512,15 +512,15 @@ An example below::
 
 Using result and payload instrospection to look for specific content returned in the response::
 
-    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
+    $ wfuzz -z list,echoedback -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
 Which is equivalent to::
 
-    $ python wfuzz.py -z list,echoedback -d searchFor=FUZZ --ss "echoedback" http://testphp.vulnweb.com/search.php?test=query
+    $ wfuzz -z list,echoedback -d searchFor=FUZZ --ss "echoedback" http://testphp.vulnweb.com/search.php?test=query
 
 A more interesting variation of the above examples could be::
 
-    $ python wfuzz-cli.py -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "intext~FUZZ" http://testphp.vulnweb.com/search.php?test=query
+    $ wfuzz-cli.py -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "intext~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -533,7 +533,7 @@ The payload to filter, specified by the -z switch must preceed --slice comamand 
 
 An example is shown below::
 
-    $ python wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
+    $ wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
@@ -584,25 +584,25 @@ wfuzzp payload
 
 Wfuzz results can be stored using the --oF option as illustrated below::
 
-$ python wfuzz.py --oF /tmp/session -z range,0-10 http://www.google.com/dir/test.php?id=FUZZ
+$ wfuzz --oF /tmp/session -z range,0-10 http://www.google.com/dir/test.php?id=FUZZ
 
 Then you can reutilise those results by using the wfuzzp payload.
 
 For example, to perform the same exact HTTP requests::
 
-$ python wfuzz.py -z wfuzzp,/tmp/session FUZZ
+$ wfuzz -z wfuzzp,/tmp/session FUZZ
 
 * Accessing specific HTTP object fields can be achieved by using the attr payload's parameter::
 
-    $ python wfuzz.py -z wfuzzp,/tmp/session --zP attr=url  FUZZ
+    $ wfuzz -z wfuzzp,/tmp/session --zP attr=url  FUZZ
 
 * Or by specyfing the FUZZ keyword and a field name in the form of FUZZ[field]::
 
-    $ python wfuzz.py -z wfuzzp,/tmp/session FUZZ[url]
+    $ wfuzz -z wfuzzp,/tmp/session FUZZ[url]
 
 This could be used, for example, to perform new requests based on stored values::
 
-    $ python wfuzz.py -z wfuzzp,/tmp/session -p localhost:8080 http://testphp.vulnweb.com/FUZZ[url.path]?FUZZ[url.query]
+    $ wfuzz -z wfuzzp,/tmp/session -p localhost:8080 http://testphp.vulnweb.com/FUZZ[url.path]?FUZZ[url.query]
     00001:  C=200     25 L       155 W         1362 Ch        "/dir/test.php - id=0"
     ...
     00002:  C=200     25 L       155 W         1362 Ch        "/dir/test.php - id=1"

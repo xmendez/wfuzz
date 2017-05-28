@@ -5,9 +5,9 @@ if os.name == "nt":
     import WConio
 
 
-examples_banner = '''Examples:\n\twfuzz.py -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
-\twfuzz.py -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-\twfuzz.py --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
+examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+\twfuzz -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
+\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
 \n\tMore examples in the README.'''
 
 exec_banner = '''********************************************************\r
@@ -25,12 +25,12 @@ help_banner = '''********************************************************
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n''' % (version, version)
 
-header_usage ='''Usage:\t%s [options] -z payload,params <url>\r\n
+header_usage ='''Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
 \tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
-''' % (sys.argv[0])
+'''
 
-brief_usage ='''%s\n\n%s\n\nType wfuzz.py -h for further information or --help for advanced usage.''' % (header_usage, examples_banner)
+brief_usage ='''%s\n\n%s\n\nType wfuzz -h for further information or --help for advanced usage.''' % (header_usage, examples_banner)
 
 usage ='''%s\n\nOptions:
 \t-h      		    : This help

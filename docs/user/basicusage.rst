@@ -15,25 +15,25 @@ Wfuzz contains some dictionaries, other larger and up to date open source word l
 
 Below is shown an example of wfuzz looking for common directories::
 
-    $ python wfuzz.py -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ                                                                                                                                                               
+    $ python wfuzz -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ                                                                                                                                                               
 
 Below is shown an example of wfuzz looking for common files::
 
-    $ python wfuzz.py -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ.php
+    $ python wfuzz -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ.php
 
 Fuzzing Parameters In URLs
 --------------------------
 
 You often want to fuzz some sort of data in the URL's query string, this can be achieved by specifying the FUZZ keyword in the URL after a question mark::
 
-    $ python wfuzz.py -z range,0-10 --hl 97 http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
+    $ python wfuzz -z range,0-10 --hl 97 http://testphp.vulnweb.com/listproducts.php?cat=FUZZ
 
 Fuzzing POST Requests
 ---------------------
 
 If you want to fuzz some form-encoded data like an HTML form will do, simply pass a -d command line argument::
 
-    $ python wfuzz.py -z file,wordlist/others/common_pass.txt -d "uname=FUZZ&pass=FUZZ"  --hc 302 http://testphp.vulnweb.com/userinfo.php
+    $ python wfuzz -z file,wordlist/others/common_pass.txt -d "uname=FUZZ&pass=FUZZ"  --hc 302 http://testphp.vulnweb.com/userinfo.php
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -79,7 +79,7 @@ Fuzzing Custom headers
 
 If you'd like to add HTTP headers to a request, simply use the -H parameter (repeat for various headers)::
 
-    $ python wfuzz.py -z file,wordlist/general/common.txt -H "myheader: headervalue" -H "myheader2: headervalue2" http://testphp.vulnweb.com/FUZZ
+    $ python wfuzz -z file,wordlist/general/common.txt -H "myheader: headervalue" -H "myheader2: headervalue2" http://testphp.vulnweb.com/FUZZ
 
 
 The command above will generate HTTP requests such as the one below::
@@ -118,7 +118,7 @@ Fuzzing HTTP Verbs
 
 HTTP verbs fuzzing can be specified using the -X swith::
 
-    $ python wfuzz.py -z list,GET-HEAD-POST-TRACE-OPTIONS -X FUZZ http://testphp.vulnweb.com/
+    $ python wfuzz -z list,GET-HEAD-POST-TRACE-OPTIONS -X FUZZ http://testphp.vulnweb.com/
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -167,7 +167,7 @@ Wfuzz can set an authentication headers by using the --basic/ntlm/digest command
 
 For example, a protected resource using Basic authentication can be fuzzed using the following command::
 
-    $ python wfuzz.py -z list,nonvalid-httpwatch --basic FUZZ:FUZZ https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx
+    $ python wfuzz -z list,nonvalid-httpwatch --basic FUZZ:FUZZ https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -195,7 +195,7 @@ Recursion
 
 The -R swith can be used to specify a payload recursion's depth. For example, if you want to search for existing directories and then fuzz within these directories again using the same payload you can use the following command::
 
-    $ python wfuzz.py -z list,"admin-CVS-cgi\-bin"  -R1 http://testphp.vulnweb.com/FUZZ
+    $ python wfuzz -z list,"admin-CVS-cgi\-bin"  -R1 http://testphp.vulnweb.com/FUZZ
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -234,10 +234,10 @@ Writing to a file
 
 Wfuzz supports writing the results to a file in a different format. This is performed by plugins called "printers". The available printers can be listed executing::
 
-    $ python wfuzz.py -e printers
+    $ python wfuzz -e printers
 
 For example, to write results to an output file in json format use the following command::
 
-    $ python wfuzz.py -o /tmp/outfile,json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+    $ python wfuzz -o /tmp/outfile,json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
 

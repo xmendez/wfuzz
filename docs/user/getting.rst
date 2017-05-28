@@ -3,7 +3,7 @@ Getting Started
 
 A typical Wfuzz command line execution, specifying a dictionary payload and a URL, looks like this::
 
-    $ python wfuzz.py -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+    $ wfuzz -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
 
 The obtained output is shown below::
@@ -56,7 +56,7 @@ Wfuzz is based on a simple concept: it replaces any reference to the keyword FUZ
 
 The available payloads can be listed by executing::
 
-    $ python wfuzz.py -e payloads
+    $ wfuzz -e payloads
 
 
 Specifying a payload:
@@ -79,7 +79,7 @@ Each FUZZ keyword must have its corresponding payload. There are several equival
 
 The stdin payload could be used when using a external wordlist generator::
 
-    $ crunch 2 2 ab | python wfuzz.py -z stdin http://testphp.vulnweb.com/FUZZ
+    $ crunch 2 2 ab | wfuzz -z stdin http://testphp.vulnweb.com/FUZZ
     Crunch will now generate the following amount of data: 12 bytes
     0 MB
     0 GB
@@ -113,7 +113,7 @@ Multiple payloads
 
 Several payloads can be used by specifying several -z or -w parameters and the corresponding FUZZ, ... , FUZnZ keyword where n is the payload number. The following example, brute forces files, extension files and directories at the same time::
 
-    $ python wfuzz.py -w wordlist/general/common.txt -w wordlist/general/common.txt -w wordlist/general/extensions_common.txt --hc 404 http://testphp.vulnweb.com/FUZZ/FUZ2ZFUZ3Z  
+    $ wfuzz -w wordlist/general/common.txt -w wordlist/general/common.txt -w wordlist/general/extensions_common.txt --hc 404 http://testphp.vulnweb.com/FUZZ/FUZ2ZFUZ3Z  
 
 Filters
 -------
@@ -131,17 +131,17 @@ Hiding responses
 
 The following command line parameters can be used to hide certain HTTP responses "--hc, --hl, --hw, --hh". For example, the following command filters the web resources unknown by the web server (http://en.wikipedia.org/wiki/HTTP_404)::
 
-    python wfuzz.py -w wordlist/general/common.txt --hc 404 http://testphp.vulnweb.com/FUZZ    
+    wfuzz -w wordlist/general/common.txt --hc 404 http://testphp.vulnweb.com/FUZZ    
 
 Multiple values can be specified, for example, the following wfuzz execution adds the forbidden resources to the filter::
 
-    python wfuzz.py -w wordlist/general/common.txt --hc 404,403 http://testphp.vulnweb.com/FUZZ    
+    wfuzz -w wordlist/general/common.txt --hc 404,403 http://testphp.vulnweb.com/FUZZ    
 
 Lines, words or chars are handy when we are looking for resources with the same HTTP status code. For example, it is a common behaviour (sometimes due to misconfiguration) that web servers return a custom error page with a 200 response code, this is known as soft 404.
 
 Below is shown an example::
 
-    $ python wfuzz.py -w wordlist/general/common.txt --hc 404 http://datalayer.io/FUZZ  
+    $ wfuzz -w wordlist/general/common.txt --hc 404 http://datalayer.io/FUZZ  
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
     ********************************************************
@@ -165,7 +165,7 @@ Below is shown an example::
 Looking carefully at the above results, is easy to ascertain that all the "not found" resources have a common patter of 279 lines, 635 words and 8972 chars.
 Thus, we can improve our "--hc 404" filter by using this information (various filters can be combined)::
 
-    $ python wfuzz.py -w wordlist/general/common.txt --hc 404 --hh 8972  http://datalayer.io/FUZZ  
+    $ wfuzz -w wordlist/general/common.txt --hc 404 --hh 8972  http://datalayer.io/FUZZ  
 
     00022:  C=200    301 L       776 W         9042 Ch        "about"
     00084:  C=302      0 L         0 W            0 Ch        "blog"
@@ -186,7 +186,7 @@ Using the baseline
 
 Filters can be built against a reference HTTP response, called the "baseline". For example, the previous command for filtering "not found" resources using the --hh switch could have be done with the following command::
 
-    $ python wfuzz.py -w wordlist/general/common.txt --hh BBB  http://datalayer.io/FUZZ{notthere}
+    $ wfuzz -w wordlist/general/common.txt --hh BBB  http://datalayer.io/FUZZ{notthere}
     ...
     00000:  C=200    279 L       635 W         8972 Ch        "notthere"
     00001:  C=200    301 L       776 W         9042 Ch        "about"
@@ -200,10 +200,10 @@ Regex filters
 
 The command line parameters "--ss" and "--hs" allow to filter the responses using a regular expression against the returned content. For example, the following allows to find web servers vulnerables to "shellshock" (see http://edge-security.blogspot.co.uk/2014/10/scan-for-shellshock-with-wfuzz.html for more information)::
 
-    $ wfuzz.py -H "User-Agent: () { :;}; echo; echo vulnerable" --ss vulnerable -w cgis.txt http://localhost:8000/FUZZ     
+    $ wfuzz -H "User-Agent: () { :;}; echo; echo vulnerable" --ss vulnerable -w cgis.txt http://localhost:8000/FUZZ     
 
 A valid python regex should be used within these switches or an error will be prompted::
 
-    $ python wfuzz.py -w wordlist/general/common.txt --hs "error)"  http://testphp.vulnweb.com/FUZZ
+    $ wfuzz -w wordlist/general/common.txt --hs "error)"  http://testphp.vulnweb.com/FUZZ
 
     Fatal exception: Invalid regex expression: unbalanced parenthesis
