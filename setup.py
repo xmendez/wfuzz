@@ -19,6 +19,7 @@ setup(
         'console_scripts': [
             'wfuzz = wfuzz.wfuzz:main',
             'wfpayload = wfuzz.wfuzz:main_filter',
+            'wfencode = wfuzz.wfuzz:main_encoder',
         ],
         'gui_scripts': [
             'wxfuzz = wfuzz.wfuzz:main_gui',

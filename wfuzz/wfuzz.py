@@ -74,6 +74,42 @@ def main_filter():
     except Exception, e:
         print "\nUnhandled exception: %s" % str(e)
 
+
+def main_encoder():
+    def usage():
+        print "Usage:"
+        print "\n\twfencode --help This help"
+        print "\twfencode -d decoder_name string_to_decode"
+        print "\twfencode -d encoder_name string_to_encode"
+
+    from .api import encode, decode
+    import getopt
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+        sys.exit(2)
+
+    try:
+        for o, value in opts:
+            if o == "-e":
+                print encode(value, args[0])
+            elif o == "-d":
+                print decode(value, args[0])
+            elif o in ("-h", "--help"):
+                usage()
+                sys.exit()
+    except IndexError, e:
+        usage()
+        print "\nFatal exception: Specify a string to encode or decode.\n"
+        sys.exit()
+    except AttributeError, e:
+        print "\nEncoder plugin missing encode or decode functionality."
+    except FuzzException, e:
+        print "\nFatal exception: %s" % str(e)
+
 def main_gui():
     import wx
     from .ui.gui.guicontrols import WfuzzFrame

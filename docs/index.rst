@@ -61,7 +61,8 @@ rther tools included in the wfuzz framework.
 
 * Wfuzz encoder/decoder::
     
-    $ wfencode blah blah
+    $ wfencode -e md5 test
+    098f6bcd4621d373cade4e832627b4f6
 
 Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 
