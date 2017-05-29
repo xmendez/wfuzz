@@ -80,7 +80,7 @@ def main_encoder():
         print "Usage:"
         print "\n\twfencode --help This help"
         print "\twfencode -d decoder_name string_to_decode"
-        print "\twfencode -d encoder_name string_to_encode"
+        print "\twfencode -e encoder_name string_to_encode"
 
     from .api import encode, decode
     import getopt
@@ -91,6 +91,10 @@ def main_encoder():
         print str(err)
         usage()
         sys.exit(2)
+
+    if len(args) == 0:
+        usage()
+        sys.exit()
 
     try:
         for o, value in opts:
