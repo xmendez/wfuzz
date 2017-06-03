@@ -55,12 +55,10 @@ def main():
         Facade().sett.save()
 
 def main_filter():
-    from .core import dictionary
-
-    session_options = CLParser(sys.argv).parse_cl(check_args=False)
+    from .api import payload
 
     try:
-        for res in dictionary.from_options(session_options):
+        for res in payload(**CLParser(sys.argv).parse_cl(check_args=False)):
             r = res[0]
             if "FuzzResult" in str(r.__class__):
                 r.description = r.url

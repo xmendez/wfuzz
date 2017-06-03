@@ -180,6 +180,10 @@ class FuzzSession(UserDict):
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
 
+    def payload(self, **kwargs):
+        self.data.update(kwargs)
+        return requestGenerator(self).get_dictio()
+
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
 

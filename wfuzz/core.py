@@ -77,47 +77,14 @@ class dictionary:
 			    yield e().encode(pl)
 
 	def next(self):
-	    return self.__generator.next() if self.__encoders else self.__payload.next()
-
-        @staticmethod
-        def from_options(options):
-            selected_dic = []
-
-            if options["dictio"]:
-                for d in options["dictio"]:
-                    selected_dic.append(d)
-            else:
-                for payload in options["payloads"]:
-                    try:
-                        name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
-                    except ValueError:
-                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
-
-                    if not params:
-                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
-
-                    p = Facade().payloads.get_plugin(name)(params)
-                    pp = dictionary(p, params["encoder"]) if "encoder" in params else p
-                    selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
-
-            if not selected_dic:
-                raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
-
-            if len(selected_dic) == 1:
-                if options["iterator"]:
-                    raise FuzzExceptBadOptions("Several dictionaries must be used when specifying an iterator")
-                return tupleit(selected_dic[0])
-            elif options["iterator"]:
-                return Facade().iterators.get_plugin(options["iterator"])(*selected_dic)
-            else:
-                return Facade().iterators.get_plugin("product")(*selected_dic)
+            return self.__generator.next() if self.__encoders else self.__payload.next()
 
 class requestGenerator:
 	def __init__(self, options):
             self.options = options
 	    self.seed = FuzzResultFactory.from_options(options)
 	    self.baseline = FuzzResultFactory.from_baseline(self.seed)
-	    self.dictio = dictionary.from_options(self.options)
+	    self.dictio = self.get_dictio()
 
 	    self.stats = FuzzStats.from_requestGenerator(self)
 
@@ -130,7 +97,7 @@ class requestGenerator:
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio = dictionary.from_options(self.options)
+	    self.dictio = self.get_dictio(options)
 
         def _check_dictio_len(self, element):
             marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
@@ -175,6 +142,38 @@ class requestGenerator:
                     self._check_dictio_len(n)
 
 		return FuzzResultFactory.from_seed(self.seed, n, self.options)
+
+        def get_dictio(self):
+            selected_dic = []
+
+            if self.options["dictio"]:
+                for d in self.options["dictio"]:
+                    selected_dic.append(d)
+            else:
+                for payload in self.options["payloads"]:
+                    try:
+                        name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload,(None,None,None)))
+                    except ValueError:
+                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
+
+                    if not params:
+                        raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
+
+                    p = Facade().payloads.get_plugin(name)(params)
+                    pp = dictionary(p, params["encoder"]) if "encoder" in params else p
+                    selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
+
+            if not selected_dic:
+                raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
+
+            if len(selected_dic) == 1:
+                if self.options["iterator"]:
+                    raise FuzzExceptBadOptions("Several dictionaries must be used when specifying an iterator")
+                return tupleit(selected_dic[0])
+            elif self.options["iterator"]:
+                return Facade().iterators.get_plugin(self.options["iterator"])(*selected_dic)
+            else:
+                return Facade().iterators.get_plugin("product")(*selected_dic)
 
 class Fuzzer:
     def __init__(self, options):
