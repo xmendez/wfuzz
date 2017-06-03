@@ -604,7 +604,7 @@ class FuzzResultFactory:
 	    raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
 	if len(seed.history.wf_allvars_set) == 0:
-	    raise FuzzExceptBadOptions("No variables on specified variable set: " + seed.wf_allvars)
+	    raise FuzzExceptBadOptions("No variables on specified variable set: " + seed.history.wf_allvars)
 
 	for v in seed.history.wf_allvars_set:
 	    variable = v.name
