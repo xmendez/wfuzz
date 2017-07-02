@@ -37,23 +37,23 @@ The tool is based on dictionaries or ranges, then you choose where you want to b
 
 Examples:
 
-	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -o html http://www.mysite.com/FUZZ > results.html
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -o html http://www.www.webscantest.com/FUZZ > results.html
 
 	  This will bruteforce the site http://www.mysyte.com/FUZZ in search of resources 
 	  (directories, scripts, files,etc), it will hide from the output the return code 404 
 	  (for easy reading results), it will use the dictionary common.txt for the bruteforce
 	  , and also will output the results to the results.html file (with a cool format to work).
 
-	- wfuzz.py -c -z range,1-100 --hc 404 http://www.mysite.com/list.asp?id=FUZZ
+	- wfuzz.py -c -z range,1-100 --hc 404 http://www.www.webscantest.com/list.asp?id=FUZZ
 
 	  In this example instead of using a file as dictionary, it will use a range from 1-100,
 	  and will bruteforce the parameter "id".
 
-	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -d "id=1&catalogue=FUZZ" http://www.mysite.com/check.asp
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -d "id=1&catalogue=FUZZ" http://www.webscantest.com/check.asp
 
 	  Here you can see the use of POST data, with the option "-d".
 
-	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -R 2 http://www.mysite.com/FUZZ
+	- wfuzz.py -c -z file,wordlist/general/common.txt --hc 404 -R 2 http://www.www.webscantest.com/FUZZ
 
 	  Example of path discovery, using 2 levels deep of recursivity.
 
@@ -61,7 +61,7 @@ Examples:
 
 	  HTTP method scanning example (find supported methods)
 
-	- wfuzz.py -z file,wordlists/http_methods.txt -z file,wordlist/general/common.txt -X http://testphp.vulnweb.com/FUZ2Z/
+	- wfuzz.py -z file,wordlist/general/http_methods.txt -z file,wordlist/general/common.txt -X http://testphp.vulnweb.com/FUZ2Z/
 
 	  HTTP method scanning example in different paths
 
@@ -69,26 +69,26 @@ Examples:
 
 	  Scanning for TRACE method using a list payload in different hosts
 
-	- wfuzz.py -c -z file,wordlists/methods.txt --hc 404 -v --follow http://www.mysite.com/FUZZ
+	- wfuzz.py -c -z file,wordlist/general/http_methods.txt --hc 404 -v --follow http://www.webscantest.com/FUZZ
 
 	  Bruteforce following HTTP redirects
 
-	- wfuzz.py -c -z file,wordlists/wordlist/general/common.txt-I http://www.mysite.com/FUZZ
+	- wfuzz.py -c -z file,wordlist/general/common.txt -I http://www.webscantest.com/FUZZ
 
 	  Bruteforce using HEAD HTTP method 
 
-	- wfuzz.py -z list,http://mysite.com -z list,dir-dir2-dir3  FUZZ/FUZ2Z
+	- wfuzz.py -z list,http://www.webscantest.com -z list,dir-dir2-dir3  FUZZ/FUZ2Z
 
 	  Bruteforce using URL as payload and a list of directories.
 
 	- Combining/chaining multiples encodings per payload
 
-	    - wfuzz.py -z list,uno,uri_hexadecimal-md5 http://localhost/FUZZ
+	    - wfuzz.py -z list,uno,uri_hexadecimal-md5 http://www.webscantest.com/FUZZ
 
 		00001: C=XXX    0 L            0 W       Error in  - %75%6e%6f
 		00002: C=XXX    0 L            0 W       Error in  - 1eaa8bb195869a23f081acbb5bf08527
 
-	    - wfuzz.py -z list,uno,uri_hexadecimal@md5 http://localhost/FUZZ
+	    - wfuzz.py -z list,uno,uri_hex@md5 http://www.webscantest.com/FUZZ
 
 		00001: C=XXX    0 L            0 W       Error in 33%66%30%38%31%61%63%62%62%35%62%66%30%38%35%32%37
 	    
@@ -103,26 +103,26 @@ Examples:
 	    url           | uri_hex           | Encodes ALL charachers using the %xx escape.   
 
     
-	    $ python wfuzz.py -c -z list,..,url --sc 200 http://www.webscantest.com/FUZZ/jmx-console/
+	    $ wfuzz.py -c -z list,..,url --sc 200 http://www.webscantest.com/FUZZ/jmx-console/
 
 	    00000:  C=200     30 L       120 W         1382 Ch        "\x2e\x2e"
 	    00006:  C=200     30 L       120 W         1382 Ch        "%252e%252e"
 	    00007:  C=200     30 L       120 W         1382 Ch        "%25%32%65%25%32%65"
 	    00010:  C=200     30 L       120 W         1382 Ch        "\u002e\u002e"
 
-	- wfuzz.py -z list,dir1-dir2 -z file,wordlist/general/common.txt -z list,jsp-php-asp -z range,1-40  http://localhost/FUZZ/FUZ2Z.FUZ3Z?id=FUZ4Z
+	- wfuzz.py -z list,dir1-dir2 -z file,wordlist/general/common.txt -z list,jsp-php-asp -z range,1-40  http://www.webscantest.com/FUZZ/FUZ2Z.FUZ3Z?id=FUZ4Z
 
 	  Fuzzing using 4 payloads
 
-	- wfuzz.py -w ~/wordslist/plataformas/apache.txt -A --hh=BBB --hc 404 http://www.webscantest.com/FUZZ{notthere}
+	- wfuzz.py -w wordlist/vulns/apache.txt -A --hh=BBB --hc 404 http://www.webscantest.com/FUZZ{notthere}
 	  
 	  Several filters flags could be used.
 
-	- wfuzz.py -z -c -z range,1-10 --hh=BBB http://mysite.com/FUZZ{directory not there}
+	- wfuzz.py -z -c -z range,1-10 --hh=BBB http://www.webscantest.com/FUZZ{directory not there}
 
-	  Baseline support, Bruteforcing and hiding the response codes that are equal to http://mysite.com/directory%20not%20there
+	  Baseline support, Bruteforcing and hiding the response codes that are equal to http://www.webscantest.com/directory%20not%20there
 
-	- crunch 2 2 | python wfuzz.py -z stdin, http://localhost/FUZZ
+	- crunch 2 2 | python wfuzz.py -z stdin, http://www.webscantest.com/FUZZ
 
 	  Reading wordlist from stdin.
 
@@ -130,7 +130,7 @@ Examples:
 
             zip
 
-                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m zip http://mysite.com/FUZZ/FUZ2Z
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m zip http://www.webscantest.com/FUZZ/FUZ2Z
 
                 00001:  C=404      9 L        32 W          276 Ch        "a - 1"
                 00002:  C=404      9 L        32 W          276 Ch        "c - 3"
@@ -138,7 +138,7 @@ Examples:
 
             chain
 
-                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m chain http://mysite.com/FUZZ/FUZ2Z
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 -m chain http://www.webscantest.com/FUZZ/FUZ2Z
 
                 00001:  C=404      9 L        32 W          280 Ch        "b"
                 00002:  C=404      9 L        32 W          280 Ch        "a"
@@ -150,7 +150,7 @@ Examples:
 
             product
 
-                - wfuzz.py -z list,a-b-c -z list,1-2-3 http://mysite.com/FUZZ/FUZ2Z
+                - wfuzz.py -z list,a-b-c -z list,1-2-3 http://www.webscantest.com/FUZZ/FUZ2Z
 
                 00001:  C=404      9 L        32 W          276 Ch        "a - 2"
                 00002:  C=404      9 L        32 W          276 Ch        "a - 1"
@@ -188,7 +188,7 @@ Examples:
 
 	    Ignore connection exceptions, ie. scanning through proxies, range sweeping, port scanning
 
-	    $ python wfuzz.py -z range,0-9 -Z http://localhost:800FUZZ/
+	    $ wfuzz.py -z range,0-9 -Z http://localhost:800FUZZ/
 
 	    00003:  0.000s   C=XXX      0 L        0 W            0 Ch     "Pycurl error 7: Failed connect to localhost:8009; Connection refused..."
 	    ...
@@ -197,7 +197,7 @@ Examples:
 
 	- Passing parameters to scripts
 
-	    $ python wfuzz.py -c --script-args grep.regex="<A href=\"(.*?)\">" -z list, --script=grep http://lists.gnupg.org/pipermail/gnupg-users/FUZZ                            
+	    $ wfuzz.py -c --script-args grep.regex="<A href=\"(.*?)\">" -z list, --script=grep http://lists.gnupg.org/pipermail/gnupg-users/FUZZ                            
 
 	    00000:  C=200   2207 L      5205 W        77159 Ch        ""
 	    |_ Pattern match 2014-March/thread.html
@@ -207,7 +207,7 @@ Examples:
 Platforms:
 ----------
 
-wfuzz was tested on Linux, Os X and Windows.
+wfuzz was tested on Linux, OS X and Windows.
 On windows the colored output doesn't work, we are working towards fixing this problem.
 
 Dependencies:

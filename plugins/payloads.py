@@ -52,7 +52,7 @@ class file:
 	try:
 	    self.f = open(filename,"r")
 	except IOError:
-	    raise FuzzException(FuzzException.FATAL, "Error opening file")
+	    raise FuzzException(FuzzException.FATAL, "Error opening file: {0}".format(filename))
 
 	self.__count = len(self.f.readlines())
 	self.f.seek(0)
