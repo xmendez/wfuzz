@@ -55,11 +55,42 @@ def main():
         Facade().sett.save()
 
 def main_filter():
+    def usage():
+        print """Usage:
+\n\twfpayload [Options]\n\n
+\nOptions:\n
+\t--help              : This help
+\t--slice <filter>    : Filter payload\'s elements using the specified expression.
+\t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
+\t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
+\t		      Encoders category can be used. ie. url
+\t--zP <params>		    : Arguments for the specified payload (it must be preceded by -z or -w).
+\t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
+\t-m iterator         : Specify an iterator for combining payloads (product by default)
+"""
+
     from .api import payload
+    from .exception import FuzzExceptBadOptions
+    import getopt
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help","slice=","zP="])
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+        sys.exit(2)
+
+    if len(opts) == 0 or len(args) > 0:
+        usage()
+        sys.exit()
 
     try:
         for res in payload(**CLParser(sys.argv).parse_cl(check_args=False)):
-            r = res[0]
+            if len(res) > 1:
+                raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
+            else:
+                r = res[0]
+
             if "FuzzResult" in str(r.__class__):
                 r.description = r.url
 
