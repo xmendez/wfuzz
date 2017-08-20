@@ -73,7 +73,7 @@ This simple concept allows any input to be injected in any field of an HTTP requ
 Wfuzz is more than a web content scanner:
 
 - Wfuzz could help you to secure your web applications by finding and exploiting web application vulnerabilities. Wfuzz's web application vulnerability scanner is supported by plugins.
-- Wfuzz is a completely modular framework and makes it easy for even the newest of Python developers to contribute. Building plugins is simple and takes little more than a few minutes. See the Development Guide for more information.
+- Wfuzz is a completely modular framework and makes it easy for even the newest of Python developers to contribute. Building plugins is simple and takes little more than a few minutes.
 - Wfuzz exposes a simple language interface to the previous HTTP requests/responses performed using Wfuzz or other tools, such as Burp. This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
 User Guide
@@ -94,12 +94,3 @@ Library Guide
    :maxdepth: 2
 
    lib/guide
-
-Developer Guide
-==================
-
-.. toctree::
-   :maxdepth: 2
-
-   dev/plugins
-
