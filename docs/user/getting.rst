@@ -45,9 +45,24 @@ Each line provides the following information:
 Getting help
 ------------
 
---help blah, blah
+Use the --h and --help switch to get basic and advanced help usage respectively.
 
-payloads, plugins detailed help...
+Wfuzz is a completely modular framework, you can check the available modules by using the -e <<category>> switch::
+
+    $ wfuzz -e iterators
+
+    Available iterators:
+
+    Name    | Summary                                                                           
+    ----------------------------------------------------------------------------------------------
+    product | Returns an iterator cartesian product of input iterables.                         
+    zip     | Returns an iterator that aggregates elements from each of the iterables.          
+    chain   | Returns an iterator returns elements from the first iterable until it is exhaust  
+            | ed, then proceeds to the next iterable, until all of the iterables are exhausted  
+            | .                                                                                 
+
+
+Valid categories are: payloads, encoders, iterators, printers or scripts.
 
 Payloads
 --------
@@ -57,6 +72,25 @@ Wfuzz is based on a simple concept: it replaces any reference to the keyword FUZ
 The available payloads can be listed by executing::
 
     $ wfuzz -e payloads
+
+Detailed information about payloads could be obtained by executing::
+
+    $ wfuzz -z help
+
+The latter can be filtered using the --slice parameter::
+
+    $ wfuzz -z help --slice "dirwalk"
+
+    Name: dirwalk 0.1
+    Categories: default
+    Summary: Returns filename's recursively from a local directory.
+    Description:
+       Returns all the file paths found in the specified directory.
+       Handy if you want to check a directory structure against a webserver,
+       for example, because you have previously downloaded a specific version
+       of what is supposed to be on-line.
+    Parameters:
+       + dir: Directory path to walk and generate payload from.
 
 
 Specifying a payload:

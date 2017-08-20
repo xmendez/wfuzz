@@ -6,7 +6,7 @@ class names(BasePayload):
     name = "names"
     author = ("Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
-    description = ("ie. jon-smith")
+    description = ("ie. jon-smith", )
     summary = "Returns possible usernames by mixing the given words, separated by -, using known typical constructions."
     category = ["default"]
     priority = 99

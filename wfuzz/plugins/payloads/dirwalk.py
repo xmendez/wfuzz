@@ -9,7 +9,12 @@ class dirwalk(BasePayload):
     name = "dirwalk"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ()
+    description = (
+        "Returns all the file paths found in the specified directory.",
+        "Handy if you want to check a directory structure against a webserver,",
+        "for example, because you have previously downloaded a specific version",
+        "of what is supposed to be on-line."
+    )
     summary = "Returns filename's recursively from a local directory."
     category = ["default"]
     priority = 99

@@ -7,7 +7,9 @@ class file(BasePayload):
     name = "file"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
-    description = ()
+    description = (
+        "Returns the contents of a dictionary file line by line.",
+    )
     summary = "Returns each word from a file."
     category = ["default"]
     priority = 99

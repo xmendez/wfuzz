@@ -6,7 +6,7 @@ class list(BasePayload):
     name = "list"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("ie word1-word2")
+    description = ("ie word1-word2",)
     summary = "Returns each element of the given word list separated by -."
     category = ["default"]
     priority = 99

@@ -14,7 +14,7 @@ class permutation(BasePayload):
     priority = 99
 
     parameters = (
-        ("ch", "", True, "Charset and len to permute in the form of abc-2.")
+        ("ch", "", True, "Charset and len to permute in the form of abc-2."),
     )
 
     default_parameter = "ch"

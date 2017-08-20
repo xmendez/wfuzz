@@ -5,7 +5,7 @@ from wfuzz.plugin_api.base import BasePayload
 @moduleman_plugin
 class bing(BasePayload):
     name = "bing"
-    author = ("Xavi Mendez (@xmendez)")
+    author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     description = ("intitle:\"JBoss JMX Management Console\"",
     "Some examples of bing hacking:",

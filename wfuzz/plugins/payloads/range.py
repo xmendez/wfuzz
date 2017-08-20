@@ -7,7 +7,7 @@ class range(BasePayload):
     name = "range"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
-    description = ("ie. 0-10")
+    description = ("ie. 0-10",)
     summary = "Returns each number of the given range."
     category = ["default"]
     priority = 99

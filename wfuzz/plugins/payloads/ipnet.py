@@ -5,7 +5,7 @@ from wfuzz.plugin_api.base import BasePayload
 @moduleman_plugin
 class ipnet(BasePayload):
     name = "ipnet"
-    author = "Xavi Mendez (@xmendez)"
+    author = ("Xavi Mendez (@xmendez)", )
     version = "0.1"
     description = ("ie. 192.168.1.0/24", "Requires: netaddr module")
     summary = "Returns list of IP addresses of a network."

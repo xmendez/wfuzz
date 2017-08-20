@@ -5,7 +5,7 @@ from wfuzz.plugin_api.base import BasePayload
 @moduleman_plugin
 class iprange(BasePayload):
     name = "iprange"
-    author = "Xavi Mendez (@xmendez)"
+    author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     description = ("ie. 192.168.1.0-192.168.1.12", "Requires: netaddr module",)
     summary = "Returns list of IP addresses of a given IP range."

@@ -10,7 +10,10 @@ class guitab(BasePayload):
     name = "guitab"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("This payload reads requests from a tab in the GUI",)
+    description = (
+        "** This is a beta plugin for the GUI under construction.",
+        "This payload reads requests from a tab in the GUI",
+    )
     summary = "This payload reads requests from a tab in the GUI"
     category = ["default"]
     priority = 99

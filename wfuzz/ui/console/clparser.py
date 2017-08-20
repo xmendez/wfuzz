@@ -35,6 +35,22 @@ class CLParser:
 	table_print(map(lambda x: x[cols:], Facade().proxy(registrant).get_plugins_ext(category)))
 	sys.exit(0)
 
+    def show_plugin_ext_help(self, registrant, category="$all$"):
+        for p in Facade().proxy(registrant).get_plugins(category):
+            print "Name: %s %s" % (p.name, p.version)
+            print "Categories: %s" % ','.join(p.category)
+            print "Summary: %s" % p.summary
+            print "Author: %s" % ','.join(p.author)
+            print "Description:"
+            for l in p.description:
+                print "   %s" % l
+            print "Parameters:"
+            for l in p.parameters:
+                print "   %s %s%s: %s" % ("+" if l[2] else "-", l[0], " (= %s)" % str(l[1]) if l[1] else "", l[3])
+            print "\n"
+
+	sys.exit(0)
+
     def parse_cl(self, check_args = True):
 	# Usage and command line help
 	try:
@@ -51,8 +67,7 @@ class CLParser:
                             payload_cache = {}
 
                     payload_cache[i] = j
-                else:
-                    optsd[i].append(j)
+                optsd[i].append(j)
 
             if payload_cache:
                 optsd["payload"].append(payload_cache)
@@ -152,7 +167,8 @@ class CLParser:
 		self.show_plugins_help("iterators")
 	if "-z" in optsd:
 	    if "help" in optsd["-z"]:
-		self.show_plugins_help("payloads")
+                filt = optsd["--slice"][0] if "--slice" in optsd else "$all$"
+		self.show_plugin_ext_help("payloads", category=filt)
 
 
     def _check_options(self, optsd):
