@@ -11,8 +11,16 @@ class screenshot(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Performs a screen capture using linux cutycapt tool"
+    description = ("Performs a screen capture using linux cutycapt tool",
+            "The tool must be installed and in the executable path",)
     category = ["active"]
     priority = 99
+
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
     
     def validate(self, fuzzresult):
 	return fuzzresult.code not in [404]

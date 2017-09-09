@@ -9,8 +9,12 @@ class errors(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Looks for error messages"
+    description = ("Looks for common error messages",)
     category = ["default", "passive"]
     priority = 99
+
+    parameters = (
+    )
 
     def __init__(self):
 	BasePlugin.__init__(self)

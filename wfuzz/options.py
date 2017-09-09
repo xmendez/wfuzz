@@ -268,18 +268,10 @@ class FuzzSession(UserDict):
                     raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
 
 	if self.data["script"]:
+            Facade().scripts.kbase.update(self.data["script_args"])
+
 	    for k, v in Facade().sett.get_section("kbase"):
-		if k in self.data["script_args"]:
-		    value = self.data["script_args"][k]
-
-		    if value[0] == "+":
-			value = value[1:]
-
-			Facade().scripts.kbase[k] = v + "-" + value
-		    else:
-			Facade().scripts.kbase[k] = value
-
-		else:
+		if k not in self.data["script_args"]:
 		    Facade().scripts.kbase[k] = v
 
 	if self.data["colour"]:

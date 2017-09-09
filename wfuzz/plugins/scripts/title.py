@@ -7,8 +7,12 @@ class title(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Parses HTML page title"
+    description = ("Parses HTML page title",)
     category = ["default", "passive"]
     priority = 99
+
+    parameters = (
+    )
 
     def __init__(self):
 	BasePlugin.__init__(self)

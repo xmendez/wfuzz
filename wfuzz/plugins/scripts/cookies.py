@@ -7,8 +7,15 @@ class cookies(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Looks for new cookies"
+    description = ("Looks for new cookies", )
     category = ["default", "passive"]
     priority = 99
+
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return True

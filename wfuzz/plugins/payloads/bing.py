@@ -16,7 +16,7 @@ class bing(BasePayload):
     priority = 99
 
     parameters = (
-        ("dork", "", True, "Google dork search string.", None),
+        ("dork", "", True, "Google dork search string."),
         ("offset", "0", False, "Offset index, starting at zero."),
         ("limit", "0", False, "Number of results. Zero for all."),
     )

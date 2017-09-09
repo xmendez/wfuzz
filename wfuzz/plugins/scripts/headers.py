@@ -8,8 +8,14 @@ class headers(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Looks for server headers"
+    description = ("Looks for new server headers",)
     category = ["default", "passive"]
     priority = 99
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return True

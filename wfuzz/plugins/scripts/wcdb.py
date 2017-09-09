@@ -14,9 +14,16 @@ class wcdb_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "wc_extractor"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses subversion's wc.db file. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses subversion's wc.db file."
+    description = ("Parses subversion's wc.db file.",)
     category = ["default", "active", "discovery"]
     priority = 99
+
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return fuzzresult.url.find(".svn/wc.d") > 0 and fuzzresult.code == 200

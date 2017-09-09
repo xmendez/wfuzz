@@ -15,9 +15,15 @@ class cvs_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "cvs_extractor"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses CVS/Entries file. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses CVS/Entries file."
+    description = ("Parses CVS/Entries file and enqueues found entries",)
     category = ["default", "active", "discovery"]
     priority = 99
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return fuzzresult.url.find("CVS/Entries") >= 0 and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')

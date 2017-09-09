@@ -6,15 +6,25 @@ from urlparse import urljoin
 @moduleman_plugin
 class backups(BasePlugin):
     name = "backups"
-    summary = "Looks for knowb backup filenames."
+    summary = "Looks for known backup filenames."
+    description = ("Looks for known backup filenames.",)
+    "For example, given http://localhost.com/dir/index.html, it will perform the following requests",
+    "* http://localhost/dir/index.EXTENSIONS",
+    "* http://localhost/dir/index.html.EXTENSIONS",
+    "* http://localhost/dir.EXTENSIONS",)
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     category = ["default", "active", "discovery"]
     priority = 99
 
-    def __init__(self):
-	self.extensions = [('', '.bak'), ('', '.tgz'), ('', '.zip'), ('', '.tar.gz'), ('', '~'), ('', '.rar'), ('', '.old'), ('.', '.swp')]
+    parameters = (
+        ("ext", ".bak,.tgz,.zip,.tar.gz,~,.rar,.old,.-.swp", False, "Extensions to look for."),
+    )
 
+    def __init__(self):
+        BasePlugin.__init__(self)
+	self.extensions = self.kbase["backups.ext"].split(",")
+        
     def validate(self, fuzzresult):
 	return fuzzresult.code != 404 and (fuzzresult.history.urlparse.fext not in self.extensions)
 
@@ -22,7 +32,9 @@ class backups(BasePlugin):
 	#>>> urlparse.urlparse("http://www.localhost.com/kk/index.html?id=1")
 	#ParseResult(scheme='http', netloc='www.localhost.com', path='/kk/index.html', params='', query='id=1', fragment='')
 
-	for pre, extension in self.extensions:
+	for pre_extension in self.extensions:
+            pre, nothing, extension = pre_extension.partition("-")
+
 	    # http://localhost/dir/test.html -----> test.BAKKK
 	    self.queue_url(urljoin(fuzzresult.url, pre + fuzzresult.history.urlparse.fname + extension))
 

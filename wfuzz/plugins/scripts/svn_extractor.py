@@ -9,9 +9,16 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "svn_extractor"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses .svn/entries file. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses .svn/entries file."
+    description = ("Parses CVS/Entries file and enqueues found entries",)
     category = ["default", "active", "discovery"]
     priority = 99
+
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return fuzzresult.url.find(".svn/entries") > 0 and fuzzresult.code == 200

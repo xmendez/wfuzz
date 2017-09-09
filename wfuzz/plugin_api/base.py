@@ -13,6 +13,16 @@ class BasePlugin():
 	self.results_queue = None
 	self.base_fuzz_res = None
 
+        # check mandatory params, assign default values
+        for name, default_value, required, description in self.parameters:
+            param_name = "%s.%s" % (self.name, name)
+
+            if required and not param_name in self.kbase.keys():
+                raise FuzzExceptBadOptions("Plugins, missing parameter %s!" % (param_name,))
+
+            if param_name not in self.kbase.keys():
+                self.kbase[param_name] = default_value
+
     def run(self, fuzzresult, control_queue, results_queue):
 	try:
 	    self.results_queue = results_queue

@@ -143,7 +143,7 @@ class CLParser:
 	    if script_string == "":
 		script_string = "$all$"
 
-	    self.show_plugins_help("scripts", 2, script_string)
+            self.show_plugin_ext_help("scripts", category=script_string)
 
 	if "-e" in optsd:
 	    if "payloads" in optsd["-e"]:

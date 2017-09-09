@@ -12,9 +12,16 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
     name = "sitemap"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses sitemap.xml file. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses sitemap.xml file"
+    description = ("Parses sitemap.xml file",)
     category = ["default", "active", "discovery"]
     priority = 99
+
+    parameters = (
+    )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return fuzzresult.history.urlparse.ffname == "sitemap.xml" and fuzzresult.code == 200

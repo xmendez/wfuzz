@@ -9,10 +9,16 @@ class listing(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Looks for directory listing vulnerabilities"
+    description = ("Looks for directory listing vulnerabilities",)
     category = ["default", "passive"]
     priority = 99
 
+    parameters = (
+    )
+
     def __init__(self):
+        BasePlugin.__init__(self)
+
 	dir_indexing_regexes = []
 
 	dir_indexing_regexes.append("<title>Index of /") 

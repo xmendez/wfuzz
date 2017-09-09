@@ -9,12 +9,20 @@ class grep(BasePlugin):
     name = "grep"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Extracts the given pattern from the HTTP response. Parameters: grep.regex=\"<exp>\""
+    summary = "HTTP response grep"
+    description = ("Extracts the given regex pattern from the HTTP response and prints it",
+    "(It is not a filter operator)",)
     category = ["passive"]
     priority = 99
 
+    parameters = (
+        ("regex", "", True, "Regex to perform the grep against."),
+    )
+
     def __init__(self):
+        BasePlugin.__init__(self)
 	try:
+	    print self.kbase["grep.regex"]
 	    self.regex = re.compile(self.kbase["grep.regex"][0], re.MULTILINE|re.DOTALL)
 	except Exception, e:
 	    raise FuzzExceptPluginBadParams("Incorrect regex or missing regex parameter.")

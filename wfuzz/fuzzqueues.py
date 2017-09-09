@@ -148,7 +148,7 @@ class SliceQ(FuzzQueue):
 class JobQ(FuzzRRQueue):
     def __init__(self, options):
 	# Get active plugins
-        lplugins = Facade().scripts.get_plugins(options.get("script"))
+        lplugins = map(lambda x: x(), Facade().scripts.get_plugins(options.get("script")))
 
         if not lplugins:
             raise FuzzExceptBadOptions("No plugin selected, check the --script name or category introduced.")
@@ -182,9 +182,8 @@ class JobMan(FuzzQueue):
 
 		plugins_res_queue = Queue()
 
-		for plugin_class in self.selected_plugins:
+		for pl in self.selected_plugins:
 		    try:
-			pl = plugin_class()
 			if not pl.validate(res):
 			    continue
 			th = Thread(target = pl.run, kwargs={"fuzzresult": res, "control_queue": self.__walking_threads, "results_queue": plugins_res_queue})

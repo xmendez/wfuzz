@@ -12,13 +12,16 @@ class robots(BasePlugin, DiscoveryPluginMixin):
     name = "robots"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses robots.txt looking for new content. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses robots.txt looking for new content."
+    description = ("Parses robots.txt looking for new content.",)
     category = ["default", "active", "discovery"]
     priority = 99
 
     parameters = (
-        ("bl", "", False, "Range of numbers in the form 0-10."),
     )
+
+    def __init__(self):
+        BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
 	return fuzzresult.history.urlparse.ffname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')

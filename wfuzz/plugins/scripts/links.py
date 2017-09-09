@@ -11,12 +11,17 @@ class links(BasePlugin, DiscoveryPluginMixin):
     name = "links"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Parses HTML looking for new content. Optional: discovery.bl=\".txt,.gif\""
+    summary = "Parses HTML looking for new content."
+    description = ("Parses HTML looking for new content",)
     category = ["default", "active", "discovery"]
     priority = 99
 
+    parameters = (
+    )
+
+
     def __init__(self):
-	DiscoveryPlugin.__init__(self)
+	BasePlugin.__init__(self)
 
 	regex = [ 'href="((?!mailto:|tel:|#|javascript:).*?)"',
 	    'src="((?!javascript:).*?)"',

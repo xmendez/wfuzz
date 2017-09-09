@@ -50,6 +50,10 @@ class KnowledgeBase(MutableMapping):
         with self.mutex:
             return len(self.__data)
 
+    def __str__(self):
+        with self.mutex:
+            return str(self.__data)
+
     def __iter__(self):
         return iter(self.__data)
 
