@@ -48,11 +48,12 @@ usage ='''%s\n\nOptions:
 \t-t N			    : Specify the number of concurrent connections (10 default)
 \t-s N			    : Specify time delay between requests (0 default)
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
-\t-L, --follow  	    : Follow HTTP redirections
+\t-L, --follow        	    : Follow HTTP redirections
 \t
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
+\t                              Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 \t-X method		    : Specify an HTTP method for the request, ie. HEAD or FUZZ
@@ -74,7 +75,7 @@ verbose_usage ='''%s\n\nOptions:
 \t-e <type>		    : List of available encoders/payloads/iterators/printers/scripts
 \t
 \t--recipe <filename>	    : Reads options from a recipe
-\t--dump-recipe <filename>  : Prints current options as a recipe
+\t--dump-recipe <filename>    : Prints current options as a recipe
 \t--oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 \t
 \t-c			    : Output with colors
@@ -92,7 +93,7 @@ verbose_usage ='''%s\n\nOptions:
 \t--follow		    : Follow HTTP redirections
 \t-Z			    : Scan mode (Connection errors will be ignored).
 \t--req-delay N		    : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
-\t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
+\t--conn-delay N              : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
 \t-A			    : Alias for --script=default -v -c
 \t--script=		    : Equivalent to --script=default
@@ -104,6 +105,7 @@ verbose_usage ='''%s\n\nOptions:
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
+\t                              Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t--zP <params>		    : Arguments for the specified payload (it must be preceded by -z or -w).
 \t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline). It must be preceded by -z. 
 \t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
