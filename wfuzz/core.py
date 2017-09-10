@@ -97,7 +97,7 @@ class requestGenerator:
 
 	def restart(self, seed):
 	    self.seed = seed
-	    self.dictio = self.get_dictio(options)
+	    self.dictio = self.get_dictio()
 
         def _check_dictio_len(self, element):
             marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
