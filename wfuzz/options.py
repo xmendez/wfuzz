@@ -29,6 +29,7 @@ class FuzzSession(UserDict):
 
     def _defaults(self):
 	return dict(
+            seed_payload = False,
             hs = None,
             hc = [],
             hw = [],

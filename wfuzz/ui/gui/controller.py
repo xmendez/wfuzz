@@ -38,7 +38,7 @@ class WfuzzInterpreter:
     def do_wfilter(self, cmd):
         from wfuzz.core import dictionary
         try:
-            session_options = CLParser(cmd).parse_cl(check_args=False)
+            session_options = CLParser(cmd).parse_cl()
         except SystemExit:
             print "\n"
             pass

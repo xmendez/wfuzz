@@ -404,6 +404,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     # methods wfuzz needs for substituing payloads and building dictionaries
 
     def update_from_options(self, options):
+        if options["url"] != "FUZZ":
+            self.url = options["url"]
 
 	if options['auth'][0] is not None:
 	    self.auth = (options['auth'][0], options['auth'][1])
@@ -470,7 +472,10 @@ class FuzzResultFactory:
 
 		return (text, subs_array)
             else:
-		return (text.replace(fuzz_word, payload), [payload])
+                try:
+                    return (text.replace(fuzz_word, payload), [payload])
+                except TypeError, e:
+                    raise FuzzExceptBadOptions("Tried to replace FUZZ with a whole fuzzresult payload.")
 
     @staticmethod
     def from_seed(seed, payload, seed_options):
@@ -489,18 +494,19 @@ class FuzzResultFactory:
             newres.payload.append(payload_content)
 
             # substitute entire seed when using a request payload generator without specifying field
-            if fuzz_word == "FUZZ" and rawUrl == "http://FUZZ/" and isinstance(payload_content, FuzzResult):
+            if (fuzz_word == "FUZZ" and (rawUrl == "http://FUZZ/" or seed_options["seed_payload"] == True)) and isinstance(payload_content, FuzzResult):
                 # new seed
-                newres = payload_content
+                newres = payload_content.from_soft_copy()
+
+                descr_array.append(newres.history.redirect_url)
 
                 newres.payload = [payload_content]
                 newres.history.update_from_options(seed_options)
+                newres.description = ""
                 rawReq = str(newres.history)
                 rawUrl = newres.history.redirect_url
                 scheme = newres.history.scheme
                 auth_method, userpass = newres.history.auth
-
-                descr_array.append(rawUrl)
 
                 continue
 

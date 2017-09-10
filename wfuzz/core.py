@@ -107,6 +107,9 @@ class requestGenerator:
             if method:
                 fuzz_words += marker_regex.findall(userpass)
 
+            if self.options["seed_payload"]:
+                fuzz_words += ["FUZZ"]
+
             if len(element) != len(set(fuzz_words)):
                 raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
 

@@ -51,10 +51,10 @@ class CLParser:
 
 	sys.exit(0)
 
-    def parse_cl(self, check_args = True):
+    def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 
 
@@ -76,15 +76,21 @@ class CLParser:
 	    self._parse_help_opt(optsd)
 
 	    url = None
-            if check_args:
-                if len(args) == 0 and "--recipe" not in optsd:
-                    raise FuzzExceptBadOptions("You must specify a payload and a URL")
-                elif len(args) == 1:
-                    url = args[0]
-                elif len(args) > 1:
-                    raise FuzzExceptBadOptions("Too many arguments.")
+            if len(args) == 1:
+                url = args[0]
+            elif len(args) > 1:
+                raise FuzzExceptBadOptions("Too many arguments.")
 
 	    options = FuzzSession()
+
+	    if "-u" in optsd:
+                if url == "FUZZ":
+                    options["seed_payload"] = True
+                    url = optsd["-u"][0]
+                elif url is None:
+                    url = optsd["-u"][0]
+                else:
+                    raise FuzzExceptBadOptions("Specify the URL either with -u or last argument.")
 
 	    # check command line options correctness
 	    self._check_options(optsd)

@@ -85,7 +85,7 @@ def main_filter():
         sys.exit()
 
     try:
-        for res in payload(**CLParser(sys.argv).parse_cl(check_args=False)):
+        for res in payload(**CLParser(sys.argv).parse_cl()):
             if len(res) > 1:
                 raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
             else:

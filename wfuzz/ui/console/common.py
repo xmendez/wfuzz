@@ -50,6 +50,7 @@ usage ='''%s\n\nOptions:
 \t-R depth		    : Recursive path discovery being depth the maximum recursion level.
 \t-L, --follow        	    : Follow HTTP redirections
 \t
+\t-u url                      : Specify a URL for the request.
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t			      Encoders category can be used. ie. url
@@ -101,6 +102,7 @@ verbose_usage ='''%s\n\nOptions:
 \t--script-help=<plugins>	    : Show help about scripts.
 \t--script-args n1=v1,...     : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
 \t
+\t-u url                      : Specify a URL for the request.
 \t-m iterator		    : Specify an iterator for combining payloads (product by default)
 \t-z payload		    : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t			      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.

@@ -579,22 +579,45 @@ Some ideas:
 * Looking for requests with the CSRF token exposed in the URL
 * Looking for responses with JSON content with an incorrect content type
 
-wfuzzp payload
-^^^^^^^^^^^^^^
+To reutilise previous results, a payload that generates a full FuzzResult object context should be used.
+
+* wfuzzp payload:
 
 Wfuzz results can be stored using the --oF option as illustrated below::
 
 $ wfuzz --oF /tmp/session -z range,0-10 http://www.google.com/dir/test.php?id=FUZZ
 
-Then you can reutilise those results by using the wfuzzp payload.
+* burpstate and burplog payloads:
 
-For example, to perform the same exact HTTP requests::
+Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
-$ wfuzz -z wfuzzp,/tmp/session FUZZ
+Then, you can reutilise those results by using the denoted payloads. To repeat a request exactly how it was stored, you must use the FUZZ keywork on the command line::
+
+    $ wfuzz -z burpstate,a_burp_state.burp FUZZ
+
+    $ wfuzz -z burplog,a_burp_log.burp FUZZ
+
+    $ wfuzz -z wfuzzp,/tmp/session FUZZ
+
+Previous requests can also be modified by using the usual command line switches. Some examples below:
+
+* Adding a new header::
+
+    $ wfuzz -z burpstate,a_burp_state.burp -H "addme: header" FUZZ
+
+* Using new cookies specified by another payload::
+
+    $ wfuzz -z burpstate,a_burp_state.burp -z list,1-2-3 -b "cookie=FUZ2Z" FUZZ
+
+* Same request against another url::
+
+    $ wfuzz -z burpstate,a_burp_state.burp -H "addme: header" -u http://www.otherhost.com FUZZ
+
+If you do not want to use the full saved request:
 
 * Accessing specific HTTP object fields can be achieved by using the attr payload's parameter::
 
-    $ wfuzz -z wfuzzp,/tmp/session --zP attr=url  FUZZ
+    $ wfuzz -z wfuzzp,/tmp/session --zP attr=url FUZZ
 
 * Or by specyfing the FUZZ keyword and a field name in the form of FUZZ[field]::
 
@@ -617,19 +640,6 @@ The above command will generate HTTP requests such as the following::
     Connection: close
 
 You can filter the payload using the filter grammar as described before.
-
-burpstate and burplog payloads
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
-
-For example, the following will repeat again all the saved burp request as is::
-
-    $ wfuzz -z burplog,a_burp_log.burp FUZZ
-
-Same for a saved burp state::
-
-    $ wfuzz -z burpstate,a_burp_state.burp FUZZ
 
 wfpayload
 ^^^^^^^^^
