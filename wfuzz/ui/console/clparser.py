@@ -57,7 +57,6 @@ class CLParser:
 	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 
-
             payload_cache = {}
 	    for i,j in opts:
                 if i in ["-z", "--zP", "--slice", "-w"]:
@@ -68,6 +67,11 @@ class CLParser:
 
                     payload_cache[i] = j
                 optsd[i].append(j)
+
+
+            if not args and not optsd:
+                self.show_brief_usage()
+                sys.exit(1)
 
             if payload_cache:
                 optsd["payload"].append(payload_cache)
