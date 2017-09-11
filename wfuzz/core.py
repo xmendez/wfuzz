@@ -147,10 +147,23 @@ class requestGenerator:
 		return FuzzResultFactory.from_seed(self.seed, n, self.options)
 
         def get_dictio(self):
+            class wrapper:
+                def __init__(self, iterator):
+                    self._it = iter(iterator)
+
+                def __iter__(self):
+                    return self
+
+                def count(self):
+                    return -1
+
+                def next(self):
+                    return str(self._it.next())
+
             selected_dic = []
 
             if self.options["dictio"]:
-                for d in self.options["dictio"]:
+                for d in map(lambda x: wrapper(x), self.options["dictio"]):
                     selected_dic.append(d)
             else:
                 for payload in self.options["payloads"]:

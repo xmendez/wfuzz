@@ -199,20 +199,7 @@ class FuzzSession(UserDict):
             self.stats.update(self.fz.genReq.stats)
 
     def get_payloads(self, iterator):
-        class wrapper:
-            def __init__(self, iterator):
-                self._it = iter(iterator)
-
-            def __iter__(self):
-                return self
-
-            def count(self):
-                return -1
-
-            def next(self):
-                return str(self._it.next())
-
-        self.data["dictio"] = map(lambda x: wrapper(x), iterator)
+        self.data["dictio"] = iterator
 
         return self
 
