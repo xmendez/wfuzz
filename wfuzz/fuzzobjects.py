@@ -494,7 +494,7 @@ class FuzzResultFactory:
             newres.payload.append(payload_content)
 
             # substitute entire seed when using a request payload generator without specifying field
-            if (fuzz_word == "FUZZ" and (rawUrl == "http://FUZZ/" or seed_options["seed_payload"] == True)) and isinstance(payload_content, FuzzResult):
+            if (fuzz_word == "FUZZ" and (rawUrl == "http://FUZZ/" or (seed_options and seed_options["seed_payload"] == True))) and isinstance(payload_content, FuzzResult):
                 # new seed
                 newres = payload_content.from_soft_copy()
 
