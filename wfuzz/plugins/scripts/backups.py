@@ -11,7 +11,7 @@ class backups(BasePlugin):
     "For example, given http://localhost.com/dir/index.html, it will perform the following requests",
     "* http://localhost/dir/index.EXTENSIONS",
     "* http://localhost/dir/index.html.EXTENSIONS",
-    "* http://localhost/dir.EXTENSIONS",)
+    "* http://localhost/dir.EXTENSIONS",
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     category = ["default", "active", "discovery"]
