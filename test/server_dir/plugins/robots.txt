@@ -1,0 +1,6 @@
+user-agent: *
+Disallow: /osrun/*
+Disallow: /cal_endar/*
+Disallow: /crawlsnags/*
+Disallow: /static/*
+vagrant@vagrant-ubu
