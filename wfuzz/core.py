@@ -66,7 +66,7 @@ class dictionary:
 		    if name.find('@') > 0:
 			string = pl
 			for i in reversed(name.split("@")):
-			    string = Facade().encoders.get_plugin(i).encode(string)
+			    string = Facade().encoders.get_plugin(i)().encode(string)
 			yield string
 		    else:
 			l = Facade().encoders.get_plugins(name)
