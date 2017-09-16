@@ -195,8 +195,9 @@ class FuzzSession(UserDict):
                 yield f
 
         finally:
-            if self.fz: self.fz.cancel_job()
-            self.stats.update(self.fz.genReq.stats)
+            if self.fz:
+                self.fz.cancel_job()
+                self.stats.update(self.fz.genReq.stats)
 
     def get_payloads(self, iterator):
         self.data["dictio"] = iterator
