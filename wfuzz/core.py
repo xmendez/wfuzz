@@ -126,6 +126,14 @@ class requestGenerator:
 	    return self
 
 	def __allvars_gen(self, dic):
+            # no FUZZ keyword allowed
+            marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
+            if len(marker_regex.findall(str(self.seed.history))) > 0:
+                raise FuzzExceptBadOptions("FUZZ words not allowed when using all parameters brute forcing.")
+
+            if len(self.seed.history.wf_allvars_set) == 0:
+                raise FuzzExceptBadOptions("No variables on specified variable set: " + self.seed.history.wf_allvars)
+
 	    for payload in dic:
 		for r in FuzzResultFactory.from_all_fuzz_request(self.seed, payload):
 		    yield r

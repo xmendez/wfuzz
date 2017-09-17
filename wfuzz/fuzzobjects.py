@@ -600,26 +600,18 @@ class FuzzResultFactory:
 
     @staticmethod
     def from_all_fuzz_request(seed, payload):
-	# no FUZZ keyword allowed
-	marker_regex = re.compile("FUZ\d*Z",re.MULTILINE|re.DOTALL)
-	if len(marker_regex.findall(str(seed))) > 0:
-	    raise FuzzExceptBadOptions("FUZZ words not allowed when using all parameters brute forcing.")
-
 	# only a fuzz payload is allowed using this technique
 	if len(payload) > 1:
 	    raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
-	if len(seed.history.wf_allvars_set) == 0:
-	    raise FuzzExceptBadOptions("No variables on specified variable set: " + seed.history.wf_allvars)
-
 	for v in seed.history.wf_allvars_set:
 	    variable = v.name
 	    payload_content = payload[0]
-	    fuzzres = FuzzResult(seed.history.from_copy())
+            fuzzres = seed.from_soft_copy()
 	    fuzzres.description = variable + "=" + payload_content
             fuzzres.payload.append(payload_content)
 
-            seed.history.wf_allvars_set = (variable, payload_content)
+            fuzzres.history.wf_allvars_set = (variable, payload_content)
 
 	    yield fuzzres
 
