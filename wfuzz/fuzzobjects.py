@@ -30,7 +30,7 @@ class headers:
 
     def add(self, dd):
         for k, v in dd.items():
-            self._req.addHeader(k, v)
+            self._req._headers[k] = v
 
     def get_field(self, field):
         attr = field.split(".")
