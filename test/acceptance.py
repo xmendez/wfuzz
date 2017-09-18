@@ -209,22 +209,17 @@ def create_tests():
     Creates all dynamic tests
 
     """
-    ## Bad options tests
-    create_tests_from_list(error_tests)
+    if testing_tests:
+        create_tests_from_list(testing_tests)
+    else:
+        # this are the basics
+        basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
 
-    ## Bad options tests
-    create_tests_from_list(scanmode_tests)
+        for t in basic_functioning_tests:
+            create_tests_from_list(t)
 
-    # this are the basics
-    basic_functioning_tests = [testing_tests]
-    basic_functioning_tests = [basic_tests]
-
-    for t in basic_functioning_tests:
-        create_tests_from_list(t)
-
-    # duplicate tests with proxy
-    for t in basic_functioning_tests:
-        duplicate_tests_diff_params(t, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")] ))
+        # duplicate tests with proxy
+        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")] ))
 
 if __name__ == '__main__':
 
