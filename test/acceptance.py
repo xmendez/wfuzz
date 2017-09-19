@@ -55,8 +55,8 @@ basic_tests = [
     # url fuzzing
     ("test_url_port_fuzz", "%s:FUZZ/dir/a" % LOCAL_DOMAIN, [["8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_hostname_fuzz", "http://FUZZ:8000/dir/a", [["localhost"]], dict(), [(200, '/dir/a')], None),
-    ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["http"]], dict(), [(200, '/dir/a')], None),
-    #XXX("test_url_all_url_fuzz", "FUZZ", [["http://localhost:8000/dir/a"]], dict(), [(200, '/dir/a')], None),
+    ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], "Pycurl error 35"),
+    ("test_url_all_url_fuzz", "FUZZ", [["http://localhost:8000/dir/a"]], dict(), [(200, '/dir/a')], None),
 
     # edge cases
     #XXX("test_vhost_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("Host", "FUZZ")], filter="content~'Host:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
@@ -108,6 +108,7 @@ basic_tests = [
     ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'),(404, "/dir/notthere")], None),
     ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
     ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
+    #XXX("test_scheme_baseline_fuzz", "FUZZ{HTTP}://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], None),
 
     # iterators
     ("test_product", "%s:8000/iterators/FUZZFUZ2Z" % LOCAL_DOMAIN, [["a","b"],["c"]], dict(iterator="product"), [(200, '/iterators/ac'),(404, '/iterators/bc')], None),

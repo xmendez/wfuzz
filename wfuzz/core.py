@@ -104,6 +104,8 @@ class requestGenerator:
             fuzz_words = marker_regex.findall(str(self.seed.history))
             method, userpass = self.seed.history.auth
 
+            fuzz_words += marker_regex.findall(self.seed.history.scheme)
+
             if method:
                 fuzz_words += marker_regex.findall(userpass)
 

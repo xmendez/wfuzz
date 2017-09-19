@@ -234,7 +234,9 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def url(self, u):
         if Facade().sett.get("general","encode_space") == "1":
             u = u.replace(" ", "%20")
+
 	self._request.setUrl(u)
+        self.scheme = self.scheme.upper() # avoid FUZZ to become fuzz
 
     @property
     def content(self):
@@ -523,6 +525,9 @@ class FuzzResultFactory:
 		    rawUrl = rawUrl[7:]
 	    if rawReq.count(fuzz_word):
 		rawReq, desc = FuzzResultFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
+
+	    if scheme.count(fuzz_word):
+		scheme, desc = FuzzResultFactory.replace_fuzz_word(scheme, fuzz_word, payload_content)
 
             if desc:
                 descr_array += desc
