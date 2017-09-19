@@ -132,7 +132,8 @@ class Request:
 	def setUrl (self, urltmp):
 		self.__variablesGET=VariablesSet()
 		self.schema,self.__host,self.__path,self.__params,variables,f=urlparse(urltmp)
-		self._headers["Host"]=self.__host
+                if "Host" not in self._headers:
+                    self._headers["Host"]=self.__host
 
 		if variables:
 			self.__variablesGET.parseUrlEncoded(variables)

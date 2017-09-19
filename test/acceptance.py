@@ -55,14 +55,14 @@ basic_tests = [
     # url fuzzing
     ("test_url_port_fuzz", "%s:FUZZ/dir/a" % LOCAL_DOMAIN, [["8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_hostname_fuzz", "http://FUZZ:8000/dir/a", [["localhost"]], dict(), [(200, '/dir/a')], None),
-    ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], "Pycurl error 35"),
+    ("test_url_hostname2_fuzz", "http://FUZZ/dir/a", [["localhost:8000"]], dict(), [(200, '/dir/a')], None),
+    ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["http"]], dict(), [(200, '/dir/a')], None),
     ("test_url_all_url_fuzz", "FUZZ", [["http://localhost:8000/dir/a"]], dict(), [(200, '/dir/a')], None),
 
     # edge cases
-    #XXX("test_vhost_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("Host", "FUZZ")], filter="content~'Host:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
+    ("test_vhost_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("Host", "FUZZ")], filter="content~'Host:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
 
     # payload encoder tests
-
     ("test_encoding", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, None, dict(payloads=[("list", dict(values="value1", encoder=["md5"]))], filter="content~'path=/echo?var=9946687e5fa0dab5993ededddb398d2e'"), [(200, '/echo')], None),
     ("test_nested_encoding", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, None, dict(payloads=[("list", dict(values="value1", encoder=["none@md5"]))], filter="content~'path=/echo?var=9946687e5fa0dab5993ededddb398d2e'"), [(200, '/echo')], None),
     ("test_cat_encoding", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, None, dict(payloads=[("list", dict(values="value1", encoder=["default"]))], filter="content~'path=/echo?var=' and (content~'9946687e5fa0dab5993ededddb398d2e' or content~'value1')"), [(200, '/echo'), (200, '/echo')], None),
@@ -134,6 +134,7 @@ scanmode_tests = [
 ]
 
 error_tests = [
+    ("test_url_schema_error_fuzz", "FUZZ://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], "Pycurl error 35"),
     ("test_all_params_fuzz_error", "%s:8000/echo?var=FUZZ&var2=2" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "FUZZ words not allowed when using all parameters brute forcing"),
     ("test_all_params_no_var", "%s:8000/echo" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "No variables on specified variable set"),
     ("test_bad_port", "%s:6666/FUZZ" % LOCAL_DOMAIN, [range(1)], dict(), [], 'Failed to connect to localhost port 6666'),
