@@ -2,6 +2,7 @@ import sys
 import os
 import unittest
 import multiprocessing
+import tempfile
 from miproxy.proxy import AsyncMitmProxy 
 
 from simple_server import GetHandler
@@ -20,7 +21,6 @@ ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
 #
 # baseline duplicated with single filters
 # chain iterator duplicated with everything
-# duplicate with recipes
 # bad params
 # duplicate with post instead of get
 # conn delays?
@@ -181,6 +181,32 @@ def wfuzz_me_test_generator_exception(fn, exception_string):
 
     return test_exception
 
+def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
+    def test(self):
+        (fd, filename) = tempfile.mkstemp()
+
+        # Wfuzz results
+        with wfuzz.FuzzSession(url=url, **params) as s :
+            s.export_to_file(filename)
+
+            if payloads == None:
+                fuzzed = s.fuzz()
+            else:
+                fuzzed = s.get_payloads(payloads).fuzz()
+
+            ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
+
+        # repeat test with recipe as only parameter
+        with wfuzz.FuzzSession(recipe=filename) as s :
+            if payloads == None:
+                same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+            else:
+                same_list = map(lambda x: (x.code, x.history.urlparse.path), s.get_payloads(payloads).fuzz())
+
+        self.assertEqual(sorted(ret_list), sorted(same_list))
+
+    return test
+
 
 def create_tests_from_list(test_list):
     """
@@ -206,6 +232,18 @@ def duplicate_tests_diff_params(test_list, group, extra_params):
         test_fn = wfuzz_me_test_generator(url, payloads, params, None, extra)
         setattr(DynamicTests, new_test, test_fn)
 
+
+def duplicate_tests_recipe(test_list):
+    """
+    generates wfuzz tests that run 2 times with recipe input, expecting same results.
+
+    """
+    for test_name, url, payloads, params, expected_res, exception_str in test_list:
+        new_test = "%s_%s" % (test_name, "recipe")
+
+        test_fn = wfuzz_me_test_generator_recipe(url, payloads, params, None)
+        setattr(DynamicTests, new_test, test_fn)
+
 def create_tests():
     """
     Creates all dynamic tests
@@ -219,6 +257,9 @@ def create_tests():
 
         for t in basic_functioning_tests:
             create_tests_from_list(t)
+
+        # duplicate tests with recipe
+        duplicate_tests_recipe(basic_tests)
 
         # duplicate tests with proxy
         duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")] ))

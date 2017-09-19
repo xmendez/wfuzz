@@ -19,6 +19,11 @@ import re
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
+
+        # recipe must be  options
+        if "recipe" in kwargs and kwargs["recipe"]:
+            self.import_from_file(kwargs["recipe"])
+
         self.data.update(kwargs)
 
         self.cache = HttpCache()
