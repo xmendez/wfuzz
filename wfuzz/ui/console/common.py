@@ -7,21 +7,20 @@ if os.name == "nt":
 
 examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 \twfuzz -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
-\n\tMore examples in the README.'''
+\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
 
 exec_banner = '''********************************************************\r
 * Wfuzz %s - The Web Fuzzer                           *\r
 ********************************************************\r\n''' % version
 
 help_banner = '''********************************************************
-* Wfuzz %s - The Web Fuzzer                           *
+* Wfuzz %s - The Web Fuzzer                         *
 *                                                      *
 * Version up to 1.4c coded by:                         *
 * Christian Martorella (cmartorella@edge-security.com) *
 * Carlos del ojo (deepbit@gmail.com)                   *
 *                                                      *
-* Version 1.4d to %s coded by:                        *
+* Version 1.4d to %s coded by:                      *
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n''' % (version, version)
 
@@ -109,8 +108,7 @@ verbose_usage ='''%s\n\nOptions:
 \t			      Encoders category can be used. ie. url
 \t                              Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t--zP <params>		    : Arguments for the specified payload (it must be preceded by -z or -w).
-\t--slice <filter>	    : Filter payload\'s elements using the specified expression (Use BBB for taking values from baseline). It must be preceded by -z. 
-\t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+\t--slice <filter>	    : Filter payload\'s elements using the specified expression. It must be preceded by -z. 
 \t-w wordlist		    : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype		    : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 \t-X method		    : Specify an HTTP method for the request, ie. HEAD or FUZZ
@@ -124,8 +122,7 @@ verbose_usage ='''%s\n\nOptions:
 \t--sc/sl/sw/sh N[,N]+	    : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex		    : Show/hide responses with the specified regex within the content
 \t--filter <filter>	    : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
-\t--prefilter <filter>	    : Filter items before fuzzing using the specified expression (Use BBB for taking values from baseline)
-\t			      It should be composed of: c,l,w,h,index,intext,inurl,site,inheader,filetype,ispath,hasquery;not,and,or;=,<,>,!=,<=,>=")
+\t--prefilter <filter>	    : Filter items before fuzzing using the specified expression.
 ''' % (header_usage)
 
 class Term:
