@@ -1,35 +1,33 @@
 # Wfuzz - The Web Fuzzer
 
-## What is this?
+Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 
-Wfuzz is a tool designed to fuzz web applications, it's very flexible, it supports:
-	
-- Recursion (when doing directory discovery)
-- Post data bruteforcing
-- Header bruteforcing
-- Output to HTML (easy for just clicking the links and checking the page, even with postdata!)
-- Colored output 
-- Hide results by return code, word numbers, line numbers, etc.
-- Url encoding
-- Cookies
-- Multithreading
-- Proxy support 
-- All parameter fuzzing
-- etc
+A payload in Wfuzz is a source of data.
+
+This simple concept allows any input to be injected in any field of an HTTP request, allowing to perform complex web security attacks in different web application components such as: parameters, authentication, forms, directories/files, headers, etc.
+
+Wfuzz is more than a web content scanner:
+
+* Wfuzz could help you to secure your web applications by finding and exploiting web application vulnerabilities. Wfuzz’s web application vulnerability scanner is supported by plugins.
+
+* Wfuzz is a completely modular framework and makes it easy for even the newest of Python developers to contribute. Building plugins is simple and takes little more than a few minutes.
+
+* Wfuzz exposes a simple language interface to the previous HTTP requests/responses performed using Wfuzz or other tools, such as Burp. This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
+
 
 It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
 
-## How does it works?
+## Installation 
 
-The tool is based on dictionaries or ranges, then you choose where you want to bruteforce just by replacing the value by the word FUZZ.
+To install WFuzz, simply use pip:
 
-For further information check the wiki at https://github.com/xmendez/wfuzz/wiki.
+```
+pip install wfuzz
+```
+## Documentation
 
-Or check the README file for usage examples.
-
+Documentation is available at http://wfuzz.readthedocs.io
 
 ## Download 
 
-Check github releases. Latest:
-
-- https://github.com/xmendez/wfuzz/releases/latest
+Check github releases. Latest is available at https://github.com/xmendez/wfuzz/releases/latest
