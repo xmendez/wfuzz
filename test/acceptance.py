@@ -183,7 +183,10 @@ def wfuzz_me_test_generator_exception(fn, exception_string):
 
 def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
     def test(self):
-        (fd, filename) = tempfile.mkstemp()
+        temp_name = next(tempfile._get_candidate_names())
+        defult_tmp_dir = tempfile._get_default_tempdir()
+
+        filename = os.path.join(defult_tmp_dir, temp_name)
 
         # Wfuzz results
         with wfuzz.FuzzSession(url=url, **params) as s :
