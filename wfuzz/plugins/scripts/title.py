@@ -22,7 +22,7 @@ class title(BasePlugin):
 
     def process(self, fuzzresult):
         soup = fuzzresult.history.get_soup()
-        title = soup.title.string
+        title = soup.title.string if soup.title else ""
 
         if title != "" and not "title" in self.kbase or title not in self.kbase["title"]:
             self.kbase["title"] = title
