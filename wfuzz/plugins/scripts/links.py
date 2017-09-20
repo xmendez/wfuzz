@@ -49,7 +49,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
 		parsed_link = parse_url(i)
 
 		if (not parsed_link.scheme or parsed_link.scheme == "http" or parsed_link.scheme == "https") and \
-		    (parsed_link.domain == fuzzresult.history.urlparse.domain or (not parsed_link.netloc and parsed_link.path)):
+		    (not parsed_link.netloc and parsed_link.path):
 		    if i not in l:
 			l.append(i)
 

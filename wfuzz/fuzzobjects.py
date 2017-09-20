@@ -296,7 +296,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             return self.params.get_field(field)
         elif field.startswith("url."):
             attr = field.split(".")
-            allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "domain", "ffname", "fext", "fname", "isbllist", "hasquery"]
+            allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "ffname", "fext", "fname", "isbllist", "hasquery"]
 
             if len(attr) != 2:
                 raise FuzzExceptBadAPI("Url must be specified as url.<field>")

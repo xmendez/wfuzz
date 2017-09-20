@@ -38,6 +38,5 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
 	for url in urlList:
 	    u = url.childNodes[0].data
 
-	    if fuzzresult.history.urlparse.domain == parse_url(u).domain:
-		self.queue_url(u)
+            self.queue_url(u)
 

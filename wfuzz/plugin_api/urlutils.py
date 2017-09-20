@@ -6,14 +6,6 @@ from wfuzz.facade import Facade
 
 class FuzzRequestParse(urlparse.ParseResult):
     @property
-    def domain(self):
-	'''
-	Returns domain from an URL. ie. http://www.localhost.com/kk/index.html?id=3
-	will return localhost.com
-	'''
-	return '.'.join(self.netloc.split(":")[0].split(".")[-2:])
-
-    @property
     def ffname(self):
 	'''
 	Returns script plus extension from an URL. ie. http://www.localhost.com/kk/index.html?id=3
