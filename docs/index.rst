@@ -93,4 +93,4 @@ Library Guide
 .. toctree::
    :maxdepth: 2
 
-   lib/guide
+   library/guide
