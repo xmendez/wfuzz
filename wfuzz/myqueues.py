@@ -57,6 +57,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def mystart(self):
         pass
 
+    def set_syncq(self, q):
+        self.syncq = q
+
     def qstart(self):
         self.mystart()
         self.start()
@@ -198,6 +201,10 @@ class FuzzListQueue(FuzzQueue):
 	for q in self.queue_out[1:]:
 	    q.duplicated = True
 
+    def set_syncq(self, q):
+        for q in self.queue_out:
+            q.syncq = q
+
     def qstart(self):
 	for q in self.queue_out:
             q.mystart()
@@ -276,11 +283,11 @@ class QueueManager:
 
             for first, second in itertools.izip_longest(l[0:-1:1], l[1::1]):
                 first.next_queue(second)
-                first.syncq = self._syncq
+                first.set_syncq(self._syncq)
 
 
             l[-1].next_queue(self._syncq)
-            l[-1].syncq = self._syncq
+            l[-1].set_syncq(self._syncq)
 
     def __getitem__(self, key):
         return self._queues[key]
