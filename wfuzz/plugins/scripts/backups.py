@@ -14,7 +14,7 @@ class backups(BasePlugin):
     "* http://localhost/dir.EXTENSIONS",
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = (
@@ -23,7 +23,7 @@ class backups(BasePlugin):
 
     def __init__(self):
         BasePlugin.__init__(self)
-	self.extensions = self.kbase["backups.ext"].split(",")
+	self.extensions = self.kbase["backups.ext"][0].split(",")
         
     def validate(self, fuzzresult):
 	return fuzzresult.code != 404 and (fuzzresult.history.urlparse.fext not in self.extensions)
