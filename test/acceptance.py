@@ -183,6 +183,7 @@ def wfuzz_me_test_generator_exception(fn, exception_string):
 
 def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
     def test(self):
+        if not expected_list: return
         temp_name = next(tempfile._get_candidate_names())
         defult_tmp_dir = tempfile._get_default_tempdir()
 
