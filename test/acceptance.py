@@ -203,6 +203,13 @@ def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
 
+        # repeat test with performaing FUZZ[url] saved request
+        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ[url]") as s :
+            print filename
+            same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+
+        self.assertEqual(sorted(ret_list), sorted(same_list))
+
     return test
 
 
