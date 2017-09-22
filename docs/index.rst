@@ -42,7 +42,7 @@ See Wfuzz in action:
     00125:  C=200    102 L       434 W         7011 Ch        "1"
     00126:  C=200     99 L       302 W         4442 Ch        "2"
 
-rther tools included in the wfuzz framework.
+other tools included in the wfuzz framework.
 
 * Wfuzz payload generator::
 
