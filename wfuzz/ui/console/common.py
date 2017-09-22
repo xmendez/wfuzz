@@ -10,7 +10,7 @@ examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --
 \twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
 
 exec_banner = '''********************************************************\r
-* Wfuzz %s - The Web Fuzzer                           *\r
+* Wfuzz %s - The Web Fuzzer                         *\r
 ********************************************************\r\n''' % version
 
 help_banner = '''********************************************************
@@ -41,7 +41,7 @@ usage ='''%s\n\nOptions:
 \t-v			    : Verbose information.
 \t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t
-\t-p addr			    : Use Proxy in format ip:port:type or ip:port:type-...-ip:port:type for using various proxies.
+\t-p addr			    : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
 \t
 \t-t N			    : Specify the number of concurrent connections (10 default)
