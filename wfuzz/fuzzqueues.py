@@ -43,14 +43,15 @@ class SeedQ(FuzzQueue):
 		while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
 		    time.sleep(0.0001)
 
-		# more after baseline?
-		fuzzres = self.genReq.next()
-
 	except StopIteration:
 	    raise FuzzExceptBadOptions("Empty dictionary! Please check payload or filter.")
 
 	# Enqueue requests
 	try:
+            if fuzzres.is_baseline:
+		# more after baseline?
+		fuzzres = self.genReq.next()
+
 	    while fuzzres:
 		self.genReq.stats.pending_fuzz.inc()
 		if self.delay: time.sleep(self.delay)
