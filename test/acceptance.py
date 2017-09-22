@@ -58,6 +58,7 @@ basic_tests = [
     ("test_url_hostname2_fuzz", "http://FUZZ/dir/a", [["localhost:8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["http"]], dict(), [(200, '/dir/a')], None),
     ("test_url_all_url_fuzz", "FUZZ", [["http://localhost:8000/dir/a"]], dict(), [(200, '/dir/a')], None),
+    ("test_url_all_url_fuzz2", "FUZZ", [["http://webscantest.com/datastore/search_get_by_name.php?name=Rake"]], dict(), [(200, '/datastore/search_get_by_name.php')], None),
 
     # edge cases
     ("test_vhost_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("Host", "FUZZ")], filter="content~'Host:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
