@@ -152,11 +152,11 @@ class DynamicTests(unittest.TestCase):
 def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
     def test(self):
         # Wfuzz results
-        with wfuzz.FuzzSession(url=url) as s :
+        with wfuzz.FuzzSession(url=url, **params) as s :
             if payloads == None:
-                fuzzed = s.fuzz(**params)
+                fuzzed = s.fuzz()
             else:
-                fuzzed = s.get_payloads(payloads).fuzz(**params)
+                fuzzed = s.get_payloads(payloads).fuzz()
 
             ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
 
@@ -180,6 +180,31 @@ def wfuzz_me_test_generator_exception(fn, exception_string):
         self.assertTrue(exception_string in str(context.exception))
 
     return test_exception
+
+def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
+    def test(self):
+        temp_name = next(tempfile._get_candidate_names())
+        defult_tmp_dir = tempfile._get_default_tempdir()
+
+        filename = os.path.join(defult_tmp_dir, temp_name)
+
+        # Wfuzz results
+        with wfuzz.FuzzSession(url=url, **dict(params.items() + dict(save=filename).items())) as s :
+            if payloads == None:
+                fuzzed = s.fuzz()
+            else:
+                fuzzed = s.get_payloads(payloads).fuzz()
+
+            ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
+
+        # repeat test with performaing same saved request
+        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ") as s :
+            same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+
+        self.assertEqual(sorted(ret_list), sorted(same_list))
+
+    return test
+
 
 def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
     def test(self):
@@ -223,28 +248,32 @@ def create_tests_from_list(test_list):
         else:
             setattr(DynamicTests, test_name, test_fn)
 
-def duplicate_tests_diff_params(test_list, group, extra_params):
+def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_extra_params):
     """
     Ignores expected_res and generates wfuzz tests that run 2 times with different params, expecting same results.
 
     """
     for test_name, url, payloads, params, expected_res, exception_str in test_list:
-        extra = dict(params.items() + extra_params.items())
+        next_extra = dict(params.items() + next_extra_params.items())
         new_test = "%s_%s" % (test_name, group)
 
-        test_fn = wfuzz_me_test_generator(url, payloads, params, None, extra)
+        prev_extra = params
+        if previous_extra_params:
+            prev_extra = dict(params.items() + previous_extra_params.items())
+
+        test_fn = wfuzz_me_test_generator(url, payloads, prev_extra, None, next_extra)
         setattr(DynamicTests, new_test, test_fn)
 
 
-def duplicate_tests_recipe(test_list):
+def duplicate_tests(test_list, group, test_gen_fun):
     """
     generates wfuzz tests that run 2 times with recipe input, expecting same results.
 
     """
     for test_name, url, payloads, params, expected_res, exception_str in test_list:
-        new_test = "%s_%s" % (test_name, "recipe")
+        new_test = "%s_%s" % (test_name, group)
 
-        test_fn = wfuzz_me_test_generator_recipe(url, payloads, params, None)
+        test_fn = test_gen_fun(url, payloads, params, None)
         setattr(DynamicTests, new_test, test_fn)
 
 def create_tests():
@@ -254,6 +283,9 @@ def create_tests():
     """
     if testing_tests:
         create_tests_from_list(testing_tests)
+        duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
+        duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
+        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
     else:
         # this are the basics
         basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
@@ -262,10 +294,13 @@ def create_tests():
             create_tests_from_list(t)
 
         # duplicate tests with recipe
-        duplicate_tests_recipe(basic_tests)
+        duplicate_tests(basic_tests, "recipe", wfuzz_me_test_generator_recipe)
+
+        # duplicate tests with save results
+        duplicate_tests(basic_tests, "saveres", wfuzz_me_test_generator_saveres)
 
         # duplicate tests with proxy
-        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")] ))
+        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
 
 if __name__ == '__main__':
 
