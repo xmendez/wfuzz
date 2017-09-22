@@ -35,8 +35,8 @@ basic_tests = [
     ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content~'POST_DATA=a=2'"), [(200, '/echo')], None),
     ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content~'POST_DATA=2'"), [(200, '/echo')], None),
     ("test_static_method_set", "%s/FUZZ" % URL_LOCAL, [["dir"]], dict(method="OPTIONS", filter="content~'Message: Unsupported method (\\\'OPTIONS\\\')'"), [(501, '/dir/dir')], None),
-    ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader:  isset'"), [(200, '/echo')], None),
-    ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1",], filter="content~'Cookie:  cookie1=value1'"), [(200, '/echo')], None),
+    ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader: isset'"), [(200, '/echo')], None),
+    ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1",], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
     ("test_static_basic_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("basic","user:pass"), filter="content~'Authorization: Basic dXNlcjpwYXNz'"), [(200, '/echo')], None),
     ("test_static_ntlm_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("ntlm","user:pass"), filter="content~'Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA='"), [(200, '/echo')], None),
 
@@ -48,7 +48,7 @@ basic_tests = [
     ("test_basic_postdata2_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="FUZZ=1234", filter="content~'POST_DATA=twovalue=1234' or content~'POST_DATA=onevalue=1234'"), [(200, '/echo'), (200, '/echo')], None),
     ("test_basic_postdata3_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="FUZZ", filter="content~'POST_DATA=twovalue' or content~'POST_DATA=onevalue'"), [(200, '/echo'), (200, '/echo')], None),
     ("test_basic_header_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("myheader", "FUZZ")], filter="content~'Myheader:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
-    ("test_basic_header_name_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("FUZZ", "myheadervalue")], filter="content~':  myheadervalue' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
+    ("test_basic_header_name_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("FUZZ", "myheadervalue")], filter="content~': myheadervalue' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
     ("test_static_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="content~'query=var=value1'"), [(200, '/echo')], None),
     ("test_static_strquery2_fuzz", "%s:8000/echo?FUZZ=value1" % LOCAL_DOMAIN, [["var"]], dict(filter="content~'query=var=value1'"), [(200, '/echo')], None),
 

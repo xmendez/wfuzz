@@ -26,7 +26,7 @@ class headers:
 
     @property
     def request(self):
-        return dict(map(lambda x: x.split(":",1), self._req.getHeaders()))
+        return dict(map(lambda x: x.split(": ",1), self._req.getHeaders()))
 
     def add(self, dd):
         for k, v in dd.items():
