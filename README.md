@@ -1,6 +1,6 @@
 # Wfuzz - The Web Fuzzer
 
-<a href="https://pypi.python.org/pypi/wfuzz><img href="https://pypi.python.org/pypi/wfuzz" src="https://img.shields.io/pypi/v/wfuzz.svg"></a>
+<img href="https://pypi.python.org/pypi/wfuzz" src="https://img.shields.io/pypi/v/wfuzz.svg">
 
 Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 
