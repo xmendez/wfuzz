@@ -20,11 +20,11 @@ class FuzzSession(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
 
-        # recipe must be  options
+        # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
             self.import_from_file(kwargs["recipe"])
 
-        self.data.update(kwargs)
+        self.update(kwargs)
 
         self.cache = HttpCache()
         self.http_pool = None
@@ -85,6 +85,9 @@ class FuzzSession(UserDict):
             compiled_prefilter = None,
             compiled_printer = None,
 	)
+
+    def update(self, options):
+        self.data.update(options)
 
     def validate(self):
         if self.data['dictio'] and self.data['payloads']:
