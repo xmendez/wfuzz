@@ -20,6 +20,7 @@ def main():
     try:
         # parse command line 
         session_options = CLParser(sys.argv).parse_cl().compile()
+        session_options["send_discarded"] = True
 
         # Create fuzzer's engine
         fz = Fuzzer(session_options)

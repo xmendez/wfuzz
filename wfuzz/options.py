@@ -35,6 +35,7 @@ class FuzzSession(UserDict):
     def _defaults(self):
 	return dict(
             seed_payload = False,
+            send_discarded = False,
             hs = None,
             hc = [],
             hw = [],
@@ -174,15 +175,12 @@ class FuzzSession(UserDict):
 	    wfuzz_recipe = defaultdict(dict)
 	)
 	defaults = self._defaults()
+        not_to_dump = ["recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer"]
 
 	# Only dump the non-default options
 	for k, v in self.data.items():
-            if v != defaults[k]:
+            if v != defaults[k] and k not in not_to_dump:
                 tmp['wfuzz_recipe'][k] = self.data[k]
-
-	# don't dump recipe
-	if "recipe" in tmp['wfuzz_recipe']:
-	    del(tmp['wfuzz_recipe']["recipe"])
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
 
