@@ -225,7 +225,11 @@ class FuzzSession(UserDict):
             raise FuzzExceptBadOptions(error)
 
         # printer
-        filename, printer = self.data["printer"]
+        try:
+            filename, printer = self.data["printer"]
+        except ValueError, e:
+	    raise FuzzExceptBadOptions("Bad options: Printer must be specified in the form of ('filename', 'printer')")
+
         if filename:
             if printer == "default" or not printer: printer = Facade().sett.get('general', 'default_printer')
             self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)
