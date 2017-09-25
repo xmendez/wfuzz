@@ -131,8 +131,8 @@ class html(BasePrinter):
 class json(BasePrinter):
     name = "json"
     summary = "Results in json format"
-    author = ("Federico (@misterade)",)
-    version = "0.1"
+    author = ("Federico (@misterade)", "Minor rework by Ilya Glotov (@ilyaglow)")
+    version = "0.2"
     category = ["default"]
     priority = 99
 
@@ -153,12 +153,23 @@ class json(BasePrinter):
 	    location = res.history.headers.response['Location']
 	elif res.history.url != res.history.redirect_url:
 	    location = "(*) %s" % res.history.url
-        post_data = {}
+        post_data = []
 	if res.history.method.lower() == "post":
 	    for n, v in res.history.params.post.items():
-                post_data[n] = v
+                post_data.append({"parameter": n, "value": v})
 
-        res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}
+        res_entry = {
+            "chars": res.chars,
+            "code": res.code,
+            "payload": res.description,
+            "lines": res.lines,
+            "location": location,
+            "method": res.history.method,
+            "post_data": post_data,
+            "server": server,
+            "url": res.url,
+            "words": res.words
+        }
         self.json_res.append(res_entry)
 
     def footer(self, summary):
