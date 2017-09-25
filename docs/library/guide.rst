@@ -9,7 +9,7 @@ CLI Option               Library Option
 <URL>                    url="url"
 --recipe <filename>      recipe="filename"
 --oF <filename>          save="filename"
--o filename,printer      printer=("filename", "printer")
+-f filename,printer      printer=("filename", "printer")
 --dry-run                dryrun=True
 -p addr                  proxies=[("ip","port","type")]
 -t N                     concurrent=N

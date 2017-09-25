@@ -54,7 +54,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
 	    optsd = defaultdict(list)
 
             payload_cache = {}
@@ -169,6 +169,9 @@ class CLParser:
 	    else:
 		raise FuzzExceptBadOptions("Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
 
+	if "-f" in optsd:
+	    if "help" in optsd["-f"]:
+		self.show_plugins_help("printers")
 	if "-o" in optsd:
 	    if "help" in optsd["-o"]:
 		self.show_plugins_help("printers")
@@ -411,13 +414,16 @@ class CLParser:
 	    options["verbose"] = True
 	    options["colour"] = True
 
-	if "-o" in optsd:
-	    vals = optsd['-o'][0].split(",", 1)
+	if "-f" in optsd:
+	    vals = optsd['-f'][0].split(",", 1)
 
             if len(vals) == 1:
                 options["printer"] = (vals[0], None)
             else:
                 options["printer"] = vals
+                
+	if "-o" in optsd:
+	    options["console_printer"] = optsd['-o'][0]
                 
 	if "--recipe" in optsd:
 	    options["recipe"] = optsd['--recipe'][0]

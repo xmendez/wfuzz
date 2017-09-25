@@ -36,6 +36,8 @@ def main():
                 kb.start()
 
         printer = View(session_options["colour"], session_options["verbose"])
+        if session_options["console_printer"]:
+            printer = Facade().printers.get_plugin(session_options["console_printer"])(None)
         printer.header(fz.genReq.stats)
 
         for res in fz:
