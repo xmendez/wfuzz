@@ -121,3 +121,25 @@ The get_payloads method can be used when various payloads are needed::
     00019:  C=404      7 L        12 W          168 Ch        "0 - a"
     >>> 
 
+Get session
+===========
+
+The get_session function generates a Wfuzz session object from the specified command line. It is a quick way of getting a payload programatically from a string representing CLI options::
+
+    $ python
+    >>> import wfuzz
+    >>> for r in wfuzz.get_session("-z range,0-10 http://testphp.vulnweb.com/FUZZ").fuzz():
+    ...     print r
+    ... 
+    00002:  C=404      7 L        12 W          168 Ch        "1"
+    00011:  C=404      7 L        12 W          168 Ch        "10"
+    00008:  C=404      7 L        12 W          168 Ch        "7"
+    00001:  C=404      7 L        12 W          168 Ch        "0"
+    00003:  C=404      7 L        12 W          168 Ch        "2"
+    00004:  C=404      7 L        12 W          168 Ch        "3"
+    00005:  C=404      7 L        12 W          168 Ch        "4"
+    00006:  C=404      7 L        12 W          168 Ch        "5"
+    00007:  C=404      7 L        12 W          168 Ch        "6"
+    00009:  C=404      7 L        12 W          168 Ch        "8"
+    00010:  C=404      7 L        12 W          168 Ch        "9"
+
