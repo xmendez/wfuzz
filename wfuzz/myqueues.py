@@ -136,6 +136,14 @@ class FuzzQueue(MyPriorityQueue, Thread):
 	self._cleanup()
 
 class LastFuzzQueue(FuzzQueue):
+    def __init__(self, options, queue_out = None, limit = 0):
+        FuzzQueue.__init__(self, options, queue_out, limit)
+
+        self.items_to_send = [FuzzResult.result]
+
+        if options["send_discarded"]:
+            self.items_to_send.append(FuzzResult.discarded)
+
     def get_name(self):
         return "LastFuzzQueue"
 
@@ -146,7 +154,7 @@ class LastFuzzQueue(FuzzQueue):
         pass
 
     def send(self, item):
-        if item.type == FuzzResult.result:
+        if item.type in self.items_to_send:
             self.queue_out.put(item)
 
     def _throw(self, e):

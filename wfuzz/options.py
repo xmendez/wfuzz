@@ -20,11 +20,11 @@ class FuzzSession(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
 
-        # recipe must be  options
+        # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
             self.import_from_file(kwargs["recipe"])
 
-        self.data.update(kwargs)
+        self.update(kwargs)
 
         self.cache = HttpCache()
         self.http_pool = None
@@ -35,6 +35,8 @@ class FuzzSession(UserDict):
     def _defaults(self):
 	return dict(
             seed_payload = False,
+            send_discarded = False,
+            console_printer = "",
             hs = None,
             hc = [],
             hw = [],
@@ -84,6 +86,9 @@ class FuzzSession(UserDict):
             compiled_prefilter = None,
             compiled_printer = None,
 	)
+
+    def update(self, options):
+        self.data.update(options)
 
     def validate(self):
         if self.data['dictio'] and self.data['payloads']:
@@ -174,15 +179,12 @@ class FuzzSession(UserDict):
 	    wfuzz_recipe = defaultdict(dict)
 	)
 	defaults = self._defaults()
+        not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer"]
 
 	# Only dump the non-default options
 	for k, v in self.data.items():
-            if v != defaults[k]:
+            if v != defaults[k] and k not in not_to_dump:
                 tmp['wfuzz_recipe'][k] = self.data[k]
-
-	# don't dump recipe
-	if "recipe" in tmp['wfuzz_recipe']:
-	    del(tmp['wfuzz_recipe']["recipe"])
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -227,7 +229,11 @@ class FuzzSession(UserDict):
             raise FuzzExceptBadOptions(error)
 
         # printer
-        filename, printer = self.data["printer"]
+        try:
+            filename, printer = self.data["printer"]
+        except ValueError, e:
+	    raise FuzzExceptBadOptions("Bad options: Printer must be specified in the form of ('filename', 'printer')")
+
         if filename:
             if printer == "default" or not printer: printer = Facade().sett.get('general', 'default_printer')
             self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)

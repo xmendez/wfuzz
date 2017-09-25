@@ -5,6 +5,7 @@ from wfuzz.plugin_api.urlutils import parse_url
 
 from wfuzz.utils import find_file_in_paths
 
+import sys
 import os
 
 # Util methods for accessing search results
@@ -64,10 +65,13 @@ class BasePlugin():
 class BasePrinter:
     def __init__(self, output):
         self.f = None
-        try:
-            self.f = open(output,'w')
-        except IOError, e:
-            raise FuzzExceptBadFile("Error opening file. %s" % str(e))
+        if output:
+            try:
+                self.f = open(output,'w')
+            except IOError, e:
+                raise FuzzExceptBadFile("Error opening file. %s" % str(e))
+        else:
+            self.f = sys.stdout
 
         self.verbose = Facade().printers.kbase["verbose"]
 

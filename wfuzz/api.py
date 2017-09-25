@@ -2,6 +2,7 @@ from .core import Fuzzer
 from .core import dictionary
 from .options import FuzzSession
 from .facade import Facade
+from .ui.console.clparser import CLParser
 
 '''
 Wfuzz API
@@ -9,7 +10,6 @@ Wfuzz API
 
 def fuzz(**kwargs):
     return FuzzSession(**kwargs).fuzz()
-
 
 def get_payloads(iterator):
     fs = FuzzSession()
@@ -28,3 +28,7 @@ def decode(name, value):
 
 def payload(**kwargs):
     return FuzzSession(**kwargs).payload()
+
+def get_session(cline):
+    cl = ["wfuzz"] + cline.split(" ")
+    return FuzzSession(**CLParser(cl).parse_cl())

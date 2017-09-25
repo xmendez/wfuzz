@@ -2,6 +2,8 @@ import sys
 from collections import defaultdict
 import threading
 
+from wfuzz.fuzzobjects import FuzzResult
+
 from .common import exec_banner, Term
 from .getch import _Getch
 
@@ -196,7 +198,7 @@ class View:
             print "==============================================================================================================================================\r\n"
         else:
             print "==================================================================\r"
-            print "ID	Response   Lines      Word         Chars          Request    \r"
+            print "ID	Response   Lines      Word         Chars          Payload    \r"
             print "==================================================================\r\n"
 
     def result(self, res):
@@ -207,10 +209,11 @@ class View:
         else:
             self._print(res)
 
-        sys.stdout.write("\n\r")
+        if res.type == FuzzResult.result:
+            sys.stdout.write("\n\r")
 
-        for i in res.plugins_res:
-            print "  |_ %s\r" % i.issue
+            for i in res.plugins_res:
+                print "  |_ %s\r" % i.issue
 
     def footer(self, summary):
         self.term.delete_line()

@@ -1,5 +1,5 @@
 __title__ = 'wfuzz'
-__version__ = "2.2.2"
+__version__ = "2.2.3"
 __build__ = 0x023000
 __author__ = 'Xavier Mendez'
 __license__ = 'GPL 2.0'
@@ -28,4 +28,4 @@ except ImportError, e:
     sys.exit(1)
 
 from .options import FuzzSession
-from .api import fuzz, get_payload, get_payloads, encode, decode, payload
+from .api import fuzz, get_payload, get_payloads, encode, decode, payload, get_session

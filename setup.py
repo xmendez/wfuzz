@@ -30,4 +30,8 @@ setup(
     long_description = long_descr,
     author = "Xavi Mendez (@x4vi_mendez)",
     url = "http://wfuzz.org",
-    )
+    install_requires=[
+        'pycurl',
+        'pyparsing',
+    ],
+)

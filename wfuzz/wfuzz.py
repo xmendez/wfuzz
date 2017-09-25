@@ -20,6 +20,7 @@ def main():
     try:
         # parse command line 
         session_options = CLParser(sys.argv).parse_cl().compile()
+        session_options["send_discarded"] = True
 
         # Create fuzzer's engine
         fz = Fuzzer(session_options)
@@ -35,6 +36,8 @@ def main():
                 kb.start()
 
         printer = View(session_options["colour"], session_options["verbose"])
+        if session_options["console_printer"]:
+            printer = Facade().printers.get_plugin(session_options["console_printer"])(None)
         printer.header(fz.genReq.stats)
 
         for res in fz:

@@ -238,6 +238,18 @@ Wfuzz supports writing the results to a file in a different format. This is perf
 
 For example, to write results to an output file in json format use the following command::
 
-    $ python wfuzz -o /tmp/outfile,json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+    $ python wfuzz -f /tmp/outfile,json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+
+
+Different output
+-----------------
+
+Wfuzz supports showing the results in various formats. This is performed by plugins called "printers". The available printers can be listed executing::
+
+    $ python wfuzz -e printers
+
+For example, to show results in json format use the following command::
+
+    $ python wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
 

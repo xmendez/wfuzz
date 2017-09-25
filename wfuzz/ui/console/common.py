@@ -80,7 +80,8 @@ verbose_usage ='''%s\n\nOptions:
 \t
 \t-c			    : Output with colors
 \t-v			    : Verbose information.
-\t-o filename,printer         : Store results in the output file using the specified printer (raw printer if omitted).
+\t-f filename,printer         : Store results in the output file using the specified printer (raw printer if omitted).
+\t-o printer                  : Show results using the specified printer.
 \t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run		    : Print the results of applying the requests without actually making any HTTP request.
 \t
