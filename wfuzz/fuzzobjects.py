@@ -518,11 +518,6 @@ class FuzzResultFactory:
 		userpass, desc = FuzzResultFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
 	    if newres.history.redirect_url.count(fuzz_word):
 		rawUrl, desc = FuzzResultFactory.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
-
-		# reqresp appends http:// if not indicated in the URL, but if I have a payload with a full URL
-		# this messes up everything  => http://FUZZ and then http://http://asdkjsakd.com
-		if rawUrl[:14] == 'http://http://':
-		    rawUrl = rawUrl[7:]
 	    if rawReq.count(fuzz_word):
 		rawReq, desc = FuzzResultFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
 
