@@ -12,7 +12,7 @@ class zip:
     priority = 99
 
     def __init__(self, *i):
-	self.__count = max(map(lambda x:x.count(), i))
+	self.__count = min(map(lambda x:x.count(), i))
 	self.it = itertools.izip(*i)
 
     def count(self):
