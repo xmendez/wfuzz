@@ -2,7 +2,6 @@ import socket
 import csv as csvmod
 import json as jjson
 from xml.dom import minidom
-import sys
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
