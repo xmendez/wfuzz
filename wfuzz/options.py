@@ -19,6 +19,7 @@ import re
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
 	self.data = self._defaults()
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -167,6 +168,7 @@ class FuzzSession(UserDict):
 	    if js['version'] == "0.2" and 'wfuzz_recipe' in js:
 		for section in js['wfuzz_recipe'].keys():
                     for k, v in js['wfuzz_recipe'].items():
+                        if k not in self.keys_not_to_dump:
 			    self.data[k] = self._convert_from_unicode(v)
 	    else:
 		raise FuzzExceptBadRecipe("Unsupported recipe version.")
@@ -179,11 +181,10 @@ class FuzzSession(UserDict):
 	    wfuzz_recipe = defaultdict(dict)
 	)
 	defaults = self._defaults()
-        not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer"]
 
 	# Only dump the non-default options
 	for k, v in self.data.items():
-            if v != defaults[k] and k not in not_to_dump:
+            if v != defaults[k] and k not in self.keys_not_to_dump:
                 tmp['wfuzz_recipe'][k] = self.data[k]
 
 	return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
