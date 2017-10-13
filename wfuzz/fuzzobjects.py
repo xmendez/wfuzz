@@ -236,7 +236,8 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             u = u.replace(" ", "%20")
 
 	self._request.setUrl(u)
-        self.scheme = self.scheme.upper() # avoid FUZZ to become fuzz
+        if self.scheme.startswith("fuz") and self.scheme.endswith("z"):
+            self.scheme = self.scheme.upper() # avoid FUZZ to become fuzz
 
     @property
     def content(self):
