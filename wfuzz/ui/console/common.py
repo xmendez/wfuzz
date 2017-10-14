@@ -24,6 +24,14 @@ help_banner = '''********************************************************
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n''' % (version, version)
 
+help_banner2 = '''********************************************************
+* Wfuzz %s - The Web Fuzzer                         *
+*                                                      *
+* Coded by:                                            *
+*                                                      *
+* Xavier Mendez (xmendez@edge-security.com)            *
+********************************************************\r\n''' % (version,)
+
 header_usage ='''Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload. 
 \tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.

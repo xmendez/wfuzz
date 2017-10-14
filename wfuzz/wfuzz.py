@@ -9,6 +9,7 @@ from .facade import Facade
 from .exception import FuzzException, FuzzExceptBadInstall
 
 from .ui.console.mvc import Controller, KeyPress, View
+from .ui.console.common import help_banner2
 from .ui.console.clparser import CLParser
 
 def main():
@@ -59,6 +60,7 @@ def main():
 
 def main_filter():
     def usage():
+        print help_banner2
         print """Usage:
 \n\twfpayload [Options]\n\n
 \nOptions:\n
@@ -67,7 +69,7 @@ def main_filter():
 \t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t		      Encoders category can be used. ie. url
-\t--zP <params>		    : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
 \t-m iterator         : Specify an iterator for combining payloads (product by default)
 """
@@ -86,6 +88,12 @@ def main_filter():
     if len(opts) == 0 or len(args) > 0:
         usage()
         sys.exit()
+
+
+    for o, value in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit()
 
     try:
         for res in payload(**CLParser(sys.argv).parse_cl()):
@@ -109,10 +117,12 @@ def main_filter():
 
 def main_encoder():
     def usage():
+        print help_banner2
         print "Usage:"
         print "\n\twfencode --help This help"
         print "\twfencode -d decoder_name string_to_decode"
         print "\twfencode -e encoder_name string_to_encode"
+        print
 
     from .api import encode, decode
     import getopt
