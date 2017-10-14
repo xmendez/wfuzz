@@ -511,8 +511,6 @@ class FuzzResultFactory:
                 scheme = newres.history.scheme
                 auth_method, userpass = newres.history.auth
 
-                continue
-
             desc = None
 
 	    if auth_method and (userpass.count(fuzz_word)):
@@ -527,7 +525,8 @@ class FuzzResultFactory:
 
             if desc:
                 descr_array += desc
-            else:
+
+            if len(descr_array) == 0:
 		raise FuzzExceptBadOptions("No %s word!" % fuzz_word)
 
 	newres.history.update_from_raw_http(rawReq, scheme)
