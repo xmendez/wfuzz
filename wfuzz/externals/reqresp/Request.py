@@ -288,27 +288,43 @@ class Request:
 		elif authMethod == "digest":
 		    c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
 		c.setopt(pycurl.USERPWD, userpass)
+            else:
+		c.unsetopt(pycurl.USERPWD)
 
 	    c.setopt(pycurl.HTTPHEADER, req.getHeaders())
+
+
+            curl_options = {
+                    "GET": pycurl.HTTPGET,
+                    "POST": pycurl.POST,
+                    "PUT": pycurl.UPLOAD,
+                    "HEAD": pycurl.NOBODY,
+                }
+
+            for o in curl_options.values():
+                c.setopt(o, False)
+
+            if req.method in curl_options:
+                c.unsetopt(pycurl.CUSTOMREQUEST)
+                c.setopt(curl_options[req.method], True)
+            else:
+		c.setopt(pycurl.CUSTOMREQUEST, req.method)
+
 	    if req.method == "POST":
 		c.setopt(pycurl.POSTFIELDS, req.postdata)
 
-	    if req.method != "GET" and req.method != "POST":
-		c.setopt(pycurl.CUSTOMREQUEST, req.method)
-	    if req.method == "HEAD":
-		c.setopt(pycurl.NOBODY, True)
-
-	    if req.followLocation:
-		c.setopt(pycurl.FOLLOWLOCATION, 1)
+            c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
 
 	    proxy = req.getProxy()
 	    if proxy != None:
-		    c.setopt(pycurl.PROXY, proxy)
-		    if req.proxytype=="SOCKS5":
-			    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS5)
-		    elif req.proxytype=="SOCKS4":
-			    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS4)
-		    req.delHeader("Proxy-Connection")
+                c.setopt(pycurl.PROXY, proxy)
+                if req.proxytype=="SOCKS5":
+                    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS5)
+                elif req.proxytype=="SOCKS4":
+                    c.setopt(pycurl.PROXYTYPE,pycurl.PROXYTYPE_SOCKS4)
+                req.delHeader("Proxy-Connection")
+            else:
+                c.setopt(pycurl.PROXY, "")
 
 	    return c
 

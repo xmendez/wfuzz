@@ -156,6 +156,8 @@ class HttpPool:
 		pass
 	    else:
 		raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+        else:
+	    c.setopt(pycurl.PROXY, "")
 
 	mdelay = self.options.get("req_delay")
 	if mdelay is not None:
