@@ -1,4 +1,5 @@
 import socket
+import csv as csvmod
 import json as jjson
 from xml.dom import minidom
 
@@ -131,8 +132,8 @@ class html(BasePrinter):
 class json(BasePrinter):
     name = "json"
     summary = "Results in json format"
-    author = ("Federico (@misterade)",)
-    version = "0.1"
+    author = ("Federico (@misterade)", "Minor rework by Ilya Glotov (@ilyaglow)")
+    version = "0.2"
     category = ["default"]
     priority = 99
 
@@ -153,12 +154,23 @@ class json(BasePrinter):
 	    location = res.history.headers.response['Location']
 	elif res.history.url != res.history.redirect_url:
 	    location = "(*) %s" % res.history.url
-        post_data = {}
+        post_data = []
 	if res.history.method.lower() == "post":
 	    for n, v in res.history.params.post.items():
-                post_data[n] = v
+                post_data.append({"parameter": n, "value": v})
 
-        res_entry = {"lines": res.lines, "words": res.words, "chars" : res.chars, "url":res.url, "description":res.description, "location" : location, "server" : server, "server" : server, "postdata" : post_data}
+        res_entry = {
+            "chars": res.chars,
+            "code": res.code,
+            "payload": res.description,
+            "lines": res.lines,
+            "location": location,
+            "method": res.history.method,
+            "post_data": post_data,
+            "server": server,
+            "url": res.url,
+            "words": res.words
+        }
         self.json_res.append(res_entry)
 
     def footer(self, summary):
@@ -246,3 +258,43 @@ class raw(BasePrinter):
 	    self.f.write("Processed Requests: %s\n" % (str(summary.processed())[:8]))
 	self.f.write("Filtered Requests: %s\n" % (str(summary.filtered())[:8]))
 	self.f.write("Requests/sec.: %s\n" % str(summary.processed()/summary.totaltime if summary.totaltime > 0 else 0)[:8])
+
+@moduleman_plugin
+class csv(BasePrinter):
+    name = "csv"
+    author=("@Yoginski initial version","Adapted by @egilas to work in newer version of wfuzz")
+    summary="CSV printer ftw"
+    version="1.0"
+    category = ["default"]
+    priority = 99
+    
+    def write(self,e):
+        self.f.write(e)
+        pass
+    
+    def __init__(self,output):
+        BasePrinter.__init__(self, output)
+        self.csv_writer = csvmod.writer(self)
+
+    def header(self, summary):
+	self._print_csv(["id", "response", "lines", "word", "chars", "request", "success"])
+
+    def result(self, res):
+        line = [ res.nres,
+                 res.code,
+                 res.lines,
+                 res.words,
+                 res.chars,
+                 res.description,
+                 0 if res.exception else 1]
+        self._print_csv(line)
+
+    def noresult(self, res):
+        pass
+
+    def footer(self, summary):
+        pass
+
+    def _print_csv(self, values):
+	self.csv_writer.writerow(values)
+
