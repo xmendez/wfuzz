@@ -103,7 +103,7 @@ def main_filter():
                 r = res[0]
 
             if "FuzzResult" in str(r.__class__):
-                r.description = r.url
+                r._description = r.url
 
             print r
 

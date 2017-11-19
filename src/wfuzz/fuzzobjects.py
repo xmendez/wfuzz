@@ -500,7 +500,7 @@ class FuzzResultFactory:
             newres.payload.append(payload_content)
 
             # substitute entire seed when using a request payload generator without specifying field
-            if (fuzz_word == "FUZZ" and (rawUrl == "FUZZ" or (seed_options and seed_options["seed_payload"] == True))) and isinstance(payload_content, FuzzResult):
+            if (fuzz_word == "FUZZ" and (rawUrl == "FUZZ" or seed_options["seed_payload"] == True)) and isinstance(payload_content, FuzzResult):
                 # new seed
                 newres = payload_content.from_soft_copy()
 
@@ -508,7 +508,7 @@ class FuzzResultFactory:
 
                 newres.payload = [payload_content]
                 newres.history.update_from_options(seed_options)
-                newres.description = ""
+                newres._description = ""
                 rawReq = str(newres.history)
                 rawUrl = newres.history.redirect_url
                 scheme = newres.history.scheme
@@ -536,16 +536,16 @@ class FuzzResultFactory:
 	newres.history.url = rawUrl
 	if auth_method != 'None': newres.history.auth = (auth_method, userpass)
 
-        if newres.description:
-            newres.description += " - "
+        if newres._description:
+            newres._description += " - "
 
-	newres.description += " - ".join(descr_array)
+	newres._description += " - ".join(descr_array)
         newres.type = FuzzResult.result
 
 	return newres
 
     @staticmethod
-    def from_baseline(fuzzresult):
+    def from_baseline(fuzzresult, options):
 	scheme = fuzzresult.history.scheme
 	rawReq = str(fuzzresult.history)
 	auth_method, userpass = fuzzresult.history.auth
@@ -594,7 +594,7 @@ class FuzzResultFactory:
 
             baseline_res.history.update_from_raw_http(rawReq, scheme)
 
-        baseline_res = FuzzResultFactory.from_seed(baseline_res, baseline_payload, None)
+        baseline_res = FuzzResultFactory.from_seed(baseline_res, baseline_payload, options)
 
 	baseline_res.is_baseline = True
         baseline_res.payload = baseline_payload
@@ -611,7 +611,7 @@ class FuzzResultFactory:
 	    variable = v.name
 	    payload_content = payload[0]
             fuzzres = seed.from_soft_copy()
-	    fuzzres.description = variable + "=" + payload_content
+	    fuzzres._description = variable + "=" + payload_content
             fuzzres.payload.append(payload_content)
 
             fuzzres.history.wf_allvars_set = (variable, payload_content)
@@ -745,7 +745,7 @@ class FuzzResult:
 
         self.type = None
 	self.exception = exception
-        self.description = ""
+        self._description = ""
         self.is_baseline = False
         self.rlevel = 1
         self.nres = FuzzResult.newid() if  track_id else 0
@@ -767,7 +767,7 @@ class FuzzResult:
 
         if exception:
             self.exception = exception
-            self.description = self.description + "! " + str(self.exception)
+            self._description = self._description + "! " + str(self.exception)
 
         if self.history and self.history.content:
             m = hashlib.md5()
@@ -804,6 +804,9 @@ class FuzzResult:
         else:
             return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel", "discarded")[self.type]
 
+    @property
+    def description(self):
+        return self._description
 
     # parameters in common with fuzzrequest
     @property
@@ -841,7 +844,7 @@ class FuzzResult:
         fr = FuzzResult(self.history.from_copy(), track_id = track_id)
 
 	fr.exception = self.exception
-        fr.description = self.description
+        fr._description = self._description
         fr.is_baseline = self.is_baseline
 	fr.type = self.type
         fr.rlevel = self.rlevel
@@ -866,7 +869,7 @@ class FuzzResult:
     def to_new_url(self, url):
         fr = self.from_soft_copy()
         fr.history.url = str(url)
-	fr.description = fr.history.path
+	fr._description = fr.history.path
 	fr.rlevel = self.rlevel + 1
         fr.type = FuzzResult.backfeed
         fr.is_baseline = False

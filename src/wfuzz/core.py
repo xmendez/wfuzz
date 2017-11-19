@@ -83,7 +83,7 @@ class requestGenerator:
 	def __init__(self, options):
             self.options = options
 	    self.seed = FuzzResultFactory.from_options(options)
-	    self.baseline = FuzzResultFactory.from_baseline(self.seed)
+	    self.baseline = FuzzResultFactory.from_baseline(self.seed, options)
 	    self.dictio = self.get_dictio()
 
 	    self.stats = FuzzStats.from_requestGenerator(self)

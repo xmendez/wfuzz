@@ -48,7 +48,7 @@ class WfuzzInterpreter:
             for res in dictionary.from_options(session_options):
                 r = res[0]
                 if "FuzzResult" in str(r.__class__):
-                    r.description = r.url
+                    r._description = r.url
 
                 self.model.AddRow(r)
 
