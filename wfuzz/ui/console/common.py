@@ -84,7 +84,7 @@ verbose_usage ='''%s\n\nOptions:
 \t
 \t--recipe <filename>	    : Reads options from a recipe
 \t--dump-recipe <filename>    : Prints current options as a recipe
-\t--oF <filename>	            : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
+\t--oF <filename>   	    : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 \t
 \t-c			    : Output with colors
 \t-v			    : Verbose information.
@@ -92,6 +92,7 @@ verbose_usage ='''%s\n\nOptions:
 \t-o printer                  : Show results using the specified printer.
 \t--interact		    : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run		    : Print the results of applying the requests without actually making any HTTP request.
+\t--prev    		    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
 \t
 \t-p addr			    : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t			      Where type could be SOCKS4,SOCKS5 or HTTP if omitted.

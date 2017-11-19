@@ -36,7 +36,7 @@ def main():
                 mc = Controller(fz, kb)
                 kb.start()
 
-        printer = View(session_options["colour"], session_options["verbose"])
+        printer = View(session_options)
         if session_options["console_printer"]:
             printer = Facade().printers.get_plugin(session_options["console_printer"])(None)
         printer.header(fz.genReq.stats)

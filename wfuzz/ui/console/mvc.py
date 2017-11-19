@@ -135,17 +135,21 @@ class Controller:
 		    print "ET left sec.: %s\r\n" % str(eta)[:8]
 
 class View:
-    def __init__(self, colour, verbose):
-        self.colour = colour
-        self.verbose = verbose
+    def __init__(self, session_options):
+        self.colour = session_options["colour"]
+        self.verbose = session_options["verbose"]
+        self.previous = session_options["previous"]
         self.term = Term()
 
-    def _print_verbose(self, res):
+    def _print_verbose(self, res, print_nres = True):
 	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
+        if self.previous and self.colour and not print_nres:
+            txt_colour = Term.fgCyan, 8
 
         self.term.set_colour(txt_colour)
 
-	self.term.write("%05d:  " % (res.nres), txt_colour)
+        if print_nres:
+            self.term.write("%05d:  " % (res.nres), txt_colour)
 	self.term.write("%.3fs   C=" % (res.timer), txt_colour)
 
 	location = ""
@@ -168,12 +172,18 @@ class View:
 	sys.stdout.flush()
 
 
-    def _print(self, res):
+    def _print(self, res, print_nres = True):
 	txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
+        if self.previous and self.colour and not print_nres:
+            txt_colour = Term.fgCyan, 8
 
         self.term.set_colour(txt_colour)
 
-        self.term.write("%05d:  C=" % (res.nres), txt_colour)
+        if print_nres:
+            self.term.write("%06d:  C=" % (res.nres), txt_colour)
+        else:
+            self.term.write(" C=", txt_colour)
+
 	if res.exception:
 	    self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("",8))
 	else:
@@ -210,10 +220,17 @@ class View:
             self._print(res)
 
         if res.type == FuzzResult.result:
+            if self.previous and len(res.payload) > 0 and isinstance(res.payload[0], FuzzResult):
+                sys.stdout.write("\n\r  |__   ")
+                res.payload[0].description = res.description
+                if self.verbose:
+                    self._print_verbose(res.payload[0], print_nres=False)
+                else:
+                    self._print(res.payload[0], print_nres=False)
             sys.stdout.write("\n\r")
 
             for i in res.plugins_res:
-                print "  |_ %s\r" % i.issue
+                print " |_  %s\r" % i.issue
 
     def footer(self, summary):
         self.term.delete_line()

@@ -52,6 +52,7 @@ class FuzzSession(UserDict):
             iterator = None,
             printer = (None, None),
             colour = False,
+            previous = False,
             verbose = False,
             interactive = False,
             dryrun = False,
@@ -274,12 +275,6 @@ class FuzzSession(UserDict):
 	    for k, v in Facade().sett.get_section("kbase"):
 		if k not in self.data["script_args"]:
 		    Facade().scripts.kbase[k] = v
-
-	if self.data["colour"]:
-	    Facade().printers.kbase["colour"] = True
-
-	if self.data["verbose"]:
-	    Facade().printers.kbase["verbose"] = True
 
         return self
 

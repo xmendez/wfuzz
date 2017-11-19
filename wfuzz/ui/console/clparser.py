@@ -54,7 +54,7 @@ class CLParser:
     def parse_cl(self):
 	# Usage and command line help
 	try:
-	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run'])
+	    opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:",['slice=','zP=','oF=','recipe=', 'dump-recipe=', 'req-delay=','conn-delay=','sc=','sh=','sl=','sw=','ss=','hc=','hh=','hl=','hw=','hs=','ntlm=','basic=','digest=','follow','script-help=','script=','script-args=','prefilter=','filter=','interact','help','version','dry-run', 'prev'])
 	    optsd = defaultdict(list)
 
             payload_cache = {}
@@ -406,6 +406,9 @@ class CLParser:
 
 	if "-v" in optsd:
 	    options["verbose"] = True
+
+	if "--prev" in optsd:
+	    options["previous"] = True
 
 	if "-c" in optsd:
 	    options["colour"] = True

@@ -609,6 +609,14 @@ Previous requests can also be modified by using the usual command line switches.
 
     $ wfuzz -z burpstate,a_burp_state.burp -z list,1-2-3 -b "cookie=FUZ2Z" FUZZ
 
+* The stored HTTP requests can be printed using the --prev flag for comparing old vs new results::
+
+    $ wfuzz -z burpstate,testphp.burp --slice "cookies.request and url|u()" --filter "c!=FUZZ[c]" -b "" --prev FUZZ  
+    ...
+    000076:  C=302      0 L        3 W           14 Ch        "http://testphp.vulnweb.com/userinfo.php"
+      |__    C=200    114 L      373 W         5347 Ch        "http://testphp.vulnweb.com/userinfo.php"
+
+
 * Same request against another url::
 
     $ wfuzz -z burpstate,a_burp_state.burp -H "addme: header" -u http://www.otherhost.com FUZZ
