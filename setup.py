@@ -7,13 +7,14 @@ with open("README.md", "rb") as f:
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"',
-    open('wfuzz/__init__.py').read(),
+    open('src/wfuzz/__init__.py').read(),
     re.M
     ).group(1)
  
  
 setup(
     name = "wfuzz",
+    package_dir={'wfuzz': 'src'},
     packages=find_packages(),
     entry_points={
         'console_scripts': [

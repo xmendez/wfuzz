@@ -8,7 +8,7 @@ from miproxy.proxy import AsyncMitmProxy
 from simple_server import GetHandler
 from BaseHTTPServer import HTTPServer
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../src'))
 import wfuzz
 
 LOCAL_DOMAIN = "http://localhost"
