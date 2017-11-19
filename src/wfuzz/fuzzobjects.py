@@ -4,7 +4,7 @@ import re
 import itertools
 import operator
 
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 from threading import Lock
 from collections import namedtuple
 from collections import defaultdict
@@ -232,6 +232,9 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @url.setter
     def url(self, u):
+        if not u.startswith("FUZ") and urlparse(u).scheme == "":
+            u = "http://" + u
+
         if Facade().sett.get("general","encode_space") == "1":
             u = u.replace(" ", "%20")
 
