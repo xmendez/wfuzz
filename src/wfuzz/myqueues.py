@@ -170,7 +170,6 @@ class LastFuzzQueue(FuzzQueue):
                 self.task_done()
 
                 if item == None:
-                    self.stats.mark_end()
                     break
                 elif cancelling:
                     continue
@@ -320,6 +319,7 @@ class QueueManager:
             if self._queues:
                 self._queues.values()[0].put_last(None)
                 self.join(remove=True)
+                self.options.get("compiled_genreq").stats.mark_end()
                 self._lastq.put_last(None, wait = False)
 
                 self._queues = collections.OrderedDict()
