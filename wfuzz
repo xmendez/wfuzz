@@ -1,3 +1,2 @@
 #!/bin/sh
-cd src
-python -m wfuzz $@
+python src/wfuzz-cli.py $@
