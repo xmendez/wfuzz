@@ -1,2 +1,2 @@
 #!/bin/sh
-python src/wfuzz-cli.py $@
+python src/wfuzz-cli.py "$@"

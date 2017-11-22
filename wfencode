@@ -1,2 +1,2 @@
 #!/bin/sh
-python src/wfencode.py $@
+python src/wfencode.py "$@"

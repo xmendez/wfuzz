@@ -1,2 +1,2 @@
 #!/bin/sh
-python src/wfpayload.py $@
+python src/wfpayload.py "$@"
