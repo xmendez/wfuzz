@@ -232,6 +232,9 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @url.setter
     def url(self, u):
+        if urlparse(u).path == "":
+            u += '/'
+
         if not u.startswith("FUZ") and urlparse(u).scheme == "":
             u = "http://" + u
 
