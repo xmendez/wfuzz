@@ -10,7 +10,7 @@ from collections import namedtuple
 from collections import defaultdict
 
 from .externals.reqresp import Request, Response
-from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
+from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzExceptBadInstall
 from .facade import Facade
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
@@ -377,7 +377,10 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return Facade().http_pool.perform(res)
         
     def to_http_object(self, c):
-	return Request.to_pycurl_object(c, self._request)
+        try:
+            return Request.to_pycurl_object(c, self._request)
+        except AttributeError:
+            raise FuzzExceptBadInstall("Minimum pycurl required version is 7.42.0")
 
     def from_http_object(self, c, bh, bb):
 	return self._request.response_from_conn_object(c, bh, bb)

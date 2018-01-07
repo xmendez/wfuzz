@@ -270,6 +270,7 @@ class Request:
 	    c.setopt(pycurl.SSL_VERIFYPEER, False)
 	    c.setopt(pycurl.SSL_VERIFYHOST, 0)
 
+            c.setopt(pycurl.PATH_AS_IS, 1)
 	    c.setopt(pycurl.URL,req.completeUrl)
 
 	    if req.getConnTimeout():
