@@ -53,6 +53,7 @@ basic_tests = [
     ("test_static_strquery2_fuzz", "%s:8000/echo?FUZZ=value1" % LOCAL_DOMAIN, [["var"]], dict(filter="content~'query=var=value1'"), [(200, '/echo')], None),
 
     # url fuzzing
+    ("test_url_with_no_path", "http://localhost:8000", [["GET"]], dict(method="FUZZ"), [(200, '/')], None),
     ("test_url_not_normalized_by_lib", "http://localhost:8000/echo/FUZZ", [["../../etc/pass"]], dict(), [(200, '/echo/../../etc/pass')], None),
     ("test_url_port_fuzz", "%s:FUZZ/dir/a" % LOCAL_DOMAIN, [["8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_hostname_fuzz", "http://FUZZ:8000/dir/a", [["localhost"]], dict(), [(200, '/dir/a')], None),
