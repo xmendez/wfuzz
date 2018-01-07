@@ -32,7 +32,7 @@ setup(
     author = "Xavi Mendez (@x4vi_mendez)",
     url = "http://wfuzz.org",
     install_requires=[
-        'pycurl>=7.42.0',
+        'pycurl>=7.43.0',
         'pyparsing',
     ],
 )
