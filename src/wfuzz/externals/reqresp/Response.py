@@ -101,31 +101,42 @@ class Response:
 		tp=TextParser()
 		tp.setSource("string",rawResponse)
 
-		while True:
-			tp.readUntil("(HTTP\S*) ([0-9]+)")
+                tp.readUntil("(HTTP\S*) ([0-9]+)")
+                while True:
+                    while True:
+                            try:
+                                    self.protocol=tp[0][0]
+                            except:
+                                    self.protocol="unknown"
 
-			try:
-				self.protocol=tp[0][0]
-			except:
-				self.protocol="unknown"
+                            try:
+                                    self.code=tp[0][1]
+                            except:
+                                    self.code="0"
 
-			try:
-				self.code=tp[0][1]
-			except:
-				self.code="0"
-
-			if self.code!="100":
-				break
+                            if self.code!="100":
+                                    break
+                            else:
+                                tp.readUntil("(HTTP\S*) ([0-9]+)")
 
 
-		self.code=int(self.code)
+                    self.code=int(self.code)
 
-		while True:
-			tp.readLine()
-			if (tp.search("^([^:]+): ?(.*)$")):
-				self.addHeader(tp[0][0],tp[0][1])
-			else:
-				break
+                    while True:
+                            tp.readLine()
+                            if (tp.search("^([^:]+): ?(.*)$")):
+                                    self.addHeader(tp[0][0],tp[0][1])
+                            else:
+                                    break
+
+                    # curl sometimes sends two headers when using follow, 302 and the final header
+                    tp.readLine()
+                    if not tp.search("(HTTP\S*) ([0-9]+)"):
+                        break
+                    else:
+                        self._headers=[]
+
+
 
 		while tp.skip(1):
 			self.addContent(tp.lastFull_line)
