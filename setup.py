@@ -15,7 +15,7 @@ version = re.search(
 setup(
     name = "wfuzz",
     packages=find_packages(where='src'),
-    package_dir={'wfuzz': 'src/wfuzz/'},
+    package_dir={'wfuzz': 'src/wfuzz'},
     entry_points={
         'console_scripts': [
             'wfuzz = wfuzz.wfuzz:main',
