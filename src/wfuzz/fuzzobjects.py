@@ -377,10 +377,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return Facade().http_pool.perform(res)
         
     def to_http_object(self, c):
-        try:
-            return Request.to_pycurl_object(c, self._request)
-        except AttributeError:
-            raise FuzzExceptBadInstall("Minimum pycurl required version is 7.43.0")
+        return Request.to_pycurl_object(c, self._request)
 
     def from_http_object(self, c, bh, bb):
 	return self._request.response_from_conn_object(c, bh, bb)

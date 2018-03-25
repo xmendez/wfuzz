@@ -17,6 +17,12 @@ try:
 except:
     pass
 
+
+PYCURL_PATH_AS_IS = True
+if not hasattr(pycurl, "PATH_AS_IS"):
+    PYCURL_PATH_AS_IS = False
+
+
 class Request:
 	def __init__(self):
 		self.__host=None	  		# www.google.com:80
@@ -270,7 +276,9 @@ class Request:
 	    c.setopt(pycurl.SSL_VERIFYPEER, False)
 	    c.setopt(pycurl.SSL_VERIFYHOST, 0)
 
-            c.setopt(pycurl.PATH_AS_IS, 1)
+            if PYCURL_PATH_AS_IS:
+                c.setopt(pycurl.PATH_AS_IS, 1)
+
 	    c.setopt(pycurl.URL,req.completeUrl)
 
 	    if req.getConnTimeout():
