@@ -74,6 +74,7 @@ The FuzzSession object allows you to persist certain parameters across fuzzing s
     00060:  C=301      7 L        12 W          184 Ch        "admin"
     00183:  C=403     10 L        29 W          263 Ch        "cgi-bin"
     ...
+    >>> s.close()
 
 FuzzSession can also be used as context manager::
 

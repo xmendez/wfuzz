@@ -55,6 +55,7 @@ def main():
     except Exception, e:
         print "\nUnhandled exception: %s" % str(e)
     finally:
+        if session_options: session_options.close()
         if kb: kb.cancel_job()
         Facade().sett.save()
 

@@ -255,6 +255,7 @@ class FuzzSession(UserDict):
 
         if not self.http_pool:
             self.http_pool = HttpPool(self)
+            self.http_pool.register()
 
         # filter options
         self.data["compiled_filter"] = FuzzResFilter.from_options(self)
