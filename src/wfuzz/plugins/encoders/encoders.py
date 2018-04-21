@@ -279,12 +279,12 @@ class html_escape:
     name = "html_escape"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
-    summary = "Convert the characters '&', '<' and '>' in string to HTML-safe sequences."
+    summary = "Convert the characters &<>\" in string to HTML-safe sequences."
     category = ["html"]
     priority = 99
 
     def encode(self, string):
-        return cgi.escape(string)
+        return cgi.escape(string, quote=True)
 
 
 @moduleman_plugin("encode")
