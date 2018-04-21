@@ -1,10 +1,11 @@
 # http://code.activestate.com/recipes/134892/
-# 
+#
 # getch()-like unbuffered character reading from stdin on both Windows and Unix (Python recipe)
 # A small utility class to read single characters from standard input, on both Windows and UNIX systems. It provides a getch() function-like instance.
-# 
+#
 # Created by Danny Yoo on Fri, 21 Jun 2002 (PSF)
 # (http://code.activestate.com/recipes/users/98032/)
+
 
 class _Getch:
     """Gets a single character from standard input.  Does not echo to the screen."""
@@ -17,14 +18,19 @@ class _Getch:
             except ImportError:
                 self.impl = _GetchMacCarbon()
 
-    def __call__(self): return self.impl()
+    def __call__(self):
+        return self.impl()
+
 
 class _GetchUnix:
     def __init__(self):
         import tty, sys
 
     def __call__(self):
-        import sys, tty, termios
+        import sys
+        import tty
+        import termios
+
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -42,6 +48,7 @@ class _GetchWindows:
     def __call__(self):
         import msvcrt
 
+
 class _GetchMacCarbon:
     """
     A function which returns the current ASCII key that is down;
@@ -51,11 +58,12 @@ class _GetchMacCarbon:
     """
     def __init__(self):
         import Carbon
-        Carbon.Evt #see if it has this (in Unix, it doesn't)
+        # see if it has this (in Unix, it doesn't)
+        Carbon.Evt
 
     def __call__(self):
         import Carbon
-        if Carbon.Evt.EventAvail(0x0008)[0]==0: # 0x0008 is the keyDownMask
+        if Carbon.Evt.EventAvail(0x0008)[0] == 0:  # 0x0008 is the keyDownMask
             return ''
         else:
             #
@@ -67,15 +75,17 @@ class _GetchMacCarbon:
             # number is converted to an ASCII character with chr() and
             # returned
             #
-            (what,msg,when,where,mod)=Carbon.Evt.GetNextEvent(0x0008)[1]
+            (what, msg, when, where, mod) = Carbon.Evt.GetNextEvent(0x0008)[1]
             return chr(msg & 0x000000FF)
 
-if __name__ == '__main__': # a little test
-   print 'Press a key'
-   inkey = _Getch()
 
-   import sys
-   for i in xrange(sys.maxint):
-      k=inkey()
-      if k<>'':break
-   print 'you pressed ',k
+if __name__ == '__main__':
+    print 'Press a key'
+    inkey = _Getch()
+
+    import sys
+    for i in xrange(sys.maxint):
+        k = inkey()
+        if k != '':
+            break
+    print 'you pressed ', k

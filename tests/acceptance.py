@@ -3,13 +3,14 @@ import os
 import unittest
 import multiprocessing
 import tempfile
-from miproxy.proxy import AsyncMitmProxy 
+from miproxy.proxy import AsyncMitmProxy
 
 from simple_server import GetHandler
 from BaseHTTPServer import HTTPServer
 
 sys.path.insert(0, os.path.abspath('../src'))
 import wfuzz
+
 
 LOCAL_DOMAIN = "http://localhost"
 URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
@@ -36,13 +37,13 @@ basic_tests = [
     ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content~'POST_DATA=2'"), [(200, '/echo')], None),
     ("test_static_method_set", "%s/FUZZ" % URL_LOCAL, [["dir"]], dict(method="OPTIONS", filter="content~'Message: Unsupported method (\\\'OPTIONS\\\')'"), [(501, '/dir/dir')], None),
     ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader: isset'"), [(200, '/echo')], None),
-    ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1",], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
-    ("test_static_basic_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("basic","user:pass"), filter="content~'Authorization: Basic dXNlcjpwYXNz'"), [(200, '/echo')], None),
-    ("test_static_ntlm_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("ntlm","user:pass"), filter="content~'Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA='"), [(200, '/echo')], None),
+    ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1", ], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
+    ("test_static_basic_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("basic", "user:pass"), filter="content~'Authorization: Basic dXNlcjpwYXNz'"), [(200, '/echo')], None),
+    ("test_static_ntlm_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("ntlm", "user:pass"), filter="content~'Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA='"), [(200, '/echo')], None),
 
     # fuzzing HTTP values
-    ("test_basic_path_fuzz", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
-    ("test_multi_path_fuzz", "%s/FUZZ/FUZ2Z/FUZ3Z" % ECHO_URL, [["a"],["b"],["c"]], dict(filter="content~'path=/echo/a/b/c'"), [(200, '/echo/a/b/c')], None),
+    ("test_basic_path_fuzz", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_multi_path_fuzz", "%s/FUZZ/FUZ2Z/FUZ3Z" % ECHO_URL, [["a"], ["b"], ["c"]], dict(filter="content~'path=/echo/a/b/c'"), [(200, '/echo/a/b/c')], None),
     ("test_basic_method_fuzz", "%s" % URL_LOCAL, [["OPTIONS", "PUT"]], dict(method="FUZZ", filter="content~'Unsupported method' and content~FUZZ"), [(501, '/dir'), (501, '/dir')], None),
     ("test_basic_postdata_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="a=FUZZ", filter="content~FUZZ and content~'POST_DATA=a='"), [(200, '/echo'), (200, '/echo')], None),
     ("test_basic_postdata2_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="FUZZ=1234", filter="content~'POST_DATA=twovalue=1234' or content~'POST_DATA=onevalue=1234'"), [(200, '/echo'), (200, '/echo')], None),
@@ -71,7 +72,7 @@ basic_tests = [
     ("test_cat_encoding", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, None, dict(payloads=[("list", dict(values="value1", encoder=["default"]))], filter="content~'path=/echo?var=' and (content~'9946687e5fa0dab5993ededddb398d2e' or content~'value1')"), [(200, '/echo'), (200, '/echo')], None),
 
     # prefilter, slice
-    ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a","a","a","a","a","a"]], dict(prefilter="FUZZ|u()",ss="one"), [(200, '/dir/a')], None),
+    ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a", "a", "a", "a", "a", "a"]], dict(prefilter="FUZZ|u()", ss="one"), [(200, '/dir/a')], None),
     ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
 
     # follow
@@ -82,45 +83,45 @@ basic_tests = [
     ("test_all_params_post", "%s" % ECHO_URL, [["onevalue"]], dict(allvars="allpost", postdata="a=1&b=2", filter="content~'POST_DATA=a=onevalue&b=2' or content~'POST_DATA=a=1&b=onevalue'"), [(200, '/echo'), (200, '/echo')], None),
 
     # simple filter
-    ("test_codes_HC", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(hc=[404]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
-    ("test_codes_SC", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(sc=[200]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
-    ("test_codes_HL", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(hl=[4]), [(200, '/dir/b')], None),
-    ("test_codes_SL", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(sl=[4]), [(200, '/dir/a'), (200, '/dir/c')], None),
-    ("test_codes_HW", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(hw=[11]), [(200, '/dir/a'), (200, '/dir/b')], None),
-    ("test_codes_SW", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(sw=[11]), [(200, '/dir/c')], None),
-    ("test_codes_HH", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(hh=[28]), [(200, '/dir/b'), (200, '/dir/c')], None),
-    ("test_codes_SH", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(sh=[28]), [(200, '/dir/a')], None),
+    ("test_codes_HC", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[404]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_codes_SC", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(sc=[200]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_codes_HL", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hl=[4]), [(200, '/dir/b')], None),
+    ("test_codes_SL", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(sl=[4]), [(200, '/dir/a'), (200, '/dir/c')], None),
+    ("test_codes_HW", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hw=[11]), [(200, '/dir/a'), (200, '/dir/b')], None),
+    ("test_codes_SW", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(sw=[11]), [(200, '/dir/c')], None),
+    ("test_codes_HH", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hh=[28]), [(200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_codes_SH", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(sh=[28]), [(200, '/dir/a')], None),
 
     # combining simple filters
-    ("test_hchlhhhw","%s/FUZZ" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(hc=[404], hl=[4], hh=[300]), [(200, '/dir/b')], None),
-    ("test_shsw", "%s/FUZZ" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(sh=[28], sw=[6]), [(200, '/dir/a')], None),
+    ("test_hchlhhhw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=[404], hl=[4], hh=[300]), [(200, '/dir/b')], None),
+    ("test_shsw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(sh=[28], sw=[6]), [(200, '/dir/a')], None),
 
     # regex filter
-    ("test_ss", "%s/FUZZ" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(ss="one"), [(200, '/dir/a'), (200, '/dir/b')], None),
-    ("test_hs", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(hs="one"), [(200, '/dir/c')], None),
-    ("test_regex_sc", "%s/FUZZ" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(sc=[200], ss="one"), [(200, '/dir/a'), (200, '/dir/b')], None),
-    ("test_regex_hc", "%s/FUZZ" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(hc=[200], ss="one"), [], None),
+    ("test_ss", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(ss="one"), [(200, '/dir/a'), (200, '/dir/b')], None),
+    ("test_hs", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hs="one"), [(200, '/dir/c')], None),
+    ("test_regex_sc", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(sc=[200], ss="one"), [(200, '/dir/a'), (200, '/dir/b')], None),
+    ("test_regex_hc", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=[200], ss="one"), [], None),
 
     # complex filter
-    ("test_filter_clh", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(filter="c!=404 and l!=4 and h!=300 and w!=6"), [(200, '/dir/b')], None),
-    ("test_filter_hw", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(filter="h=28 or w=6"), [(200, '/dir/a')], None),
-    ("test_filter_intext", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(filter="content~'one'"), [(200, '/dir/a'), (200, '/dir/b')], None),
-    ("test_filter_intext2", "%s/FUZZ" % URL_LOCAL, [["a","b","c"]], dict(filter="content!~'one'"), [(200, '/dir/c')], None),
+    ("test_filter_clh", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="c!=404 and l!=4 and h!=300 and w!=6"), [(200, '/dir/b')], None),
+    ("test_filter_hw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="h=28 or w=6"), [(200, '/dir/a')], None),
+    ("test_filter_intext", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content~'one'"), [(200, '/dir/a'), (200, '/dir/b')], None),
+    ("test_filter_intext2", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content!~'one'"), [(200, '/dir/c')], None),
 
     # baseline
-    ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'),(404, "/dir/notthere")], None),
-    ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c","d","e","f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
-    ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a","b","c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
-    #XXX("test_scheme_baseline_fuzz", "FUZZ{HTTP}://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], None),
+    ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
+    ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
+    ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
+    # XXX("test_scheme_baseline_fuzz", "FUZZ{HTTP}://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], None),
 
     # iterators
-    ("test_product", "%s:8000/iterators/FUZZFUZ2Z" % LOCAL_DOMAIN, [["a","b"],["c"]], dict(iterator="product"), [(200, '/iterators/ac'),(404, '/iterators/bc')], None),
-    ("test_zip", "%s:8000/iterators/FUZZFUZ2Z" % LOCAL_DOMAIN, [["a","b"],["c"]], dict(iterator="zip"), [(200, '/iterators/ac')], None),
-    ("test_chain", "%s/FUZZ" % URL_LOCAL, [["a","b"],["c"]], dict(iterator="chain"), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_product", "%s:8000/iterators/FUZZFUZ2Z" % LOCAL_DOMAIN, [["a", "b"], ["c"]], dict(iterator="product"), [(200, '/iterators/ac'), (404, '/iterators/bc')], None),
+    ("test_zip", "%s:8000/iterators/FUZZFUZ2Z" % LOCAL_DOMAIN, [["a", "b"], ["c"]], dict(iterator="zip"), [(200, '/iterators/ac')], None),
+    ("test_chain", "%s/FUZZ" % URL_LOCAL, [["a", "b"],["c"]], dict(iterator="chain"), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
 
     # recursive
-    ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(sc=[301],rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
-    ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(sc=[301],rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
+    ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301],rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
+    ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301],rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
     ("test_rlevel_1_post", "%s:8000/echo/FUZZ/" % LOCAL_DOMAIN, [["a"]], dict(filter="content~'command=POST' and content~'POST_DATA=a=1'", postdata="a=1", rlevel=1), [(200, '/echo/a/'), (200, '/echo/a/a')], None),
 
     # plugins
@@ -129,11 +130,11 @@ basic_tests = [
 ]
 
 scanmode_tests = [
-    ("test_scanmode", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(scanmode=True), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
-    ("test_scanmode_sc", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(scanmode=True, sc=[-1]), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
-    ("test_scanmode_sc_xxx", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(scanmode=True, sc=["XXX"]), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
-    ("test_scanmode_hc", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(scanmode=True, hc=[-1]), [], None),
-    ("test_scanmode_hc_xxx", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a","b","c"]], dict(scanmode=True, hc=["XXX"]), [], None),
+    ("test_scanmode", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(scanmode=True), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
+    ("test_scanmode_sc", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(scanmode=True, sc=[-1]), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
+    ("test_scanmode_sc_xxx", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(scanmode=True, sc=["XXX"]), [(-1, '/a'), (-1, '/b'), (-1, '/c')], None),
+    ("test_scanmode_hc", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(scanmode=True, hc=[-1]), [], None),
+    ("test_scanmode_hc_xxx", "%s:666/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(scanmode=True, hc=["XXX"]), [], None),
 ]
 
 error_tests = [
@@ -146,26 +147,28 @@ error_tests = [
     ("test_bad_num_dic", "%s:8000/iterators/FUZZ" % LOCAL_DOMAIN, [range(1)], dict(iterator="zip"), [], 'Several dictionaries must be used when specifying an iterator'),
 ]
 
+
 class DynamicTests(unittest.TestCase):
     """
     Dummy class that will be populated dynamically with all the tests
     """
     pass
 
+
 def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
     def test(self):
         # Wfuzz results
-        with wfuzz.FuzzSession(url=url, **params) as s :
-            if payloads == None:
+        with wfuzz.FuzzSession(url=url, **params) as s:
+            if payloads is None:
                 fuzzed = s.fuzz()
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
 
             ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
 
-        # repeat test with extra params if specified and check against 
+        # repeat test with extra params if specified and check against
         if extra_params:
-            with wfuzz.FuzzSession(url=url) as s :
+            with wfuzz.FuzzSession(url=url) as s:
                 same_list = map(lambda x: (x.code, x.history.urlparse.path), s.get_payloads(payloads).fuzz(**extra_params))
 
             self.assertEqual(sorted(ret_list), sorted(same_list))
@@ -174,27 +177,29 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
 
     return test
 
+
 def wfuzz_me_test_generator_exception(fn, exception_string):
     def test_exception(self):
         with self.assertRaises(Exception) as context:
             fn(None)
-            setattr(DynamicTests, new_test, test_fn)
 
         self.assertTrue(exception_string in str(context.exception))
 
     return test_exception
 
+
 def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
     def test(self):
-        if not expected_list: return
+        if not expected_list:
+            return
         temp_name = next(tempfile._get_candidate_names())
         defult_tmp_dir = tempfile._get_default_tempdir()
 
         filename = os.path.join(defult_tmp_dir, temp_name)
 
         # Wfuzz results
-        with wfuzz.FuzzSession(url=url, **dict(params.items() + dict(save=filename).items())) as s :
-            if payloads == None:
+        with wfuzz.FuzzSession(url=url, **dict(params.items() + dict(save=filename).items())) as s:
+            if payloads is None:
                 fuzzed = s.fuzz()
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
@@ -202,13 +207,13 @@ def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
             ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
 
         # repeat test with performaing same saved request
-        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ") as s :
+        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ") as s:
             same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
 
         # repeat test with performaing FUZZ[url] saved request
-        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ[url]") as s :
+        with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ[url]") as s:
             print filename
             same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
 
@@ -225,10 +230,10 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
         filename = os.path.join(defult_tmp_dir, temp_name)
 
         # Wfuzz results
-        with wfuzz.FuzzSession(url=url, **params) as s :
+        with wfuzz.FuzzSession(url=url, **params) as s:
             s.export_to_file(filename)
 
-            if payloads == None:
+            if payloads is None:
                 fuzzed = s.fuzz()
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
@@ -236,8 +241,8 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
             ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
 
         # repeat test with recipe as only parameter
-        with wfuzz.FuzzSession(recipe=filename) as s :
-            if payloads == None:
+        with wfuzz.FuzzSession(recipe=filename) as s:
+            if payloads is None:
                 same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
             else:
                 same_list = map(lambda x: (x.code, x.history.urlparse.path), s.get_payloads(payloads).fuzz())
@@ -258,6 +263,7 @@ def create_tests_from_list(test_list):
             setattr(DynamicTests, test_name, test_fn_exc)
         else:
             setattr(DynamicTests, test_name, test_fn)
+
 
 def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_extra_params):
     """
@@ -287,6 +293,7 @@ def duplicate_tests(test_list, group, test_gen_fun):
         test_fn = test_gen_fun(url, payloads, params, None)
         setattr(DynamicTests, new_test, test_fn)
 
+
 def create_tests():
     """
     Creates all dynamic tests
@@ -313,6 +320,7 @@ def create_tests():
         # duplicate tests with proxy
         duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
 
+
 if __name__ == '__main__':
 
     httpd = None
@@ -330,7 +338,7 @@ if __name__ == '__main__':
         httpd_server_process.start()
 
         # HTTP proxy
-        proxyd = AsyncMitmProxy() 
+        proxyd = AsyncMitmProxy()
 
         server_process = multiprocessing.Process(target=proxyd.serve_forever)
         server_process.daemon = True
@@ -339,7 +347,11 @@ if __name__ == '__main__':
         create_tests()
         unittest.main()
     finally:
-        if httpd: httpd.server_close()
-        if proxyd: proxyd.server_close()
-        if server_process: server_process.terminate()
-        if httpd_server_process: httpd_server_process.terminate()
+        if httpd:
+            httpd.server_close()
+        if proxyd:
+            proxyd.server_close()
+        if server_process:
+            server_process.terminate()
+        if httpd_server_process:
+            httpd_server_process.terminate()

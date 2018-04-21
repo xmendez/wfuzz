@@ -2,6 +2,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import itertools
 
+
 @moduleman_plugin
 class zip:
     name = "zip"
@@ -12,17 +13,18 @@ class zip:
     priority = 99
 
     def __init__(self, *i):
-	self.__count = min(map(lambda x:x.count(), i))
-	self.it = itertools.izip(*i)
+        self.__count = min(map(lambda x: x.count(), i))
+        self.it = itertools.izip(*i)
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def next(self):
-	return self.it.next()
+        return self.it.next()
 
     def __iter__(self):
-	return self
+        return self
+
 
 @moduleman_plugin
 class product:
@@ -34,17 +36,18 @@ class product:
     priority = 99
 
     def __init__(self, *i):
-	self.it = itertools.product(*i)
-	self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
+        self.it = itertools.product(*i)
+        self.__count = reduce(lambda x, y: x*y.count(), i[1:], i[0].count())
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def next(self):
-	return self.it.next()
+        return self.it.next()
 
     def __iter__(self):
-	return self
+        return self
+
 
 @moduleman_plugin
 class chain:
@@ -56,14 +59,14 @@ class chain:
     priority = 99
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def __init__(self, *i):
-	self.__count = sum(map(lambda x:x.count(), i))
-	self.it = itertools.chain(*i)
+        self.__count = sum(map(lambda x: x.count(), i))
+        self.it = itertools.chain(*i)
 
     def next(self):
-	return (self.it.next(),)
+        return (self.it.next(),)
 
     def __iter__(self):
-	return self
+        return self

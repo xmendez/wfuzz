@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-#Covered by GPL V2.0
-
 import sys
 
 from .core import Fuzzer
@@ -12,6 +9,7 @@ from .ui.console.mvc import Controller, KeyPress, View
 from .ui.console.common import help_banner2
 from .ui.console.clparser import CLParser
 
+
 def main():
     kb = None
     fz = None
@@ -19,7 +17,7 @@ def main():
     session_options = None
 
     try:
-        # parse command line 
+        # parse command line
         session_options = CLParser(sys.argv).parse_cl().compile()
         session_options["send_discarded"] = True
 
@@ -33,7 +31,7 @@ def main():
             except ImportError, e:
                 raise FuzzExceptBadInstall("Error importing necessary modules for interactive mode: %s" % str(e))
             else:
-                mc = Controller(fz, kb)
+                Controller(fz, kb)
                 kb.start()
 
         printer = View(session_options)
@@ -49,15 +47,19 @@ def main():
         print "\nFatal exception: %s" % str(e)
     except KeyboardInterrupt:
         print "\nFinishing pending requests..."
-        if fz: fz.cancel_job()
+        if fz:
+            fz.cancel_job()
     except NotImplementedError, e:
         print "\nFatal exception: Error importing wfuzz extensions"
     except Exception, e:
         print "\nUnhandled exception: %s" % str(e)
     finally:
-        if session_options: session_options.close()
-        if kb: kb.cancel_job()
+        if session_options:
+            session_options.close()
+        if kb:
+            kb.cancel_job()
         Facade().sett.save()
+
 
 def main_filter():
     def usage():
@@ -80,7 +82,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help","slice=","zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help", "slice=", "zP="])
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -89,7 +91,6 @@ def main_filter():
     if len(opts) == 0 or len(args) > 0:
         usage()
         sys.exit()
-
 
     for o, value in opts:
         if o in ("-h", "--help"):
@@ -157,16 +158,16 @@ def main_encoder():
     except FuzzException, e:
         print "\nFatal exception: %s" % str(e)
 
+
 def main_gui():
     import wx
     from .ui.gui.guicontrols import WfuzzFrame
     from .ui.gui.controller import GUIController
-    from .ui.gui.model import GUIModel
 
     app = wx.App(False)
 
     frame = WfuzzFrame(None, wx.ID_ANY, "WFuzz wxPython Console", size=(750, 590))
-    gc = GUIController(frame)
+    GUIController(frame)
 
     frame.Show()
     app.MainLoop()

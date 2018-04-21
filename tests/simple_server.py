@@ -1,7 +1,7 @@
-# slightly modified from 
+# slightly modified from
 # https://gist.github.com/trungly/5889154
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
 import urlparse
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
@@ -12,8 +12,7 @@ class GetHandler(SimpleHTTPRequestHandler):
         if parsed_path.path.startswith("/echo"):
             message = '\n'.join([
                 'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address,
-                    self.address_string()),
+                'client_address=%s (%s)' % (self.client_address, self.address_string()),
                 'command=%s' % self.command,
                 'path=%s' % self.path,
                 'real path=%s' % parsed_path.path,
@@ -27,12 +26,12 @@ class GetHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(message)
         elif parsed_path.path.startswith("/redirect"):
-           self.send_response(301)
-           self.send_header('Location', "/echo")
-           self.end_headers()
+            self.send_response(301)
+            self.send_header('Location', "/echo")
+            self.end_headers()
         else:
             SimpleHTTPRequestHandler.do_HEAD(self)
-            
+
         return
 
     def do_GET(self):
@@ -40,8 +39,7 @@ class GetHandler(SimpleHTTPRequestHandler):
         if parsed_path.path.startswith("/echo"):
             message = '\n'.join([
                 'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address,
-                    self.address_string()),
+                'client_address=%s (%s)' % (self.client_address, self.address_string()),
                 'command=%s' % self.command,
                 'path=%s' % self.path,
                 'real path=%s' % parsed_path.path,
@@ -55,12 +53,12 @@ class GetHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(message)
         elif parsed_path.path.startswith("/redirect"):
-           self.send_response(301)
-           self.send_header('Location', "/echo")
-           self.end_headers()
+            self.send_response(301)
+            self.send_header('Location', "/echo")
+            self.end_headers()
         else:
             SimpleHTTPRequestHandler.do_GET(self)
-            
+
         return
 
     def do_POST(self):
@@ -73,8 +71,7 @@ class GetHandler(SimpleHTTPRequestHandler):
 
             message = '\n'.join([
                 'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address,
-                    self.address_string()),
+                'client_address=%s (%s)' % (self.client_address, self.address_string()),
                 'command=%s' % self.command,
                 'path=%s' % self.path,
                 'real path=%s' % parsed_path.path,
@@ -90,6 +87,7 @@ class GetHandler(SimpleHTTPRequestHandler):
             self.wfile.write(message)
 
         return
+
 
 if __name__ == '__main__':
     server = HTTPServer(('localhost', 8080), GetHandler)
