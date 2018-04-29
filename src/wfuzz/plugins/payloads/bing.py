@@ -2,14 +2,17 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.payloadtools import BingIter
 from wfuzz.plugin_api.base import BasePayload
 
+
 @moduleman_plugin
 class bing(BasePayload):
     name = "bing"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("intitle:\"JBoss JMX Management Console\"",
-    "Some examples of bing hacking:",
-    "http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html")
+    description = (
+        "intitle:\"JBoss JMX Management Console\"",
+        "Some examples of bing hacking:",
+        "http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html"
+        )
 
     summary = "Returns URL results of a given bing API search (needs api key)."
     category = ["default"]
@@ -29,13 +32,13 @@ class bing(BasePayload):
         offset = int(params["offset"])
         limit = int(params["limit"])
 
-	self._it = BingIter(params["dork"], offset, limit)
+        self._it = BingIter(params["dork"], offset, limit)
 
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return self._it.max_count
+        return self._it.max_count
 
     def next(self):
-	return self._it.next()
+        return self._it.next()

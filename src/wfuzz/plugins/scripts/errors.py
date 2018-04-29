@@ -3,6 +3,7 @@ import re
 from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
+
 @moduleman_plugin
 class errors(BasePlugin):
     name = "errors"
@@ -17,32 +18,32 @@ class errors(BasePlugin):
     )
 
     def __init__(self):
-	BasePlugin.__init__(self)
+        BasePlugin.__init__(self)
 
-	regex = [
-	    ('Apache Tomcat', 'Apache Tomcat/(.*?) - Error report'),
-	]
+        regex = [
+            ('Apache Tomcat', 'Apache Tomcat/(.*?) - Error report'),
+        ]
 
-	self.server_regex = []
-	for server_name, i in regex:
-	    self.server_regex.append((server_name, re.compile(i, re.MULTILINE|re.DOTALL)))
+        self.server_regex = []
+        for server_name, i in regex:
+            self.server_regex.append((server_name, re.compile(i, re.MULTILINE | re.DOTALL)))
 
-	regex = [
+        regex = [
             ('MySQL', 'You have an error in your SQL syntax'),
-	]
+        ]
 
-	self.error_regex = []
-	for server_name, i in regex:
-	    self.error_regex.append((server_name, re.compile(i, re.MULTILINE|re.DOTALL)))
+        self.error_regex = []
+        for server_name, i in regex:
+            self.error_regex.append((server_name, re.compile(i, re.MULTILINE | re.DOTALL)))
 
     def validate(self, fuzzresult):
-	return True
+        return True
 
     def process(self, fuzzresult):
-	for server_name, r in self.server_regex:
-	    for i in r.findall(fuzzresult.history.content):
-		self.add_result("Server error identified, version: %s %s" % (server_name, i))
+        for server_name, r in self.server_regex:
+            for i in r.findall(fuzzresult.history.content):
+                self.add_result("Server error identified, version: %s %s" % (server_name, i))
 
-	for name, r in self.error_regex:
-	    for i in r.findall(fuzzresult.history.content):
-		self.add_result("%s error identified" % (name))
+        for name, r in self.error_regex:
+            for i in r.findall(fuzzresult.history.content):
+                self.add_result("%s error identified" % (name))

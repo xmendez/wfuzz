@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
+
 @moduleman_plugin
 class buffer_overflow(BasePayload):
     name = "buffer_overflow"
@@ -20,20 +21,19 @@ class buffer_overflow(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	self.l = ['A' * int(self.params["size"])]
-	self.current = 0
+        self.bov_list = ['A' * int(self.params["size"])]
+        self.current = 0
 
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return 1
+        return 1
 
-    def next (self):
-	if self.current == 0:
-	    elem = self.l[self.current]
-	    self.current+=1
-	    return elem
-	else:
-	    raise StopIteration
-
+    def next(self):
+        if self.current == 0:
+            elem = self.bov_list[self.current]
+            self.current += 1
+            return elem
+        else:
+            raise StopIteration

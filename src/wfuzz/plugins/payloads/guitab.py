@@ -1,5 +1,4 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
-from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.plugin_api.base import BasePayload
 
 from wfuzz.facade import Facade
@@ -29,15 +28,15 @@ class guitab(BasePayload):
         BasePayload.__init__(self, params)
 
         self.attr = self.params["attr"]
-	self._it = iter(Facade().data[self.params["tab"]])
+        self._it = iter(Facade().data[self.params["tab"]])
 
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return len(Facade().data[self.params["tab"]])
+        return len(Facade().data[self.params["tab"]])
 
     def next(self):
-	next_item = self._it.next()
+        next_item = self._it.next()
 
         return next_item if not self.attr else next_item.get_field(self.attr)

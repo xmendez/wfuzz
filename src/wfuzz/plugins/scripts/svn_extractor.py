@@ -4,6 +4,7 @@ from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
 from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
+
 @moduleman_plugin
 class svn_extractor(BasePlugin, DiscoveryPluginMixin):
     name = "svn_extractor"
@@ -21,42 +22,43 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-	return fuzzresult.url.find(".svn/entries") > 0 and fuzzresult.code == 200
+        return fuzzresult.url.find(".svn/entries") > 0 and fuzzresult.code == 200
 
     def readsvn(self, content):
-	'''
-	Function shamesly copied (and adapted) from https://github.com/anantshri/svn-extractor/
-	Credit (C) Anant Shrivastava http://anantshri.info
-	'''
-	old_line = ""
-	file_list = []
-	dir_list = []
-	author_list = []
+        '''
+        Function shamesly copied (and adapted) from https://github.com/anantshri/svn-extractor/
+        Credit (C) Anant Shrivastava http://anantshri.info
+        '''
+        old_line = ""
+        file_list = []
+        dir_list = []
+        author_list = []
 
-	for a in content.splitlines():
-	    #below functionality will find all usernames from svn entries file
-	    if (a == "has-props"):
-		if not old_line in author_list: author_list.append(old_line)
-	    if (a == "file"):
-		if not old_line in file_list: file_list.append(old_line)
-	    if (a == "dir"):
-		if old_line != "":
-		    dir_list.append(old_line)
-	    old_line = a
-	return file_list, dir_list, author_list
+        for a in content.splitlines():
+            # below functionality will find all usernames from svn entries file
+            if (a == "has-props"):
+                if old_line not in author_list:
+                    author_list.append(old_line)
+            if (a == "file"):
+                if old_line not in file_list:
+                    file_list.append(old_line)
+            if (a == "dir"):
+                if old_line != "":
+                    dir_list.append(old_line)
+            old_line = a
+        return file_list, dir_list, author_list
 
     def process(self, fuzzresult):
-	base_url = fuzzresult.url
+        base_url = fuzzresult.url
 
-	file_list, dir_list, author_list = self.readsvn(fuzzresult.history.content)
+        file_list, dir_list, author_list = self.readsvn(fuzzresult.history.content)
 
-	if author_list:
-	    self.add_result("SVN authors: %s" % ', '.join(author_list))
+        if author_list:
+            self.add_result("SVN authors: %s" % ', '.join(author_list))
 
-	for f in file_list:
-	    u = urljoin(base_url.replace("/.svn/", "/"), f)
-	    self.queue_url(u)
+        for f in file_list:
+            u = urljoin(base_url.replace("/.svn/", "/"), f)
+            self.queue_url(u)
 
-	for d in dir_list:
-	    self.queue_url(urljoin(base_url.replace("/.svn/", "/"), d) + "/.svn/entries")
-
+        for d in dir_list:
+            self.queue_url(urljoin(base_url.replace("/.svn/", "/"), d) + "/.svn/entries")

@@ -26,43 +26,42 @@ class wcdb_extractor(BasePlugin, DiscoveryPluginMixin):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-	return fuzzresult.url.find(".svn/wc.d") > 0 and fuzzresult.code == 200
+        return fuzzresult.url.find(".svn/wc.d") > 0 and fuzzresult.code == 200
 
     def readwc(self, content):
-	'''
-	Function shamesly copied (and adapted) from https://github.com/anantshri/svn-extractor/
-	Credit (C) Anant Shrivastava http://anantshri.info
-	'''
-	author_list = []
-	list_items = None
-	(fd, filename) = tempfile.mkstemp()
+        '''
+        Function shamesly copied (and adapted) from https://github.com/anantshri/svn-extractor/
+        Credit (C) Anant Shrivastava http://anantshri.info
+        '''
+        author_list = []
+        list_items = None
+        (fd, filename) = tempfile.mkstemp()
 
-	with open(filename,"wb") as f:
-	    f.write(content)
+        with open(filename, "wb") as f:
+            f.write(content)
 
-	conn = sqlite3.connect(filename)
-	c = conn.cursor()
-	try:
-	    c.execute('select local_relpath, ".svn/pristine/" || substr(checksum,7,2) || "/" || substr(checksum,7) || ".svn-base" as alpha from NODES where kind="file";')
-	    list_items = c.fetchall()
-	    #below functionality will find all usernames who have commited atleast once.
-	    c.execute('select distinct changed_author from nodes;')
-	    author_list = [r[0] for r in c.fetchall()]
-	    c.close()
-	except Exception,e:
-	    raise FuzzExceptResourceParseError("Error reading wc.db, either database corrupt or invalid file")
+        conn = sqlite3.connect(filename)
+        c = conn.cursor()
+        try:
+            c.execute('select local_relpath, ".svn/pristine/" || substr(checksum,7,2) || "/" || substr(checksum,7) || ".svn-base" as alpha from NODES where kind="file";')
+            list_items = c.fetchall()
+            # below functionality will find all usernames who have commited atleast once.
+            c.execute('select distinct changed_author from nodes;')
+            author_list = [r[0] for r in c.fetchall()]
+            c.close()
+        except Exception:
+            raise FuzzExceptResourceParseError("Error reading wc.db, either database corrupt or invalid file")
 
-	return author_list, list_items
+        return author_list, list_items
 
     def process(self, fuzzresult):
-	author_list, list_items = self.readwc(fuzzresult.history.content)
+        author_list, list_items = self.readwc(fuzzresult.history.content)
 
-	if author_list:
-	    self.add_result("SVN authors: %s" % ', '.join(author_list))
+        if author_list:
+            self.add_result("SVN authors: %s" % ', '.join(author_list))
 
-	if list_items:
-	    for f, pristine in list_items:
-		u = urljoin(fuzzresult.url.replace("/.svn/wc.db", "/"), f)
-		if self.queue_url(u):
-		    self.add_result("SVN %s source code in %s" % (f, pristine))
-
+        if list_items:
+            for f, pristine in list_items:
+                u = urljoin(fuzzresult.url.replace("/.svn/wc.db", "/"), f)
+                if self.queue_url(u):
+                    self.add_result("SVN %s source code in %s" % (f, pristine))

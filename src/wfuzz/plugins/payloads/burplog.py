@@ -10,13 +10,13 @@ DELIMITER = "%s%s" % ('=' * 54, CRLF)
 CRLF_DELIMITER = CRLF + DELIMITER
 HEADER = re.compile('(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
 
+
 @moduleman_plugin
 class burplog(BasePayload):
     name = "burplog"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("Returns fuzz results' URL from a Burp log.",
-    )
+    description = ("Returns fuzz results' URL from a Burp log.",)
     summary = "Returns fuzz results from a Burp log."
     category = ["default"]
     priority = 99
@@ -31,18 +31,18 @@ class burplog(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	self.__max = -1
+        self.__max = -1
         self.attr = self.params["attr"]
         self._it = self.parse_burp_log(self.params["fn"])
 
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return self.__max
+        return self.__max
 
     def next(self):
-	next_item = self._it.next()
+        next_item = self._it.next()
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 

@@ -4,6 +4,7 @@ from wfuzz.plugin_api.base import BasePayload
 import os
 import urllib
 
+
 @moduleman_plugin
 class dirwalk(BasePayload):
     name = "dirwalk"
@@ -37,10 +38,10 @@ class dirwalk(BasePayload):
                 yield urllib.quote(relative_path)
 
     def next(self):
-	return self.g.next()
+        return self.g.next()
 
     def count(self):
-	return -1
+        return -1
 
     def __iter__(self):
-	return self
+        return self

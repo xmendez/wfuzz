@@ -1,17 +1,12 @@
-fn = "user_5_local_admin_member.state"
 import re
 import base64
-
-
-
-import cPickle as pickle
-import gzip
 
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.fuzzobjects import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
+
 
 @moduleman_plugin
 class autorize(BasePayload):
@@ -33,28 +28,28 @@ class autorize(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	self.__max = -1
+        self.__max = -1
         self.attr = self.params["attr"]
-	self._it = self._gen_wfuzz(self.params["fn"])
+        self._it = self._gen_wfuzz(self.params["fn"])
 
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return self.__max
+        return self.__max
 
     def next(self):
-	next_item = self._it.next()
+        next_item = self._it.next()
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 
     def _gen_wfuzz(self, output_fn):
-	try:
+        try:
 
             with open(self.find_file(output_fn), 'r') as f:
                 for url1, port1, schema1, req1, resp1, url2, port2, schema2, req2, resp2, url3, port3, schema3, req3, resp3, res1, res2 in map(lambda x: re.split(r'\t+', x), f.readlines()):
                     raw_req1 = base64.decodestring(req2)
-                    raw_res1 = base64.decodestring(res2)
+                    # raw_res1 = base64.decodestring(res2)
 
                     item = FuzzResult()
                     item.history = FuzzRequest()
@@ -62,9 +57,8 @@ class autorize(BasePayload):
 
                     item.type = FuzzResult.result
 
-		    yield item
-	except IOError, e:
-	    raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
-	except EOFError:
-	    raise StopIteration
-
+                    yield item
+        except IOError, e:
+            raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
+        except EOFError:
+            raise StopIteration

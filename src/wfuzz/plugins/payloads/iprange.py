@@ -2,6 +2,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptPluginBadParams, FuzzExceptBadInstall
 from wfuzz.plugin_api.base import BasePayload
 
+
 @moduleman_plugin
 class iprange(BasePayload):
     name = "iprange"
@@ -21,7 +22,7 @@ class iprange(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	try:
+        try:
             from netaddr import IPRange
             from netaddr.core import AddrFormatError
 
@@ -29,19 +30,18 @@ class iprange(BasePayload):
             net = IPRange(ran[0], ran[1])
             self.f = iter(net)
             self.__count = net.size
-	except ImportError:
-	    raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
-	except AddrFormatError:
-	    raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
-	except IndexError:
-	    raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
+        except ImportError:
+            raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
+        except AddrFormatError:
+            raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
+        except IndexError:
+            raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
 
     def next(self):
-	return str(self.f.next())
+        return str(self.f.next())
 
     def count(self):
-	return self.__count
+        return self.__count
 
-    def __iter__ (self):
-	return self
-
+    def __iter__(self):
+        return self
