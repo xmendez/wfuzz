@@ -110,7 +110,7 @@ htmlhelp_basename = 'Wfuzzdoc'
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
     'index':       ['sidebarlogo.html'],
-    '**':       ['sidebarlogo.html','localtoc.html']
+    '**':       ['sidebarlogo.html', 'localtoc.html']
 }
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -162,6 +162,3 @@ texinfo_documents = [
      author, 'Wfuzz', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

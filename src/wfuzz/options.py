@@ -274,8 +274,8 @@ class FuzzSession(UserDict):
                     Facade().scripts.kbase[k] = v
 
         if not self.http_pool:
-           self.http_pool = HttpPool(self)
-           self.http_pool.register()
+            self.http_pool = HttpPool(self)
+            self.http_pool.register()
 
         return self
 
