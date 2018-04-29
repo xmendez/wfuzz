@@ -29,12 +29,12 @@ class iprange(BasePayload):
             net = IPRange(ran[0], ran[1])
             self.f = iter(net)
             self.__count = net.size
+	except ImportError:
+	    raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
 	except AddrFormatError:
 	    raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
 	except IndexError:
 	    raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
-	except ImportError:
-	    raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
 
     def next(self):
 	return str(self.f.next())
