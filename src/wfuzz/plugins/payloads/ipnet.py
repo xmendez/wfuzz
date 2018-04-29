@@ -32,12 +32,12 @@ class ipnet(BasePayload):
             if self.__count <= 0:
                 raise FuzzExceptPluginBadParams("There are not hosts in the specified network")
 
-	except AddrFormatError:
-	    raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 	except ValueError:
 	    raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 	except ImportError:
 	    raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
+	except AddrFormatError:
+	    raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 
     def next(self):
 	return str(self.f.next())
