@@ -26,6 +26,7 @@ class hexrange(BasePayload):
 	    self.maximum = int(ran[1],16)
 	    self.__count = self.maximum - self.minimum + 1
 	    self.current = self.minimum
+            self.lgth = max(len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x","")))
 	except:
 	    raise Exception, "Bad range format (eg. \"0-ffa\")"
 	    
@@ -39,8 +40,7 @@ class hexrange(BasePayload):
 	if self.current > self.maximum:
 	    raise StopIteration
 	
-	lgth=len(hex(self.maximum).replace("0x",""))
-	pl="%"+str(lgth)+"s"
+	pl="%"+str(self.lgth)+"s"
 	num=hex(self.current).replace("0x","")	
 	pl= pl % (num)
 	payl=pl.replace(" ","0")
