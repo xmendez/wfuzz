@@ -253,10 +253,6 @@ class FuzzSession(UserDict):
         except ValueError:
             raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
 
-        if not self.http_pool:
-            self.http_pool = HttpPool(self)
-            self.http_pool.register()
-
         # filter options
         self.data["compiled_filter"] = FuzzResFilter.from_options(self)
         self.data["compiled_prefilter"] = FuzzResFilter(filter_string=self.data['prefilter'])
@@ -276,6 +272,10 @@ class FuzzSession(UserDict):
             for k, v in Facade().sett.get_section("kbase"):
                 if k not in self.data["script_args"]:
                     Facade().scripts.kbase[k] = v
+
+        if not self.http_pool:
+           self.http_pool = HttpPool(self)
+           self.http_pool.register()
 
         return self
 
