@@ -39,7 +39,7 @@ class FileLoader(IModuleLoader):
     def _build_id(self, filename, objname):
         filepath, filename = os.path.split(filename)
 
-        relative_path = os.path.relpath(filepath, os.path.join(self.base_path, self.base_dir))
+        relative_path = os.path.relpath(filepath, self.base_path)
         identifier = relative_path + '/' + objname
         if identifier.startswith('./'):
             identifier = identifier[2:]
@@ -106,6 +106,16 @@ class DirLoader(FileLoader):
     def load(self, registrant):
         self.module_registrant = registrant
         self.structure = self.__load_all(self.base_dir)
+
+    def _build_id(self, filename, objname):
+        filepath, filename = os.path.split(filename)
+
+        relative_path = os.path.relpath(filepath, os.path.join(self.base_path, self.base_dir))
+        identifier = relative_path + '/' + objname
+        if identifier.startswith('./'):
+            identifier = identifier[2:]
+
+        return identifier
 
     def __load_all(self, dir_name):
         """
