@@ -83,16 +83,16 @@ class Filter(IFilter):
         return self.__myreduce(tokens[0])
 
     def simple_filter(self, plugin, filter_string):
-        ret = False
+        ret = []
 
         for item in filter_string.split(","):
             wildc_index = item.find("*")
             if wildc_index > 0:
-                ret = (item in plugin.category or plugin.name.startswith(item[:wildc_index]))
+                ret.append((item in plugin.category or plugin.name.startswith(item[:wildc_index])))
             else:
-                ret = (item in plugin.category or plugin.name == item)
+                ret.append((item in plugin.category or plugin.name == item))
 
-        return ret
+        return any(ret)
 
     def simple_filter_banned_keywords(self, filter_string):
             if filter_string.find("(") >= 0:
