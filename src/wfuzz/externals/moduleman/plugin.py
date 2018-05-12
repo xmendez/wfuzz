@@ -15,20 +15,3 @@ def moduleman_plugin(*args):
         return inner_decorator
 
     return inner_decorator(args[0])
-
-
-if __name__ == '__main__':
-    @moduleman_plugin
-    class test:
-        def __init__(self):
-            print "test init"
-
-        def description(self):
-            print "ii"
-
-        def name(self):
-            print "ii"
-
-    a = test()
-    a.description()
-    print a.__PLUGIN_MODULEMAN_MARK

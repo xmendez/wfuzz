@@ -113,36 +113,3 @@ class Filter(IFilter):
                 raise Exception("Pyparsing missing, complex filters not allowed.")
             else:
                 return self.simple_filter(plugin, filter_string)
-
-
-if __name__ == "__main__":
-    tests = []
-    tests.append("not intrusive")
-    tests.append("intrusive")
-    tests.append("safe")
-    tests.append("not safe")
-    tests.append("not http-adas")
-    tests.append("default or safe")
-    tests.append("default,safe")
-    tests.append("default and safe")
-    tests.append("not default or not safe")
-    tests.append("(default or safe or intrusive) and not http")
-    tests.append("not (default or safe or intrusive) and not http")
-    tests.append("not (default or safe or intrusive) and safe")
-    tests.append("not (default or safe or intrusive) or safe")
-    tests.append("not (default or intrusive) and safe")
-    tests.append("http-*")
-    tests.append("http-test")
-    tests.append("not http-test")
-    tests.append("not safe")
-
-    class t:
-        category = ["safe"]
-        name = "http-test"
-
-    res = t()
-
-    print "cat = %s, name = %s\n\n" % (res.category, res.name)
-    for i in tests:
-        f = Filter()
-        print "%s := %s" % (str(i), f.is_visible(res, i))

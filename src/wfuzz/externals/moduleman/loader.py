@@ -151,31 +151,3 @@ class DirLoader(FileLoader):
                     dir_list.append((f, ret))
 
         return dir_list
-
-
-if __name__ == '__main__':
-
-    from registrant import BRegistrant
-
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        datefmt='%m-%d %H:%M',
-        filename="/tmp/log",
-        filemode='a'
-        )
-
-    fl = FileLoader(**{"filename": "1.py", "base_path": "."})
-
-    br = BRegistrant(fl)
-
-    print br.get_plugins_ext()
-    print br.get_plugins()
-
-    print br.get_plugins_ext("default")
-    print br.get_plugins_ext("aggressive")
-
-    print br.get_plugins_names()
-    print br.get_plugins_names("default")
-    print br.get_plugins_names("aggressive")
-    print br.get_plugins_ids("aggressive")
