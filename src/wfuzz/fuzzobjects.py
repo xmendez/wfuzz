@@ -231,11 +231,11 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @url.setter
     def url(self, u):
-        if urlparse(u).path == "":
-            u += '/'
-
         if not u.startswith("FUZ") and urlparse(u).scheme == "":
             u = "http://" + u
+
+        if urlparse(u).path == "":
+            u += '/'
 
         if Facade().sett.get("general", "encode_space") == "1":
             u = u.replace(" ", "%20")
