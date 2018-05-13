@@ -9,9 +9,7 @@ except ImportError:
     import mock
 
 import unittest
-import os
 
-sys.path.insert(0, os.path.abspath('../src'))
 from wfuzz.externals.moduleman.loader import DirLoader
 from wfuzz.externals.moduleman.loader import FileLoader
 from wfuzz.externals.moduleman.registrant import BRegistrant
@@ -105,7 +103,7 @@ class ModuleFilterTests(unittest.TestCase):
                 self.assertEqual(sorted(br.get_plugins_names()), sorted(['test_plugin1', 'test_plugin2', 'test_plugin3']))
 
                 self.assertTrue(br.get_plugin("test_plugin1").name == "test_plugin1")
-                self.assertTrue(br.get_plugin("../../../../../../any/test_plugin2").name == "test_plugin2")
+                self.assertTrue(br.get_plugin("../../../../../any/test_plugin2").name == "test_plugin2")
 
                 with self.assertRaises(Exception) as context:
                     br.get_plugin("any")
@@ -139,4 +137,5 @@ class ModuleFilterTests(unittest.TestCase):
             self.assertTrue("Required method method4 not implemented" in str(context.exception))
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()
