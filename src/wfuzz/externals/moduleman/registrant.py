@@ -1,6 +1,7 @@
-from modulefilter import Filter
+from .modulefilter import Filter
 from collections import defaultdict, MutableMapping
 from threading import Lock
+import operator
 
 
 class IRegistrant():
@@ -100,13 +101,13 @@ class BRegistrant(IRegistrant):
             else:
                 return self.plg_filter.is_visible(plg, category)
 
-        def plugin_sort(x, y):
-            return x[1].priority - y[1].priority
+        def key_funtion(x):
+            return x[1].priority
 
-        plugin_list = filter(plugin_filter, self.__plugins.items())
+        plugin_list = list(filter(plugin_filter, list(self.__plugins.items())))
 
         if sorting:
-            plugin_list.sort(plugin_sort)
+            plugin_list.sort(key=key_funtion)
 
         return plugin_list
 
