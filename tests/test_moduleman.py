@@ -27,7 +27,7 @@ class test_plugin1:
     )
     summary = "test plugin 1."
     category = ["aggressive"]
-    priority = 99
+    priority = 79
 
     parameters = (
         ("test", "", True, "test plugin 1"),
@@ -44,7 +44,7 @@ class test_plugin2:
     )
     summary = "test plugin 2."
     category = ["default"]
-    priority = 99
+    priority = 89
 
     parameters = (
         ("test", "", True, "test plugin 2"),
@@ -107,7 +107,7 @@ class ModuleFilterTests(unittest.TestCase):
 
                 with self.assertRaises(Exception) as context:
                     br.get_plugin("any")
-                self.assertTrue("Multiple plugins found: test_plugin3,test_plugin2,test_plugin1" in str(context.exception))
+                self.assertTrue("Multiple plugins found" in str(context.exception))
 
     def test_simple_filter(self):
             with mock.patch('imp.find_module') as mocked_find_module:
