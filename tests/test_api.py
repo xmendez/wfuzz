@@ -68,7 +68,7 @@ class APITests(unittest.TestCase):
         server_dir = os.path.join(wfuzz.utils.get_path('../../tests'), 'server_dir')
 
         payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': server_dir, 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('ca.pem',), ('iterators/bb',), ('iterators/ac',), ('iterators/aa',), ('static/placeholder.txt',), ('plugins/robots.txt',), ('recursive_dir/a/b/c/placeholder.txt',), ('dir/b',), ('dir/c',), ('dir/one',), ('dir/a',)])
+        self.assertEqual(payload_list, [('Dockerfile',), ('docker-compose.yml',), ('simple_server.py',), ('iterators/bb',), ('iterators/ac',), ('iterators/aa',), ('static/placeholder.txt',), ('plugins/robots.txt',), ('recursive_dir/a/b/c/placeholder.txt',), ('dir/b',), ('dir/c',), ('dir/one',), ('dir/a',)])
 
         payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': os.path.join(os.path.join(server_dir, 'dir'), 'b'), 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('one',), ('two',)])

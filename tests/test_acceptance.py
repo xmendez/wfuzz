@@ -1,14 +1,7 @@
-import sys
 import os
 import unittest
-import multiprocessing
 import tempfile
-from miproxy.proxy import AsyncMitmProxy
 
-from simple_server import GetHandler
-from BaseHTTPServer import HTTPServer
-
-sys.path.insert(0, os.path.abspath('../src'))
 import wfuzz
 
 
@@ -17,6 +10,10 @@ URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
 HTTPD_PORT = 8000
 
 ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
+
+# docker containers with HTTP server and proxy must be started before running these tests
+# cd tests/server_dir
+# docke-compose up
 
 # IDEAS:
 #
@@ -44,7 +41,7 @@ basic_tests = [
     # fuzzing HTTP values
     ("test_basic_path_fuzz", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
     ("test_multi_path_fuzz", "%s/FUZZ/FUZ2Z/FUZ3Z" % ECHO_URL, [["a"], ["b"], ["c"]], dict(filter="content~'path=/echo/a/b/c'"), [(200, '/echo/a/b/c')], None),
-    ("test_basic_method_fuzz", "%s" % URL_LOCAL, [["OPTIONS", "PUT"]], dict(method="FUZZ", filter="content~'Unsupported method' and content~FUZZ"), [(501, '/dir'), (501, '/dir')], None),
+    ("test_basic_method_fuzz", "%s" % URL_LOCAL, [["OPTIONS", "HEAD"]], dict(method="FUZZ", filter="content~'Unsupported method' and content~FUZZ"), [(501, '/dir')], None),
     ("test_basic_postdata_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="a=FUZZ", filter="content~FUZZ and content~'POST_DATA=a='"), [(200, '/echo'), (200, '/echo')], None),
     ("test_basic_postdata2_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="FUZZ=1234", filter="content~'POST_DATA=twovalue=1234' or content~'POST_DATA=onevalue=1234'"), [(200, '/echo'), (200, '/echo')], None),
     ("test_basic_postdata3_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="FUZZ", filter="content~'POST_DATA=twovalue' or content~'POST_DATA=onevalue'"), [(200, '/echo'), (200, '/echo')], None),
@@ -168,8 +165,16 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
 
         # repeat test with extra params if specified and check against
         if extra_params:
-            with wfuzz.FuzzSession(url=url) as s:
-                same_list = map(lambda x: (x.code, x.history.urlparse.path), s.get_payloads(payloads).fuzz(**extra_params))
+            # if using proxy change localhost for docker compose service
+            proxied_url = url
+            proxied_payloads = payloads
+            if "proxies" in extra_params:
+                proxied_url = url.replace('localhost', 'httpserver')
+                if payloads:
+                    proxied_payloads = [[payload.replace("localhost", "httpserver") for payload in payloads_list] for payloads_list in payloads]
+
+            with wfuzz.FuzzSession(url=proxied_url) as s:
+                same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(proxied_payloads).fuzz(**extra_params)]
 
             self.assertEqual(sorted(ret_list), sorted(same_list))
         else:
@@ -214,7 +219,6 @@ def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
 
         # repeat test with performaing FUZZ[url] saved request
         with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ[url]") as s:
-            print filename
             same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
@@ -321,37 +325,7 @@ def create_tests():
         duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
 
 
+create_tests()
+
 if __name__ == '__main__':
-
-    httpd = None
-    proxyd = None
-    httpd_server_process = None
-    server_process = None
-
-    try:
-        # Setup simple HTTP sever
-        os.chdir("server_dir")
-        httpd = HTTPServer(('localhost', HTTPD_PORT), GetHandler)
-
-        httpd_server_process = multiprocessing.Process(target=httpd.serve_forever)
-        httpd_server_process.daemon = True
-        httpd_server_process.start()
-
-        # HTTP proxy
-        proxyd = AsyncMitmProxy()
-
-        server_process = multiprocessing.Process(target=proxyd.serve_forever)
-        server_process.daemon = True
-        server_process.start()
-
-        create_tests()
-        unittest.main()
-    finally:
-        if httpd:
-            httpd.server_close()
-        if proxyd:
-            proxyd.server_close()
-        if server_process:
-            server_process.terminate()
-        if httpd_server_process:
-            httpd_server_process.terminate()
+    unittest.main()

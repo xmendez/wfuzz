@@ -1,14 +1,14 @@
 # slightly modified from
 # https://gist.github.com/trungly/5889154
 
-from BaseHTTPServer import HTTPServer
-import urlparse
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+import urllib.parse
+from http.server import HTTPServer
+from http.server import SimpleHTTPRequestHandler
 
 
 class GetHandler(SimpleHTTPRequestHandler):
     def do_HEAD(self):
-        parsed_path = urlparse.urlparse(self.path)
+        parsed_path = urllib.parse.urlparse(self.path)
         if parsed_path.path.startswith("/echo"):
             message = '\n'.join([
                 'CLIENT VALUES:',
@@ -24,7 +24,7 @@ class GetHandler(SimpleHTTPRequestHandler):
                 ])
             self.send_response(200)
             self.end_headers()
-            self.wfile.write(message)
+            self.wfile.write(message.encode('utf-8'))
         elif parsed_path.path.startswith("/redirect"):
             self.send_response(301)
             self.send_header('Location', "/echo")
@@ -35,7 +35,7 @@ class GetHandler(SimpleHTTPRequestHandler):
         return
 
     def do_GET(self):
-        parsed_path = urlparse.urlparse(self.path)
+        parsed_path = urllib.parse.urlparse(self.path)
         if parsed_path.path.startswith("/echo"):
             message = '\n'.join([
                 'CLIENT VALUES:',
@@ -51,7 +51,7 @@ class GetHandler(SimpleHTTPRequestHandler):
                 ])
             self.send_response(200)
             self.end_headers()
-            self.wfile.write(message)
+            self.wfile.write(message.encode('utf-8'))
         elif parsed_path.path.startswith("/redirect"):
             self.send_response(301)
             self.send_header('Location', "/echo")
@@ -62,10 +62,10 @@ class GetHandler(SimpleHTTPRequestHandler):
         return
 
     def do_POST(self):
-        parsed_path = urlparse.urlparse(self.path)
+        parsed_path = urllib.parse.urlparse(self.path)
         if parsed_path.path.startswith("/echo"):
-            content_len = int(self.headers.getheader('content-length'))
-            post_body = self.rfile.read(content_len)
+            content_len = int(self.headers.get('content-length'))
+            post_body = self.rfile.read(content_len).decode('utf-8')
             self.send_response(200)
             self.end_headers()
 
@@ -84,12 +84,11 @@ class GetHandler(SimpleHTTPRequestHandler):
                 '',
                 ])
 
-            self.wfile.write(message)
+            self.wfile.write(message.encode('utf-8'))
 
         return
 
 
 if __name__ == '__main__':
-    server = HTTPServer(('localhost', 8080), GetHandler)
-    print 'Starting server at http://localhost:8080'
+    server = HTTPServer(('0.0.0.0', 8000), GetHandler)
     server.serve_forever()
