@@ -1,7 +1,11 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePlugin
 
-from urlparse import urljoin
+# Python 2 and 3
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 
 @moduleman_plugin

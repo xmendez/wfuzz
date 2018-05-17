@@ -21,7 +21,6 @@
 #     Loads scripts in the default, safe, or intrusive categories, except for those whose names start with http-.
 
 
-from types import ListType
 PYPARSING = True
 try:
     from pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, alphanums
@@ -64,7 +63,7 @@ class Filter(IFilter):
         if wildc_index > 0:
             return self.plugin.name.startswith(item[:wildc_index])
         else:
-            if type(self.plugin.category) == ListType:
+            if isinstance(self.plugin.category, list):
                 return (item in self.plugin.category or self.plugin.name == item)
             else:
                 return (self.plugin.category == item or self.plugin.name == item)
@@ -95,14 +94,14 @@ class Filter(IFilter):
         return any(ret)
 
     def simple_filter_banned_keywords(self, filter_string):
-            if filter_string.find("(") >= 0:
-                return True
-            elif filter_string.find(")") >= 0:
-                return True
-            elif any(x in ["or", "not", "and"] for x in filter_string.split(" ")):
-                return True
-            else:
-                return False
+        if filter_string.find("(") >= 0:
+            return True
+        elif filter_string.find(")") >= 0:
+            return True
+        elif any(x in ["or", "not", "and"] for x in filter_string.split(" ")):
+            return True
+        else:
+            return False
 
     def is_visible(self, plugin, filter_string):
         self.plugin = plugin

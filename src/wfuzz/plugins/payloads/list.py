@@ -42,7 +42,7 @@ class list(BasePayload):
     def count(self):
         return self.__count
 
-    def next(self):
+    def __next__(self):
         if self.current >= self.__count:
             raise StopIteration
         else:

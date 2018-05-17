@@ -40,5 +40,5 @@ class bing(BasePayload):
     def count(self):
         return self._it.max_count
 
-    def next(self):
-        return self._it.next()
+    def __next__(self):
+        return next(self._it)

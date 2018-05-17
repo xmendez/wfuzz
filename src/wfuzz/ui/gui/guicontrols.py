@@ -136,7 +136,7 @@ class ListPanel(wx.Panel):
         self.model = model
         self.dvc.AssociateModel(self.model)
 
-        for row in self.model.row_mapper.values():
+        for row in list(self.model.row_mapper.values()):
             self.dvc.AppendTextColumn(row.title, row.colid, width=row.width)
 
         for c in self.dvc.Columns:

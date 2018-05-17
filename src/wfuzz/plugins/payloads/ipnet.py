@@ -26,7 +26,7 @@ class ipnet(BasePayload):
             from netaddr import IPNetwork
             from netaddr.core import AddrFormatError
 
-            net = IPNetwork(u'%s' % self.params["net"])
+            net = IPNetwork('%s' % self.params["net"])
             self.f = net.iter_hosts()
             self.__count = net.size - 2
 
@@ -40,8 +40,8 @@ class ipnet(BasePayload):
         except AddrFormatError:
             raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
 
-    def next(self):
-        return str(self.f.next())
+    def __next__(self):
+        return str(next(self.f))
 
     def count(self):
         return self.__count

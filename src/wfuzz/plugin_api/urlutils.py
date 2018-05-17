@@ -1,12 +1,20 @@
 import os
-import urlparse
 
+
+# Python 2 and 3
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import ParseResult
+    from urllib.parse import urlparse
+else:
+    from urlparse import ParseResult
+    from urlparse import urlparse
 
 from wfuzz.facade import Facade
 from wfuzz.exception import FuzzExceptBadAPI
 
 
-class FuzzRequestParse(urlparse.ParseResult):
+class FuzzRequestParse(ParseResult):
     @property
     def ffname(self):
         '''
@@ -44,7 +52,7 @@ class FuzzRequestParse(urlparse.ParseResult):
 
 
 def parse_url(url):
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
+    scheme, netloc, path, params, query, fragment = urlparse(url)
     return FuzzRequestParse(scheme, netloc, path, params, query, fragment)
 
 
@@ -54,6 +62,6 @@ def check_content_type(fuzzresult, which):
         ctype = fuzzresult.history.headers.response['Content-Type']
 
     if which == 'text':
-        return not ctype or (ctype and any(map(lambda x: ctype.find(x) >= 0, ['text/plain'])))
+        return not ctype or (ctype and any([ctype.find(x) >= 0 for x in ['text/plain']]))
     else:
         raise FuzzExceptBadAPI("Unknown content type")

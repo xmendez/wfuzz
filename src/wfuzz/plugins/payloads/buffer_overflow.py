@@ -30,7 +30,7 @@ class buffer_overflow(BasePayload):
     def count(self):
         return 1
 
-    def next(self):
+    def __next__(self):
         if self.current == 0:
             elem = self.bov_list[self.current]
             self.current += 1

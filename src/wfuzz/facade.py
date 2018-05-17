@@ -7,6 +7,9 @@ from .exception import FuzzExceptNoPluginError, FuzzExceptPluginLoadError
 
 import os
 
+# python2 and 3: metaclass
+from future.utils import with_metaclass
+
 
 class Settings(SettingsBase):
     def get_config_file(self):
@@ -37,13 +40,12 @@ class MyRegistrant(MulRegistrant):
     def get_plugin(self, identifier):
         try:
             return MulRegistrant.get_plugin(self, identifier)
-        except KeyError, e:
+        except KeyError as e:
             raise FuzzExceptNoPluginError("Requested plugin %s. Error: %s" % (identifier, str(e)))
 
 
-class Facade:
-    __metaclass__ = utils.Singleton
-
+# python2 and 3: class Facade(metaclass=utils.Singleton):
+class Facade(with_metaclass(utils.Singleton, object)):
     def __init__(self):
 
         self.__plugins = dict(
@@ -68,7 +70,7 @@ class Facade:
                 self.__plugins[cat] = MyRegistrant(loader_list)
 
             return self.__plugins[cat]
-        except Exception, e:
+        except Exception as e:
             raise FuzzExceptPluginLoadError("Error loading plugins: %s" % str(e))
 
     def proxy(self, which):

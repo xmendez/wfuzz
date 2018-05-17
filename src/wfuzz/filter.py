@@ -3,7 +3,12 @@ from .fuzzobjects import FuzzResult
 
 import re
 import collections
-import urllib
+
+# Python 2 and 3: alternative 4
+try:
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import unquote
 
 from .facade import Facade
 
@@ -125,7 +130,7 @@ class FuzzResFilter:
             return fuzz_val.get_field(field) if field else fuzz_val
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
-        except AttributeError, e:
+        except AttributeError as e:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
     def __compute_bbb_value(self, tokens):
@@ -157,7 +162,7 @@ class FuzzResFilter:
             return leftvalue
 
         if (op == "un" or op == "unquote") and middlevalue is None and rightvalue is None:
-            ret = urllib.unquote(leftvalue)
+            ret = unquote(leftvalue)
         elif (op == "e" or op == "encode") and middlevalue is not None and rightvalue is None:
             ret = Facade().encoders.get_plugin(middlevalue)().encode(leftvalue)
         elif (op == "d" or op == "decode") and middlevalue is not None and rightvalue is None:
@@ -207,9 +212,9 @@ class FuzzResFilter:
                 return rightvalue.lower() not in leftvalue.lower()
             elif operator == "~":
                 return rightvalue.lower() in leftvalue.lower()
-        except TypeError, e:
+        except TypeError as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
-        except ParseException, e:
+        except ParseException as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
 
     def __myreduce(self, elements):
@@ -246,9 +251,9 @@ class FuzzResFilter:
             self.res = res
             try:
                 return self.finalformula.parseString(filter_string, parseAll=True)[0]
-            except ParseException, e:
+            except ParseException as e:
                 raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation.")
-            except AttributeError, e:
+            except AttributeError as e:
                 raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
         else:
             if self.hideparams['codes_show'] is None:
@@ -285,16 +290,16 @@ class FuzzResFilter:
             elif filter_options["hs"] is not None:
                 ffilter.hideparams['regex_show'] = False
                 ffilter.hideparams['regex'] = re.compile(filter_options['hs'], re.MULTILINE | re.DOTALL)
-        except Exception, e:
+        except Exception as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
 
-        if filter(lambda x: len(filter_options[x]) > 0, ["sc", "sw", "sh", "sl"]):
+        if [x for x in ["sc", "sw", "sh", "sl"] if len(filter_options[x]) > 0]:
             ffilter.hideparams['codes_show'] = True
             ffilter.hideparams['codes'] = filter_options["sc"]
             ffilter.hideparams['words'] = filter_options["sw"]
             ffilter.hideparams['lines'] = filter_options["sl"]
             ffilter.hideparams['chars'] = filter_options["sh"]
-        elif filter(lambda x: len(filter_options[x]) > 0, ["hc", "hw", "hh", "hl"]):
+        elif [x for x in ["hc", "hw", "hh", "hl"] if len(filter_options[x]) > 0]:
             ffilter.hideparams['codes_show'] = False
             ffilter.hideparams['codes'] = filter_options["hc"]
             ffilter.hideparams['words'] = filter_options["hw"]

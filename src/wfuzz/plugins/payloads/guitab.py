@@ -36,7 +36,7 @@ class guitab(BasePayload):
     def count(self):
         return len(Facade().data[self.params["tab"]])
 
-    def next(self):
-        next_item = self._it.next()
+    def __next__(self):
+        next_item = next(self._it)
 
         return next_item if not self.attr else next_item.get_field(self.attr)

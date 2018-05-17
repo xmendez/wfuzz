@@ -1,17 +1,25 @@
 # Covered by GPL V2.0
 # Coded by Carlos del Ojo Elias (deepbit@gmail.com)
-# Lately maintained by Javi Mendez (xmendez@edge-security.com)
+# Lately maintained by Xavi Mendez (xmendez@edge-security.com)
 
-from urlparse import urlparse, urlunparse
+# Python 2 and 3
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import urlparse
+    from urllib.parse import urlunparse
+else:
+    from urlparse import urlparse
+    from urlparse import urlunparse
+
 import string
 import re
 import pycurl
 
-from Variables import VariablesSet
-from exceptions import ReqRespException
-from Response import Response
+from .Variables import VariablesSet
+from .exceptions import ReqRespException
+from .Response import Response
 
-from TextParser import TextParser
+from .TextParser import TextParser
 
 
 PYCURL_PATH_AS_IS = True
@@ -228,10 +236,10 @@ class Request:
                         return ""
 
         def getHeaders(self):
-                list = []
+                header_list = []
                 for i, j in self._headers.items():
-                        list += ["%s: %s" % (i, j)]
-                return list
+                        header_list += ["%s: %s" % (i, j)]
+                return header_list
 
         def head(self):
                 conn = pycurl.Curl()
@@ -249,7 +257,7 @@ class Request:
                 self.response = rp
 
         def createPath(self, newpath):
-                '''Creates new url from a location header || Hecho para el followLocation = true'''
+                '''Creates new url from a location header || Hecho para el followLocation=true'''
                 if "http" in newpath[:4].lower():
                         return newpath
 
@@ -361,7 +369,7 @@ class Request:
                     conn = Request.to_pycurl_object(pycurl.Curl(), self)
                     conn.perform()
                     self.response_from_conn_object(conn, self.__performHead, self.__performBody)
-                except pycurl.error, error:
+                except pycurl.error as error:
                     errno, errstr = error
                     raise ReqRespException(ReqRespException.FATAL, errstr)
                 finally:
@@ -371,10 +379,10 @@ class Request:
 
         def getAll(self):
                 pd = self.postdata
-                string = str(self.method)+" "+str(self.pathWithVariables)+" "+str(self.protocol)+"\n"
+                string = str(self.method) + " " + str(self.pathWithVariables) + " " + str(self.protocol) + "\n"
                 for i, j in self._headers.items():
-                        string += i+": "+j+"\n"
-                string += "\n"+pd
+                        string += i + ": " + j + "\n"
+                string += "\n" + pd
 
                 return string
 
@@ -406,12 +414,12 @@ class Request:
                         tp.search("^(\w+) (.*) (HTTP\S*)$")
                         self.method = tp[0][0]
                         self.protocol = tp[0][2]
-                except Exception, a:
-                        print rawRequest
+                except Exception as a:
+                        print(rawRequest)
                         raise a
 
                 pathTMP = tp[0][1].replace(" ", "%20")
-                pathTMP = ('', '')+urlparse(pathTMP)[2:]
+                pathTMP = ('', '') + urlparse(pathTMP)[2:]
                 pathTMP = urlunparse(pathTMP)
 
                 while True:
@@ -421,7 +429,7 @@ class Request:
                         else:
                                 break
 
-                self.setUrl(prot+"://"+self._headers["Host"]+pathTMP)
+                self.setUrl(prot+"://" + self._headers["Host"] + pathTMP)
 
                 if self.method.upper() == "POST":
 

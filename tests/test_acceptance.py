@@ -11,9 +11,12 @@ HTTPD_PORT = 8000
 
 ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
 
+# $ export PYTHONPATH=./src 
+# $ python -m unittest discover
+# 
 # docker containers with HTTP server and proxy must be started before running these tests
-# cd tests/server_dir
-# docke-compose up
+# $ cd tests/server_dir
+# $ docke-compose up
 
 # IDEAS:
 #
@@ -138,10 +141,10 @@ error_tests = [
     ("test_url_schema_error_fuzz", "FUZZ://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], "Pycurl error 35"),
     ("test_all_params_fuzz_error", "%s:8000/echo?var=FUZZ&var2=2" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "FUZZ words not allowed when using all parameters brute forcing"),
     ("test_all_params_no_var", "%s:8000/echo" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "No variables on specified variable set"),
-    ("test_bad_port", "%s:6666/FUZZ" % LOCAL_DOMAIN, [range(1)], dict(), [], 'Failed to connect to localhost port 6666'),
-    ("test_bad_num_payloads", "%s:8000/FUZZ" % LOCAL_DOMAIN, [range(1), range(1)], dict(), [], 'FUZZ words and number of payloads do not match'),
-    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [range(1)], dict(proxies=[("localhost", 888, "HTML")]), [], 'Failed to connect to localhost port 888'),
-    ("test_bad_num_dic", "%s:8000/iterators/FUZZ" % LOCAL_DOMAIN, [range(1)], dict(iterator="zip"), [], 'Several dictionaries must be used when specifying an iterator'),
+    ("test_bad_port", "%s:6666/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(), [], 'Failed to connect to localhost port 6666'),
+    ("test_bad_num_payloads", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1)), list(range(1))], dict(), [], 'FUZZ words and number of payloads do not match'),
+    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(proxies=[("localhost", 888, "HTML")]), [], 'Failed to connect to localhost port 888'),
+    ("test_bad_num_dic", "%s:8000/iterators/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(iterator="zip"), [], 'Several dictionaries must be used when specifying an iterator'),
 ]
 
 
@@ -161,7 +164,7 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
 
-            ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
+            ret_list = [(x.code, x.history.urlparse.path) for x in fuzzed]
 
         # repeat test with extra params if specified and check against
         if extra_params:
@@ -187,8 +190,7 @@ def wfuzz_me_test_generator_exception(fn, exception_string):
     def test_exception(self):
         with self.assertRaises(Exception) as context:
             fn(None)
-
-        self.assertTrue(exception_string in str(context.exception))
+            self.assertTrue(exception_string in str(context.exception))
 
     return test_exception
 
@@ -203,23 +205,23 @@ def wfuzz_me_test_generator_saveres(url, payloads, params, expected_list):
         filename = os.path.join(defult_tmp_dir, temp_name)
 
         # Wfuzz results
-        with wfuzz.FuzzSession(url=url, **dict(params.items() + dict(save=filename).items())) as s:
+        with wfuzz.FuzzSession(url=url, **dict(list(params.items()) + list(dict(save=filename).items()))) as s:
             if payloads is None:
                 fuzzed = s.fuzz()
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
 
-            ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
+            ret_list = [(x.code, x.history.urlparse.path) for x in fuzzed]
 
         # repeat test with performaing same saved request
         with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ") as s:
-            same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+            same_list = [(x.code, x.history.urlparse.path) for x in s.fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
 
         # repeat test with performaing FUZZ[url] saved request
         with wfuzz.FuzzSession(payloads=[("wfuzzp", dict(fn=filename))], url="FUZZ[url]") as s:
-            same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+            same_list = [(x.code, x.history.urlparse.path) for x in s.fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
 
@@ -242,14 +244,14 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
             else:
                 fuzzed = s.get_payloads(payloads).fuzz()
 
-            ret_list = map(lambda x: (x.code, x.history.urlparse.path), fuzzed)
+            ret_list = [(x.code, x.history.urlparse.path) for x in fuzzed]
 
         # repeat test with recipe as only parameter
         with wfuzz.FuzzSession(recipe=filename) as s:
             if payloads is None:
-                same_list = map(lambda x: (x.code, x.history.urlparse.path), s.fuzz())
+                same_list = [(x.code, x.history.urlparse.path) for x in s.fuzz()]
             else:
-                same_list = map(lambda x: (x.code, x.history.urlparse.path), s.get_payloads(payloads).fuzz())
+                same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(payloads).fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
 
@@ -275,12 +277,12 @@ def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_ex
 
     """
     for test_name, url, payloads, params, expected_res, exception_str in test_list:
-        next_extra = dict(params.items() + next_extra_params.items())
+        next_extra = dict(list(params.items()) + list(next_extra_params.items()))
         new_test = "%s_%s" % (test_name, group)
 
         prev_extra = params
         if previous_extra_params:
-            prev_extra = dict(params.items() + previous_extra_params.items())
+            prev_extra = dict(list(params.items()) + list(previous_extra_params.items()))
 
         test_fn = wfuzz_me_test_generator(url, payloads, prev_extra, None, next_extra)
         setattr(DynamicTests, new_test, test_fn)
@@ -323,6 +325,10 @@ def create_tests():
 
         # duplicate tests with proxy
         duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
+
+def proxy_thread():
+    proxy = HTTP("localhost", 8080)
+    proxy.run()
 
 
 create_tests()

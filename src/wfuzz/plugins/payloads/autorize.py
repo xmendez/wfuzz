@@ -38,8 +38,8 @@ class autorize(BasePayload):
     def count(self):
         return self.__max
 
-    def next(self):
-        next_item = self._it.next()
+    def __next__(self):
+        next_item = next(self._it)
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 
@@ -47,7 +47,7 @@ class autorize(BasePayload):
         try:
 
             with open(self.find_file(output_fn), 'r') as f:
-                for url1, port1, schema1, req1, resp1, url2, port2, schema2, req2, resp2, url3, port3, schema3, req3, resp3, res1, res2 in map(lambda x: re.split(r'\t+', x), f.readlines()):
+                for url1, port1, schema1, req1, resp1, url2, port2, schema2, req2, resp2, url3, port3, schema3, req3, resp3, res1, res2 in [re.split(r'\t+', x) for x in f.readlines()]:
                     raw_req1 = base64.decodestring(req2)
                     # raw_res1 = base64.decodestring(res2)
 
@@ -58,7 +58,7 @@ class autorize(BasePayload):
                     item.type = FuzzResult.result
 
                     yield item
-        except IOError, e:
+        except IOError as e:
             raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
         except EOFError:
             raise StopIteration

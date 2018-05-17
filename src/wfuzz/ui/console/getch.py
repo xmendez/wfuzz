@@ -81,12 +81,12 @@ class _GetchMacCarbon:
 
 
 if __name__ == '__main__':
-    print 'Press a key'
+    print('Press a key')
     inkey = _Getch()
 
     import sys
-    for i in xrange(sys.maxint):
+    for i in range(sys.maxsize):
         k = inkey()
         if k != '':
             break
-    print 'you pressed ', k
+    print('you pressed ', k)

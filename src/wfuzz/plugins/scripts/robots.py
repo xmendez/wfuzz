@@ -1,4 +1,10 @@
-from urlparse import urljoin
+import sys
+
+# Python 2 and 3
+if sys.version_info >= (3, 0):
+    from urllib.parse import urljoin
+else:
+    from urlparse import urljoin
 
 from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
 from wfuzz.plugin_api.base import BasePlugin

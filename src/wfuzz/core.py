@@ -12,8 +12,18 @@ from .filter import FuzzResFilter
 import re
 import itertools
 
+# Python 2 and 3: zip_longest
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
-class sliceit:
+
+# python 2 and 3: iterator
+from builtins import object
+
+
+class sliceit(object):
     def __init__(self, payload, slicestr):
         self.ffilter = FuzzResFilter(filter_string=slicestr)
         self.payload = payload
@@ -24,29 +34,29 @@ class sliceit:
     def count(self):
         return -1
 
-    def next(self):
-        item = self.payload.next()
+    def __next__(self):
+        item = next(self.payload)
         while not self.ffilter.is_visible(item):
-            item = self.payload.next()
+            item = next(self.payload)
 
         return item
 
 
-class tupleit:
+class tupleit(object):
     def __init__(self, parent):
         self.parent = parent
 
     def count(self):
         return self.parent.count()
 
-    def next(self):
-        return (self.parent.next(),)
+    def __next__(self):
+        return (next(self.parent),)
 
     def __iter__(self):
         return self
 
 
-class dictionary:
+class dictionary(object):
         def __init__(self, payload, encoders_list):
             self.__payload = payload
             self.__encoders = encoders_list
@@ -60,7 +70,7 @@ class dictionary:
 
         def _gen(self):
             while 1:
-                payload_list = self.__payload.next()
+                payload_list = next(self.__payload)
 
                 for name in self.__encoders:
                     if name.find('@') > 0:
@@ -76,11 +86,11 @@ class dictionary:
                         for e in plugin_list:
                             yield e().encode(payload_list)
 
-        def next(self):
-            return self.__generator.next() if self.__encoders else self.__payload.next()
+        def __next__(self):
+            return next(self.__generator) if self.__encoders else next(self.__payload)
 
 
-class requestGenerator:
+class requestGenerator(object):
         def __init__(self, options):
             self.options = options
             self.seed = FuzzResultFactory.from_options(options)
@@ -142,7 +152,7 @@ class requestGenerator:
                 for r in FuzzResultFactory.from_all_fuzz_request(self.seed, payload):
                     yield r
 
-        def next(self):
+        def __next__(self):
             if self.stats.cancelled:
                 raise StopIteration
 
@@ -150,16 +160,16 @@ class requestGenerator:
                 return self.baseline
 
             if self.seed.history.wf_allvars is not None:
-                return self._allvar_gen.next()
+                return next(self._allvar_gen)
             else:
-                n = self.dictio.next()
+                n = next(self.dictio)
                 if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1):
                     self._check_dictio_len(n)
 
                 return FuzzResultFactory.from_seed(self.seed, n, self.options)
 
         def get_dictio(self):
-            class wrapper:
+            class wrapper(object):
                 def __init__(self, iterator):
                     self._it = iter(iterator)
 
@@ -169,18 +179,18 @@ class requestGenerator:
                 def count(self):
                     return -1
 
-                def next(self):
-                    return str(self._it.next())
+                def __next__(self):
+                    return str(next(self._it))
 
             selected_dic = []
 
             if self.options["dictio"]:
-                for d in map(lambda x: wrapper(x), self.options["dictio"]):
+                for d in [wrapper(x) for x in self.options["dictio"]]:
                     selected_dic.append(d)
             else:
                 for payload in self.options["payloads"]:
                     try:
-                        name, params, slicestr = map(lambda(x): x[0], itertools.izip_longest(payload, (None, None, None)))
+                        name, params, slicestr = [x[0] for x in zip_longest(payload, (None, None, None))]
                     except ValueError:
                         raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
@@ -204,7 +214,7 @@ class requestGenerator:
                 return Facade().iterators.get_plugin("product")(*selected_dic)
 
 
-class Fuzzer:
+class Fuzzer(object):
     def __init__(self, options):
         self.genReq = options.get("compiled_genreq")
 
@@ -256,9 +266,9 @@ class Fuzzer:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         # http://bugs.python.org/issue1360
-        prio, res = self.results_queue.get(True, 365 * 24 * 60 * 60)
+        res = self.results_queue.get()
         self.results_queue.task_done()
 
         # done! (None sent has gone through all queues).
@@ -270,7 +280,7 @@ class Fuzzer:
         return res
 
     def stats(self):
-        return dict(self.qmanager.get_stats().items() + self.qmanager["http_queue"].job_stats().items() + self.genReq.stats.get_stats().items())
+        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["http_queue"].job_stats().items()) + list(self.genReq.stats.get_stats().items()))
 
     def cancel_job(self):
         self.qmanager.cancel()

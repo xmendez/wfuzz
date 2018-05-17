@@ -32,7 +32,7 @@ class WfuzzInterpreter:
         try:
             session_options = CLParser(cmd).parse_cl()
         except SystemExit:
-            print "\n"
+            print("\n")
             pass
         except Exception:
             pass
@@ -48,7 +48,7 @@ class WfuzzInterpreter:
         try:
             session_options = CLParser(cmd).parse_cl().compile()
         except SystemExit:
-            print "\n"
+            print("\n")
             pass
         except Exception:
             pass
@@ -83,4 +83,4 @@ class GUIController:
         self._view.start_gui(self)
 
     def on_exit(self, msg):
-        print "oooo"
+        print("oooo")

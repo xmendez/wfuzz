@@ -7,6 +7,9 @@ from wfuzz.utils import find_file_in_paths
 import sys
 import os
 
+# python 2 and 3: iterator
+from builtins import object
+
 
 # Util methods for accessing search results
 class BasePlugin():
@@ -18,10 +21,10 @@ class BasePlugin():
         for name, default_value, required, description in self.parameters:
             param_name = "%s.%s" % (self.name, name)
 
-            if required and param_name not in self.kbase.keys():
+            if required and param_name not in list(self.kbase.keys()):
                 raise FuzzExceptBadOptions("Plugins, missing parameter %s!" % (param_name,))
 
-            if param_name not in self.kbase.keys():
+            if param_name not in list(self.kbase.keys()):
                 self.kbase[param_name] = default_value
 
     def run(self, fuzzresult, control_queue, results_queue):
@@ -29,7 +32,7 @@ class BasePlugin():
             self.results_queue = results_queue
             self.base_fuzz_res = fuzzresult
             self.process(fuzzresult)
-        except Exception, e:
+        except Exception as e:
             plres = PluginResult()
             plres.source = "$$exception$$"
             plres.issue = "Exception within plugin %s: %s" % (self.name, str(e))
@@ -69,7 +72,7 @@ class BasePrinter:
         if output:
             try:
                 self.f = open(output, 'w')
-            except IOError, e:
+            except IOError as e:
                 raise FuzzExceptBadFile("Error opening file. %s" % str(e))
         else:
             self.f = sys.stdout
@@ -86,7 +89,7 @@ class BasePrinter:
         raise FuzzExceptPluginError("Method result not implemented")
 
 
-class BasePayload:
+class BasePayload(object):
     def __init__(self, params):
         self.params = params
 
@@ -98,7 +101,7 @@ class BasePayload:
                 raise FuzzExceptBadOptions("Too many plugin parameters specified")
 
         # Check for allowed parameters
-        if [k for k in self.params.keys() if k not in map(lambda x: x[0], self.parameters) and k not in ["encoder", "default"]]:
+        if [k for k in list(self.params.keys()) if k not in [x[0] for x in self.parameters] and k not in ["encoder", "default"]]:
             raise FuzzExceptBadOptions("Plugin %s, unknown parameter specified!" % (self.name))
 
         # check mandatory params, assign default values
@@ -109,7 +112,7 @@ class BasePayload:
             if name not in self.params:
                 self.params[name] = default_value
 
-    def next(self):
+    def __next__(self):
         raise FuzzExceptPluginError("Method next not implemented")
 
     def count(self):

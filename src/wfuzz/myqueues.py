@@ -1,7 +1,12 @@
 import collections
-import itertools
 
-from Queue import PriorityQueue
+# python 2 and 3
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
+
+from queue import PriorityQueue
 from threading import Thread, RLock
 from .fuzzobjects import FuzzResult
 
@@ -27,6 +32,11 @@ class MyPriorityQueue(PriorityQueue):
     def put_last(self, item, wait=True):
         self._put_priority(self.max_prio + 1, item, wait)
 
+    def get(self):
+        prio, item = PriorityQueue.get(self, True, 365 * 24 * 60 * 60)
+
+        return item
+
 
 class FuzzQueue(MyPriorityQueue, Thread):
     def __init__(self, options, queue_out=None, limit=0):
@@ -44,7 +54,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def next_queue(self, q):
         self.queue_out = q
 
-    def process(self, prio, item):
+    def process(self, item):
         raise NotImplemented
 
     def get_name(self):
@@ -104,7 +114,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
         cancelling = False
 
         while 1:
-            prio, item = self.get(True, 365 * 24 * 60 * 60)
+            item = self.get()
 
             try:
                 if item is None:
@@ -128,10 +138,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     self.task_done()
                     continue
 
-                self.process(prio, item)
+                self.process(item)
 
                 self.task_done()
-            except Exception, e:
+            except Exception as e:
                 self.task_done()
                 self._throw(e)
 
@@ -167,7 +177,7 @@ class LastFuzzQueue(FuzzQueue):
         cancelling = False
 
         while 1:
-            prio, item = self.get(True, 365 * 24 * 60 * 60)
+            item = self.get()
 
             try:
                 self.task_done()
@@ -197,7 +207,7 @@ class LastFuzzQueue(FuzzQueue):
                 if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:
                     self.qmanager.cleanup()
 
-            except Exception, e:
+            except Exception as e:
                 self._throw(e)
                 self.qmanager.cancel()
 
@@ -250,9 +260,9 @@ class FuzzListQueue(FuzzQueue):
         stat_list = []
 
         for qq in self.queue_out:
-            stat_list = stat_list + qq.get_stats().items()
+            stat_list = stat_list + list(qq.get_stats().items())
 
-        stat_list = stat_list + FuzzQueue.get_stats(self).items()
+        stat_list = stat_list + list(FuzzQueue.get_stats(self).items())
 
         return dict(stat_list)
 
@@ -263,7 +273,7 @@ class FuzzRRQueue(FuzzListQueue):
         self._next_queue = self._get_next_route()
 
     def send(self, item):
-        self._next_queue.next().put(item)
+        next(self._next_queue).put(item)
 
     def _get_next_route(self):
         i = 0
@@ -288,13 +298,13 @@ class QueueManager:
     def bind(self, lastq):
         with self._mutex:
 
-            queue_list = self._queues.values()
+            queue_list = list(self._queues.values())
             self._lastq = lastq
 
             self._syncq = LastFuzzQueue(self.options, lastq)
             self._syncq.qmanager = self
 
-            for first, second in itertools.izip_longest(queue_list[0:-1:1], queue_list[1::1]):
+            for first, second in zip_longest(queue_list[0:-1:1], queue_list[1::1]):
                 first.next_queue(second)
                 first.set_syncq(self._syncq)
 
@@ -306,7 +316,7 @@ class QueueManager:
 
     def join(self, remove=False):
         with self._mutex:
-            for k, q in self._queues.items():
+            for k, q in list(self._queues.items()):
                 q.join()
                 if remove:
                     del(self._queues[k])
@@ -315,15 +325,15 @@ class QueueManager:
         with self._mutex:
             if self._queues:
                 self._syncq.qstart()
-                for q in self._queues.values():
+                for q in list(self._queues.values()):
                     q.qstart()
 
-                self._queues.values()[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
+                list(self._queues.values())[0].put_first(FuzzResult.to_new_signal(FuzzResult.startseed))
 
     def cleanup(self):
         with self._mutex:
             if self._queues:
-                self._queues.values()[0].put_last(None)
+                list(self._queues.values())[0].put_last(None)
                 self.join(remove=True)
                 self.options.get("compiled_genreq").stats.mark_end()
                 self._lastq.put_last(None, wait=False)
@@ -335,7 +345,7 @@ class QueueManager:
         with self._mutex:
             if self._queues:
                 # stop processing pending items
-                for q in self._queues.values():
+                for q in list(self._queues.values()):
                     q.cancel()
                     q.put_first(FuzzResult.to_new_signal(FuzzResult.cancel))
 
@@ -348,7 +358,7 @@ class QueueManager:
     def get_stats(self):
         stat_list = []
 
-        for q in self._queues.values():
-            stat_list = stat_list + q.get_stats().items()
+        for q in list(self._queues.values()):
+            stat_list = stat_list + list(q.get_stats().items())
 
         return dict(stat_list)

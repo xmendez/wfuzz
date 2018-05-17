@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle as pickle
 import gzip
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
@@ -42,8 +42,8 @@ class wfuzzp(BasePayload):
     def count(self):
         return self.__max
 
-    def next(self):
-        next_item = self._it.next()
+    def __next__(self):
+        next_item = next(self._it)
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 
@@ -56,7 +56,7 @@ class wfuzzp(BasePayload):
                         raise FuzzExceptBadFile("Wrong wfuzz payload format, the object read is not a valid fuzz result.")
 
                     yield item
-        except IOError, e:
+        except IOError as e:
             raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
         except EOFError:
             raise StopIteration

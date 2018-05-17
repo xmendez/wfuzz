@@ -1,10 +1,16 @@
 from .plugin_api.urlutils import parse_url
 from .exception import FuzzExceptBadInstall
 
-from urlparse import urljoin
+# python 2 and 3
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import urljoin
+else:
+    from urlparse import urljoin
 
 
-class FuzzRequestSoupMixing:
+
+class FuzzRequestSoupMixing(object):
     def get_soup(self):
         try:
             from bs4 import BeautifulSoup
@@ -16,7 +22,7 @@ class FuzzRequestSoupMixing:
         return soup
 
 
-class FuzzRequestUrlMixing:
+class FuzzRequestUrlMixing(object):
     # urlparse functions
     @property
     def urlparse(self):

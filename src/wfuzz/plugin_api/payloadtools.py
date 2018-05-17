@@ -1,11 +1,21 @@
 from wfuzz.exception import FuzzExceptMissingAPIKey, FuzzExceptResourceParseError
 from wfuzz.facade import Facade
 
-import urllib2
+# Python 2 and 3: alternative 4
+try:
+    from urllib.request import Request
+    from urllib.request import build_opener
+except ImportError:
+    from urllib2 import Request
+    from urllib2 import build_opener
+
 import json
 
+# python 2 and 3: iterator
+from builtins import object
 
-class BingIter:
+
+class BingIter(object):
     def __init__(self, dork, offset=0, limit=0, key=None):
         if key is None:
             key = Facade().sett.get('plugins', 'bing_apikey')
@@ -56,13 +66,13 @@ class BingIter:
             if offset != 0:
                 urlstr += "&$skip=%d" % offset
 
-            request = urllib2.Request(urlstr)
+            request = Request(urlstr)
 
             request.add_header('Authorization', auth)
             request.add_header('User-Agent', user_agent)
-            requestor = urllib2.build_opener()
+            requestor = build_opener()
             result = requestor.open(request)
-        except Exception, e:
+        except Exception as e:
             raise FuzzExceptResourceParseError("Error when retrieving Bing API results: %s." % str(e))
 
         results = json.loads(result.read())
@@ -81,7 +91,7 @@ class BingIter:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.current >= self.max_count:
             raise StopIteration
 
@@ -101,7 +111,7 @@ class BingIter:
         self._index += 1
 
         # pycurl does not like unicode
-        if isinstance(elem, unicode):
+        if isinstance(elem, str):
             return elem.encode('utf-8')
         else:
             return elem

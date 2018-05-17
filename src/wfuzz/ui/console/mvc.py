@@ -89,7 +89,7 @@ class Controller:
         self.view.cancel_job()
 
     def on_help(self, **event):
-        print usage
+        print(usage)
 
     def on_pause(self, **event):
         self.__paused = not self.__paused
@@ -97,42 +97,42 @@ class Controller:
             self.fuzzer.pause_job()
 
             if self._debug:
-                print "\n=============== Paused =================="
+                print("\n=============== Paused ==================")
                 stats = self.fuzzer.stats()
-                for k, v in stats.items():
-                    print "%s: %s" % (k, v)
-                print "\n========================================="
+                for k, v in list(stats.items()):
+                    print("%s: %s" % (k, v))
+                print("\n=========================================")
         else:
             self.fuzzer.resume_job()
 
     def on_stats(self, **event):
         if self._debug:
-            print "\n=============== Paused =================="
+            print("\n=============== Paused ==================")
             stats = self.fuzzer.stats()
-            for k, v in stats.items():
-                print "%s: %s" % (k, v)
-            print "\n========================================="
+            for k, v in list(stats.items()):
+                print("%s: %s" % (k, v))
+            print("\n=========================================")
         else:
             pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed()
             summary = self.fuzzer.genReq.stats
             summary.mark_end()
-            print "\nTotal requests: %s\r" % str(summary.total_req)
-            print "Pending requests: %s\r" % str(pending)
+            print("\nTotal requests: %s\r" % str(summary.total_req))
+            print("Pending requests: %s\r" % str(pending))
 
             if summary.backfeed() > 0:
-                print "Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed())
+                print("Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed()))
             else:
-                print "Processed Requests: %s\r" % (str(summary.processed())[:8])
-            print "Filtered Requests: %s\r" % (str(summary.filtered())[:8])
+                print("Processed Requests: %s\r" % (str(summary.processed())[:8]))
+            print("Filtered Requests: %s\r" % (str(summary.filtered())[:8]))
             req_sec = summary.processed()/summary.totaltime if summary.totaltime > 0 else 0
-            print "Total time: %s\r" % str(summary.totaltime)[:8]
+            print("Total time: %s\r" % str(summary.totaltime)[:8])
             if req_sec > 0:
-                print "Requests/sec.: %s\r" % str(req_sec)[:8]
+                print("Requests/sec.: %s\r" % str(req_sec)[:8])
                 eta = pending/req_sec
                 if eta > 60:
-                    print "ET left min.: %s\r\n" % str(eta/60)[:8]
+                    print("ET left min.: %s\r\n" % str(eta/60)[:8])
                 else:
-                    print "ET left sec.: %s\r\n" % str(eta)[:8]
+                    print("ET left sec.: %s\r\n" % str(eta)[:8])
 
 
 class View:
@@ -193,21 +193,21 @@ class View:
         sys.stdout.flush()
 
     def header(self, summary):
-        print exec_banner
-        print "Target: %s\r" % summary.url
+        print(exec_banner)
+        print("Target: %s\r" % summary.url)
         if summary.total_req > 0:
-            print "Total requests: %d\r\n" % summary.total_req
+            print("Total requests: %d\r\n" % summary.total_req)
         else:
-                print "Total requests: <<unknown>>\r\n"
+                print("Total requests: <<unknown>>\r\n")
 
         if self.verbose:
-            print "==============================================================================================================================================\r"
-            print "ID   C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r"
-            print "==============================================================================================================================================\r\n"
+            print("==============================================================================================================================================\r")
+            print("ID   C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r")
+            print("==============================================================================================================================================\r\n")
         else:
-            print "==================================================================\r"
-            print "ID   Response   Lines      Word         Chars          Payload    \r"
-            print "==================================================================\r\n"
+            print("==================================================================\r")
+            print("ID   Response   Lines      Word         Chars          Payload    \r")
+            print("==================================================================\r\n")
 
     def result(self, res):
         self.term.delete_line()
@@ -228,10 +228,10 @@ class View:
             sys.stdout.write("\n\r")
 
             for i in res.plugins_res:
-                print " |_  %s\r" % i.issue
+                print(" |_  %s\r" % i.issue)
 
     def footer(self, summary):
         self.term.delete_line()
         sys.stdout.write("\r\n")
 
-        print summary
+        print(summary)

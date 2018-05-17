@@ -1,9 +1,9 @@
 # slightly modified from
 # https://gist.github.com/trungly/5889154
 
-import urllib.parse
 from http.server import HTTPServer
 from http.server import SimpleHTTPRequestHandler
+import urllib.parse
 
 
 class GetHandler(SimpleHTTPRequestHandler):

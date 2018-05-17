@@ -4,8 +4,11 @@
 import sys
 import re
 
+# python 2 and 3: iterator
+from builtins import object
 
-class TextParser:
+
+class TextParser(object):
         def __init__(self):
                 self.string = ""
                 self.oldindex = 0
@@ -27,7 +30,7 @@ class TextParser:
                 self.actualIndex = 0
                 return self
 
-        def next(self):
+        def __next__(self):
                 try:
                         value = self.matches[self.actualIndex]
                         self.actualIndex += 1
@@ -56,7 +59,7 @@ class TextParser:
                         self.oldindex = 0
                         self.newindex = 0
                 else:
-                        print "Bad argument -- TextParser.setSource()\n"
+                        print("Bad argument -- TextParser.setSource()\n")
                         sys.exit(-1)
 
         def seekinit(self):
@@ -90,9 +93,9 @@ class TextParser:
 
 #               DEBUG PARA MATCHING
                 if (debug == 1):
-                        print "[", self.lastline, "-", pattern, "]"
-                        print len(self.matches)
-                        print self.matches
+                        print(("[", self.lastline, "-", pattern, "]"))
+                        print((len(self.matches)))
+                        print((self.matches))
 
                 if len(self.matches) == 0:
                         return False
@@ -119,7 +122,7 @@ class TextParser:
                 if self.type == "file":
                         self.lastFull_line = self.fd.readline()
                 elif self.type == "stdin":
-                        self.lastFull_line = raw_input()
+                        self.lastFull_line = input()
                 elif self.type == "string":
                         if self.newindex == -1:
                                 return 0
@@ -131,7 +134,7 @@ class TextParser:
                                 else:
                                         self.lastFull_line = self.string[self.oldindex:self.newindex+1]
 
-                                self.oldindex = self.newindex+1
+                                self.oldindex = self.newindex + 1
                         else:
                                 self.lastFull_line = ''
 

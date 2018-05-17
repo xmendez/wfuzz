@@ -1,12 +1,26 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
-import urllib
-import base64 as mybase64
+# Python 2 and 3
+try:
+    from urllib.parse import quote
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import quote
+    from urllib import unquote
+
+# Python 2 and 3
+try:
+    from base64 import decodebytes as b64decode
+    from base64 import standard_b64encode
+except ImportError:
+    from base64 import decodestring as b64decode
+    from base64 import standard_b64encode
+
 import re
 import binascii
 import random
 import hashlib
-import cgi
+import html
 
 
 @moduleman_plugin("encode")
@@ -35,10 +49,10 @@ class urlencode:
     priority = 99
 
     def encode(self, string):
-        return urllib.quote(string)
+        return quote(string)
 
     def decode(self, string):
-        return urllib.unquote(string)
+        return unquote(string)
 
 
 @moduleman_plugin("encode")
@@ -51,10 +65,10 @@ class double_urlencode:
     priority = 99
 
     def encode(self, string):
-        return urllib.quote(urllib.quote(string))
+        return quote(quote(string))
 
     def decode(self, string):
-        return urllib.unquote(urllib.unquote(string))
+        return unquote(unquote(string))
 
 
 @moduleman_plugin("encode")
@@ -67,10 +81,10 @@ class base64:
     priority = 99
 
     def encode(self, string):
-        return mybase64.standard_b64encode(string)
+        return standard_b64encode(string.encode('utf-8')).decode('utf-8')
 
     def decode(self, string):
-        return mybase64.decodestring(string)
+        return b64decode(string.encode('utf-8')).decode('utf-8')
 
 
 @moduleman_plugin("encode")
@@ -237,7 +251,7 @@ class sha1:
 
     def encode(self, string):
         s = hashlib.sha1()
-        s.update(string)
+        s.update(string.encode('utf-8'))
         res = s.hexdigest()
         return res
 
@@ -253,7 +267,7 @@ class md5:
 
     def encode(self, string):
         m = hashlib.new('md5')
-        m.update(string)
+        m.update(string.encode('utf-8'))
         res = m.hexdigest()
         return res
 
@@ -268,10 +282,10 @@ class hexlify:
     priority = 99
 
     def encode(self, string):
-        return binascii.hexlify(string)
+        return binascii.hexlify(string.encode('utf-8')).decode('utf-8')
 
     def decode(self, string):
-        return binascii.unhexlify(string)
+        return binascii.unhexlify(string.encode('utf-8')).decode('utf-8')
 
 
 @moduleman_plugin("encode")
@@ -284,7 +298,7 @@ class html_escape:
     priority = 99
 
     def encode(self, string):
-        return cgi.escape(string, quote=True)
+        return html.escape(string, quote=True)
 
 
 @moduleman_plugin("encode")

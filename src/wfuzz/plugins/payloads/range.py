@@ -32,7 +32,7 @@ class range(BasePayload):
         except ValueError:
             raise FuzzExceptPluginBadParams("Bad range format (eg. \"23-56\")")
 
-    def next(self):
+    def __next__(self):
         if self.current > self.maximum:
             raise StopIteration
         else:

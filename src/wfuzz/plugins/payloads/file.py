@@ -26,14 +26,18 @@ class file(BasePayload):
 
         try:
             self.f = open(self.find_file(self.params["fn"]), "r")
-        except IOError, e:
+        except IOError as e:
             raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
         self.__count = len(self.f.readlines())
         self.f.seek(0)
 
-    def next(self):
-        return self.f.next().strip()
+    def __next__(self):
+        line = self.f.readline().strip()
+        if line == '':
+            self.f.close()
+            raise StopIteration
+        return line
 
     def count(self):
         return self.__count

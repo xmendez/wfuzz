@@ -1,8 +1,8 @@
 import time
-import cPickle as pickle
+import pickle as pickle
 import gzip
 from threading import Thread, Event
-from Queue import Queue
+from queue import Queue
 
 from .fuzzobjects import FuzzResult
 from .myqueues import FuzzQueue
@@ -24,7 +24,7 @@ class SeedQ(FuzzQueue):
     def cancel(self):
         self.genReq.stop()
 
-    def process(self, prio, item):
+    def process(self, item):
         if item.type == FuzzResult.startseed:
             self.genReq.stats.pending_seeds.inc()
         elif item.type == FuzzResult.seed:
@@ -34,7 +34,7 @@ class SeedQ(FuzzQueue):
 
         # Empty dictionary?
         try:
-            fuzzres = self.genReq.next()
+            fuzzres = next(self.genReq)
 
             if fuzzres.is_baseline:
                 self.genReq.stats.pending_fuzz.inc()
@@ -51,14 +51,14 @@ class SeedQ(FuzzQueue):
         try:
             if fuzzres.is_baseline:
                 # more after baseline?
-                fuzzres = self.genReq.next()
+                fuzzres = next(self.genReq)
 
             while fuzzres:
                 self.genReq.stats.pending_fuzz.inc()
                 if self.delay:
                     time.sleep(self.delay)
                 self.send(fuzzres)
-                fuzzres = self.genReq.next()
+                fuzzres = next(self.genReq)
         except StopIteration:
             pass
 
@@ -72,7 +72,7 @@ class SaveQ(FuzzQueue):
         self.output_fn = None
         try:
             self.output_fn = gzip.open(options.get("save"), 'w+b')
-        except IOError, e:
+        except IOError as e:
             raise FuzzExceptBadFile("Error opening results file!. %s" % str(e))
 
     def get_name(self):
@@ -81,7 +81,7 @@ class SaveQ(FuzzQueue):
     def _cleanup(self):
         self.output_fn.close()
 
-    def process(self, prio, item):
+    def process(self, item):
         pickle.dump(item, self.output_fn)
         self.send(item)
 
@@ -99,7 +99,7 @@ class PrinterQ(FuzzQueue):
     def _cleanup(self):
         self.printer.footer(self.stats)
 
-    def process(self, prio, item):
+    def process(self, item):
         self.printer.result(item)
         self.send(item)
 
@@ -112,7 +112,7 @@ class RoutingQ(FuzzQueue):
     def get_name(self):
         return 'RoutingQ'
 
-    def process(self, prio, item):
+    def process(self, item):
         if item.type in self.routes:
             self.routes[item.type].put(item)
         else:
@@ -128,7 +128,7 @@ class FilterQ(FuzzQueue):
     def get_name(self):
         return 'filter_thread'
 
-    def process(self, prio, item):
+    def process(self, item):
         if item.is_baseline:
             self.ffilter.set_baseline(item)
 
@@ -147,7 +147,7 @@ class SliceQ(FuzzQueue):
     def get_name(self):
         return 'slice_thread'
 
-    def process(self, prio, item):
+    def process(self, item):
         if item.is_baseline or self.ffilter.is_visible(item):
             self.send(item)
         else:
@@ -157,7 +157,7 @@ class SliceQ(FuzzQueue):
 class JobQ(FuzzRRQueue):
     def __init__(self, options):
         # Get active plugins
-        lplugins = map(lambda x: x(), Facade().scripts.get_plugins(options.get("script")))
+        lplugins = [x() for x in Facade().scripts.get_plugins(options.get("script"))]
 
         if not lplugins:
             raise FuzzExceptBadOptions("No plugin selected, check the --script name or category introduced.")
@@ -168,7 +168,7 @@ class JobQ(FuzzRRQueue):
     def get_name(self):
         return 'JobQ'
 
-    def process(self, prio, item):
+    def process(self, item):
         self.send(item)
 
 
@@ -185,7 +185,7 @@ class JobMan(FuzzQueue):
     # ------------------------------------------------
     # threading
     # ------------------------------------------------
-    def process(self, prio, res):
+    def process(self, res):
         # process request through plugins
         if not res.exception:
             if self.cache.update_cache(res.history, "processed"):
@@ -197,7 +197,7 @@ class JobMan(FuzzQueue):
                         if not pl.validate(res):
                             continue
                         th = Thread(target=pl.run, kwargs={"fuzzresult": res, "control_queue": self.__walking_threads, "results_queue": plugins_res_queue})
-                    except Exception, e:
+                    except Exception as e:
                         raise FuzzExceptPluginLoadError("Error initialising plugin %s: %s " % (pl.name, str(e)))
                     self.__walking_threads.put(th)
                     th.start()
@@ -231,7 +231,7 @@ class RecursiveQ(FuzzQueue):
     def get_name(self):
         return 'RecursiveQ'
 
-    def process(self, prio, fuzz_res):
+    def process(self, fuzz_res):
         # Getting results from plugins or directly from http if not activated
         enq_item = 0
         plugin_name = ""
@@ -280,7 +280,7 @@ class DryRunQ(FuzzQueue):
     def get_name(self):
         return 'DryRunQ'
 
-    def process(self, prio, item):
+    def process(self, item):
         self.send(item)
 
 
@@ -311,14 +311,14 @@ class HttpQueue(FuzzQueue):
         self.http_pool.deregister()
         self.exit_job = True
 
-    def process(self, prio, obj):
+    def process(self, obj):
         self.pause.wait()
         self.http_pool.enqueue(obj, self.poolid)
 
     def __read_http_results(self):
         try:
             while not self.exit_job:
-                res = self.http_pool.iter_results(self.poolid).next()
+                res = next(self.http_pool.iter_results(self.poolid))
                 self.send(res)
         except StopIteration:
             pass
@@ -331,7 +331,7 @@ class HttpReceiver(FuzzQueue):
     def get_name(self):
         return 'HttpReceiver'
 
-    def process(self, prio, res):
+    def process(self, res):
         if res.exception and not self.options.get("scanmode"):
             self._throw(res.exception)
         else:

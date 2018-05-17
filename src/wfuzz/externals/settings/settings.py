@@ -1,4 +1,8 @@
-import ConfigParser
+# Python 2 and 3 (after ``pip install configparser``):
+try:
+    from configparser import ConfigParser
+except ImportError:
+    import ConfigParser
 import os
 import sys
 
@@ -8,11 +12,10 @@ class SettingsBase:
     Contains application settings. uses a ConfigParser
     """
     def __init__(self, save=False):
-        self.cparser = ConfigParser.SafeConfigParser()
+        self.cparser = ConfigParser()
 
         self.set_all(self.set_defaults())
         self.filename = os.path.join(self._path_to_program_dir(), self.get_config_file())
-
         self.cparser.read(self.filename)
 
     # Base members should implement
@@ -39,13 +42,11 @@ class SettingsBase:
         return self.cparser.has_option(section, setting)
 
     def set(self, section, setting, value):
-        if type(value) == type(u''):
-            value = value.encode('utf-8')
         self.cparser.set(section, setting, value)
 
     def get(self, section, setting):
         value = self.cparser.get(section, setting)
-        return value.decode('utf-8')
+        return value
 
     def get_section(self, section):
         return self.cparser.items(section)
@@ -69,7 +70,7 @@ class SettingsBase:
         return sett
 
     def set_all(self, sett):
-        self.cparser = ConfigParser.SafeConfigParser()
+        self.cparser = ConfigParser()
         for section, settings in sett.items():
             self.cparser.add_section(section)
             for key, value in settings:
@@ -77,9 +78,8 @@ class SettingsBase:
 
     def save(self):
         try:
-            iniFile = file(self.filename, 'w')
-            self.cparser.write(iniFile)
-            iniFile.close()
+            with open(self.filename, 'w') as iniFile:
+                self.cparser.write(iniFile)
         except Exception:
             return False
         return True

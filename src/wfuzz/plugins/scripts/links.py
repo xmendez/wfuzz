@@ -1,5 +1,10 @@
 import re
-from urlparse import urljoin
+
+# Python 2 and 3
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from wfuzz.plugin_api.mixins import DiscoveryPluginMixin
 from wfuzz.plugin_api.base import BasePlugin

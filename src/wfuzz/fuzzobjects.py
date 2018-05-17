@@ -4,9 +4,16 @@ import re
 import itertools
 import operator
 
-from urlparse import urlparse
+# Python 2 and 3
+import sys
+if sys.version_info >= (3, 0):
+    from urllib.parse import urlparse
+else:
+    from urlparse import urlparse
+
 from threading import Lock
 from collections import namedtuple
+from collections import OrderedDict
 
 from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
@@ -22,14 +29,14 @@ class headers:
 
     @property
     def response(self):
-        return dict(self._req.response.getHeaders()) if self._req.response else {}
+        return OrderedDict(self._req.response.getHeaders()) if self._req.response else {}
 
     @property
     def request(self):
-        return dict(map(lambda x: x.split(": ", 1), self._req.getHeaders()))
+        return OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()])
 
     def add(self, dd):
-        for k, v in dd.items():
+        for k, v in list(dd.items()):
             self._req._headers[k] = v
 
     def get_field(self, field):
@@ -38,9 +45,9 @@ class headers:
 
         if num_fields == 2:
             if attr[1] == "request":
-                return ", ".join(map(lambda x: "%s:%s" % (x[0], x[1]), self.request.items()))
+                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.request.items())])
             elif attr[1] == "response":
-                return ", ".join(map(lambda x: "%s:%s" % (x[0], x[1]), self.response.items()))
+                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.response.items())])
             else:
                 raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
         elif num_fields != 3:
@@ -69,7 +76,7 @@ class cookies:
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return dict(map(lambda x: [x[0], x[2]], map(lambda x: x.partition("="), c)))
+                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
         return {}
 
@@ -78,7 +85,7 @@ class cookies:
         if 'Cookie' in self._req._headers:
             c = self._req._headers['Cookie'].split("; ")
             if c[0]:
-                return dict(map(lambda x: [x[0], x[2]], map(lambda x: x.partition("="), c)))
+                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
         return {}
 
@@ -118,16 +125,16 @@ class params(object):
 
     @property
     def get(self):
-        return dict(map(lambda x: (x.name, x.value), self._req.getGETVars()))
+        return OrderedDict([(x.name, x.value) for x in self._req.getGETVars()])
 
     @property
     def post(self):
-        return dict(map(lambda x: (x.name, x.value), self._req.getPOSTVars()))
+        return OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()])
 
     @post.setter
     def post(self, pp):
         if isinstance(pp, dict):
-            self._req.setPostData("&".join(["=".join([n, v]) if v is not None else n for n, v in pp.items()]))
+            self._req.setPostData("&".join(["=".join([n, v]) if v is not None else n for n, v in list(pp.items())]))
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
@@ -136,13 +143,13 @@ class params(object):
         num_fields = len(attr)
 
         if num_fields == 1 and attr[0] == "params":
-                pp = ", ".join(map(lambda x: "%s:%s" % (x[0], x[1]), dict(self.get.items() + self.post.items()).items()))
+                pp = ", ".join(["%s:%s" % (x[0], x[1]) for x in list(dict(list(self.get.items()) + list(self.post.items())).items())])
                 return "" if not pp else pp
         elif num_fields == 2:
             if attr[1] == "get":
-                return ", ".join(map(lambda x: "%s=%s" % (x[0], x[1]), self.get.items()))
+                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.get.items())])
             elif attr[1] == "post":
-                return ", ".join(map(lambda x: "%s=%s" % (x[0], x[1]), self.post.items()))
+                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.post.items())])
             else:
                 raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
         elif num_fields == 3:
@@ -162,7 +169,7 @@ class params(object):
             raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
 
 
-class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
+class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def __init__(self):
         self._request = Request()
 
@@ -171,7 +178,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self.wf_fuzz_methods = None
         self.wf_retries = 0
 
-        self.headers.add({"User-Agent": Facade().sett.get("connection", "User-Agent").encode('utf-8')})
+        self.headers.add({"User-Agent": Facade().sett.get("connection", "user-agent")})
 
     # methods for accessing HTTP requests information consistenly accross the codebase
 
@@ -404,7 +411,7 @@ class FuzzRequest(object, FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             dicc[j] = True
 
         # take URL parameters into consideration
-        url_params = dicc.keys()
+        url_params = list(dicc.keys())
         url_params.sort()
         key += "-" + "-".join(url_params)
 
@@ -557,11 +564,11 @@ class FuzzResultFactory:
         # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
         b1 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", rawReq, re.MULTILINE | re.DOTALL)])
         b2 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", userpass, re.MULTILINE | re.DOTALL)])
-        baseline_control = dict(b1.items() + b2.items())
-        baseline_payload = map(lambda x: x[1], sorted(baseline_control.items(), key=operator.itemgetter(0)))
+        baseline_control = dict(list(b1.items()) + list(b2.items()))
+        baseline_payload = [x[1] for x in sorted(list(baseline_control.items()), key=operator.itemgetter(0))]
 
         # if there is no marker, there is no baseline request
-        if not filter(lambda x: x is not None, baseline_payload):
+        if not [x for x in baseline_payload if x is not None]:
             return None
 
         # remove baseline marker from seed request
@@ -612,14 +619,13 @@ class FuzzResultFactory:
         if len(payload) > 1:
             raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
-        for v in seed.history.wf_allvars_set:
-            variable = v.name
+        for variable in seed.history.wf_allvars_set:
             payload_content = payload[0]
             fuzzres = seed.from_soft_copy()
-            fuzzres._description = variable + "=" + payload_content
+            fuzzres._description = variable.name + "=" + payload_content
             fuzzres.payload.append(payload_content)
 
-            fuzzres.history.wf_allvars_set = (variable, payload_content)
+            fuzzres.history.wf_allvars_set = (variable.name, payload_content)
 
             yield fuzzres
 
@@ -743,8 +749,8 @@ class FuzzStats:
 
 
 class FuzzResult:
-    seed, backfeed, result, error, startseed, endseed, cancel, discarded = range(8)
-    newid = itertools.count(0).next
+    seed, backfeed, result, error, startseed, endseed, cancel, discarded = list(range(8))
+    newid = itertools.count(0)
     ERROR_CODE = -1
     BASELINE_CODE = -2
 
@@ -756,7 +762,7 @@ class FuzzResult:
         self._description = ""
         self.is_baseline = False
         self.rlevel = 1
-        self.nres = FuzzResult.newid() if track_id else 0
+        self.nres = next(FuzzResult.newid) if track_id else 0
 
         self.chars = 0
         self.lines = 0
@@ -779,7 +785,7 @@ class FuzzResult:
 
         if self.history and self.history.content:
             m = hashlib.md5()
-            m.update(self.history.content)
+            m.update(self.history.content.encode('utf-8'))
             self.md5 = m.hexdigest()
 
             self.chars = len(self.history.content)
@@ -884,9 +890,27 @@ class FuzzResult:
 
         return fr
 
+    def __lt__(self, other):
+        return self.nres < other.nres
+
+    def __le__(self, other):
+        return self.nres <= other.nres
+
+    def __gt__(self, other):
+        return self.nres > other.nres
+
+    def __ge__(self, other):
+        return self.nres >= other.nres
+
+    def __eq__(self, other):
+        return self.nres == other.nres
+
+    def __ne__(self, other):
+        return self.nres != other.nres
+
 
 class PluginItem:
-    undefined, result, backfeed = range(3)
+    undefined, result, backfeed = list(range(3))
 
     def __init__(self, ptype):
         self.source = ""

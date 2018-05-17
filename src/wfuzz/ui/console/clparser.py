@@ -19,35 +19,35 @@ class CLParser:
         self.argv = argv
 
     def show_brief_usage(self):
-        print help_banner
-        print brief_usage
+        print(help_banner)
+        print(brief_usage)
 
     def show_verbose_usage(self):
-        print help_banner
-        print verbose_usage
+        print(help_banner)
+        print(verbose_usage)
 
     def show_usage(self):
-        print help_banner
-        print usage
+        print(help_banner)
+        print(usage)
 
     def show_plugins_help(self, registrant, cols=3, category="$all$"):
-        print "\nAvailable %s:\n" % registrant
-        table_print(map(lambda x: x[cols:], Facade().proxy(registrant).get_plugins_ext(category)))
+        print("\nAvailable %s:\n" % registrant)
+        table_print([x[cols:] for x in Facade().proxy(registrant).get_plugins_ext(category)])
         sys.exit(0)
 
     def show_plugin_ext_help(self, registrant, category="$all$"):
         for p in Facade().proxy(registrant).get_plugins(category):
-            print "Name: %s %s" % (p.name, p.version)
-            print "Categories: %s" % ','.join(p.category)
-            print "Summary: %s" % p.summary
-            print "Author: %s" % ','.join(p.author)
-            print "Description:"
+            print("Name: %s %s" % (p.name, p.version))
+            print("Categories: %s" % ','.join(p.category))
+            print("Summary: %s" % p.summary)
+            print("Author: %s" % ','.join(p.author))
+            print("Description:")
             for l in p.description:
-                print "   %s" % l
-            print "Parameters:"
+                print("   %s" % l)
+            print("Parameters:")
             for l in p.parameters:
-                print "   %s %s%s: %s" % ("+" if l[2] else "-", l[0], " (= %s)" % str(l[1]) if l[1] else "", l[3])
-            print "\n"
+                print("   %s %s%s: %s" % ("+" if l[2] else "-", l[0], " (= %s)" % str(l[1]) if l[1] else "", l[3]))
+            print("\n")
 
         sys.exit(0)
 
@@ -116,24 +116,24 @@ class CLParser:
                     raise FuzzExceptBadOptions(error)
 
                 options.export_to_file(optsd["--dump-recipe"][0])
-                print help_banner
-                print "Recipe written to %s." % (optsd["--dump-recipe"][0],)
+                print(help_banner)
+                print("Recipe written to %s." % (optsd["--dump-recipe"][0],))
                 sys.exit(0)
 
             return options
-        except FuzzException, e:
+        except FuzzException as e:
             self.show_brief_usage()
             raise e
         except ValueError:
             self.show_brief_usage()
             raise FuzzExceptBadOptions("Incorrect options, please check help.")
-        except getopt.GetoptError, qw:
+        except getopt.GetoptError as qw:
             self.show_brief_usage()
             raise FuzzExceptBadOptions("%s." % str(qw))
 
     def _parse_help_opt(self, optsd):
         if "--version" in optsd:
-            print version
+            print(version)
             sys.exit(0)
 
         if "-h" in optsd:
@@ -187,11 +187,11 @@ class CLParser:
             raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(opt_list))
 
         # -A and script not allowed at the same time
-        if "--script" in optsd.keys() and "-A" in optsd.keys():
+        if "--script" in list(optsd.keys()) and "-A" in list(optsd.keys()):
             raise FuzzExceptBadOptions("Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
 
-        if "-s" in optsd.keys() and "-t" in optsd.keys():
-            print "WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored."
+        if "-s" in list(optsd.keys()) and "-t" in list(optsd.keys()):
+            print("WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored.")
 
     def _parse_filters(self, optsd, filter_params):
         '''
@@ -271,7 +271,7 @@ class CLParser:
                 name = vals[0]
 
             if extraparams:
-                params = dict(map(lambda x: x.split("=", 1), extraparams.split(",")))
+                params = dict([x.split("=", 1) for x in extraparams.split(",")])
             if default_param:
                 params['default'] = default_param
 
@@ -449,6 +449,6 @@ class CLParser:
 
         if "--script-args" in optsd:
             try:
-                options['script_args'] = dict(map(lambda x: x.split("=", 1), optsd["--script-args"][0].split(",")))
+                options['script_args'] = dict([x.split("=", 1) for x in optsd["--script-args"][0].split(",")])
             except ValueError:
                 raise FuzzExceptBadOptions("Script arguments: Incorrect arguments format supplied.")

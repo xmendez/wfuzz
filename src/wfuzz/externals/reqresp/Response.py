@@ -1,12 +1,11 @@
 import string
-import StringIO
+from io import BytesIO
 import gzip
 
-from TextParser import TextParser
+from .TextParser import TextParser
 
 
 class Response:
-
         def __init__(self, protocol="", code="", message=""):
                 self.protocol = protocol         # HTTP/1.1
                 self.code = code                  # 200
@@ -26,13 +25,13 @@ class Response:
                                 self._headers.remove(i)
 
         def addContent(self, text):
-                self.__content = self.__content+text
+                self.__content = self.__content + text
 
         def __getitem__(self, key):
                 for i, j in self._headers:
                         if key == i:
                                 return j
-                print "Error al obtener header!!!"
+                print("Error al obtener header!!!")
 
         def getCookie(self):
                 str = []
@@ -136,7 +135,7 @@ class Response:
 
                 if self.header_equal("Transfer-Encoding", "chunked"):
                         result = ""
-                        content = StringIO.StringIO(self.__content)
+                        content = BytesIO(self.__content)
                         hexa = content.readline()
                         nchunk = int(hexa.strip(), 16)
 
@@ -149,8 +148,8 @@ class Response:
                         self.__content = result
 
                 if self.header_equal("Content-Encoding", "gzip"):
-                        compressedstream = StringIO.StringIO(self.__content)
-                        gzipper = gzip.GzipFile(fileobj=compressedstream)
+                        compressedstream = BytesIO(self.__content)
+                        gzipper = gzip.GzipFile(compressedstream)
                         body = gzipper.read()
                         self.__content = body
                         self.delHeader("Content-Encoding")

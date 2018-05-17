@@ -38,7 +38,7 @@ class hexrand(BasePayload):
     def count(self):
         return self.__count
 
-    def next(self):
+    def __next__(self):
         self.current = random.SystemRandom().randint(self.minimum, self.maximum)
 
         lgth = len(hex(self.maximum).replace("0x", ""))

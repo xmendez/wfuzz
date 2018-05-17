@@ -66,8 +66,8 @@ class burpstate(BasePayload):
     def count(self):
         return self.__max
 
-    def next(self):
-        next_item = self._it.next()
+    def __next__(self):
+        next_item = next(self._it)
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 
@@ -112,7 +112,7 @@ class burpstate(BasePayload):
                             value = '<![CDATA[' + value.replace(']]>', ']]><![CDATA[') + ']]>'
                     value = ''.join(c for c in value if c in nvprint)  # Remove nonprintables
                     return value, 5+length  # ** TODO: Verify length by matching end tag **
-            print "Unknown binary format", repr(field[i])
+            print("Unknown binary format", repr(field[i]))
             return None, -1
 
     def strip_cdata(self, data):

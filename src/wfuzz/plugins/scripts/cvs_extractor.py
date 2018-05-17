@@ -1,4 +1,8 @@
-from urlparse import urljoin
+# Python 2 and 3
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from wfuzz.plugin_api.urlutils import check_content_type
 

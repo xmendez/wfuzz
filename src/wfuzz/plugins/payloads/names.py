@@ -80,7 +80,7 @@ class names(BasePayload):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.creatednames:
             payl = self.creatednames.pop()
             return payl

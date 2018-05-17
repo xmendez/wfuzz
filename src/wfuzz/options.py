@@ -11,8 +11,15 @@ from .myhttp import HttpPool
 
 from .externals.reqresp.cache import HttpCache
 
-from UserDict import UserDict
 from collections import defaultdict
+import sys
+
+# python 2 and 3
+try:
+    from collections import UserDict
+except ImportError:
+    from UserDict import UserDict
+
 import json
 
 
@@ -123,12 +130,12 @@ class FuzzSession(UserDict):
                     raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
 
         try:
-            if filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) and \
-               filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"]):
+            if [x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] and \
+               [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]:
                 return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
 
-            if (filter(lambda x: len(self.data[x]) > 0, ["sc", "sw", "sh", "sl"]) or
-               filter(lambda x: len(self.data[x]) > 0, ["hc", "hw", "hh", "hl"])) and \
+            if ([x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] or
+               [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]) and \
                self.data['filter']:
                     return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
         except TypeError:
@@ -137,39 +144,41 @@ class FuzzSession(UserDict):
     # pycurl does not like unicode strings
     def _convert_from_unicode(self, input):
         if isinstance(input, dict):
-            return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in input.iteritems()}
+            return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in list(input.items())}
         elif isinstance(input, list):
             return [self._convert_from_unicode(element) for element in input]
-        elif isinstance(input, unicode):
+        elif isinstance(input, str) or isinstance(input, unicode):
             return input.encode('utf-8')
         else:
             return input
 
     def export_to_file(self, filename):
         try:
-            f = open(filename, 'w')
-            f.write(self.export_json())
+            with open(filename, 'w') as f:
+                f.write(self.export_json())
         except IOError:
             raise FuzzExceptBadFile("Error writing recipe file.")
 
     def import_from_file(self, filename):
         try:
-            f = open(filename, 'r')
-            self.import_json(f.read())
+            with open(filename, 'r') as f:
+                self.import_json(f.read())
         except IOError:
             raise FuzzExceptBadFile("Error loading recipe file.")
 
     def import_json(self, data):
         js = json.loads(json_minify(data))
 
-        # fixme!
-
         try:
             if js['version'] == "0.2" and 'wfuzz_recipe' in js:
                 for section in js['wfuzz_recipe'].keys():
                     for k, v in js['wfuzz_recipe'].items():
                         if k not in self.keys_not_to_dump:
-                            self.data[k] = self._convert_from_unicode(v)
+                            # python 2 and 3 hack
+                            if sys.version_info >= (3, 0):
+                                self.data[k] = v
+                            else:
+                                self.data[k] = self._convert_from_unicode(v)
             else:
                 raise FuzzExceptBadRecipe("Unsupported recipe version.")
         except KeyError:

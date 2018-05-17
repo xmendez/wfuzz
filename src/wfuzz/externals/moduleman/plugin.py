@@ -1,3 +1,5 @@
+import collections
+
 
 def moduleman_plugin(*args):
     method_args = []
@@ -10,7 +12,7 @@ def moduleman_plugin(*args):
 
         return cls
 
-    if not callable(args[0]):
+    if not isinstance(args[0], collections.Callable):
         method_args += args
         return inner_decorator
 

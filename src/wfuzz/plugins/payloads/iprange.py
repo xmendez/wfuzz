@@ -37,8 +37,8 @@ class iprange(BasePayload):
         except IndexError:
             raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
 
-    def next(self):
-        return str(self.f.next())
+    def __next__(self):
+        return str(next(self.f))
 
     def count(self):
         return self.__count

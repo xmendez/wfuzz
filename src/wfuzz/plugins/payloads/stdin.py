@@ -29,7 +29,7 @@ class stdin(BasePayload):
     def __iter__(self):
         return self
 
-    def next(self):
-        line = sys.stdin.next().strip()
+    def __next__(self):
+        line = next(sys.stdin).strip()
 
         return line

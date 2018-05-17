@@ -1,7 +1,6 @@
 from .modulefilter import Filter
 from collections import defaultdict, MutableMapping
 from threading import Lock
-import operator
 
 
 class IRegistrant():

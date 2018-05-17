@@ -28,7 +28,7 @@ def main():
             # initialise controller
             try:
                 kb = KeyPress()
-            except ImportError, e:
+            except ImportError as e:
                 raise FuzzExceptBadInstall("Error importing necessary modules for interactive mode: %s" % str(e))
             else:
                 Controller(fz, kb)
@@ -43,16 +43,16 @@ def main():
             printer.result(res)
 
         printer.footer(fz.genReq.stats)
-    except FuzzException, e:
-        print "\nFatal exception: %s" % str(e)
+    except FuzzException as e:
+        print("\nFatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
-        print "\nFinishing pending requests..."
+        print("\nFinishing pending requests...")
         if fz:
             fz.cancel_job()
-    except NotImplementedError, e:
-        print "\nFatal exception: Error importing wfuzz extensions"
-    except Exception, e:
-        print "\nUnhandled exception: %s" % str(e)
+    except NotImplementedError as e:
+        print("\nFatal exception: Error importing wfuzz extensions")
+    except Exception as e:
+        print("\nUnhandled exception: {}".format(str(e)))
     finally:
         if session_options:
             session_options.close()
@@ -63,8 +63,8 @@ def main():
 
 def main_filter():
     def usage():
-        print help_banner2
-        print """Usage:
+        print(help_banner2)
+        print("""Usage:
 \n\twfpayload [Options]\n\n
 \nOptions:\n
 \t--help              : This help
@@ -75,7 +75,7 @@ def main_filter():
 \t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
 \t-m iterator         : Specify an iterator for combining payloads (product by default)
-"""
+""")
 
     from .api import payload
     from .exception import FuzzExceptBadOptions
@@ -83,8 +83,8 @@ def main_filter():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help", "slice=", "zP="])
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print((str(err)))
         usage()
         sys.exit(2)
 
@@ -107,32 +107,32 @@ def main_filter():
             if "FuzzResult" in str(r.__class__):
                 r._description = r.url
 
-            print r
+            print(r)
 
     except KeyboardInterrupt:
         pass
-    except FuzzException, e:
-        print "\nFatal exception: %s" % str(e)
-    except Exception, e:
-        print "\nUnhandled exception: %s" % str(e)
+    except FuzzException as e:
+        print(("\nFatal exception: %s" % str(e)))
+    except Exception as e:
+        print(("\nUnhandled exception: %s" % str(e)))
 
 
 def main_encoder():
     def usage():
-        print help_banner2
-        print "Usage:"
-        print "\n\twfencode --help This help"
-        print "\twfencode -d decoder_name string_to_decode"
-        print "\twfencode -e encoder_name string_to_encode"
-        print
+        print(help_banner2)
+        print("Usage:")
+        print("\n\twfencode --help This help")
+        print("\twfencode -d decoder_name string_to_decode")
+        print("\twfencode -e encoder_name string_to_encode")
+        print()
 
     from .api import encode, decode
     import getopt
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print((str(err)))
         usage()
         sys.exit(2)
 
@@ -143,20 +143,20 @@ def main_encoder():
     try:
         for o, value in opts:
             if o == "-e":
-                print encode(value, args[0])
+                print((encode(value, args[0])))
             elif o == "-d":
-                print decode(value, args[0])
+                print((decode(value, args[0])))
             elif o in ("-h", "--help"):
                 usage()
                 sys.exit()
-    except IndexError, e:
+    except IndexError as e:
         usage()
-        print "\nFatal exception: Specify a string to encode or decode.\n"
+        print("\nFatal exception: Specify a string to encode or decode.\n")
         sys.exit()
-    except AttributeError, e:
-        print "\nEncoder plugin missing encode or decode functionality."
-    except FuzzException, e:
-        print "\nFatal exception: %s" % str(e)
+    except AttributeError as e:
+        print("\nEncoder plugin missing encode or decode functionality.")
+    except FuzzException as e:
+        print(("\nFatal exception: %s" % str(e)))
 
 
 def main_gui():

@@ -47,7 +47,7 @@ class permutation(BasePayload):
     def count(self):
         return self.__count
 
-    def next(self):
+    def __next__(self):
         if self.lista != []:
             payl = self.lista.pop()
             return payl
@@ -58,6 +58,6 @@ class permutation(BasePayload):
         if n == 0:
             yield []
         else:
-            for i in xrange(len(items)):
+            for i in range(len(items)):
                 for cc in self.xcombinations(items[:i] + items[i:], n - 1):
                     yield [items[i]] + cc

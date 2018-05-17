@@ -25,7 +25,7 @@ class grep(BasePlugin):
     def __init__(self):
         BasePlugin.__init__(self)
         try:
-            print self.kbase["grep.regex"]
+            print(self.kbase["grep.regex"])
             self.regex = re.compile(self.kbase["grep.regex"][0], re.MULTILINE | re.DOTALL)
         except Exception:
             raise FuzzExceptPluginBadParams("Incorrect regex or missing regex parameter.")

@@ -38,7 +38,7 @@ class hexrange(BasePayload):
     def count(self):
         return self.__count
 
-    def next(self):
+    def __next__(self):
         if self.current > self.maximum:
             raise StopIteration
 

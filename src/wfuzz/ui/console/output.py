@@ -1,6 +1,10 @@
+# python 2 and 3
+from __future__ import print_function
+
 import math
-import cStringIO
+import io
 import operator
+from functools import reduce
 
 
 def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', separateRows=False, prefix='', postfix='', wrapfunc=lambda x: x):
@@ -34,17 +38,14 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', s
     rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + len(delim)*(len(maxWidths)-1))
     # select the appropriate justify method
     justify = {'center': str.center, 'right': str.rjust, 'left': str.ljust}[justify.lower()]
-    output = cStringIO.StringIO()
+    output = io.StringIO()
     if separateRows:
-        print >> output, rowSeparator
+        print(rowSeparator, file=output)
     for physicalRows in logicalRows:
         for row in physicalRows:
-            print >> output, \
-                prefix \
-                + delim.join([justify(str(item), width) for (item, width) in zip(row, maxWidths)]) \
-                + postfix
+            print(prefix + delim.join([justify(str(item), width) for (item, width) in zip(row, maxWidths)]) + postfix, file=output)
         if separateRows or hasHeader:
-            print >> output, rowSeparator
+            print(rowSeparator, file=output)
             hasHeader = False
     return output.getvalue()
 
@@ -52,11 +53,11 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', s
 def wrap_always(text, width):
     """A simple word-wrap function that wraps text on exactly width characters.
     It doesn't split the text in words."""
-    return '\n'.join([text[width*i:width*(i+1)] for i in xrange(int(math.ceil(1.*len(text)/width)))])
+    return '\n'.join([text[width*i:width*(i+1)] for i in range(int(math.ceil(1.*len(text)/width)))])
 
 
 def table_print(rows, width=80):
-    print indent(rows, hasHeader=True, separateRows=False, prefix='  ', postfix='  ', wrapfunc=lambda x: wrap_always(x, width))
+    print(indent(rows, hasHeader=True, separateRows=False, prefix='  ', postfix='  ', wrapfunc=lambda x: wrap_always(x, width)))
 
 
 def getTerminalSize():
@@ -72,7 +73,7 @@ def getTerminalSize():
     if current_os == 'Linux' or current_os == 'Darwin' or current_os.startswith('CYGWIN'):
         tuple_xy = _getTerminalSize_linux()
     if tuple_xy is None:
-        print "default"
+        print("default")
         tuple_xy = (80, 25)      # default value
 
     return tuple_xy

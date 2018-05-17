@@ -41,8 +41,8 @@ class burplog(BasePayload):
     def count(self):
         return self.__max
 
-    def next(self):
-        next_item = self._it.next()
+    def __next__(self):
+        next_item = next(self._it)
 
         return next_item if not self.attr else next_item.get_field(self.attr)
 
@@ -101,7 +101,7 @@ class burplog(BasePayload):
 
                 rl = burp_file.readline()
 
-        except IOError, e:
+        except IOError as e:
             raise FuzzExceptBadFile("Error opening burp log file. %s" % str(e))
         finally:
             if burp_file is not None:

@@ -1,4 +1,4 @@
-from TextParser import TextParser
+from .TextParser import TextParser
 
 
 class Variable:

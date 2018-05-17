@@ -1,15 +1,15 @@
 import pycurl
-from cStringIO import StringIO
+from io import BytesIO
 from threading import Thread, Lock
 import itertools
-from Queue import Queue
+from queue import Queue
 
 from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
 
 class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
-    newid = itertools.count(0).next
+    newid = itertools.count(0)
 
     def __init__(self, options):
         self.processed = 0
@@ -68,12 +68,12 @@ class HttpPool:
         item = self.pool_map[self.default_poolid if not poolid else poolid]["queue"].get()
 
         if not item:
-            raise StopIteration
+            return
 
         yield item
 
     def _new_pool(self):
-        poolid = self.newid()
+        poolid = next(self.newid)
         self.pool_map[poolid] = {}
         self.pool_map[poolid]["queue"] = Queue()
         self.pool_map[poolid]["proxy"] = None
@@ -90,7 +90,7 @@ class HttpPool:
         if self.exit_job:
             return
 
-        c.response_queue = ((StringIO(), StringIO(), fuzzres, self.default_poolid if not poolid else poolid))
+        c.response_queue = ((BytesIO(), BytesIO(), fuzzres, self.default_poolid if not poolid else poolid))
         c.setopt(pycurl.WRITEFUNCTION, c.response_queue[0].write)
         c.setopt(pycurl.HEADERFUNCTION, c.response_queue[1].write)
 
@@ -98,7 +98,7 @@ class HttpPool:
             self.m.add_handle(c)
 
     def _stop_to_pools(self):
-        for p in self.pool_map.keys():
+        for p in list(self.pool_map.keys()):
             self.pool_map[p]["queue"].put(None)
 
     # Pycurl management
@@ -143,7 +143,7 @@ class HttpPool:
 
     def _set_extra_options(self, c, freq, poolid):
         if self.pool_map[poolid]["proxy"]:
-            ip, port, ptype = self.pool_map[poolid]["proxy"].next()
+            ip, port, ptype = next(self.pool_map[poolid]["proxy"])
 
             freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
@@ -192,7 +192,7 @@ class HttpPool:
                 # Parse response
                 buff_body, buff_header, res, poolid = c.response_queue
 
-                res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
+                res.history.from_http_object(c, buff_header.getvalue().decode('UTF-8'), buff_body.getvalue().decode('UTF-8'))
 
                 # reset type to result otherwise backfeed items will enter an infinite loop
                 self.pool_map[poolid]["queue"].put(res.update())
