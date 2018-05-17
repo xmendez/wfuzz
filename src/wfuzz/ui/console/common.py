@@ -10,17 +10,17 @@ examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --
 \twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
 
 exec_banner = '''********************************************************\r
-* Wfuzz %s - The Web Fuzzer                        *\r
+* Wfuzz %s - The Web Fuzzer                           *\r
 ********************************************************\r\n''' % version
 
 help_banner = '''********************************************************
-* Wfuzz %s - The Web Fuzzer                        *
+* Wfuzz %s - The Web Fuzzer                           *
 *                                                      *
 * Version up to 1.4c coded by:                         *
 * Christian Martorella (cmartorella@edge-security.com) *
 * Carlos del ojo (deepbit@gmail.com)                   *
 *                                                      *
-* Version 1.4d to %s coded by:                     *
+* Version 1.4d to %s coded by:                        *
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n''' % (version, version)
 
