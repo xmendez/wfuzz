@@ -95,7 +95,7 @@ class ModuleFilterTests(unittest.TestCase):
     def test_load_file(self):
         with mock.patch('imp.find_module') as mocked_find_module:
             with mock.patch('imp.load_module') as mocked_load_module:
-                mocked_find_module.return_value = (None, '/any/project.py', ('.py', 'U', 1))
+                mocked_find_module.return_value = (None, 'any/project.py', ('.py', 'U', 1))
                 mocked_load_module.return_value = sys.modules[__name__]
 
                 br = BRegistrant(FileLoader(**{"filename": 'project1.py', "base_path": 'any'}))
@@ -103,10 +103,10 @@ class ModuleFilterTests(unittest.TestCase):
                 self.assertEqual(sorted(br.get_plugins_names()), sorted(['test_plugin1', 'test_plugin2', 'test_plugin3']))
 
                 self.assertTrue(br.get_plugin("test_plugin1").name == "test_plugin1")
-                self.assertTrue(br.get_plugin("../../../../../any/test_plugin2").name == "test_plugin2")
+                self.assertTrue(br.get_plugin("test_plugin2").name == "test_plugin2")
 
                 with self.assertRaises(Exception) as context:
-                    br.get_plugin("any")
+                    br.get_plugin("test_")
                 self.assertTrue("Multiple plugins found" in str(context.exception))
 
     def test_simple_filter(self):

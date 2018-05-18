@@ -73,11 +73,11 @@ class APITests(unittest.TestCase):
 
         with mock.patch('os.walk') as mocked_oswalk:
             mocked_oswalk.return_value = [
-                ('/foo', ('bar',), ('baz',)),
-                ('/foo/bar', (), ('spam', 'eggs')),
+                ('foo', ('bar',), ('baz',)),
+                ('foo/bar', (), ('spam', 'eggs')),
             ]
-            payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'mockeddir', 'encoder': None}, None)]}))
-            self.assertEqual(payload_list, [('../../../../../foo/baz',), ('../../../../../foo/bar/spam',), ('../../../../../foo/bar/eggs',)])
+            payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'foo', 'encoder': None}, None)]}))
+            self.assertEqual(payload_list, [('baz',), ('bar/spam',), ('bar/eggs',)])
 
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, mock.mock_open(read_data="one\ntwo\n")):
