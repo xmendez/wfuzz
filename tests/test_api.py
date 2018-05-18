@@ -1,8 +1,14 @@
-import os
 import unittest
+import sys
 
 import wfuzz
 
+try:
+    # Python >= 3.3
+    from unittest import mock
+except ImportError:
+    # Python < 3.3
+    import mock
 
 LOCAL_DOMAIN = "http://localhost"
 URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
@@ -65,13 +71,18 @@ class APITests(unittest.TestCase):
         payload_list = list(wfuzz.payload(**{'payloads': [('buffer_overflow', {'default': '10', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('AAAAAAAAAA',)])
 
-        server_dir = os.path.join(wfuzz.utils.get_path('../../tests'), 'server_dir')
+        with mock.patch('os.walk') as mocked_oswalk:
+            mocked_oswalk.return_value = [
+                ('/foo', ('bar',), ('baz',)),
+                ('/foo/bar', (), ('spam', 'eggs')),
+            ]
+            payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'mockeddir', 'encoder': None}, None)]}))
+            self.assertEqual(payload_list, [('../../../../../foo/baz',), ('../../../../../foo/bar/spam',), ('../../../../../foo/bar/eggs',)])
 
-        payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': server_dir, 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('Dockerfile',), ('docker-compose.yml',), ('simple_server.py',), ('iterators/bb',), ('iterators/ac',), ('iterators/aa',), ('static/placeholder.txt',), ('plugins/robots.txt',), ('recursive_dir/a/b/c/placeholder.txt',), ('dir/b',), ('dir/c',), ('dir/one',), ('dir/a',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': os.path.join(os.path.join(server_dir, 'dir'), 'b'), 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('one',), ('two',)])
+        mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        with mock.patch(mocked_fun, mock.mock_open(read_data="one\ntwo\n")):
+            payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': 'mockedfile', 'encoder': None}, None)]}))
+            self.assertEqual(payload_list, [('one',), ('two',)])
 
         payload_list = list(wfuzz.payload(**{'payloads': [('hexrange', {'default': '09-10', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('09',), ('0a',), ('0b',), ('0c',), ('0d',), ('0e',), ('0f',), ('10',)])

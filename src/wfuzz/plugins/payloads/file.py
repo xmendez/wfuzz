@@ -29,8 +29,7 @@ class file(BasePayload):
         except IOError as e:
             raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
-        self.__count = len(self.f.readlines())
-        self.f.seek(0)
+        self.__count = None
 
     def __next__(self):
         line = self.f.readline().strip()
@@ -40,6 +39,10 @@ class file(BasePayload):
         return line
 
     def count(self):
+        if self.__count is None:
+            self.__count = len(self.f.readlines())
+            self.f.seek(0)
+
         return self.__count
 
     def __iter__(self):
