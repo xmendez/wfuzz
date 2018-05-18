@@ -35,7 +35,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', s
     columns = map(None, *reduce(operator.add, logicalRows))
     # get the maximum of each column by the string length of its items
     maxWidths = [max([len(str(item)) for item in column]) for column in columns]
-    rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + len(delim)*(len(maxWidths)-1))
+    rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + len(delim) * (len(maxWidths) - 1))
     # select the appropriate justify method
     justify = {'center': str.center, 'right': str.rjust, 'left': str.ljust}[justify.lower()]
     output = io.StringIO()
@@ -53,7 +53,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', s
 def wrap_always(text, width):
     """A simple word-wrap function that wraps text on exactly width characters.
     It doesn't split the text in words."""
-    return '\n'.join([text[width*i:width*(i+1)] for i in range(int(math.ceil(1.*len(text)/width)))])
+    return '\n'.join([text[width * i:width * (i + 1)] for i in range(int(math.ceil(1. * len(text) / width)))])
 
 
 def table_print(rows, width=80):

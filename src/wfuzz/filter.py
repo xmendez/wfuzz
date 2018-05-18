@@ -34,7 +34,7 @@ class FuzzResFilter:
 
             operator_names = oneOf("m d e un u r l sw unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
 
-            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0])-1]) + Suppress("Z")).setParseAction(self.__compute_fuzz_symbol)
+            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self.__compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
@@ -81,7 +81,7 @@ class FuzzResFilter:
                 chars=[],
                 regex=None,
                 filter_string=""
-                )
+            )
 
         if filter_string:
             self.hideparams['filter_string'] = filter_string
@@ -221,9 +221,9 @@ class FuzzResFilter:
         first = elements[0]
         for i in range(1, len(elements), 2):
             if elements[i] == "and":
-                first = (first and elements[i+1])
+                first = (first and elements[i + 1])
             elif elements[i] == "or":
-                first = (first or elements[i+1])
+                first = (first or elements[i + 1])
 
         return first
 

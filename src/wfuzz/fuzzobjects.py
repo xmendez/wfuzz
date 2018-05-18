@@ -732,7 +732,7 @@ class FuzzStats:
         else:
             string += "Processed Requests: %s\n" % (str(self.processed())[:8])
         string += "Filtered Requests: %s\n" % (str(self.filtered())[:8])
-        string += "Requests/sec.: %s\n" % str(self.processed()/self.totaltime if self.totaltime > 0 else 0)[:8]
+        string += "Requests/sec.: %s\n" % str(self.processed() / self.totaltime if self.totaltime > 0 else 0)[:8]
 
         return string
 

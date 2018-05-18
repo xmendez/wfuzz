@@ -132,7 +132,7 @@ class TextParser(object):
                                 if self.newindex == -1:
                                         self.lastFull_line = self.string[self.oldindex:len(self.string)]
                                 else:
-                                        self.lastFull_line = self.string[self.oldindex:self.newindex+1]
+                                        self.lastFull_line = self.string[self.oldindex:self.newindex + 1]
 
                                 self.oldindex = self.newindex + 1
                         else:

@@ -1,15 +1,7 @@
-try:
-    # Python >= 3.3
-    from unittest import mock
-except ImportError:
-    # Python < 3.3
-    import mock
-
 import unittest
 
 # Python 2 and 3: urlib.parse
 
-from wfuzz.externals.reqresp import Request
 from wfuzz.fuzzobjects import FuzzRequest
 
 
@@ -19,6 +11,7 @@ Content-Type: application/x-www-form-urlencoded
 User-Agent: Wfuzz/2.2
 
 """
+
 
 class FuzzRequestTest(unittest.TestCase):
     def test_seturl(self):

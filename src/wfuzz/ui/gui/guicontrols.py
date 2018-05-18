@@ -117,7 +117,7 @@ class ConsolePanel(wx.Panel):
 
     def get_last_line(self):
         nl = self.textctrl.GetNumberOfLines()
-        ln = self.textctrl.GetLineText(nl-1)
+        ln = self.textctrl.GetLineText(nl - 1)
         ln = ln[len(self.prompt):]
 
         return ln

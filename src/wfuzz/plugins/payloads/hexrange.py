@@ -42,7 +42,7 @@ class hexrange(BasePayload):
         if self.current > self.maximum:
             raise StopIteration
 
-        pl = "%"+str(self.lgth)+"s"
+        pl = "%" + str(self.lgth) + "s"
         num = hex(self.current).replace("0x", "")
         pl = pl % (num)
         payl = pl.replace(" ", "0")

@@ -269,10 +269,9 @@ class FuzzSession(UserDict):
         # seed
         self.data["compiled_genreq"] = requestGenerator(self)
 
-        if self.data["compiled_genreq"].baseline is None and (FuzzResult.BASELINE_CODE in self.data['hc']
-           or FuzzResult.BASELINE_CODE in self.data['hl']
-           or FuzzResult.BASELINE_CODE in self.data['hw']
-           or FuzzResult.BASELINE_CODE in self.data['hh']):
+        if self.data["compiled_genreq"].baseline is None and (FuzzResult.BASELINE_CODE in self.data['hc'] or
+           FuzzResult.BASELINE_CODE in self.data['hl'] or FuzzResult.BASELINE_CODE in self.data['hw'] or
+           FuzzResult.BASELINE_CODE in self.data['hh']):
                 raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
 
         if self.data["script"]:

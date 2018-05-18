@@ -124,13 +124,13 @@ class Controller:
             else:
                 print("Processed Requests: %s\r" % (str(summary.processed())[:8]))
             print("Filtered Requests: %s\r" % (str(summary.filtered())[:8]))
-            req_sec = summary.processed()/summary.totaltime if summary.totaltime > 0 else 0
+            req_sec = summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
             print("Total time: %s\r" % str(summary.totaltime)[:8])
             if req_sec > 0:
                 print("Requests/sec.: %s\r" % str(req_sec)[:8])
-                eta = pending/req_sec
+                eta = pending / req_sec
                 if eta > 60:
-                    print("ET left min.: %s\r\n" % str(eta/60)[:8])
+                    print("ET left min.: %s\r\n" % str(eta / 60)[:8])
                 else:
                     print("ET left sec.: %s\r\n" % str(eta)[:8])
 

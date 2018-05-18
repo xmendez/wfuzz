@@ -79,9 +79,9 @@ class VariablesSet:
                         self.boundary = "---------------------------D33PB1T0R3QR3SP0B0UND4RY2203"
                 pd = ""
                 for i in self.variables:
-                        pd += "--"+self.boundary+"\r\n"
+                        pd += "--" + self.boundary + "\r\n"
                         pd += "%s\r\n\r\n%s\r\n" % ("\r\n".join(i.extraInfo), i.value)
-                pd += "--"+self.boundary+"--\r\n"
+                pd += "--" + self.boundary + "--\r\n"
                 return pd
 
         def parseMultipart(self, cad, boundary):

@@ -44,7 +44,7 @@ class names(BasePayload):
                 str2 = ""
                 str3 = ""
                 str4 = ""
-                for i in range(0, len(parts)-1):
+                for i in range(0, len(parts) - 1):
                         str1 = str1 + parts[i] + "."
                         str2 = str2 + parts[i]
                         str3 = str3 + parts[i][0] + "."

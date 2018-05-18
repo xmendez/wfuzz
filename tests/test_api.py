@@ -37,7 +37,7 @@ class APITests(unittest.TestCase):
             'sha1': ('admin', 'd033e22ae348aeb5660fc2140aec35850c4da997'),
             'md5': ('admin', '21232f297a57a5a743894a0e4a801fc3'),
             'hexlify': ('admin', '61646d696e'),
-            #'html_escape': ('<>&\'"/', "&lt;&gt;&amp;'&quot;/"),
+            'html_escape': ('<>&\'"/', "&lt;&gt;&amp;'&quot;/"),
             'html_decimal': ('<>&\'"/', '&#60;&#62;&#38;&#39;&#34;&#47;'),
             'html_hexadecimal': ('<>&\'"/', '&#x3c;&#x3e;&#x26;&#x27;&#x22;&#x2f;'),
 

@@ -10,18 +10,20 @@ class GetHandler(SimpleHTTPRequestHandler):
     def do_HEAD(self):
         parsed_path = urllib.parse.urlparse(self.path)
         if parsed_path.path.startswith("/echo"):
-            message = '\n'.join([
-                'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address, self.address_string()),
-                'command=%s' % self.command,
-                'path=%s' % self.path,
-                'real path=%s' % parsed_path.path,
-                'query=%s' % parsed_path.query,
-                'request_version=%s' % self.request_version,
-                '',
-                'HEADERS:',
-                '%s' % self.headers,
-                ])
+            message = '\n'.join(
+                [
+                    'CLIENT VALUES:',
+                    'client_address=%s (%s)' % (self.client_address, self.address_string()),
+                    'command=%s' % self.command,
+                    'path=%s' % self.path,
+                    'real path=%s' % parsed_path.path,
+                    'query=%s' % parsed_path.query,
+                    'request_version=%s' % self.request_version,
+                    '',
+                    'HEADERS:',
+                    '%s' % self.headers,
+                ]
+            )
             self.send_response(200)
             self.end_headers()
             self.wfile.write(message.encode('utf-8'))
@@ -37,18 +39,20 @@ class GetHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         if parsed_path.path.startswith("/echo"):
-            message = '\n'.join([
-                'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address, self.address_string()),
-                'command=%s' % self.command,
-                'path=%s' % self.path,
-                'real path=%s' % parsed_path.path,
-                'query=%s' % parsed_path.query,
-                'request_version=%s' % self.request_version,
-                '',
-                'HEADERS:',
-                '%s' % self.headers,
-                ])
+            message = '\n'.join(
+                [
+                    'CLIENT VALUES:',
+                    'client_address=%s (%s)' % (self.client_address, self.address_string()),
+                    'command=%s' % self.command,
+                    'path=%s' % self.path,
+                    'real path=%s' % parsed_path.path,
+                    'query=%s' % parsed_path.query,
+                    'request_version=%s' % self.request_version,
+                    '',
+                    'HEADERS:',
+                    '%s' % self.headers,
+                ]
+            )
             self.send_response(200)
             self.end_headers()
             self.wfile.write(message.encode('utf-8'))
@@ -69,20 +73,22 @@ class GetHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
 
-            message = '\n'.join([
-                'CLIENT VALUES:',
-                'client_address=%s (%s)' % (self.client_address, self.address_string()),
-                'command=%s' % self.command,
-                'path=%s' % self.path,
-                'real path=%s' % parsed_path.path,
-                'query=%s' % parsed_path.query,
-                'request_version=%s' % self.request_version,
-                '',
-                'HEADERS:',
-                '%s' % self.headers,
-                'POST_DATA=%s' % post_body,
-                '',
-                ])
+            message = '\n'.join(
+                [
+                    'CLIENT VALUES:',
+                    'client_address=%s (%s)' % (self.client_address, self.address_string()),
+                    'command=%s' % self.command,
+                    'path=%s' % self.path,
+                    'real path=%s' % parsed_path.path,
+                    'query=%s' % parsed_path.query,
+                    'request_version=%s' % self.request_version,
+                    '',
+                    'HEADERS:',
+                    '%s' % self.headers,
+                    'POST_DATA=%s' % post_body,
+                    '',
+                ]
+            )
 
             self.wfile.write(message.encode('utf-8'))
 

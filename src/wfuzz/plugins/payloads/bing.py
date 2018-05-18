@@ -12,7 +12,7 @@ class bing(BasePayload):
         "intitle:\"JBoss JMX Management Console\"",
         "Some examples of bing hacking:",
         "http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html"
-        )
+    )
 
     summary = "Returns URL results of a given bing API search (needs api key)."
     category = ["default"]

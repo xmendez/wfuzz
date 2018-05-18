@@ -14,7 +14,7 @@ class grep(BasePlugin):
     description = (
         "Extracts the given regex pattern from the HTTP response and prints it",
         "(It is not a filter operator)",
-        )
+    )
     category = ["passive"]
     priority = 99
 

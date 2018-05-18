@@ -80,7 +80,7 @@ class burpstate(BasePayload):
             can be used to get a valid date, and then use the parsed values from that
             object along with converting mili -> micro seconds in a new date object.'''
             try:
-                    d = datetime.datetime.fromtimestamp(milliseconds/1000)
+                    d = datetime.datetime.fromtimestamp(milliseconds / 1000)
                     date = datetime.datetime(d.year, d.month, d.day, d.hour, d.minute, d.second, (milliseconds % 1000) * 1000)
             except ValueError:  # Bad date, just return the milliseconds
                     date = str(milliseconds)
@@ -93,25 +93,25 @@ class burpstate(BasePayload):
             if len(field) <= i:
                     return None, -1
             elif field[i] == '\x00':  # 4 byte integer value
-                    return str(struct.unpack('>I', field[i+1:i+5])[0]), 5
+                    return str(struct.unpack('>I', field[i + 1:i + 5])[0]), 5
             elif field[i] == '\x01':  # Two possible unsigned long long types
-                    if field[i+1] == '\x00':  # (64bit) 8 Byte Java Date
-                            ms = struct.unpack('>Q', field[i+1:i+9])[0]
+                    if field[i + 1] == '\x00':  # (64bit) 8 Byte Java Date
+                            ms = struct.unpack('>Q', field[i + 1:i + 9])[0]
                             date = self.milliseconds_to_date(ms)
                             value = date.ctime() if date else 0  # Use the ctime string format for date
                     else:  # Serial Number only used ocasionally in Burp
-                            value = str(struct.unpack('>Q', field[i+1:i+9])[0])
+                            value = str(struct.unpack('>Q', field[i + 1:i + 9])[0])
                     return value, 9
             elif field[i] == '\x02':  # Boolean Object True/False
-                    return str(struct.unpack('?', field[i+1:i+2])[0]), 2
+                    return str(struct.unpack('?', field[i + 1:i + 2])[0]), 2
             elif field[i] == '\x03' or field[i] == '\x04':  # 4 byte length + string
-                    length = struct.unpack('>I', field[i+1:i+5])[0]
-                    # print "Saw string of length", length, "at", i+5, i+5+length
-                    value = field[i+5:i+5+length]
+                    length = struct.unpack('>I', field[i + 1:i + 5])[0]
+                    # print "Saw string of length", length, "at", i + 5, i + 5+length
+                    value = field[i + 5:i + 5 + length]
                     if '<' in value or '>' in value or '&' in value:  # Sanatize HTML w/CDATA
                             value = '<![CDATA[' + value.replace(']]>', ']]><![CDATA[') + ']]>'
                     value = ''.join(c for c in value if c in nvprint)  # Remove nonprintables
-                    return value, 5+length  # ** TODO: Verify length by matching end tag **
+                    return value, 5 + length  # ** TODO: Verify length by matching end tag **
             print("Unknown binary format", repr(field[i]))
             return None, -1
 

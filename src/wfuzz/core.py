@@ -10,7 +10,6 @@ from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 from .filter import FuzzResFilter
 
 import re
-import itertools
 
 # Python 2 and 3: zip_longest
 try:
@@ -242,10 +241,13 @@ class Fuzzer(object):
 
         if options.get("script") or options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options))
-            rq = RoutingQ(options, {
-                FuzzResult.seed: self.qmanager["seed_queue"],
-                FuzzResult.backfeed: self.qmanager["http_queue"]
-                })
+            rq = RoutingQ(
+                options,
+                {
+                    FuzzResult.seed: self.qmanager["seed_queue"],
+                    FuzzResult.backfeed: self.qmanager["http_queue"]
+                }
+            )
 
             self.qmanager.add("routing_queue", rq)
 

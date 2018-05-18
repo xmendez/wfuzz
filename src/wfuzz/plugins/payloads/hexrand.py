@@ -42,7 +42,7 @@ class hexrand(BasePayload):
         self.current = random.SystemRandom().randint(self.minimum, self.maximum)
 
         lgth = len(hex(self.maximum).replace("0x", ""))
-        pl = "%"+str(lgth)+"s"
+        pl = "%" + str(lgth) + "s"
         num = hex(self.current).replace("0x", "")
         pl = pl % (num)
         payl = pl.replace(" ", "0")

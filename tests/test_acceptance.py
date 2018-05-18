@@ -11,9 +11,9 @@ HTTPD_PORT = 8000
 
 ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
 
-# $ export PYTHONPATH=./src 
+# $ export PYTHONPATH=./src
 # $ python -m unittest discover
-# 
+#
 # docker containers with HTTP server and proxy must be started before running these tests
 # $ cd tests/server_dir
 # $ docke-compose up
@@ -325,10 +325,6 @@ def create_tests():
 
         # duplicate tests with proxy
         duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
-
-def proxy_thread():
-    proxy = HTTP("localhost", 8080)
-    proxy.run()
 
 
 create_tests()

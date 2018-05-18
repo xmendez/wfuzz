@@ -9,7 +9,6 @@ else:
     from urlparse import urljoin
 
 
-
 class FuzzRequestSoupMixing(object):
     def get_soup(self):
         try:

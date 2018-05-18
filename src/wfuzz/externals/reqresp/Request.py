@@ -263,7 +263,7 @@ class Request:
 
                 parts = urlparse(self.completeUrl)
                 if "/" != newpath[0]:
-                        newpath = "/".join(parts[2].split("/")[:-1])+"/"+newpath
+                        newpath = "/".join(parts[2].split("/")[:-1]) + "/" + newpath
 
                 return urlunparse([parts[0], parts[1], newpath, '', '', ''])
 
@@ -306,11 +306,11 @@ class Request:
             c.setopt(pycurl.HTTPHEADER, req.getHeaders())
 
             curl_options = {
-                    "GET": pycurl.HTTPGET,
-                    "POST": pycurl.POST,
-                    "PUT": pycurl.UPLOAD,
-                    "HEAD": pycurl.NOBODY,
-                }
+                "GET": pycurl.HTTPGET,
+                "POST": pycurl.POST,
+                "PUT": pycurl.UPLOAD,
+                "HEAD": pycurl.NOBODY,
+            }
 
             for o in curl_options.values():
                 c.setopt(o, False)
@@ -344,7 +344,7 @@ class Request:
             if conn.getinfo(pycurl.EFFECTIVE_URL) != self.completeUrl:
                 self.setFinalUrl(conn.getinfo(pycurl.EFFECTIVE_URL))
                 # pycurl reponse headers includes original => remove
-                header = header[header.find("\r\n\r\n")+1:]
+                header = header[header.find("\r\n\r\n") + 1:]
 
             self.totaltime = conn.getinfo(pycurl.TOTAL_TIME)
 
@@ -429,7 +429,7 @@ class Request:
                         else:
                                 break
 
-                self.setUrl(prot+"://" + self._headers["Host"] + pathTMP)
+                self.setUrl(prot + "://" + self._headers["Host"] + pathTMP)
 
                 if self.method.upper() == "POST":
 

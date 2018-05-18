@@ -313,7 +313,7 @@ class html_decimal:
     def encode(self, string):
         new = ""
         for x in string:
-            new += "&#"+str(ord(x))+";"
+            new += "&#" + str(ord(x)) + ";"
         return new
 
 
@@ -330,7 +330,7 @@ class html_hexadecimal:
         new = ""
         for x in string:
             val = "%02x" % ord(x)
-            new += "&#x"+str(val)+";"
+            new += "&#x" + str(val) + ";"
         return new
 
 
@@ -347,7 +347,7 @@ class utf8_binary:
         new = ""
         for x in string:
             val = "%02x" % ord(x)
-            new += "\\x"+str(val)
+            new += "\\x" + str(val)
         return new
 
 
@@ -365,9 +365,9 @@ class utf8:
         for x in string:
             val = "%02x" % ord(x)
             if len(val) == 2:
-                new += "\\u00"+str(val)
+                new += "\\u00" + str(val)
             else:
-                new += "\\u"+str(val)
+                new += "\\u" + str(val)
         return new
 
 
@@ -387,7 +387,7 @@ class uri_unicode:
             if len(val) == 2:
                 new += "%u00" + str(val)
             else:
-                new += "%u"+str(val)
+                new += "%u" + str(val)
         return new
 
 
@@ -404,7 +404,7 @@ class mysql_char:
         new = "CHAR("
         for x in string:
             val = str(ord(x))
-            new += str(val)+","
+            new += str(val) + ","
         new = new.strip(",")
         new += ")"
         return new
@@ -430,7 +430,7 @@ class mssql_char:
         new = ""
         for x in string:
             val = str(ord(x))
-            new += "CHAR("+str(val)+")+"
+            new += "CHAR(" + str(val) + ")+"
         new = new.strip("+")
         return new
 
@@ -456,7 +456,7 @@ class oracle_char:
         new = ""
         for x in string:
             val = str(ord(x))
-            new += "chr("+val+")||"
+            new += "chr(" + val + ")||"
         new = new.strip("||")
         return new
 

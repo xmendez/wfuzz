@@ -65,14 +65,14 @@ class Response:
                 return self.__content
 
         def getTextHeaders(self):
-                string = str(self.protocol)+" "+str(self.code)+" "+str(self.message)+"\r\n"
+                string = str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
                 for i, j in self._headers:
-                        string += i+": "+j+"\r\n"
+                        string += i + ": " + j + "\r\n"
 
                 return string
 
         def getAll(self):
-                string = self.getTextHeaders()+"\r\n"+self.getContent()
+                string = self.getTextHeaders() + "\r\n" + self.getContent()
                 return string
 
         def Substitute(self, src, dst):
@@ -81,9 +81,9 @@ class Response:
                 self.parseResponse(b)
 
         def getAll_wpost(self):
-                string = str(self.protocol)+" "+str(self.code)+" "+str(self.message)+"\r\n"
+                string = str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
                 for i, j in self._headers:
-                        string += i+": "+j+"\r\n"
+                        string += i + ": " + j + "\r\n"
                 return string
 
         def parseResponse(self, rawResponse, type="curl"):

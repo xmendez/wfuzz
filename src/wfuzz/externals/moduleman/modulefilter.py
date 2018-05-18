@@ -72,9 +72,9 @@ class Filter(IFilter):
         first = elements[0]
         for i in range(1, len(elements), 2):
             if elements[i] == "and":
-                first = (first and elements[i+1])
+                first = (first and elements[i + 1])
             elif elements[i] == "or" or elements[i] == ",":
-                first = (first or elements[i+1])
+                first = (first or elements[i + 1])
 
         return first
 

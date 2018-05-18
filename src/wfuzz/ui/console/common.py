@@ -210,7 +210,7 @@ class Term:
             WConio.textcolor(8)
 
     def go_up(self, lines):
-        sys.stdout.write("\033["+str(lines)+"A")
+        sys.stdout.write("\033[" + str(lines) + "A")
 
     def erase_lines(self, lines):
         for i in range(lines):

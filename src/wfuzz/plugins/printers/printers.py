@@ -263,7 +263,7 @@ class raw(BasePrinter):
         else:
             self.f.write("Processed Requests: %s\n" % (str(summary.processed())[:8]))
         self.f.write("Filtered Requests: %s\n" % (str(summary.filtered())[:8]))
-        self.f.write("Requests/sec.: %s\n" % str(summary.processed()/summary.totaltime if summary.totaltime > 0 else 0)[:8])
+        self.f.write("Requests/sec.: %s\n" % str(summary.processed() / summary.totaltime if summary.totaltime > 0 else 0)[:8])
 
 
 @moduleman_plugin

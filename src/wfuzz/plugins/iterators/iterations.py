@@ -43,7 +43,7 @@ class product(object):
 
     def __init__(self, *i):
         self.it = itertools.product(*i)
-        self.__count = reduce(lambda x, y: x*y.count(), i[1:], i[0].count())
+        self.__count = reduce(lambda x, y: x * y.count(), i[1:], i[0].count())
 
     def count(self):
         return self.__count
