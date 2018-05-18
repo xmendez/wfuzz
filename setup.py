@@ -42,7 +42,7 @@ setup(
     description="Wfuzz - The web fuzzer",
     long_description=long_descr,
     author="Xavi Mendez (@x4vi_mendez)",
-    author_email="xmendez@edge-security.com"
+    author_email="xmendez@edge-security.com",
     url="http://wfuzz.org",
     install_requires=install_requires,
     extras_require={
