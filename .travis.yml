@@ -9,4 +9,10 @@ cache: pip
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install: pip install tox-travis
-script: tox
+jobs:
+  include:
+    - stage: test
+      script: tox
+    - stage: coverage
+      python: 3.5
+      script: codecov
