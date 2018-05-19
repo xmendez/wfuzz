@@ -1,0 +1,12 @@
+sudo: required
+language: python
+services:
+  - docker
+python:
+  - "2.7"
+  - "3.5"
+cache: pip
+before_install:
+  - docker-compose -f server_dir/docker-compose.yml up -d
+install: pip install tox-travis
+script: tox
