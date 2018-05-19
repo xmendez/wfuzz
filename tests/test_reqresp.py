@@ -3,14 +3,15 @@ import unittest
 # Python 2 and 3: urlib.parse
 
 from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz import __version__ as wfuzz_version
 
 
 raw_req = """GET /a HTTP/1.1
 Host: www.wfuzz.org
 Content-Type: application/x-www-form-urlencoded
-User-Agent: Wfuzz/2.2
+User-Agent: Wfuzz/{}
 
-"""
+""".format(wfuzz_version)
 
 
 class FuzzRequestTest(unittest.TestCase):
