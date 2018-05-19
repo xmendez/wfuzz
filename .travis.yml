@@ -6,5 +6,7 @@ python:
   - "2.7"
   - "3.5"
 cache: pip
+before_install:
+  - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install: pip install tox-travis
 script: tox
