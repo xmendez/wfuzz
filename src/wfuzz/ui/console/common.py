@@ -10,27 +10,27 @@ examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --
 \twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
 
 exec_banner = '''********************************************************\r
-* Wfuzz %s - The Web Fuzzer                           *\r
-********************************************************\r\n''' % version
+* Wfuzz {version} - The Web Fuzzer {align: <{width1}}*\r
+********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
 
 help_banner = '''********************************************************
-* Wfuzz %s - The Web Fuzzer                           *
+* Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Version up to 1.4c coded by:                         *
 * Christian Martorella (cmartorella@edge-security.com) *
 * Carlos del ojo (deepbit@gmail.com)                   *
 *                                                      *
-* Version 1.4d to %s coded by:                        *
+* Version 1.4d to {version} coded by: {align: <{width2}}*
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n''' % (version, version)
+********************************************************\r\n'''.format(version=version, width1=29 - len(version), align=' ', width2=26 - len(version))
 
 help_banner2 = '''********************************************************
-* Wfuzz %s - The Web Fuzzer                        *
+* Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Coded by:                                            *
 *                                                      *
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n''' % (version,)
+********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
 
 header_usage = '''Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload.
