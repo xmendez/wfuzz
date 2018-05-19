@@ -15,6 +15,9 @@ Wfuzz: The Web fuzzer
 .. image:: https://img.shields.io/pypi/pyversions/wfuzz.svg
     :target: https://pypi.org/project/wfuzz/
 
+.. image:: https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master
+    :target: https://codecov.io/github/xmendez/wfuzz
+
 Wfuzz supports Python 3. The use of **Python 3** is preferred (and faster) over Python 2. 
 
 See Wfuzz in action:
