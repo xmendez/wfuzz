@@ -14,6 +14,10 @@ User-Agent: Wfuzz/2.2
 
 
 class FuzzRequestTest(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(FuzzRequestTest, self).__init__(*args, **kwargs)
+        self.maxDiff = 1000
+
     def test_seturl(self):
         fr = FuzzRequest()
 
@@ -43,7 +47,7 @@ class FuzzRequestTest(unittest.TestCase):
         self.assertEqual(fr.path, "/a")
 
         fr.url = "http://www.wfuzz.org/a"
-        self.assertEqual(sorted(str(fr)), sorted(raw_req))
+        self.assertEqual(sorted(str(fr).split("\n")), sorted(raw_req.split("\n")))
 
         fr.auth = ('basic', 'admin:admin')
         self.assertEqual(fr.auth, ('basic', 'admin:admin'))
