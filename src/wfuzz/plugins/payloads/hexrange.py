@@ -1,5 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.exception import FuzzExceptBadOptions
+
 
 @moduleman_plugin
 class hexrange(BasePayload):
@@ -20,32 +22,31 @@ class hexrange(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	try:
-	    ran = self.params["range"].split("-")
-	    self.minimum = int(ran[0],16)
-	    self.maximum = int(ran[1],16)
-	    self.__count = self.maximum - self.minimum + 1
-	    self.current = self.minimum
-	except:
-	    raise Exception, "Bad range format (eg. \"0-ffa\")"
-	    
+        try:
+            ran = self.params["range"].split("-")
+            self.minimum = int(ran[0], 16)
+            self.maximum = int(ran[1], 16)
+            self.__count = self.maximum - self.minimum + 1
+            self.current = self.minimum
+            self.lgth = max(len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x", "")))
+        except ValueError:
+            raise FuzzExceptBadOptions("Bad range format (eg. \"0-ffa\")")
+
     def __iter__(self):
-	return self
+        return self
 
     def count(self):
-	return self.__count
-	    
-    def next(self):
-	if self.current > self.maximum:
-	    raise StopIteration
-	
-	lgth=len(hex(self.maximum).replace("0x",""))
-	pl="%"+str(lgth)+"s"
-	num=hex(self.current).replace("0x","")	
-	pl= pl % (num)
-	payl=pl.replace(" ","0")
-	
-	self.current+=1
+        return self.__count
 
-	return payl
+    def __next__(self):
+        if self.current > self.maximum:
+            raise StopIteration
 
+        pl = "%" + str(self.lgth) + "s"
+        num = hex(self.current).replace("0x", "")
+        pl = pl % (num)
+        payl = pl.replace(" ", "0")
+
+        self.current += 1
+
+        return payl

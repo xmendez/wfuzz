@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
+
 @moduleman_plugin
 class list(BasePayload):
     name = "list"
@@ -20,32 +21,31 @@ class list(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	if self.params["values"].find("\\") >= 0:
+        if self.params["values"].find("\\") >= 0:
             self.params["values"] = self.params["values"].replace("\\-", "$SEP$")
-	    self.params["values"] = self.params["values"].replace("\\\\", "$SCAP$")
+            self.params["values"] = self.params["values"].replace("\\\\", "$SCAP$")
 
-	    self.l = self.params["values"].split("-")
+            self.value_list = self.params["values"].split("-")
 
-	    for i in range(len(self.l)):
-		self.l[i] = self.l[i].replace("$SEP$", "-")
-		self.l[i] = self.l[i].replace("$SCAP$", "\\")
-	else:
-	    self.l = self.params["values"].split("-")
-	    
-	self.__count = len(self.l)
-	self.current = 0
+            for i in range(len(self.value_list)):
+                self.value_list[i] = self.value_list[i].replace("$SEP$", "-")
+                self.value_list[i] = self.value_list[i].replace("$SCAP$", "\\")
+        else:
+            self.value_list = self.params["values"].split("-")
 
-    def __iter__ (self):
-	return self
+        self.__count = len(self.value_list)
+        self.current = 0
+
+    def __iter__(self):
+        return self
 
     def count(self):
-	return self.__count
+        return self.__count
 
-    def next (self):
-	if self.current >= self.__count:
-	    raise StopIteration
-	else:
-	    elem = self.l[self.current]
-	    self.current += 1
-	    return elem
-
+    def __next__(self):
+        if self.current >= self.__count:
+            raise StopIteration
+        else:
+            elem = self.value_list[self.current]
+            self.current += 1
+            return elem

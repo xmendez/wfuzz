@@ -1,12 +1,27 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
-import urllib
-import base64 as mybase64
+# Python 2 and 3
+try:
+    from urllib.parse import quote
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import quote
+    from urllib import unquote
+
+# Python 2 and 3
+try:
+    from base64 import decodebytes as b64decode
+    from base64 import standard_b64encode
+except ImportError:
+    from base64 import decodestring as b64decode
+    from base64 import standard_b64encode
+
 import re
 import binascii
 import random
 import hashlib
-import cgi
+import html
+
 
 @moduleman_plugin("encode")
 class none:
@@ -16,15 +31,16 @@ class none:
     summary = "Returns string without changes"
     category = ["default"]
     priority = 99
-    
+
     def encode(self, string):
-	return string
+        return string
 
     def decode(self, string):
-	return string
+        return string
+
 
 @moduleman_plugin("encode")
-class urlencode :
+class urlencode:
     name = "urlencode"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
@@ -33,10 +49,11 @@ class urlencode :
     priority = 99
 
     def encode(self, string):
-	return urllib.quote(string)
+        return quote(string)
 
     def decode(self, string):
-	return urllib.unquote(string)
+        return unquote(string)
+
 
 @moduleman_plugin("encode")
 class double_urlencode:
@@ -48,10 +65,11 @@ class double_urlencode:
     priority = 99
 
     def encode(self, string):
-	return urllib.quote(urllib.quote(string))
+        return quote(quote(string))
 
     def decode(self, string):
-	return urllib.unquote(urllib.unquote(string))
+        return unquote(unquote(string))
+
 
 @moduleman_plugin("encode")
 class base64:
@@ -63,10 +81,11 @@ class base64:
     priority = 99
 
     def encode(self, string):
-	return mybase64.standard_b64encode(string)
+        return standard_b64encode(string.encode('utf-8')).decode('utf-8')
 
     def decode(self, string):
-	return mybase64.decodestring(string)
+        return b64decode(string.encode('utf-8')).decode('utf-8')
+
 
 @moduleman_plugin("encode")
 class uri_triple_hex:
@@ -76,17 +95,18 @@ class uri_triple_hex:
     summary = "Encodes ALL charachers using the %25%xx%xx escape."
     category = ["url"]
     priority = 99
-    
+
     def encode(self, string):
-	strt = ""
-	s = re.compile(r"/|;|=|:|&|@|\\|\?")	
-	for c in string:
-	    if s.search(c):
-		strt += c
-		continue
-	    temp = hex(ord(c))[2:]
-	    strt += "%%25%%%02x%%%02x" % (ord(temp[:1]), ord(temp[1:]))
-	return strt
+        strt = ""
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        for c in string:
+            if s.search(c):
+                strt += c
+                continue
+            temp = hex(ord(c))[2:]
+            strt += "%%25%%%02x%%%02x" % (ord(temp[:1]), ord(temp[1:]))
+        return strt
+
 
 @moduleman_plugin("encode")
 class uri_double_hex:
@@ -96,17 +116,18 @@ class uri_double_hex:
     summary = "Encodes ALL charachers using the %25xx escape."
     category = ["url"]
     priority = 99
-    
-    def encode(self,string):
-	strt = ""
-	con = "%%25%02x"
-	s = re.compile(r"/|;|=|:|&|@|\\|\?")	
-	for c in string:
-	    if s.search(c):
-		strt += c
-		continue
-	    strt += con % ord(c)
-	return strt
+
+    def encode(self, string):
+        strt = ""
+        con = "%%25%02x"
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        for c in string:
+            if s.search(c):
+                strt += c
+                continue
+            strt += con % ord(c)
+        return strt
+
 
 @moduleman_plugin("encode")
 class uri_hex:
@@ -116,17 +137,17 @@ class uri_hex:
     summary = "Encodes ALL charachers using the %xx escape."
     category = ["url"]
     priority = 99
-	
-    def encode(self,string):
-	strt = ""
-	con = "%%%02x"
-	s = re.compile(r"/|;|=|:|&|@|\\|\?")	
-	for c in string:
-	    if s.search(c):
-		strt += c
-		continue
-	    strt += con % ord(c)
-	return strt
+
+    def encode(self, string):
+        strt = ""
+        con = "%%%02x"
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        for c in string:
+            if s.search(c):
+                strt += c
+                continue
+            strt += con % ord(c)
+        return strt
 
 
 @moduleman_plugin("encode")
@@ -137,17 +158,17 @@ class random_upper:
     summary = "Replaces random characters in string with its capitals letters"
     category = ["default"]
     priority = 99
-    
-    def encode(self,string):
-	strt = ""
-	for c in string:
-	    x = int(random.uniform(0,10))
-	    x = x % 2
-	    if x == 1:
-		strt += c.upper()
-	    else:
-		strt += c
-	return strt   
+
+    def encode(self, string):
+        strt = ""
+        for c in string:
+            x = int(random.uniform(0, 10))
+            x = x % 2
+            if x == 1:
+                strt += c.upper()
+            else:
+                strt += c
+        return strt
 
 
 @moduleman_plugin("encode")
@@ -158,18 +179,18 @@ class second_nibble_hex:
     summary = "Replaces ALL characters in string using the %?%dd escape"
     category = ["url"]
     priority = 99
-    
+
     def encode(self, string):
-	strt = ""
-	con = "%%%02x"
-	s = re.compile(r"/|;|=|:|&|@|\\|\?")	
-	for c in string:
-	    if s.search(c):
-		strt += c
-		continue
-	    temp = hex(ord(c))[2:]
-	    strt += "%%%s%%%02x" % (str(temp[:1]), ord(temp[1:]))
-	return strt
+        strt = ""
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        for c in string:
+            if s.search(c):
+                strt += c
+                continue
+            temp = hex(ord(c))[2:]
+            strt += "%%%s%%%02x" % (str(temp[:1]), ord(temp[1:]))
+        return strt
+
 
 @moduleman_plugin("encode")
 class first_nibble_hex:
@@ -179,18 +200,18 @@ class first_nibble_hex:
     summary = "Replaces ALL characters in string using the %%dd? escape"
     category = ["url"]
     priority = 99
-    
+
     def encode(self, string):
-	strt = ""
-	con = "%%%02x"
-	s=re.compile(r"/|;|=|:|&|@|\\|\?")	
-	for c in string:
-	    if s.search(c):
-		strt += c
-		continue
-	    temp = hex(ord(c))[2:]
-	    strt += "%%%%%02x%s" % (ord(temp[:1]), str(temp[1:]))
-	return strt
+        strt = ""
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        for c in string:
+            if s.search(c):
+                strt += c
+                continue
+            temp = hex(ord(c))[2:]
+            strt += "%%%%%02x%s" % (ord(temp[:1]), str(temp[1:]))
+        return strt
+
 
 @moduleman_plugin("encode")
 class doble_nibble_hex:
@@ -200,23 +221,24 @@ class doble_nibble_hex:
     summary = "Replaces ALL characters in string using the %%dd%dd escape"
     category = ["url"]
     priority = 99
-    
-    def encode(self,string):
-	strt = ""
-	fin = ""
-	con = "%%%02x"
-	s=re.compile(r"/|;|=|:|&|@|\\|\?")	
-	enc=uri_hex()
-	strt = enc.encode(string)
-	for c in strt:
-	    if not c == "%":
-		if s.search(c):
-			fin += c
-			continue
-		fin += con % ord(c)
-	    else:
-		fin += c
-	return fin
+
+    def encode(self, string):
+        strt = ""
+        fin = ""
+        con = "%%%02x"
+        s = re.compile(r"/|;|=|:|&|@|\\|\?")
+        enc = uri_hex()
+        strt = enc.encode(string)
+        for c in strt:
+            if not c == "%":
+                if s.search(c):
+                        fin += c
+                        continue
+                fin += con % ord(c)
+            else:
+                fin += c
+        return fin
+
 
 @moduleman_plugin("encode")
 class sha1:
@@ -228,11 +250,12 @@ class sha1:
     priority = 99
 
     def encode(self, string):
-	s = hashlib.sha1()
-	s.update(string)
-	res = s.hexdigest()
-	return res
-		
+        s = hashlib.sha1()
+        s.update(string.encode('utf-8'))
+        res = s.hexdigest()
+        return res
+
+
 @moduleman_plugin("encode")
 class md5:
     name = "md5"
@@ -242,12 +265,13 @@ class md5:
     category = ["hashes"]
     priority = 99
 
-    def encode(self,string):
-	m=hashlib.new('md5')
-	m.update(string)
-	res = m.hexdigest()
-	return res
-		
+    def encode(self, string):
+        m = hashlib.new('md5')
+        m.update(string.encode('utf-8'))
+        res = m.hexdigest()
+        return res
+
+
 @moduleman_plugin("encode")
 class hexlify:
     name = "hexlify"
@@ -258,22 +282,24 @@ class hexlify:
     priority = 99
 
     def encode(self, string):
-	return binascii.hexlify(string)		
+        return binascii.hexlify(string.encode('utf-8')).decode('utf-8')
 
     def decode(self, string):
-	return binascii.unhexlify(clear)
+        return binascii.unhexlify(string.encode('utf-8')).decode('utf-8')
+
 
 @moduleman_plugin("encode")
 class html_escape:
     name = "html_escape"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
     version = "0.1"
-    summary = "Convert the characters '&', '<' and '>' in string to HTML-safe sequences."
+    summary = "Convert the characters &<>\" in string to HTML-safe sequences."
     category = ["html"]
     priority = 99
 
     def encode(self, string):
-	return cgi.escape(string)
+        return html.escape(string, quote=True)
+
 
 @moduleman_plugin("encode")
 class html_decimal:
@@ -284,11 +310,12 @@ class html_decimal:
     category = ["html"]
     priority = 99
 
-    def encode(self,string):
-	new = ""
-	for x in string:
-	    new += "&#"+str(ord(x))+";"
-	return new
+    def encode(self, string):
+        new = ""
+        for x in string:
+            new += "&#" + str(ord(x)) + ";"
+        return new
+
 
 @moduleman_plugin("encode")
 class html_hexadecimal:
@@ -299,12 +326,13 @@ class html_hexadecimal:
     category = ["html"]
     priority = 99
 
-    def encode(self,string):
-	new = ""
-	for x in string:
-	    val = "%02x" % ord(x)
-	    new += "&#x"+str(val)+";"
-	return new
+    def encode(self, string):
+        new = ""
+        for x in string:
+            val = "%02x" % ord(x)
+            new += "&#x" + str(val) + ";"
+        return new
+
 
 @moduleman_plugin("encode")
 class utf8_binary:
@@ -315,12 +343,13 @@ class utf8_binary:
     category = ["url"]
     priority = 99
 
-    def encode(self,string):
-	new = ""
-	for x in string:
-	    val = "%02x" % ord(x)
-	    new += "\\x"+str(val)
-	return new
+    def encode(self, string):
+        new = ""
+        for x in string:
+            val = "%02x" % ord(x)
+            new += "\\x" + str(val)
+        return new
+
 
 @moduleman_plugin("encode")
 class utf8:
@@ -331,15 +360,16 @@ class utf8:
     category = ["url"]
     priority = 99
 
-    def encode(self,string):
-	new = ""
-	for x in string:
-	    val = "%02x" % ord(x)
-	    if len(val)==2:
-		new += "\\u00"+str(val)
-	    else:
-		new += "\\u"+str(val)
-	return new
+    def encode(self, string):
+        new = ""
+        for x in string:
+            val = "%02x" % ord(x)
+            if len(val) == 2:
+                new += "\\u00" + str(val)
+            else:
+                new += "\\u" + str(val)
+        return new
+
 
 @moduleman_plugin("encode")
 class uri_unicode:
@@ -351,14 +381,15 @@ class uri_unicode:
     priority = 99
 
     def encode(self, string):
-	new = ""
-	for x in string:
-	    val = "%02x" % ord(x)
-	    if len(val) == 2:
-		new += "%u00" + str(val)
-	    else:
-		new += "%u"+str(val)
-	return new
+        new = ""
+        for x in string:
+            val = "%02x" % ord(x)
+            if len(val) == 2:
+                new += "%u00" + str(val)
+            else:
+                new += "%u" + str(val)
+        return new
+
 
 @moduleman_plugin("encode")
 class mysql_char:
@@ -369,21 +400,22 @@ class mysql_char:
     category = ["db"]
     priority = 99
 
-    def encode(self,string):
-	new = "CHAR("
-	for x in string:
-	    val=str(ord(x))
-	    new+=str(val)+","
-	new=new.strip(",")
-	new+=")"
-	return new
-    
-    def decode(self,string):
-	temp = string.strip("CHAR").strip("(").strip(")").split(",")
-	new = ""
-	for x in temp:
-	    new += chr(int(x))
-	return new
+    def encode(self, string):
+        new = "CHAR("
+        for x in string:
+            val = str(ord(x))
+            new += str(val) + ","
+        new = new.strip(",")
+        new += ")"
+        return new
+
+    def decode(self, string):
+        temp = string.strip("CHAR").strip("(").strip(")").split(",")
+        new = ""
+        for x in temp:
+            new += chr(int(x))
+        return new
+
 
 @moduleman_plugin("encode")
 class mssql_char:
@@ -395,20 +427,21 @@ class mssql_char:
     priority = 99
 
     def encode(self, string):
-	new=""
-	for x in string:
-	    val=str(ord(x))
-	    new+="CHAR("+str(val)+")+"
-	new=new.strip("+")
-	return new
-    
+        new = ""
+        for x in string:
+            val = str(ord(x))
+            new += "CHAR(" + str(val) + ")+"
+        new = new.strip("+")
+        return new
+
     def decode(self, string):
-	new=""
-	temp=string.split("+")
-	for x in temp:
-	    x=x.strip("CHAR").strip(")").strip("(")
-	    new+= chr(int(x))
-	return new 
+        new = ""
+        temp = string.split("+")
+        for x in temp:
+            x = x.strip("CHAR").strip(")").strip("(")
+            new += chr(int(x))
+        return new
+
 
 @moduleman_plugin("encode")
 class oracle_char:
@@ -418,19 +451,19 @@ class oracle_char:
     summary = "Converts ALL characters to Oracle's chr(xx)"
     category = ["db"]
     priority = 99
-	    
-    def encode(self,string):
-	new=""
-	for x in string:
-	    val = str(ord(x))
-	    new += "chr("+val+")||"
-	new = new.strip("||")
-	return new
+
+    def encode(self, string):
+        new = ""
+        for x in string:
+            val = str(ord(x))
+            new += "chr(" + val + ")||"
+        new = new.strip("||")
+        return new
 
     def decode(self, string):
-	new = ""
-	temp = string.split("||")
-	for x in temp:
-	    x = x.strip("chr").strip(")").strip("(")
-	    new += chr(int(x))
-	return new 
+        new = ""
+        temp = string.split("||")
+        for x in temp:
+            x = x.strip("chr").strip(")").strip("(")
+            new += chr(int(x))
+        return new

@@ -1,6 +1,7 @@
 import re
 import os
 
+
 def json_minify(string, strip_space=True):
     '''
     Created on 20/01/2011
@@ -40,7 +41,8 @@ def json_minify(string, strip_space=True):
             # start of string or unescaped quote character to end string
             if not in_string or (escaped is None or len(escaped.group()) % 2 == 0):
                 in_string = not in_string
-            index -= 1 # include " character in next catch
+            # include " character in next catch
+            index -= 1
         elif not (in_string or in_multi or in_single):
             if val == '/*':
                 in_multi = True
@@ -56,26 +58,17 @@ def json_minify(string, strip_space=True):
     new_str.append(string[index:])
     return ''.join(new_str)
 
+
 class Singleton(type):
     ''' Singleton metaclass. Use by defining the metaclass of a class Singleton,
         e.g.: class ThereCanBeOnlyOne:
-                  __metaclass__ = Singleton 
-    '''              
+                  __metaclass__ = Singleton
+    '''
 
     def __call__(class_, *args, **kwargs):
-	#try:
-	if not class_.hasInstance():
-	    class_.instance = super(Singleton, class_).__call__(*args, **kwargs)
-	return class_.instance
-	#except Exception, e:
-	#    error_type, error_value, trbk = sys.exc_info()
-	#    tb_list = traceback.format_tb(trbk, 6)    
-	#    s = "Error: %s \nDescription: %s \nTraceback:" % (error_type.__name__, error_value)
-	#    for i in tb_list:
-	#	s += "\n" + i
-
-	#    print s
-	#    return None
+        if not class_.hasInstance():
+            class_.instance = super(Singleton, class_).__call__(*args, **kwargs)
+        return class_.instance
 
     def deleteInstance(class_):
         ''' Delete the (only) instance. This method is mainly for unittests so
@@ -88,7 +81,7 @@ class Singleton(type):
         return hasattr(class_, 'instance')
 
 
-def get_home(check = False, directory = None):
+def get_home(check=False, directory=None):
     path = os.path.join(os.path.expanduser("~"), ".wfuzz")
     if check:
         if not os.path.exists(path):
@@ -96,7 +89,8 @@ def get_home(check = False, directory = None):
 
     return os.path.join(path, directory) if directory else path
 
-def get_path(directory = None):
+
+def get_path(directory=None):
     abspath = os.path.abspath(__file__)
     ret = os.path.dirname(abspath)
 

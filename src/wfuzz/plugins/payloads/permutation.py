@@ -1,7 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.exception import FuzzExceptBadOptions
 
-import sys
 
 @moduleman_plugin
 class permutation(BasePayload):
@@ -21,48 +21,43 @@ class permutation(BasePayload):
 
     def __init__(self, params):
         BasePayload.__init__(self, params)
-	self.charset = []
+        self.charset = []
 
-	try:
-	    ran = self.params["ch"].split("-")
-	    self.charset = ran[0]
-	    self.width = int(ran[1])
-	except:
-	    raise Exception, "Bad range format (eg. \"abfdeg-3\")"
+        try:
+            ran = self.params["ch"].split("-")
+            self.charset = ran[0]
+            self.width = int(ran[1])
+        except ValueError:
+            raise FuzzExceptBadOptions("Bad range format (eg. \"0-ffa\")")
 
-	pset = []
-	for x in self.charset:
-	    pset.append(x)
+        pset = []
+        for x in self.charset:
+            pset.append(x)
 
-	words = self.xcombinations(pset, self.width)
-	self.lista = []
-	for x in words:
-	    self.lista.append(''.join(x))
+        words = self.xcombinations(pset, self.width)
+        self.lista = []
+        for x in words:
+            self.lista.append(''.join(x))
 
-	self.__count = len(self.lista)
+        self.__count = len(self.lista)
 
-    def __iter__ (self):
-	return self
+    def __iter__(self):
+        return self
 
     def count(self):
-	return self.__count
+        return self.__count
 
-    def next (self):
-	if self.lista != []:
-	    payl=self.lista.pop()
-	    return payl
-	else:
-	    raise StopIteration
+    def __next__(self):
+        if self.lista != []:
+            payl = self.lista.pop()
+            return payl
+        else:
+            raise StopIteration
 
     def xcombinations(self, items, n):
-	if n == 0:
-	    yield []
-	else:
-	    try:
-		for i in xrange(len(items)):
-		    for cc in self.xcombinations(items[:i] + items[i:], n - 1):
-			yield [items[i]] + cc
-	    except:
-		print "Interrupted Permutation calculations"
-		sys.exit()
-
+        if n == 0:
+            yield []
+        else:
+            for i in range(len(items)):
+                for cc in self.xcombinations(items[:i] + items[i:], n - 1):
+                    yield [items[i]] + cc

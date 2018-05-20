@@ -1,5 +1,5 @@
 __title__ = 'wfuzz'
-__version__ = "2.2.11"
+__version__ = "2.3"
 __build__ = 0x023000
 __author__ = 'Xavier Mendez'
 __license__ = 'GPL 2.0'
@@ -21,13 +21,13 @@ try:
     import pycurl
 
     if "openssl".lower() not in pycurl.version.lower():
-        print "\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.\n"
+        print("\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.\n")
 
     if not hasattr(pycurl, "PATH_AS_IS"):
-        print "\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n"
+        print("\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n")
 
-except ImportError, e:
-    print "\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl"
+except ImportError as e:
+    print("\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl")
     sys.exit(1)
 
 from .options import FuzzSession

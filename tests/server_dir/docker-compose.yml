@@ -1,0 +1,14 @@
+version: '2'
+services:
+  httpserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: python simple_server.py
+  httpproxy:
+    image: mitmproxy/mitmproxy
+    ports:
+      - "8080:8080"
+    command: mitmdump

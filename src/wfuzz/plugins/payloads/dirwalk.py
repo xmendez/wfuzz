@@ -2,7 +2,13 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 
 import os
-import urllib
+
+# Python 2 and 3: alternative 4
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
+
 
 @moduleman_plugin
 class dirwalk(BasePayload):
@@ -34,13 +40,13 @@ class dirwalk(BasePayload):
         for root, dirs, fnames in os.walk(directory):
             for f in fnames:
                 relative_path = os.path.relpath(os.path.join(root, f), directory)
-                yield urllib.quote(relative_path)
+                yield quote(relative_path)
 
-    def next(self):
-	return self.g.next()
+    def __next__(self):
+        return next(self.g)
 
     def count(self):
-	return -1
+        return -1
 
     def __iter__(self):
-	return self
+        return self

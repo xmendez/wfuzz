@@ -4,9 +4,7 @@ import wx.grid
 import wx.aui
 import wx.html
 
-from wx.py.pseudo import PseudoFileIn
-
-import wx.lib.agw.aui as aui 
+import wx.lib.agw.aui as aui
 import wx.dataview as dv
 import wx.html2 as webview
 
@@ -18,21 +16,23 @@ else:
 
 try:
     from agw import pycollapsiblepane as PCP
-except ImportError: # if it's not there locally, try the wxPython lib.
+except ImportError:  # if it's not there locally, try the wxPython lib.
     import wx.lib.agw.pycollapsiblepane as PCP
 
 # puedo no hacer paneles y devolverlos directamente como hace el treectrl, no se cual es la ventaja really
 
-#----------------------------------------------------------------------
-#http://stackoverflow.com/questions/22265868/how-to-create-a-cmd-with-wxpython
+# ----------------------------------------------------------------------
+# http://stackoverflow.com/questions/22265868/how-to-create-a-cmd-with-wxpython
 # esto puede hacer q meta cmd.cmd directamente https://www.blog.pythonlibrary.org/2009/01/01/wxpython-redirecting-stdout-stderr/
 
+
 class RedirectText(object):
-    def __init__(self,aWxTextCtrl):
-        self.out=aWxTextCtrl
- 
-    def write(self,string):
+    def __init__(self, aWxTextCtrl):
+        self.out = aWxTextCtrl
+
+    def write(self, string):
         self.out.WriteText(string)
+
 
 class ConsolePanel(wx.Panel):
     def __init__(self, parent, interpreter):
@@ -43,10 +43,9 @@ class ConsolePanel(wx.Panel):
         self.index = 0
 
         self.prompt = ">>"
-        self.textctrl = wx.TextCtrl(self, -1, '', style=wx.TE_PROCESS_ENTER|wx.TE_MULTILINE|wx.TE_RICH, size=(-1,250))
+        self.textctrl = wx.TextCtrl(self, -1, '', style=wx.TE_PROCESS_ENTER | wx.TE_MULTILINE | wx.TE_RICH, size=(-1, 250))
         self.textctrl.SetForegroundColour(wx.WHITE)
         self.textctrl.SetBackgroundColour(wx.BLACK)
-
 
         self.textctrl.AppendText(self.prompt)
 
@@ -57,20 +56,20 @@ class ConsolePanel(wx.Panel):
         self.SetSizer(sizer)
 
         self._interp = interpreter
-        redir=RedirectText(self.textctrl)
+        redir = RedirectText(self.textctrl)
 
         import sys
 
         # Create a replacement for stdin.
-        #self.reader = PseudoFileIn(self.readline, self.readlines)
-        #self.reader.input = ''
-        #self.reader.isreading = False
+        # self.reader = PseudoFileIn(self.readline, self.readlines)
+        # self.reader.input = ''
+        # self.reader.isreading = False
 
-        #sys.stdin=self.reader
-        sys.stdout=redir
-        sys.stderr=redir
+        # sys.stdin=self.reader
+        sys.stdout = redir
+        sys.stderr = redir
 
-    def __bind_events(self,e):
+    def __bind_events(self, e):
         if e.GetKeyCode() == 13:
             self.index = len(self.history) - 1
 
@@ -78,7 +77,8 @@ class ConsolePanel(wx.Panel):
             ln = self.get_last_line()
 
             ln = ln.strip()
-            if ln not in self.history: self.history.append(ln)
+            if ln not in self.history:
+                self.history.append(ln)
             self.index += 1
             if ln:
                 import shlex
@@ -91,7 +91,7 @@ class ConsolePanel(wx.Panel):
 
             self.textctrl.WriteText("\n")
             self.textctrl.WriteText(self.prompt)
-        #down
+        # down
         elif e.GetKeyCode() == 317:
             self.index += 1
 
@@ -102,7 +102,7 @@ class ConsolePanel(wx.Panel):
             self.textctrl.WriteText(self.prompt)
             self.textctrl.WriteText(self.history[self.index])
 
-        #up
+        # up
         elif e.GetKeyCode() == 315:
             self.index -= 1
 
@@ -112,19 +112,18 @@ class ConsolePanel(wx.Panel):
             self.textctrl.WriteText("\n")
             self.textctrl.WriteText(self.prompt)
             self.textctrl.WriteText(self.history[self.index])
-
-
         else:
             e.Skip()
 
     def get_last_line(self):
         nl = self.textctrl.GetNumberOfLines()
-        ln = self.textctrl.GetLineText(nl-1)
+        ln = self.textctrl.GetLineText(nl - 1)
         ln = ln[len(self.prompt):]
 
         return ln
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
 
 class ListPanel(wx.Panel):
     def __init__(self, parent, log, model, interpreter):
@@ -133,24 +132,23 @@ class ListPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1)
 
         self.dvc = dv.DataViewCtrl(self, style=wx.BORDER_THEME | dv.DV_ROW_LINES | dv.DV_VERT_RULES)
-        
+
         self.model = model
         self.dvc.AssociateModel(self.model)
 
-        for row in self.model.row_mapper.values():
+        for row in list(self.model.row_mapper.values()):
             self.dvc.AppendTextColumn(row.title, row.colid, width=row.width)
 
         for c in self.dvc.Columns:
             c.Sortable = True
             c.Reorderable = True
 
-
         self.cp = cp = PCP.PyCollapsiblePane(self, label="Show console", agwStyle=wx.CP_GTK_EXPANDER)
         self.MakePaneContent(cp.GetPane())
 
-        self.Sizer = wx.BoxSizer(wx.VERTICAL) 
+        self.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.Sizer.Add(self.dvc, 1, wx.EXPAND)
-        self.Sizer.Add(cp, 0, wx.RIGHT|wx.LEFT|wx.EXPAND)
+        self.Sizer.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
         self.SetSizer(self.Sizer)
         self.SetAutoLayout(True)
 
@@ -169,22 +167,22 @@ class ListPanel(wx.Panel):
 
     def MakePaneContent(self, pane):
         border = wx.BoxSizer()
-        border.Add(ConsolePanel(pane, self._interp), wx.RIGHT|wx.LEFT|wx.EXPAND)
-        import  wx.py   as  py
-        #border.Add(py.shell.Shell(pane, InterpClass=self._interp, size=(-1,250)),  wx.RIGHT|wx.LEFT|wx.EXPAND)
+        border.Add(ConsolePanel(pane, self._interp), wx.RIGHT | wx.LEFT | wx.EXPAND)
+        # border.Add(py.shell.Shell(pane, InterpClass=self._interp, size=(-1,250)),  wx.RIGHT|wx.LEFT|wx.EXPAND)
 
         pane.SetSizer(border)
+
 
 class HttpRawPanel(wx.Panel):
     def __init__(self, parent, frame):
         self._frame = frame
         wx.Panel.__init__(self, parent, -1)
 
-        #self.req_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY)
+        # self.req_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY)
         self.req_txt = webview.WebView.New(self)
-        #self.resp_txt = webview.WebView.New(self)
-        self.resp_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY)
-            
+        # self.resp_txt = webview.WebView.New(self)
+        self.resp_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         sizer.Add(self.req_txt, 1, wx.EXPAND)
@@ -202,13 +200,14 @@ class HttpRawPanel(wx.Panel):
 
         return ctrl
 
+
 class MainNotebookPanel(wx.Panel):
     def __init__(self, parent, frame, interpreter):
         self._frame = frame
         wx.Panel.__init__(self, parent, -1)
 
-        bookStyle = aui.AUI_NB_DEFAULT_STYLE 
-        bookStyle &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB) 
+        bookStyle = aui.AUI_NB_DEFAULT_STYLE
+        bookStyle &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB)
 
         self.rawpanel = HttpRawPanel(self, self)
         self.renderpanel = self.create_web_view()
@@ -233,16 +232,19 @@ class MainNotebookPanel(wx.Panel):
         from pygments.formatters import HtmlFormatter
 
         result = highlight(str(row.history), get_lexer_by_name("http"), HtmlFormatter(full=True))
-        #result2 = highlight(str(row.history.raw_content), get_lexer_by_name("http"), HtmlFormatter(full=True))
+        # result2 = highlight(str(row.history.raw_content), get_lexer_by_name("http"), HtmlFormatter(full=True))
 
         self.renderpanel.SetPage(row.history.content, row.url)
-        #self.rawpanel.req_txt.SetValue(str(row.history))
+        # self.rawpanel.req_txt.SetValue(str(row.history))
         self.rawpanel.req_txt.SetPage(result, "")
-        #self.rawpanel.resp_txt.SetPage(result2, "")
+        # self.rawpanel.resp_txt.SetPage(result2, "")
         self.rawpanel.resp_txt.SetValue(str(row.history.raw_content))
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
+
 ID_About = wx.NewId()
+
 
 class WfuzzFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="Wfuzz", pos=wx.DefaultPosition,
@@ -254,10 +256,10 @@ class WfuzzFrame(wx.Frame):
 
     def start_gui(self, controller):
         self.controller = controller
-        # tell FrameManager to manage this frame        
+        # tell FrameManager to manage this frame
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
-        
+
         # create menu
         mb = wx.MenuBar()
 
@@ -266,10 +268,10 @@ class WfuzzFrame(wx.Frame):
 
         help_menu = wx.Menu()
         help_menu.Append(ID_About, "About...")
-        
+
         mb.Append(file_menu, "File")
         mb.Append(help_menu, "Help")
-        
+
         self.SetMenuBar(mb)
 
         self.SetMinSize(wx.Size(400, 300))
@@ -278,7 +280,6 @@ class WfuzzFrame(wx.Frame):
         self._mgr.AddPane(MainNotebookPanel(self, self, controller._interp), wx.aui.AuiPaneInfo().Caption("Raw HTTP Content").Name("analysis_notebook").CenterPane())
         self._mgr.AddPane(self.CreateNotebook(), wx.aui.AuiPaneInfo().Name("main_notebook").CenterPane())
         self._mgr.Update()
-
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
@@ -300,19 +301,16 @@ class WfuzzFrame(wx.Frame):
         msg = "WFuzz GUI\n(c) Copyright 2017, Xavi Mendez"
         dlg = wx.MessageDialog(self, msg, "About", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
-        dlg.Destroy()        
+        dlg.Destroy()
 
     def CreateNotebook(self):
-        bookStyle = aui.AUI_NB_DEFAULT_STYLE 
-        #bookStyle &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB) 
+        bookStyle = aui.AUI_NB_DEFAULT_STYLE
+        # bookStyle &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB)
 
         bookStyle = aui.AUI_NB_DEFAULT_STYLE | aui.AUI_NB_TAB_EXTERNAL_MOVE | wx.NO_BORDER
 
         client_size = self.GetClientSize()
-        nb = aui.AuiNotebook(self, -1, wx.Point(client_size.x, client_size.y),
-                              wx.Size(430, 200), agwStyle=bookStyle)
-
-
+        nb = aui.AuiNotebook(self, -1, wx.Point(client_size.x, client_size.y), wx.Size(430, 200), agwStyle=bookStyle)
 
         nb.AddPage(ListPanel(self, self, self.controller._model, self.controller._interp), "Main")
 

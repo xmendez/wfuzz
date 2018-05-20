@@ -1,9 +1,16 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import itertools
+from functools import reduce
+
+# python 2 and 3: iterator
+from builtins import object
+
+from builtins import zip as builtinzip
+
 
 @moduleman_plugin
-class zip:
+class zip(object):
     name = "zip"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
@@ -12,20 +19,21 @@ class zip:
     priority = 99
 
     def __init__(self, *i):
-	self.__count = min(map(lambda x:x.count(), i))
-	self.it = itertools.izip(*i)
+        self.__count = min([x.count() for x in i])
+        self.it = builtinzip(*i)
 
     def count(self):
-	return self.__count
+        return self.__count
 
-    def next(self):
-	return self.it.next()
+    def __next__(self):
+        return next(self.it)
 
     def __iter__(self):
-	return self
+        return self
+
 
 @moduleman_plugin
-class product:
+class product(object):
     name = "product"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
@@ -34,20 +42,21 @@ class product:
     priority = 99
 
     def __init__(self, *i):
-	self.it = itertools.product(*i)
-	self.__count = reduce(lambda x,y:x*y.count(), i[1:], i[0].count())
+        self.it = itertools.product(*i)
+        self.__count = reduce(lambda x, y: x * y.count(), i[1:], i[0].count())
 
     def count(self):
-	return self.__count
+        return self.__count
 
-    def next(self):
-	return self.it.next()
+    def __next__(self):
+        return next(self.it)
 
     def __iter__(self):
-	return self
+        return self
+
 
 @moduleman_plugin
-class chain:
+class chain(object):
     name = "chain"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
@@ -56,14 +65,14 @@ class chain:
     priority = 99
 
     def count(self):
-	return self.__count
+        return self.__count
 
     def __init__(self, *i):
-	self.__count = sum(map(lambda x:x.count(), i))
-	self.it = itertools.chain(*i)
+        self.__count = sum([x.count() for x in i])
+        self.it = itertools.chain(*i)
 
-    def next(self):
-	return (self.it.next(),)
+    def __next__(self):
+        return (next(self.it),)
 
     def __iter__(self):
-	return self
+        return self

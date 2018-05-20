@@ -2,6 +2,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import BasePayload
 
+
 @moduleman_plugin
 class file(BasePayload):
     name = "file"
@@ -23,20 +24,26 @@ class file(BasePayload):
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-	try:
-	    self.f = open(self.find_file(self.params["fn"]), "r")
-	except IOError, e:
-	    raise FuzzExceptBadFile("Error opening file. %s" % str(e))
+        try:
+            self.f = open(self.find_file(self.params["fn"]), "r")
+        except IOError as e:
+            raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
-	self.__count = len(self.f.readlines())
-	self.f.seek(0)
+        self.__count = None
 
-    def next (self):
-	return self.f.next().strip()
+    def __next__(self):
+        line = self.f.readline().strip()
+        if line == '':
+            self.f.close()
+            raise StopIteration
+        return line
 
     def count(self):
-	return self.__count
+        if self.__count is None:
+            self.__count = len(self.f.readlines())
+            self.f.seek(0)
+
+        return self.__count
 
     def __iter__(self):
-	return self
-
+        return self

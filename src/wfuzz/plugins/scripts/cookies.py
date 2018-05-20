@@ -1,6 +1,7 @@
 from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
+
 @moduleman_plugin
 class cookies(BasePlugin):
     name = "cookies"
@@ -18,14 +19,14 @@ class cookies(BasePlugin):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-	return True
+        return True
 
     def process(self, fuzzresult):
-        new_cookies = fuzzresult.history.cookies.response.items()
+        new_cookies = list(fuzzresult.history.cookies.response.items())
 
-	if len(new_cookies) > 0:
-	    for name, value in new_cookies:
+        if len(new_cookies) > 0:
+            for name, value in new_cookies:
 
-		if name != "" and not "cookie" in self.kbase or name not in self.kbase["cookie"]:
-		    self.kbase["cookie"] = name
-		    self.add_result("Cookie first set - %s=%s" % (name, value))
+                if name != "" and "cookie" not in self.kbase or name not in self.kbase["cookie"]:
+                    self.kbase["cookie"] = name
+                    self.add_result("Cookie first set - %s=%s" % (name, value))

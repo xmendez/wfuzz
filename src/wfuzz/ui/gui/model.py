@@ -1,13 +1,13 @@
 from collections import namedtuple
-import wx
 import wx.dataview as dv
 
 from wfuzz.filter import FuzzResFilter
 
 Row = namedtuple('Row', 'title colid width rtype field')
 
+
 class GUIModel(dv.PyDataViewIndexListModel):
-    def __init__(self, data = None):
+    def __init__(self, data=None):
         self.data = data if data is not None else []
         dv.PyDataViewIndexListModel.__init__(self, len(self.data))
 
@@ -34,41 +34,43 @@ class GUIModel(dv.PyDataViewIndexListModel):
 
     def GetCount(self):
         return len(self.data)
-    
+
     # Called to check if non-standard attributes should be used in the
     # cell at (row, col)
     def GetAttrByRow(self, row, col, attr):
-        ##self.log.write('GetAttrByRow: (%d, %d)' % (row, col))
-        #if col == 3:
-        #    attr.SetColour('blue')
-        #    attr.SetBold(True)
-        #    return True
+        # #self.log.write('GetAttrByRow: (%d, %d)' % (row, col))
+        # if col == 3:
+        #     attr.SetColour('blue')
+        #     attr.SetBold(True)
+        #     return True
         return False
 
-
     def Compare(self, item1, item2, col, ascending):
-        if not ascending: # swap sort order?
+        if not ascending:  # swap sort order?
             item2, item1 = item1, item2
         row1 = self.GetRow(item1)
         row2 = self.GetRow(item2)
 
+        value1 = self.GetValueByRow(row1, col)
+        value2 = self.GetValueByRow(row2, col)
         if self.row_mapper[col].rtype == "int":
-            return cmp(int(self.GetValueByRow(row1, col)), int(self.GetValueByRow(row2, col)))
-        else:
-            return cmp(self.GetValueByRow(row1, col), self.GetValueByRow(row2, col))
-        
+            value1 = int(value1)
+            value2 = int(value2)
+
+        return ((value1 > value2) - (value1 < value2))
+
     def DeleteRows(self, rows):
         # make a copy since we'll be sorting(mutating) the list
         rows = list(rows)
         # use reverse order so the indexes don't change as we remove items
         rows.sort(reverse=True)
-        
+
         for row in rows:
             # remove it from our data structure
             del self.data[row]
             # notify the view(s) using this model that it has been removed
             self.RowDeleted(row)
-            
+
     def AddRow(self, value):
         self.data.append(value)
         self.RowAppended()
@@ -78,8 +80,8 @@ class GUIModel(dv.PyDataViewIndexListModel):
         self.Cleared()
 
     def DeleteRows_by_filter(self, filter_string):
-	ffilter = FuzzResFilter(filter_string = filter_string)
-        
+        ffilter = FuzzResFilter(filter_string=filter_string)
+
         for row, item in reversed(list(enumerate(self.data))):
             if ffilter.is_visible(item):
                 del self.data[row]
