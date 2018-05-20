@@ -13,11 +13,21 @@ install:
   - pip install coverage 
   - pip install mock
   - pip install netaddr
+  - python setup.py install
 script:
   - coverage run --append -m unittest discover -s tests/
+stages:
+ - name: flake8
+ - test
+ - name: deploy to pypi
 jobs:
   include:
     - stage: flake8
+      python:
+        - "2.7"
+        - "3.4"
+        - "3.5"
+        - "3.6"
       install: pip install flake8
       script: flake8 --ignore=E501,E402,F401 src tests
     - stage: deploy to pypi
