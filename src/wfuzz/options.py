@@ -13,6 +13,7 @@ from .externals.reqresp.cache import HttpCache
 
 from collections import defaultdict
 import sys
+import six
 
 # python 2 and 3
 try:
@@ -142,15 +143,15 @@ class FuzzSession(UserDict):
             return "Bad options: Filter must be specified in the form of [int, ... , int]."
 
     # pycurl does not like unicode strings
-    def _convert_from_unicode(self, input):
-        if isinstance(input, dict):
-            return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in list(input.items())}
-        elif isinstance(input, list):
-            return [self._convert_from_unicode(element) for element in input]
-        elif isinstance(input, str) or isinstance(input, unicode):
-            return input.encode('utf-8')
+    def _convert_from_unicode(self, text):
+        if isinstance(text, dict):
+            return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in list(text.items())}
+        elif isinstance(text, list):
+            return [self._convert_from_unicode(element) for element in text]
+        elif isinstance(text, six.string_types):
+            return text.encode('utf-8')
         else:
-            return input
+            return text
 
     def export_to_file(self, filename):
         try:

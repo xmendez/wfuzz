@@ -55,7 +55,7 @@ basic_tests = [
 
     # url fuzzing
     ("test_url_with_no_path", "http://localhost:8000", [["GET"]], dict(method="FUZZ"), [(200, '/')], None),
-    #("test_url_not_normalized_by_lib", "http://localhost:8000/echo/FUZZ", [["../../etc/pass"]], dict(), [(200, '/echo/../../etc/pass')], None),
+    # travis uses old pycurl version ("test_url_not_normalized_by_lib", "http://localhost:8000/echo/FUZZ", [["../../etc/pass"]], dict(), [(200, '/echo/../../etc/pass')], None),
     ("test_url_port_fuzz", "%s:FUZZ/dir/a" % LOCAL_DOMAIN, [["8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_hostname_fuzz", "http://FUZZ:8000/dir/a", [["localhost"]], dict(), [(200, '/dir/a')], None),
     ("test_url_hostname2_fuzz", "http://FUZZ/dir/a", [["localhost:8000"]], dict(), [(200, '/dir/a')], None),

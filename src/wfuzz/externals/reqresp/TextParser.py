@@ -46,7 +46,7 @@ class TextParser(object):
 
                 if t == "file":
                         self.type = t
-                        self.fd = file(args[0], "r")
+                        self.fd = open(args[0], "r")
                 elif t == "stdin":
                         if self.type == "file":
                                 self.fd.close()

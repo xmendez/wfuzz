@@ -18,9 +18,10 @@ dev_requires = [
 ]
 
 install_requires = [
-    'pycurl>=7.43.0.1',
-    'pyparsing>=2.2.0',
+    'pycurl',
+    'pyparsing',
     'future',
+    'six',
     'configparser'
 ]
 

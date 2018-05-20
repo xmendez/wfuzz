@@ -51,10 +51,13 @@ class GUIModel(dv.PyDataViewIndexListModel):
         row1 = self.GetRow(item1)
         row2 = self.GetRow(item2)
 
+        value1 = self.GetValueByRow(row1, col)
+        value2 = self.GetValueByRow(row2, col)
         if self.row_mapper[col].rtype == "int":
-            return cmp(int(self.GetValueByRow(row1, col)), int(self.GetValueByRow(row2, col)))
-        else:
-            return cmp(self.GetValueByRow(row1, col), self.GetValueByRow(row2, col))
+            value1 = int(value1)
+            value2 = int(value2)
+
+        return ((value1 > value2) - (value1 < value2))
 
     def DeleteRows(self, rows):
         # make a copy since we'll be sorting(mutating) the list
