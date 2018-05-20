@@ -10,7 +10,7 @@ python:
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
-  - pip install --user awscli
+  - pip install user awscli
   - pip install coverage 
   - pip install mock
   - pip install netaddr
