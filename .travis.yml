@@ -19,8 +19,9 @@ install:
 script:
   - flake8 --ignore=E501,E402,F401 src tests
   - coverage run --append -m unittest discover -s tests/
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then codecov; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
 deploy:
+  python: 3.6
   provider: pypi
   user: x4vi_mendez
   password:
