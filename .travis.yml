@@ -19,7 +19,13 @@ script:
   - flake8 --ignore=E501,E402,F401 src tests
   - coverage erase
   - coverage run --append -m unittest discover -s tests/
-  - codecov
+include:
+  - stage: coverage
+    python: 3.6
+    install: pip install codecov
+    script: codecov
+    on:
+        branch: pep8
 deploy:
   provider: pypi
   user: x4vi_mendez
