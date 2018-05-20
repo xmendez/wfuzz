@@ -10,35 +10,21 @@ python:
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
-  - pip install awscli
   - pip install coverage 
   - pip install mock
   - pip install netaddr
   - pip install flake8
+  - pip install codecov
   - python setup.py install
 script:
   - flake8 --ignore=E501,E402,F401 src tests
-  - coverage erase
   - coverage run --append -m unittest discover -s tests/
-after_success:
-  - aws s3 cp .coverage s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER
-jobs:
-  include:
-    - stage: coverage
-      python: 3.6
-      install: pip install codecov
-      script:  
-        - aws s3 cp --recursive s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER .coverage
-        - codecov
-      on:
-          branch: pep8
-    - stage: pypi
-      python: 3.6
-      deploy:
-        provider: pypi
-        user: x4vi_mendez
-        password:
-            secure: WjYZ+9MK/Tpq6iI1puH6f6FJZrGYmBYmC4X1A89vsDpM7QtAHnGO7Utx5N1ocF/DcaENL5Rhrv5y12jahXgmDIGyWj3f7gFa2KS0sHEzdDIcGUpzeR2bU29hM40QXvU6eWialLLQe04mleW3aBMfo18aYBnqHA8h0kYojK5bZhCuKoazfmLra6gvl1S9QeblVeTf0d2CXim8O0uP23oRXd5Ymomr001f4SuqbEyK4jvhFRXj24dYVvx86FehD5zgMfluL/vkucPrrUvaiGR7HZFZCbjjHjyubC+ZK7smGrUOqLQQ6wRTHkWPq0tbjiYUuFQYsr7Wr1Fl7UdggzXnWyTawyHoBpJ68L7j3F6e3yTQYRBJkgU0FAtZ0kKbNiZV6lBFcW/GhFxHPwGbXK8zQQRCXGRm7tb6Tu2VO7GaLeaMUOuQE+P7GQt83hyoMNmhValSEEPXdfYps+2rLcmsnkIM8lOmpl+Izo783bmkpGRAyNGkQWa8tgmLd9tRyniaXq9HApa9Z/U8n9nIlWPQtfrpjzlXIQfK9gV22D2zS+HbDMRpkUl9Xeij8EMWkxGiEwo4v/ThqANgtb1YOvRP3CSEbHfReeLwXxIHiv8qXXJC88FB3sbN11vXZEISpZwSQ3uHFYTaXaL/P4SX4UJtgUq54BKKfs9nF5Px3GdmGVE=
-        server: https://test.pypi.org/legacy/
-        on:
-            branch: pep8
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then codecov; fi
+deploy:
+  provider: pypi
+  user: x4vi_mendez
+  password:
+      secure: WjYZ+9MK/Tpq6iI1puH6f6FJZrGYmBYmC4X1A89vsDpM7QtAHnGO7Utx5N1ocF/DcaENL5Rhrv5y12jahXgmDIGyWj3f7gFa2KS0sHEzdDIcGUpzeR2bU29hM40QXvU6eWialLLQe04mleW3aBMfo18aYBnqHA8h0kYojK5bZhCuKoazfmLra6gvl1S9QeblVeTf0d2CXim8O0uP23oRXd5Ymomr001f4SuqbEyK4jvhFRXj24dYVvx86FehD5zgMfluL/vkucPrrUvaiGR7HZFZCbjjHjyubC+ZK7smGrUOqLQQ6wRTHkWPq0tbjiYUuFQYsr7Wr1Fl7UdggzXnWyTawyHoBpJ68L7j3F6e3yTQYRBJkgU0FAtZ0kKbNiZV6lBFcW/GhFxHPwGbXK8zQQRCXGRm7tb6Tu2VO7GaLeaMUOuQE+P7GQt83hyoMNmhValSEEPXdfYps+2rLcmsnkIM8lOmpl+Izo783bmkpGRAyNGkQWa8tgmLd9tRyniaXq9HApa9Z/U8n9nIlWPQtfrpjzlXIQfK9gV22D2zS+HbDMRpkUl9Xeij8EMWkxGiEwo4v/ThqANgtb1YOvRP3CSEbHfReeLwXxIHiv8qXXJC88FB3sbN11vXZEISpZwSQ3uHFYTaXaL/P4SX4UJtgUq54BKKfs9nF5Px3GdmGVE=
+  server: https://test.pypi.org/legacy/
+  on:
+      branch: pep8
