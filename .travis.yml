@@ -10,6 +10,7 @@ python:
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
+  - pip install --user awscli
   - pip install coverage 
   - pip install mock
   - pip install netaddr
@@ -19,15 +20,20 @@ script:
   - flake8 --ignore=E501,E402,F401 src tests
   - coverage erase
   - coverage run --append -m unittest discover -s tests/
+after_success:
+  - aws s3 cp .coverage s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER
 jobs:
   include:
     - stage: coverage
       python: 3.6
       install: pip install codecov
-      script: codecov
+      script:  
+        - aws s3 cp --recursive s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER .coverage
+        - codecov
       on:
           branch: pep8
     - stage: pypi
+      python: 3.6
       deploy:
         provider: pypi
         user: x4vi_mendez
