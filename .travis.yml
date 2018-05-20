@@ -31,6 +31,6 @@ jobs:
         user: x4vi_mendez
         password:
           secure: 2RYIxfqS0J5wct9O7nnEkR3eJq4rd54WVwQi0CyUjHNbtPciQEtunyfYB7saoli3Y+e6iYAukVqeskYsCsuwZn6fi3nucp6pey+TZUHnsycQSCNGQfxBVOOv0iUCqgWIeu7/ImLuJvU6iBUpAiAsloAoboaqhFTTWaKk/Qfux5UPIKrERsY0SI0wfzu51SSgFYIeQMuRQiwqs5qzP+EHVP2gxdVL4164G6bGIGGadXXbxaZGN8qNfpAVKSA6/VZwz59YQQ75SN7GzPaagOcwvF+rBl6WtFOucpexDPtlgnTE7CASm0trULq+7p7CnP6FN2BcKDk9zl6QBwpmxSzd9O4JmpswGguiMrPIop0nvRWLOzw0/ofnXhHaxQCTiGAFjIEan/OrT/1OFmgpsbBcozZd7FCBLCl7qWVtPSpyXuVFuAbokRmQYsy8tlGtLxvCMDvgQcRYhVWcZKrGGdxZhH1GFoyEG3bDML3NF3JLpXdSZQ/qm57A3ATyzjaLCuidhPM52FET14sMeu8UPXlUaPBIzHtlQqF7h7AhorZvFg2wJbzfICf8wU7rMZip9WMQXsDWcvaVLyuIM30W7EjoKWFr1KaYeMf1cnmPE5N2PPABJWcFmVXXBymnamSmh9dRA2jpVfQnodAOxWUo/RUofjdRK2F+td6D/F4zV+WvDJE=
-        server: https://test.pypi.org/legacy/
         on:
-          all_branches: true
+          branch: master
+          tags: true
