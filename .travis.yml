@@ -20,10 +20,15 @@ script:
   - flake8 --ignore=E501,E402,F401 src tests
   - coverage run --append -m unittest discover -s tests/
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
+stages:
+  - test
+  - name: deploy
+    if: branch = master AND tag IS present
 jobs:
   include:
     - stage: deploy
       python: 3.6
+      before_install: true
       script: true
       install: true
       deploy:
