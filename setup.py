@@ -21,7 +21,7 @@ install_requires = [
     'pycurl>=7.43.0.1',
     'pyparsing>=2.2.0',
     'future>=0.16.0',
-    'six>=1.11.0',
+    'six>=1.10.0',
     'configparser>=3.5.0'
 ]
 
