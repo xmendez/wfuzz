@@ -308,7 +308,7 @@ class Request:
             curl_options = {
                 "GET": pycurl.HTTPGET,
                 "POST": pycurl.POST,
-                "PUT": pycurl.UPLOAD,
+                "PATCH": pycurl.UPLOAD,
                 "HEAD": pycurl.NOBODY,
             }
 
