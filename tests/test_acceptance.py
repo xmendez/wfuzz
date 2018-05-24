@@ -285,7 +285,12 @@ def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_ex
             prev_extra = dict(list(params.items()) + list(previous_extra_params.items()))
 
         test_fn = wfuzz_me_test_generator(url, payloads, prev_extra, None, next_extra)
-        setattr(DynamicTests, new_test, test_fn)
+        if exception_str:
+            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
+            setattr(DynamicTests, new_test, test_fn_exc)
+        else:
+            setattr(DynamicTests, new_test, test_fn)
+
 
 
 def duplicate_tests(test_list, group, test_gen_fun):
@@ -297,7 +302,11 @@ def duplicate_tests(test_list, group, test_gen_fun):
         new_test = "%s_%s" % (test_name, group)
 
         test_fn = test_gen_fun(url, payloads, params, None)
-        setattr(DynamicTests, new_test, test_fn)
+        if exception_str:
+            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
+            setattr(DynamicTests, new_test, test_fn_exc)
+        else:
+            setattr(DynamicTests, new_test, test_fn)
 
 
 def create_tests():
