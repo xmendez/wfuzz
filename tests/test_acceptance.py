@@ -10,6 +10,14 @@ URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
 HTTPD_PORT = 8000
 
 ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
+HTTPBIN_URL = "http://localhost:9000"
+
+REPLACE_HOSTNAMES = [
+    ('localhost:8000', 'httpserver:8000'),
+    ('localhost:9000', 'httpbin:80'),
+    ('9000', '80'),
+    ('localhost', 'httpserver'),
+]
 
 # $ export PYTHONPATH=./src
 # $ python -m unittest discover
@@ -172,9 +180,10 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
             proxied_url = url
             proxied_payloads = payloads
             if "proxies" in extra_params:
-                proxied_url = url.replace('localhost', 'httpserver')
-                if payloads:
-                    proxied_payloads = [[payload.replace("localhost", "httpserver") for payload in payloads_list] for payloads_list in payloads]
+                for original_host, proxied_host in REPLACE_HOSTNAMES:
+                    proxied_url = proxied_url.replace(original_host, proxied_host)
+                    if proxied_payloads:
+                        proxied_payloads = [[payload.replace(original_host, proxied_host) for payload in payloads_list] for payloads_list in proxied_payloads]
 
             with wfuzz.FuzzSession(url=proxied_url) as s:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(proxied_payloads).fuzz(**extra_params)]
