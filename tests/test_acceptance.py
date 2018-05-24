@@ -258,17 +258,21 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
     return test
 
 
+def create_test(test_name, url, payloads, params, expected_res, extra_params, exception_str):
+    test_fn = wfuzz_me_test_generator(url, payloads, params, expected_res, extra_params)
+    if exception_str:
+        test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
+        setattr(DynamicTests, test_name, test_fn_exc)
+    else:
+        setattr(DynamicTests, test_name, test_fn)
+
+
 def create_tests_from_list(test_list):
     """
     Creates tests cases where wfuzz using the indicated url, params results are checked against expected_res
     """
     for test_name, url, payloads, params, expected_res, exception_str in test_list:
-        test_fn = wfuzz_me_test_generator(url, payloads, params, expected_res, None)
-        if exception_str:
-            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
-            setattr(DynamicTests, test_name, test_fn_exc)
-        else:
-            setattr(DynamicTests, test_name, test_fn)
+        create_test(test_name, url, payloads, params, expected_res, None, exception_str)
 
 
 def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_extra_params):
@@ -284,13 +288,7 @@ def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_ex
         if previous_extra_params:
             prev_extra = dict(list(params.items()) + list(previous_extra_params.items()))
 
-        test_fn = wfuzz_me_test_generator(url, payloads, prev_extra, None, next_extra)
-        if exception_str:
-            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
-            setattr(DynamicTests, new_test, test_fn_exc)
-        else:
-            setattr(DynamicTests, new_test, test_fn)
-
+        create_test(new_test, url, payloads, prev_extra, None, next_extra, exception_str)
 
 
 def duplicate_tests(test_list, group, test_gen_fun):
