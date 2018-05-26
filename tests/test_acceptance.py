@@ -39,6 +39,18 @@ testing_tests = [
 ]
 
 basic_tests = [
+    # httpbin extra tests
+    ("test_gzip", "%s/FUZZ" % HTTPBIN_URL, [["gzip"]], dict(filter="content~'\"gzipped\":true'"), [(200, '/gzip')], None),
+    ("test_response_utf8", "%s/encoding/FUZZ" % HTTPBIN_URL, [["utf8"]], dict(), [(200, '/encoding/utf8')], None),
+    ("test_image", "%s/image/FUZZ" % HTTPBIN_URL, [["jpeg"]], dict(filter="content~'JFIF'"), [(200, '/image/jpeg')], None),
+
+    ("test_robots_disallow", "%s/FUZZ" % HTTPBIN_URL, [["robots.txt"]], dict(script="robots"), [(200, '/deny'), (200, '/robots.txt')], None),
+    ("test_response_base64", "%s/base64/FUZZ" % HTTPBIN_URL, None, dict(filter="content~'HTTPBIN is awesome'", payloads=[("list", dict(values="HTTPBIN is awesome", encoder=["base64"]))]), [(200, '/base64/SFRUUEJJTiBpcyBhd2Vzb21l')], None),
+    ("test_basic_auth", "%s/basic-auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("basic", "FUZZ:FUZZ")), [(200, '/basic-auth/userpass/userpass')], None),
+    ("test_digest_auth", "%s/digest-auth/auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("digest", "FUZZ:FUZZ")), [(200, '/digest-auth/auth/userpass/userpass')], None),
+    ("test_delayed_response", "%s/delay/FUZZ" % HTTPBIN_URL, [["2"]], dict(req_delay=1), [(200, '/delay/2')], 'Operation timed out'),
+    ("test_static_strquery_set", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~'\"args\":{\"var\":\"1\",\"var2\":\"2\"}'"), [(200, '/anything')] * 4, None),
+
     # set static HTTP values
     ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content~'query=var=1&var=2'"), [(200, '/echo')], None),
     ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content~'POST_DATA=a=2'"), [(200, '/echo')], None),
