@@ -301,6 +301,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             field = alias[field]
 
         if field in ["url", "method", "scheme", "host", "content", "raw_content", "code"]:
+            return getattr(self, field)
+        elif field in ["code"]:
             return str(getattr(self, field))
         elif field.startswith("cookies"):
             return self.cookies.get_field(field).strip()
