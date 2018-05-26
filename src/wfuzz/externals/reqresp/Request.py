@@ -308,7 +308,7 @@ class Request:
             curl_options = {
                 "GET": pycurl.HTTPGET,
                 "POST": pycurl.POST,
-                "PUT": pycurl.UPLOAD,
+                "PATCH": pycurl.UPLOAD,
                 "HEAD": pycurl.NOBODY,
             }
 
@@ -343,14 +343,11 @@ class Request:
             # followlocation
             if conn.getinfo(pycurl.EFFECTIVE_URL) != self.completeUrl:
                 self.setFinalUrl(conn.getinfo(pycurl.EFFECTIVE_URL))
-                # pycurl reponse headers includes original => remove
-                header = header[header.find("\r\n\r\n") + 1:]
 
             self.totaltime = conn.getinfo(pycurl.TOTAL_TIME)
 
             rp = Response()
-            rp.parseResponse(header)
-            rp.addContent(body)
+            rp.parseResponse(header, rawbody=body)
 
             if self.schema == "https" and self.__proxy:
                 self.response = Response()

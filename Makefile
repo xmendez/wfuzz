@@ -21,4 +21,4 @@ docs:
 	cd docs && make html
 
 coverage:
-	coverage report --skip-covered --include "*site-packages/wfuzz*" -m
+	coverage report --skip-covered --include "*python3.5/site-packages/wfuzz*" -m

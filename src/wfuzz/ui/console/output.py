@@ -2,9 +2,15 @@
 from __future__ import print_function
 
 import math
-import io
 import operator
 from functools import reduce
+
+# Python 2 and 3: zip_longest
+from six import StringIO
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 
 def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', separateRows=False, prefix='', postfix='', wrapfunc=lambda x: x):
@@ -28,17 +34,17 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left', s
     # closure for breaking logical rows to physical, using wrapfunc
     def rowWrapper(row):
         newRows = [wrapfunc(item).split('\n') for item in row]
-        return [[substr or '' for substr in item] for item in map(None, *newRows)]
+        return [[substr or '' for substr in item] for item in zip_longest(*newRows)]
     # break each logical row into one or more physical ones
     logicalRows = [rowWrapper(row) for row in rows]
     # columns of physical rows
-    columns = map(None, *reduce(operator.add, logicalRows))
+    columns = zip_longest(*reduce(operator.add, logicalRows))
     # get the maximum of each column by the string length of its items
     maxWidths = [max([len(str(item)) for item in column]) for column in columns]
     rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + len(delim) * (len(maxWidths) - 1))
     # select the appropriate justify method
     justify = {'center': str.center, 'right': str.rjust, 'left': str.ljust}[justify.lower()]
-    output = io.StringIO()
+    output = StringIO()
     if separateRows:
         print(rowSeparator, file=output)
     for physicalRows in logicalRows:

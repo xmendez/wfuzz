@@ -69,7 +69,10 @@ class dictionary(object):
 
         def _gen(self):
             while 1:
-                payload_list = next(self.__payload)
+                try:
+                    payload_list = next(self.__payload)
+                except StopIteration:
+                    return
 
                 for name in self.__encoders:
                     if name.find('@') > 0:

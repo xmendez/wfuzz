@@ -192,7 +192,7 @@ class HttpPool:
                 # Parse response
                 buff_body, buff_header, res, poolid = c.response_queue
 
-                res.history.from_http_object(c, buff_header.getvalue().decode('UTF-8'), buff_body.getvalue().decode('UTF-8'))
+                res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
 
                 # reset type to result otherwise backfeed items will enter an infinite loop
                 self.pool_map[poolid]["queue"].put(res.update())

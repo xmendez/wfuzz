@@ -18,7 +18,7 @@ install:
   - python setup.py install
 script:
   - flake8 --ignore=E501,E402,F401 src tests
-  - coverage run --append -m unittest discover -s tests/
+  - coverage run --append -m unittest discover -v -s tests/
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
 stages:
   - test

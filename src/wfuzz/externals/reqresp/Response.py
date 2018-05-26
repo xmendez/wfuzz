@@ -1,6 +1,7 @@
 import string
 from io import BytesIO
 import gzip
+import zlib
 
 from .TextParser import TextParser
 
@@ -86,12 +87,12 @@ class Response:
                         string += i + ": " + j + "\r\n"
                 return string
 
-        def parseResponse(self, rawResponse, type="curl"):
+        def parseResponse(self, rawheader, rawbody=None, type="curl"):
                 self.__content = ""
                 self._headers = []
 
                 tp = TextParser()
-                tp.setSource("string", rawResponse)
+                tp.setSource("string", rawheader.decode('utf-8', errors='replace'))
 
                 tp.readUntil("(HTTP\S*) ([0-9]+)")
                 while True:
@@ -135,7 +136,7 @@ class Response:
 
                 if self.header_equal("Transfer-Encoding", "chunked"):
                         result = ""
-                        content = BytesIO(self.__content)
+                        content = BytesIO(rawbody)
                         hexa = content.readline()
                         nchunk = int(hexa.strip(), 16)
 
@@ -145,11 +146,27 @@ class Response:
                                 hexa = content.readline()
                                 nchunk = int(hexa.strip(), 16)
 
-                        self.__content = result
+                        rawbody = result
 
                 if self.header_equal("Content-Encoding", "gzip"):
-                        compressedstream = BytesIO(self.__content)
-                        gzipper = gzip.GzipFile(compressedstream)
-                        body = gzipper.read()
-                        self.__content = body
+                        compressedstream = BytesIO(rawbody)
+                        gzipper = gzip.GzipFile(fileobj=compressedstream)
+                        rawbody = gzipper.read()
                         self.delHeader("Content-Encoding")
+                elif self.header_equal("Content-Encoding", "deflate"):
+                        deflated_data = None
+                        try:
+                            deflater = zlib.decompressobj()
+                            deflated_data = deflater.decompress(rawbody)
+                            deflated_data += deflater.flush()
+                        except zlib.error:
+                            try:
+                                deflater = zlib.decompressobj(-zlib.MAX_WBITS)
+                                deflated_data = deflater.decompress(rawbody)
+                                deflated_data += deflater.flush()
+                            except zlib.error:
+                                deflated_data = ''
+                        rawbody = deflated_data
+                        self.delHeader("Content-Encoding")
+
+                self.__content = rawbody.decode('utf-8', errors='replace')
