@@ -43,6 +43,7 @@ basic_tests = [
     ("test_gzip", "%s/FUZZ" % HTTPBIN_URL, [["gzip"]], dict(filter="content~'\"gzipped\":true'"), [(200, '/gzip')], None),
     ("test_response_utf8", "%s/encoding/FUZZ" % HTTPBIN_URL, [["utf8"]], dict(), [(200, '/encoding/utf8')], None),
     ("test_image", "%s/image/FUZZ" % HTTPBIN_URL, [["jpeg"]], dict(filter="content~'JFIF'"), [(200, '/image/jpeg')], None),
+    ("test_deflate", "%s/FUZZ" % HTTPBIN_URL, [["deflate"]], dict(filter="content~'\"deflated\":true'"), [(200, '/deflate')], None),
 
     ("test_robots_disallow", "%s/FUZZ" % HTTPBIN_URL, [["robots.txt"]], dict(script="robots"), [(200, '/deny'), (200, '/robots.txt')], None),
     ("test_response_base64", "%s/base64/FUZZ" % HTTPBIN_URL, None, dict(filter="content~'HTTPBIN is awesome'", payloads=[("list", dict(values="HTTPBIN is awesome", encoder=["base64"]))]), [(200, '/base64/SFRUUEJJTiBpcyBhd2Vzb21l')], None),

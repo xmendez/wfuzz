@@ -1,6 +1,7 @@
 import string
 from io import BytesIO
 import gzip
+import zlib
 
 from .TextParser import TextParser
 
@@ -151,6 +152,21 @@ class Response:
                         compressedstream = BytesIO(rawbody)
                         gzipper = gzip.GzipFile(fileobj=compressedstream)
                         rawbody = gzipper.read()
+                        self.delHeader("Content-Encoding")
+                elif self.header_equal("Content-Encoding", "deflate"):
+                        deflated_data = None
+                        try:
+                            deflater = zlib.decompressobj()
+                            deflated_data = deflater.decompress(rawbody)
+                            deflated_data += deflater.flush()
+                        except zlib.error:
+                            try:
+                                deflater = zlib.decompressobj(-zlib.MAX_WBITS)
+                                deflated_data = deflater.decompress(rawbody)
+                                deflated_data += deflater.flush()
+                            except zlib.error:
+                                deflated_data = ''
+                        rawbody = deflated_data
                         self.delHeader("Content-Encoding")
 
                 self.__content = rawbody.decode('utf-8', errors='replace')
