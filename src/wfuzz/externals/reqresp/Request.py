@@ -88,7 +88,7 @@ class Request:
 
         def __str__(self):
                 str = "[ URL: %s" % (self.completeUrl)
-                if self.method == "POST":
+                if self.method == "POST" or (self.method == "PUT" and self.postdata):
                         str += " - POST: \"%s\"" % self.postdata
                 if "Cookie" in self._headers:
                         str += " - COOKIE: \"%s\"" % self._headers["Cookie"]
@@ -104,7 +104,7 @@ class Request:
                 url = obj.createElement("URL")
                 url.appendChild(obj.createTextNode(self.completeUrl))
                 r.appendChild(url)
-                if self.method == "POST":
+                if self.method == "POST" or (self.method == "PUT" and self.postdata):
                         pd = obj.createElement("PostData")
                         pd.appendChild(obj.createTextNode(self.postdata))
                         r.appendChild(pd)
@@ -208,7 +208,6 @@ class Request:
 
         def setPostData(self, pd, boundary=None):
                 self.__variablesPOST = VariablesSet()
-                self.method = "POST"
                 if self.ContentType == "application/x-www-form-urlencoded":
                         self.__variablesPOST.parseUrlEncoded(pd)
                 elif self.ContentType == "multipart/form-data":
@@ -321,7 +320,7 @@ class Request:
             else:
                 c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-            if req.method == "POST":
+            if req.method == "POST" or (req.method == "PUT" and req.postdata):
                 c.setopt(pycurl.POSTFIELDS, req.postdata)
 
             c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
@@ -428,7 +427,7 @@ class Request:
 
                 self.setUrl(prot + "://" + self._headers["Host"] + pathTMP)
 
-                if self.method.upper() == "POST":
+                if self.method.upper() == "POST" or (self.method.upper() == "PUT" and self.postdata):
 
                         pd = ""
                         while tp.readLine():
