@@ -78,6 +78,7 @@ basic_tests = [
     ("test_basic_header_name_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("FUZZ", "myheadervalue")], filter="content~': myheadervalue' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
     ("test_static_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="content~'query=var=value1'"), [(200, '/echo')], None),
     ("test_static_strquery2_fuzz", "%s:8000/echo?FUZZ=value1" % LOCAL_DOMAIN, [["var"]], dict(filter="content~'query=var=value1'"), [(200, '/echo')], None),
+    ("test_basic_cookie_fuzz", "%s/anything" % HTTPBIN_URL, [["cookievalue"]], dict(cookie=["test=FUZZ"], filter="content~FUZZ"), [(200, '/anything')], None),
 
     # url fuzzing
     ("test_url_with_no_path", "http://localhost:8000", [["GET"]], dict(method="FUZZ"), [(200, '/')], None),
