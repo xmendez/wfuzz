@@ -39,6 +39,10 @@ testing_tests = [
 ]
 
 basic_tests = [
+    # postdata tests
+    # pycurl does not allow it ("test_get_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"]], dict(postdata='a=1', filter="content~'\"form\":{\"a\":\"1\"}'"), [(200, '/anything')], None),
+    ("test_allmethods_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'POST', 'DELETE'], ['333888']], dict(method='FUZ2Z', postdata='a=FUZ3Z', filter="content~FUZ2Z and content~'\"form\":{\"a\":\"' and content~FUZ3Z"), [(200, '/anything')] * 3, None),
+
     # httpbin extra tests
     ("test_gzip", "%s/FUZZ" % HTTPBIN_URL, [["gzip"]], dict(filter="content~'\"gzipped\":true'"), [(200, '/gzip')], None),
     ("test_response_utf8", "%s/encoding/FUZZ" % HTTPBIN_URL, [["utf8"]], dict(), [(200, '/encoding/utf8')], None),

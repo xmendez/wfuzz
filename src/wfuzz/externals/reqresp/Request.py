@@ -62,7 +62,7 @@ class Request:
 
                 self.time = None                  # 23:00:00
                 self.ip = None                    # 192.168.1.1
-                self.method = "GET"               # GET o POST (EN MAYUSCULAS SI PUEDE SER)
+                self._method = None
                 self.protocol = "HTTP/1.1"        # HTTP/1.1
                 self.__performHead = ""
                 self.__performBody = ""
@@ -83,13 +83,27 @@ class Request:
 
                 self.totaltime = None
 
+        @property
+        def method(self):
+            if self._method is None:
+                return "POST" if self.postdata else "GET"
+
+            return self._method
+
+        @method.setter
+        def method(self, value):
+            if value == "None":
+                value = None
+
+            self._method = value
+
         def setFinalUrl(self, fu):
             self.__finalurl = fu
 
         def __str__(self):
                 str = "[ URL: %s" % (self.completeUrl)
-                if self.method == "POST":
-                        str += " - POST: \"%s\"" % self.postdata
+                if self.postdata:
+                        str += " - {}: \"{}\"".format(self.method, self.postdata)
                 if "Cookie" in self._headers:
                         str += " - COOKIE: \"%s\"" % self._headers["Cookie"]
                 str += " ]"
@@ -104,7 +118,7 @@ class Request:
                 url = obj.createElement("URL")
                 url.appendChild(obj.createTextNode(self.completeUrl))
                 r.appendChild(url)
-                if self.method == "POST":
+                if self.postdata:
                         pd = obj.createElement("PostData")
                         pd.appendChild(obj.createTextNode(self.postdata))
                         r.appendChild(pd)
@@ -191,7 +205,6 @@ class Request:
                 return self.__variablesPOST.existsVar(key)
 
         def setVariablePOST(self, key, value):
-                self.method = "POST"
                 v = self.__variablesPOST.getVariable(key)
                 v.update(value)
 #               self._headers["Content-Length"] = str(len(self.postdata))
@@ -208,7 +221,6 @@ class Request:
 
         def setPostData(self, pd, boundary=None):
                 self.__variablesPOST = VariablesSet()
-                self.method = "POST"
                 if self.ContentType == "application/x-www-form-urlencoded":
                         self.__variablesPOST.parseUrlEncoded(pd)
                 elif self.ContentType == "multipart/form-data":
@@ -321,7 +333,7 @@ class Request:
             else:
                 c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-            if req.method == "POST":
+            if req.postdata:
                 c.setopt(pycurl.POSTFIELDS, req.postdata)
 
             c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
@@ -428,17 +440,16 @@ class Request:
 
                 self.setUrl(prot + "://" + self._headers["Host"] + pathTMP)
 
-                if self.method.upper() == "POST":
+                pd = ""
+                while tp.readLine():
+                        pd += tp.lastFull_line
 
-                        pd = ""
-                        while tp.readLine():
-                                pd += tp.lastFull_line
+                if pd:
+                    boundary = None
+                    if "Content-Type" in self._headers:
+                            values = self._headers["Content-Type"].split(";")
+                            self.ContentType = values[0].strip().lower()
+                            if self.ContentType == "multipart/form-data":
+                                    boundary = values[1].split("=")[1].strip()
 
-                        boundary = None
-                        if "Content-Type" in self._headers:
-                                values = self._headers["Content-Type"].split(";")
-                                self.ContentType = values[0].strip().lower()
-                                if self.ContentType == "multipart/form-data":
-                                        boundary = values[1].split("=")[1].strip()
-
-                        self.setPostData(pd, boundary)
+                    self.setPostData(pd, boundary)
