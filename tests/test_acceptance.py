@@ -51,6 +51,7 @@ basic_tests = [
 
     ("test_robots_disallow", "%s/FUZZ" % HTTPBIN_URL, [["robots.txt"]], dict(script="robots"), [(200, '/deny'), (200, '/robots.txt')], None),
     ("test_response_base64", "%s/base64/FUZZ" % HTTPBIN_URL, None, dict(filter="content~'HTTPBIN is awesome'", payloads=[("list", dict(values="HTTPBIN is awesome", encoder=["base64"]))]), [(200, '/base64/SFRUUEJJTiBpcyBhd2Vzb21l')], None),
+    # this does not work as you get the encoded value ("test_response_base64_FUZZ", "%s/base64/FUZZ" % HTTPBIN_URL, None, dict(filter="content~FUZZ", payloads=[("list", dict(values="HTTPBIN is awesome", encoder=["base64"]))]), [(200, '/base64/SFRUUEJJTiBpcyBhd2Vzb21l')], None),
     ("test_basic_auth", "%s/basic-auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("basic", "FUZZ:FUZZ")), [(200, '/basic-auth/userpass/userpass')], None),
     ("test_digest_auth", "%s/digest-auth/auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("digest", "FUZZ:FUZZ")), [(200, '/digest-auth/auth/userpass/userpass')], None),
     ("test_delayed_response", "%s/delay/FUZZ" % HTTPBIN_URL, [["2"]], dict(req_delay=1), [(200, '/delay/2')], 'Operation timed out'),
