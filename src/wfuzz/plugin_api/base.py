@@ -50,7 +50,7 @@ class BasePlugin():
 
         A kbase (get_kbase, has_kbase, add_kbase) is shared between all plugins. this can be used to store and retrieve relevant "collaborative" information.
         '''
-        raise NotImplemented
+        raise NotImplementedError
 
     def validate(self):
         raise FuzzExceptPluginError("Method count not implemented")

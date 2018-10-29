@@ -30,7 +30,7 @@ except ImportError:
 
 class IFilter:
     def is_visible(self, plugin, filter_string):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class Filter(IFilter):

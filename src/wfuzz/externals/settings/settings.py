@@ -22,7 +22,7 @@ class SettingsBase:
 
     def get_config_file(self):
         '''Returns the name of the file where the config is saved.'''
-        raise NotImplemented
+        raise NotImplementedError
 
     def set_defaults(self):
         '''
@@ -36,7 +36,7 @@ class SettingsBase:
         ...
         }
         '''
-        raise NotImplemented
+        raise NotImplementedError
 
     def has_option(self, section, setting):
         return self.cparser.has_option(section, setting)

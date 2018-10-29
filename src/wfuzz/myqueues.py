@@ -55,10 +55,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
         self.queue_out = q
 
     def process(self, item):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_name(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     # Override this method if needed. This will be called just before cancelling the job.
     def cancel(self):

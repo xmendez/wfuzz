@@ -9,10 +9,10 @@ class IModuleLoader:
         self.set_params(**params)
 
     def set_params(self, **params):
-        raise NotImplemented
+        raise NotImplementedError
 
     def load(self, registrant):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class FileLoader(IModuleLoader):

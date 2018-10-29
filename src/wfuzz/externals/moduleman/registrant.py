@@ -13,19 +13,19 @@ class IRegistrant():
         self.end_loading()
 
     def register(self, identifier, module):
-        raise NotImplemented
+        raise NotImplementedError
 
     def start_loading(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def load(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def end_loading(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def modify_instance(self, module):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class KnowledgeBase(MutableMapping):
