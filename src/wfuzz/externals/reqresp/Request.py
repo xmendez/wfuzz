@@ -19,6 +19,8 @@ from .Variables import VariablesSet
 from .exceptions import ReqRespException
 from .Response import Response
 
+from wfuzz.utils import python2_3_convert_to_unicode
+
 from .TextParser import TextParser
 
 
@@ -295,7 +297,7 @@ class Request:
             if PYCURL_PATH_AS_IS:
                 c.setopt(pycurl.PATH_AS_IS, 1)
 
-            c.setopt(pycurl.URL, req.completeUrl)
+            c.setopt(pycurl.URL, python2_3_convert_to_unicode(req.completeUrl))
 
             if req.getConnTimeout():
                 c.setopt(pycurl.CONNECTTIMEOUT, req.getConnTimeout())
@@ -311,11 +313,11 @@ class Request:
                     c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_NTLM)
                 elif authMethod == "digest":
                     c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_DIGEST)
-                c.setopt(pycurl.USERPWD, userpass)
+                c.setopt(pycurl.USERPWD, python2_3_convert_to_unicode(userpass))
             else:
                 c.unsetopt(pycurl.USERPWD)
 
-            c.setopt(pycurl.HTTPHEADER, req.getHeaders())
+            c.setopt(pycurl.HTTPHEADER, python2_3_convert_to_unicode(req.getHeaders()))
 
             curl_options = {
                 "GET": pycurl.HTTPGET,
@@ -334,13 +336,13 @@ class Request:
                 c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
             if req.postdata:
-                c.setopt(pycurl.POSTFIELDS, req.postdata)
+                c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req.postdata))
 
             c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
 
             proxy = req.getProxy()
             if proxy is not None:
-                c.setopt(pycurl.PROXY, proxy)
+                c.setopt(pycurl.PROXY, python2_3_convert_to_unicode(proxy))
                 if req.proxytype == "SOCKS5":
                     c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
                 elif req.proxytype == "SOCKS4":

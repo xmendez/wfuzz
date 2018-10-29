@@ -20,6 +20,8 @@ from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInterna
 from .facade import Facade
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
+from .utils import python2_3_convert_to_unicode
+
 auth_header = namedtuple("auth_header", "method credentials")
 
 
@@ -787,7 +789,7 @@ class FuzzResult:
 
         if self.history and self.history.content:
             m = hashlib.md5()
-            m.update(self.history.content.encode('utf-8'))
+            m.update(python2_3_convert_to_unicode(self.history.content))
             self.md5 = m.hexdigest()
 
             self.chars = len(self.history.content)

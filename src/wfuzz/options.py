@@ -4,7 +4,10 @@ from .facade import Facade
 from .fuzzobjects import FuzzResult, FuzzStats
 from .filter import FuzzResFilter
 from .core import requestGenerator
-from .utils import json_minify
+from .utils import (
+    json_minify,
+    python2_3_convert_from_unicode
+)
 
 from .core import Fuzzer
 from .myhttp import HttpPool
@@ -12,8 +15,6 @@ from .myhttp import HttpPool
 from .externals.reqresp.cache import HttpCache
 
 from collections import defaultdict
-import sys
-import six
 
 # python 2 and 3
 try:
@@ -142,17 +143,6 @@ class FuzzSession(UserDict):
         except TypeError:
             return "Bad options: Filter must be specified in the form of [int, ... , int]."
 
-    # pycurl does not like unicode strings
-    def _convert_from_unicode(self, text):
-        if isinstance(text, dict):
-            return {self._convert_from_unicode(key): self._convert_from_unicode(value) for key, value in list(text.items())}
-        elif isinstance(text, list):
-            return [self._convert_from_unicode(element) for element in text]
-        elif isinstance(text, six.string_types):
-            return text.encode('utf-8')
-        else:
-            return text
-
     def export_to_file(self, filename):
         try:
             with open(filename, 'w') as f:
@@ -175,11 +165,7 @@ class FuzzSession(UserDict):
                 for section in js['wfuzz_recipe'].keys():
                     for k, v in js['wfuzz_recipe'].items():
                         if k not in self.keys_not_to_dump:
-                            # python 2 and 3 hack
-                            if sys.version_info >= (3, 0):
-                                self.data[k] = v
-                            else:
-                                self.data[k] = self._convert_from_unicode(v)
+                            self.data[k] = python2_3_convert_from_unicode(v)
             else:
                 raise FuzzExceptBadRecipe("Unsupported recipe version.")
         except KeyError:

@@ -5,6 +5,8 @@ import zlib
 
 from .TextParser import TextParser
 
+from wfuzz.utils import python2_3_convert_from_unicode
+
 
 class Response:
         def __init__(self, protocol="", code="", message=""):
@@ -92,7 +94,8 @@ class Response:
                 self._headers = []
 
                 tp = TextParser()
-                tp.setSource("string", rawheader.decode('utf-8', errors='replace'))
+                rawheader = python2_3_convert_from_unicode(rawheader.decode("utf-8", errors='replace'))
+                tp.setSource("string", rawheader)
 
                 tp.readUntil("(HTTP\S*) ([0-9]+)")
                 while True:
@@ -169,4 +172,6 @@ class Response:
                         rawbody = deflated_data
                         self.delHeader("Content-Encoding")
 
-                self.__content = rawbody.decode('utf-8', errors='replace')
+                # TODO: Try to get encoding from content
+                self.__content = python2_3_convert_from_unicode(rawbody.decode("unicode_escape", errors='replace'))
+                # self.__content = python2_3_convert_from_unicode(rawbody.decode("utf-8", errors='replace'))

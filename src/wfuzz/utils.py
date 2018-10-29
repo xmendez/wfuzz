@@ -1,5 +1,7 @@
 import re
 import os
+import sys
+import six
 
 
 def json_minify(string, strip_space=True):
@@ -103,3 +105,28 @@ def find_file_in_paths(name, path):
             return os.path.join(root, name)
 
     return None
+
+
+def python2_3_convert_from_unicode(text):
+    if sys.version_info >= (3, 0):
+        return text
+    else:
+        return convert_to_unicode(text)
+
+
+def python2_3_convert_to_unicode(text):
+    if sys.version_info >= (3, 0):
+        return convert_to_unicode(text)
+    else:
+        return text
+
+
+def convert_to_unicode(text):
+    if isinstance(text, dict):
+        return {convert_to_unicode(key): convert_to_unicode(value) for key, value in list(text.items())}
+    elif isinstance(text, list):
+        return [convert_to_unicode(element) for element in text]
+    elif isinstance(text, six.string_types):
+        return text.encode("utf-8", errors='ignore')
+    else:
+        return text
