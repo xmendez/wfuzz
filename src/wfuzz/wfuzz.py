@@ -50,7 +50,7 @@ def main():
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
-        print("\nFatal exception: Error importing wfuzz extensions")
+        print("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e))
     except Exception as e:
         print("\nUnhandled exception: {}".format(str(e)))
     finally:
