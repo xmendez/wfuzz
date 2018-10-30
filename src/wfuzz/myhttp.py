@@ -192,10 +192,13 @@ class HttpPool:
                 # Parse response
                 buff_body, buff_header, res, poolid = c.response_queue
 
-                res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
-
-                # reset type to result otherwise backfeed items will enter an infinite loop
-                self.pool_map[poolid]["queue"].put(res.update())
+                try:
+                    res.history.from_http_object(c, buff_header.getvalue(), buff_body.getvalue())
+                except Exception as e:
+                    self.pool_map[poolid]["queue"].put(res.update(exception=e))
+                else:
+                    # reset type to result otherwise backfeed items will enter an infinite loop
+                    self.pool_map[poolid]["queue"].put(res.update())
 
                 self.m.remove_handle(c)
                 self.freelist.put(c)
