@@ -39,20 +39,22 @@ REPLACE_HOSTNAMES = [
 # script args
 
 testing_tests = [
-    # not working due to content being decode as unicode not utf-8
-    # ("test_encode_cookie2_utf8_return", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(cookie=["test=FUZZ"], filter="content~'test=\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/anything')], None),
-    # ("test_encode_header_utf8_return", "%s/headers" % HTTPBIN_URL, [["は国"]], dict(headers=[("myheader", "FUZZ")], filter="content~'Myheader' and content~'\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/headers')], None),
 ]
 
 basic_tests = [
     # encoding tests
+    ("test_encode_cookie2_utf8_return", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(cookie=["test=FUZZ"], filter="content~'test=\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/anything')], None),
+    ("test_encode_header_utf8_return", "%s/headers" % HTTPBIN_URL, [["は国"]], dict(headers=[("myheader", "FUZZ")], filter="content~'Myheader' and content~'\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/headers')], None),
     ("test_encode_path", "%s/FUZZ" % HTTPBIN_URL, [["は国"]], dict(), [(404, '/は国')], None),
     ("test_encode_basic_auth", "%s/basic-auth/FUZZ/FUZZ" % HTTPBIN_URL, [["は国"]], dict(auth=("basic", "FUZZ:FUZZ")), [(200, '/basic-auth/は国/は国')], None),
-    ("test_encode_postdata", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(postdata="a=FUZZ", filter="content~'は国'"), [(200, '/anything')], None),
+    # ("test_encode_postdata", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(postdata="a=FUZZ", filter="content~'は国'"), [(200, '/anything')], None),
+    ("test_encode_postdata", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(postdata="a=FUZZ", filter="content~'\\\\u306f\\\\u56fd'"), [(200, '/anything')], None),
     ("test_encode_url_filter", "%s/FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="url~'は国'"), [(404, '/は国')], None),
-    ("test_encode_var", "%s/anything?var=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="content~'\"は国\"'"), [(200, '/anything')], None),
+    # ("test_encode_var", "%s/anything?var=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="content~'\"は国\"'"), [(200, '/anything')], None),
+    ("test_encode_var", "%s/anything?var=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="content~'\"\\\\u306f\\\\u56fd\"'"), [(200, '/anything')], None),
     ("test_encode_redirect", "%s/redirect-to?url=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="headers.response.Location='%C3%A3%C2%81%C2%AF%C3%A5%C2%9B%C2%BD'"), [(302, '/redirect-to')], None),
-    ("test_encode_cookie", "%s/cookies" % HTTPBIN_URL, [["は国"]], dict(cookie=["cookie1=FUZZ"], follow=True, filter="content~FUZZ"), [(200, '/cookies')], None),
+    # ("test_encode_cookie", "%s/cookies" % HTTPBIN_URL, [["は国"]], dict(cookie=["cookie1=FUZZ"], follow=True, filter="content~FUZZ"), [(200, '/cookies')], None),
+    ("test_encode_cookie", "%s/cookies" % HTTPBIN_URL, [["は国"]], dict(cookie=["cookie1=FUZZ"], follow=True, filter="content~'\\\\u306f\\\\u56fd'"), [(200, '/cookies')], None),
 
     # postdata tests
     # pycurl does not allow it ("test_get_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"]], dict(postdata='a=1', filter="content~'\"form\":{\"a\":\"1\"}'"), [(200, '/anything')], None),
