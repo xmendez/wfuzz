@@ -165,6 +165,7 @@ class FuzzSession(UserDict):
                 for section in js['wfuzz_recipe'].keys():
                     for k, v in js['wfuzz_recipe'].items():
                         if k not in self.keys_not_to_dump:
+                            # python 2 and 3 hack
                             self.data[k] = python2_3_convert_from_unicode(v)
             else:
                 raise FuzzExceptBadRecipe("Unsupported recipe version.")

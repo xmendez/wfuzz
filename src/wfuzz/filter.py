@@ -252,7 +252,7 @@ class FuzzResFilter:
             try:
                 return self.finalformula.parseString(filter_string, parseAll=True)[0]
             except ParseException as e:
-                raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation.")
+                raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation. {}".format(str(e)))
             except AttributeError as e:
                 raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
         else:

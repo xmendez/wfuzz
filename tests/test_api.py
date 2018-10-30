@@ -99,7 +99,7 @@ class APITests(unittest.TestCase):
         payload_list = list(wfuzz.payload(**{'payloads': [('list', {'default': 'a-b', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('a',), ('b',)])
 
-        payload_list = list(wfuzz.payload(**{'payloads': [('list', {'default': 'a\-b-b', 'encoder': None}, None)]}))
+        payload_list = list(wfuzz.payload(**{'payloads': [('list', {'default': 'a\\-b-b', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('a-b',), ('b',)])
 
         payload_list = list(wfuzz.payload(**{'payloads': [('range', {'default': '1-2', 'encoder': None}, None)]}))

@@ -69,7 +69,7 @@ usage = '''%s\n\nOptions:
 \t-b cookie                 : Specify a cookie for the requests
 \t-d postdata               : Use post data (ex: "id=FUZZ&catalogue=1")
 \t-H header                 : Use header (ex:"Cookie:id=1312321&user=FUZZ")
-\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
+\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
 \t
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
@@ -126,7 +126,7 @@ verbose_usage = '''%s\n\nOptions:
 \t-b cookie                 : Specify a cookie for the requests. Repeat option for various cookies.
 \t-d postdata               : Use post data (ex: "id=FUZZ&catalogue=1")
 \t-H header                 : Use header (ex:"Cookie:id=1312321&user=FUZZ"). Repeat option for various headers.
-\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\FUZ2Z:FUZZ"
+\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
 \t
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)

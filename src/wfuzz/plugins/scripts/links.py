@@ -29,12 +29,12 @@ class links(BasePlugin, DiscoveryPluginMixin):
         BasePlugin.__init__(self)
 
         regex = [
-            'href="((?!mailto:|tel:|#|javascript:).*?)"',
-            'src="((?!javascript:).*?)"',
-            'action="((?!javascript:).*?)"',
+            r'href="((?!mailto:|tel:|#|javascript:).*?)"',
+            r'src="((?!javascript:).*?)"',
+            r'action="((?!javascript:).*?)"',
             # http://en.wikipedia.org/wiki/Meta_refresh
-            '<meta.*content="\d+;url=(.*?)">',
-            'getJSON\("(.*?)"',
+            r'<meta.*content="\d+;url=(.*?)">',
+            r'getJSON\("(.*?)"',
         ]
 
         self.regex = []

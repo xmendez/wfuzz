@@ -9,7 +9,7 @@ import re
 import struct
 import zipfile
 
-TAG = re.compile('</?(\w*)>', re.M)  # Match a XML tag
+TAG = re.compile(r'</?(\w*)>', re.M)  # Match a XML tag
 nvprint = string.printable.replace('\x0b', '').replace('\x0c', '')  # Printables
 
 

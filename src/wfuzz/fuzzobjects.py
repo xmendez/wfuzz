@@ -471,11 +471,11 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 class FuzzResultFactory:
     @staticmethod
     def replace_fuzz_word(text, fuzz_word, payload):
-        marker_regex = re.compile("(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
+        marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
 
         for fw, field in marker_regex.findall(text):
             if field:
-                marker_regex = re.compile("(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
+                marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
                 subs_array = []
 
                 for fw, field in marker_regex.findall(text):
@@ -566,8 +566,8 @@ class FuzzResultFactory:
         auth_method, userpass = fuzzresult.history.auth
 
         # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
-        b1 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", rawReq, re.MULTILINE | re.DOTALL)])
-        b2 = dict([matchgroup.groups() for matchgroup in re.finditer("FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", userpass, re.MULTILINE | re.DOTALL)])
+        b1 = dict([matchgroup.groups() for matchgroup in re.finditer(r"FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", rawReq, re.MULTILINE | re.DOTALL)])
+        b2 = dict([matchgroup.groups() for matchgroup in re.finditer(r"FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", userpass, re.MULTILINE | re.DOTALL)])
         baseline_control = dict(list(b1.items()) + list(b2.items()))
         baseline_payload = [x[1] for x in sorted(list(baseline_control.items()), key=operator.itemgetter(0))]
 
@@ -596,7 +596,7 @@ class FuzzResultFactory:
         baseline_res = fuzzresult.from_soft_copy()
 
         # remove field markers from baseline
-        marker_regex = re.compile("(FUZ\d*Z)\[(.*?)\]", re.DOTALL)
+        marker_regex = re.compile(r"(FUZ\d*Z)\[(.*?)\]", re.DOTALL)
         results = marker_regex.findall(rawReq)
         if results:
             for fw, f in results:
@@ -794,7 +794,7 @@ class FuzzResult:
 
             self.chars = len(self.history.content)
             self.lines = self.history.content.count("\n")
-            self.words = len(re.findall("\S+", self.history.content))
+            self.words = len(re.findall(r"\S+", self.history.content))
 
         return self
 

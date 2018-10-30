@@ -27,7 +27,7 @@ try:
         print("\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n")
 
 except ImportError as e:
-    print("\nFatal exception: Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl")
+    print("\nFatal exception: {}. Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl".format(str(e)))
     sys.exit(1)
 
 from .options import FuzzSession

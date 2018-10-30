@@ -8,7 +8,7 @@ import re
 CRLF = "\r\n"
 DELIMITER = "%s%s" % ('=' * 54, CRLF)
 CRLF_DELIMITER = CRLF + DELIMITER
-HEADER = re.compile('(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
+HEADER = re.compile(r'(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
 
 
 @moduleman_plugin

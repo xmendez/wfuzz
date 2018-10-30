@@ -50,7 +50,7 @@ def main():
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
-        print("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e))
+        print("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e)))
     except Exception as e:
         print("\nUnhandled exception: {}".format(str(e)))
     finally:
@@ -151,10 +151,10 @@ def main_encoder():
                 sys.exit()
     except IndexError as e:
         usage()
-        print("\nFatal exception: Specify a string to encode or decode.\n")
+        print("\nFatal exception: Specify a string to encode or decode.{}\n".format(str(e)))
         sys.exit()
     except AttributeError as e:
-        print("\nEncoder plugin missing encode or decode functionality.")
+        print("\nEncoder plugin missing encode or decode functionality. {}".format(str(e)))
     except FuzzException as e:
         print(("\nFatal exception: %s" % str(e)))
 

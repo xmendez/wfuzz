@@ -113,7 +113,7 @@ class requestGenerator(object):
             self.dictio = self.get_dictio()
 
         def _check_dictio_len(self, element):
-            marker_regex = re.compile("FUZ\d*Z", re.MULTILINE | re.DOTALL)
+            marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
             fuzz_words = marker_regex.findall(str(self.seed.history))
             method, userpass = self.seed.history.auth
 
@@ -143,7 +143,7 @@ class requestGenerator(object):
 
         def __allvars_gen(self, dic):
             # no FUZZ keyword allowed
-            marker_regex = re.compile("FUZ\d*Z", re.MULTILINE | re.DOTALL)
+            marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
             if len(marker_regex.findall(str(self.seed.history))) > 0:
                 raise FuzzExceptBadOptions("FUZZ words not allowed when using all parameters brute forcing.")
 

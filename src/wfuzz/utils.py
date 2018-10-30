@@ -15,7 +15,7 @@ def json_minify(string, strip_space=True):
     - Pradyun S. Gedam (conditions and variable names changed)
     '''
 
-    tokenizer = re.compile('"|(/\*)|(\*/)|(//)|\n|\r')
+    tokenizer = re.compile(r'"|(/\*)|(\*/)|(//)|\n|\r')
     end_slashes_re = re.compile(r'(\\)*$')
 
     in_string = False

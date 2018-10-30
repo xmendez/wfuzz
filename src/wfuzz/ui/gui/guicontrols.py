@@ -248,10 +248,9 @@ ID_About = wx.NewId()
 
 class WfuzzFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="Wfuzz", pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE |
-                                            wx.SUNKEN_BORDER |
-                                            wx.CLIP_CHILDREN):
-
+                 size=wx.DefaultSize,
+                 style=wx.DEFAULT_FRAME_STYLE | wx.SUNKEN_BORDER | wx.CLIP_CHILDREN
+                 ):
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
 
     def start_gui(self, controller):
