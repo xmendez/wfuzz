@@ -56,13 +56,13 @@ basic_tests = [
 
     # postdata tests
     # pycurl does not allow it ("test_get_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"]], dict(postdata='a=1', filter="content~'\"form\":{\"a\":\"1\"}'"), [(200, '/anything')], None),
-    ("test_allmethods_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'POST', 'DELETE'], ['333888']], dict(method='FUZ2Z', postdata='a=FUZ3Z', filter="content~FUZ2Z and content~'\"form\":{\"a\":\"' and content~FUZ3Z"), [(200, '/anything')] * 3, None),
+    ("test_allmethods_postdata", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'POST', 'DELETE'], ['333888']], dict(method='FUZ2Z', postdata='a=FUZ3Z', filter="content~FUZ2Z and content~'\"a\": \"' and content~FUZ3Z"), [(200, '/anything')] * 3, None),
 
     # httpbin extra tests
-    ("test_gzip", "%s/FUZZ" % HTTPBIN_URL, [["gzip"]], dict(filter="content~'\"gzipped\":true'"), [(200, '/gzip')], None),
+    ("test_gzip", "%s/FUZZ" % HTTPBIN_URL, [["gzip"]], dict(filter="content~'\"gzipped\": true'"), [(200, '/gzip')], None),
     ("test_response_utf8", "%s/encoding/FUZZ" % HTTPBIN_URL, [["utf8"]], dict(), [(200, '/encoding/utf8')], None),
     ("test_image", "%s/image/FUZZ" % HTTPBIN_URL, [["jpeg"]], dict(filter="content~'JFIF'"), [(200, '/image/jpeg')], None),
-    ("test_deflate", "%s/FUZZ" % HTTPBIN_URL, [["deflate"]], dict(filter="content~'\"deflated\":true'"), [(200, '/deflate')], None),
+    ("test_deflate", "%s/FUZZ" % HTTPBIN_URL, [["deflate"]], dict(filter="content~'\"deflated\": true'"), [(200, '/deflate')], None),
 
     ("test_robots_disallow", "%s/FUZZ" % HTTPBIN_URL, [["robots.txt"]], dict(script="robots"), [(200, '/deny'), (200, '/robots.txt')], None),
     ("test_response_base64", "%s/base64/FUZZ" % HTTPBIN_URL, None, dict(filter="content~'HTTPBIN is awesome'", payloads=[("list", dict(values="HTTPBIN is awesome", encoder=["base64"]))]), [(200, '/base64/SFRUUEJJTiBpcyBhd2Vzb21l')], None),
