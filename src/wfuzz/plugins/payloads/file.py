@@ -34,7 +34,7 @@ class file(BasePayload):
     def __next__(self):
         line = self.f.readline().strip()
         if line == '':
-            self.f.close()
+            self.f.seek(0)
             raise StopIteration
         return line
 
