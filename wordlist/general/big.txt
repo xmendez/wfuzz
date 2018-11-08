@@ -2417,7 +2417,7 @@ search
 seattle
 seccio
 seccion
-secció
+secciÃ³
 secret
 secreto
 secrets

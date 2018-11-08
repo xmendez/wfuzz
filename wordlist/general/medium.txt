@@ -1316,7 +1316,7 @@ scripts
 search
 seccio
 seccion
-secció
+secciÃ³
 secret
 secreto
 secrets
