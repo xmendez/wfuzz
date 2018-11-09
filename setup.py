@@ -22,7 +22,8 @@ install_requires = [
     'pyparsing>=2.2.0',
     'future>=0.16.0',
     'six>=1.10.0',
-    'configparser>=3.5.0'
+    'configparser>=3.5.0',
+    'chardet',
 ]
 
 setup(

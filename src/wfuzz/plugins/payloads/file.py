@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.utils import open_file_detect_encoding
 
 
 @moduleman_plugin
@@ -25,7 +26,7 @@ class file(BasePayload):
         BasePayload.__init__(self, params)
 
         try:
-            self.f = open(self.find_file(self.params["fn"]), "r")
+            self.f = open_file_detect_encoding(self.find_file(self.params["fn"]))
         except IOError as e:
             raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 

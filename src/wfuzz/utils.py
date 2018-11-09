@@ -2,6 +2,7 @@ import re
 import os
 import sys
 import six
+from chardet.universaldetector import UniversalDetector
 
 
 def json_minify(string, strip_space=True):
@@ -130,3 +131,24 @@ def convert_to_unicode(text):
         return text.encode("utf-8", errors='ignore')
     else:
         return text
+
+
+def open_file_detect_encoding(file_path):
+    def detect_encoding(file_path):
+        detector = UniversalDetector()
+        detector.reset()
+
+        with open(file_path, mode='rb') as file_to_detect:
+            for line in file_to_detect:
+                detector.feed(line)
+                if detector.done:
+                    break
+        detector.close()
+
+        print(detector.result)
+        return detector.result
+
+    if sys.version_info >= (3, 0):
+        return open(file_path, "r", encoding=detect_encoding(file_path).get('encoding', 'utf-8'))
+    else:
+        return open(file_path, "r")
