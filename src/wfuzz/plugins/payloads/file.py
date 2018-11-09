@@ -33,11 +33,11 @@ class file(BasePayload):
         self.__count = None
 
     def __next__(self):
-        line = self.f.readline().strip()
-        if line == '':
+        line = self.f.readline()
+        if not line:
             self.f.close()
             raise StopIteration
-        return line
+        return line.strip()
 
     def count(self):
         if self.__count is None:
