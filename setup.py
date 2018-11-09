@@ -15,14 +15,15 @@ version = re.search(
 dev_requires = [
     'mock',
     'netaddr',
+    'pip-tools',
 ]
 
 install_requires = [
-    'pycurl>=7.43.0.1',
-    'pyparsing>=2.2.0',
-    'future>=0.16.0',
-    'six>=1.10.0',
-    'configparser>=3.5.0',
+    'pycurl',
+    'pyparsing',
+    'future',
+    'six',
+    'configparser',
     'chardet',
 ]
 

@@ -22,3 +22,10 @@ docs:
 
 coverage:
 	coverage report --skip-covered --include "*python3.5/site-packages/wfuzz*" -m
+
+install:
+	pip install -r requirements.txt
+
+freeze:
+	pip-compile --output-file requirements.txt setup.py
+
