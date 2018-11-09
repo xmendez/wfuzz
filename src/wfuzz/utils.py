@@ -145,7 +145,6 @@ def open_file_detect_encoding(file_path):
                     break
         detector.close()
 
-        print(detector.result)
         return detector.result
 
     if sys.version_info >= (3, 0):
