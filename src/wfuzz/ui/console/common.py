@@ -41,7 +41,7 @@ brief_usage = '''%s\n\n%s\n\nType wfuzz -h for further information or --help for
 
 usage = '''%s\n\nOptions:
 \t-h                        : This help
-\t--help                            : Advanced help
+\t--help                    : Advanced help
 \t--version                 : Wfuzz version details
 \t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
 \t
@@ -49,7 +49,7 @@ usage = '''%s\n\nOptions:
 \t-v                        : Verbose information.
 \t--interact                : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t
-\t-p addr                           : Use Proxy in format ip:port:type. Repeat option for using various proxies.
+\t-p addr                   : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
 \t
 \t-t N                      : Specify the number of concurrent connections (10 default)
@@ -57,11 +57,11 @@ usage = '''%s\n\nOptions:
 \t-R depth                  : Recursive path discovery being depth the maximum recursion level.
 \t-L, --follow              : Follow HTTP redirections
 \t
-\t-u url                      : Specify a URL for the request.
+\t-u url                    : Specify a URL for the request.
 \t-z payload                : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t                            Encoders category can be used. ie. url
-\t                              Use help as a payload to show payload plugin's details (you can filter using --slice)
+\t                            Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype                : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
 \t-X method                 : Specify an HTTP method for the request, ie. HEAD or FUZZ
@@ -69,7 +69,7 @@ usage = '''%s\n\nOptions:
 \t-b cookie                 : Specify a cookie for the requests
 \t-d postdata               : Use post data (ex: "id=FUZZ&catalogue=1")
 \t-H header                 : Use header (ex:"Cookie:id=1312321&user=FUZZ")
-\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
+\t--basic/ntlm/digest auth  : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
 \t
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
@@ -78,23 +78,23 @@ usage = '''%s\n\nOptions:
 
 verbose_usage = '''%s\n\nOptions:
 \t-h/--help                 : This help
-\t--help                            : Advanced help
+\t--help                    : Advanced help
 \t--version                 : Wfuzz version details
 \t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
 \t
 \t--recipe <filename>       : Reads options from a recipe
-\t--dump-recipe <filename>    : Prints current options as a recipe
+\t--dump-recipe <filename>  : Prints current options as a recipe
 \t--oF <filename>           : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 \t
 \t-c                        : Output with colors
 \t-v                        : Verbose information.
-\t-f filename,printer         : Store results in the output file using the specified printer (raw printer if omitted).
-\t-o printer                  : Show results using the specified printer.
+\t-f filename,printer       : Store results in the output file using the specified printer (raw printer if omitted).
+\t-o printer                : Show results using the specified printer.
 \t--interact                : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run                 : Print the results of applying the requests without actually making any HTTP request.
 \t--prev                    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
 \t
-\t-p addr                           : Use Proxy in format ip:port:type. Repeat option for using various proxies.
+\t-p addr                   : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
 \t
 \t-t N                      : Specify the number of concurrent connections (10 default)
@@ -103,20 +103,20 @@ verbose_usage = '''%s\n\nOptions:
 \t-L,--follow               : Follow HTTP redirections
 \t-Z                        : Scan mode (Connection errors will be ignored).
 \t--req-delay N             : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
-\t--conn-delay N              : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
+\t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
 \t-A                        : Alias for --script=default -v -c
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
-\t--script-help=<plugins>           : Show help about scripts.
-\t--script-args n1=v1,...     : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
+\t--script-help=<plugins>   : Show help about scripts.
+\t--script-args n1=v1,...   : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
 \t
-\t-u url                      : Specify a URL for the request.
+\t-u url                    : Specify a URL for the request.
 \t-m iterator               : Specify an iterator for combining payloads (product by default)
 \t-z payload                : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t                            Encoders category can be used. ie. url
-\t                              Use help as a payload to show payload plugin's details (you can filter using --slice)
+\t                            Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t--zP <params>             : Arguments for the specified payload (it must be preceded by -z or -w).
 \t--slice <filter>          : Filter payload\'s elements using the specified expression. It must be preceded by -z.
 \t-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).
@@ -126,7 +126,7 @@ verbose_usage = '''%s\n\nOptions:
 \t-b cookie                 : Specify a cookie for the requests. Repeat option for various cookies.
 \t-d postdata               : Use post data (ex: "id=FUZZ&catalogue=1")
 \t-H header                 : Use header (ex:"Cookie:id=1312321&user=FUZZ"). Repeat option for various headers.
-\t--basic/ntlm/digest auth    : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
+\t--basic/ntlm/digest auth  : in format "user:pass" or "FUZZ:FUZZ" or "domain\\FUZ2Z:FUZZ"
 \t
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
