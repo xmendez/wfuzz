@@ -1,5 +1,5 @@
 __title__ = 'wfuzz'
-__version__ = "2.3"
+__version__ = "2.3.1"
 __build__ = 0x023000
 __author__ = 'Xavier Mendez'
 __license__ = 'GPL 2.0'
