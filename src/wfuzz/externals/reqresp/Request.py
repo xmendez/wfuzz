@@ -234,8 +234,7 @@ class Request:
 
         def addHeader(self, key, value):
                 k = string.capwords(key, "-")
-                if k.lower() not in ["accept-encoding", "content-length", "if-modified-since", "if-none-match"]:
-                        self._headers[k] = value
+                self._headers[k] = value
 
         def delHeader(self, key):
             k = string.capwords(key, "-")
