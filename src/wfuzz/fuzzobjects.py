@@ -136,7 +136,7 @@ class params(object):
     @post.setter
     def post(self, pp):
         if isinstance(pp, dict):
-            self._req.setPostData("&".join(["=".join([n, v]) if v is not None else n for n, v in list(pp.items())]))
+            self._req.setPostData("&".join(["=".join([n, str(v)]) if v is not None else n for n, v in list(pp.items())]))
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
