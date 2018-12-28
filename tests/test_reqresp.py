@@ -132,37 +132,41 @@ class FuzzRequestTest(unittest.TestCase):
 
     def test_cache_key(self):
         fr = FuzzRequest()
-
         fr.url = "http://www.wfuzz.org/"
-        fr.params.get = {'a': '1', 'b': '2'}
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-a-b')
-
-        fr = FuzzRequest()
-        fr.url = "http://www.wfuzz.org/"
-        fr.params.post = {'c': '1', 'd': '2'}
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-c-d')
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.get = {'a': '1', 'b': '2'}
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-ga-gb')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'c': '1', 'd': '2'}
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-a-b-c-d')
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-pc-pd')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.get = {'a': '1', 'b': '2'}
+        fr.params.post = {'c': '1', 'd': '2'}
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-ga-gb-pc-pd')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.get = {'a': '1', 'b': '2'}
         fr.params.post = {'a': '1', 'b': '2'}
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-a-b')
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-ga-gb-pa-pb')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = '1'
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-1')
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = ''
-        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-')
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p')
+
 
 if __name__ == '__main__':
     unittest.main()
