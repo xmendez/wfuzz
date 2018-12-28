@@ -87,6 +87,13 @@ class FuzzRequestTest(unittest.TestCase):
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
 
+    def test_setgetdata(self):
+        fr = FuzzRequest()
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.get = {'a': '1'}
+        self.assertEqual(fr.method, "GET")
+        self.assertEqual(fr.params.get, {'a': '1'})
 
 
 if __name__ == '__main__':

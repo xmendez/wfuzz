@@ -129,6 +129,14 @@ class params(object):
     def get(self):
         return OrderedDict([(x.name, x.value) for x in self._req.getGETVars()])
 
+    @get.setter
+    def get(self, values):
+        if isinstance(values, dict):
+            for key, value in values.items():
+                self._req.setVariableGET(key, value)
+        else:
+            raise FuzzExceptBadAPI("GET Parameters must be specified as a dictionary")
+
     @property
     def post(self):
         return OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()])
