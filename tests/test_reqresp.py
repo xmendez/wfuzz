@@ -63,25 +63,36 @@ class FuzzRequestTest(unittest.TestCase):
 
     def test_setpostdata(self):
         fr = FuzzRequest()
-
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = 'a=1'
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
 
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'1': None})
+
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = ''
         self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'': None})
 
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {}
-        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.method, "GET")
+        self.assertEqual(fr.params.post, {})
 
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'a': 1}
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
 
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'a': '1'}
         self.assertEqual(fr.method, "POST")
@@ -97,12 +108,12 @@ class FuzzRequestTest(unittest.TestCase):
 
     def test_allvars(self):
         fr = FuzzRequest()
-
         fr.url = "http://www.wfuzz.org/"
         fr.params.get = {'a': '1', 'b': '2'}
         fr.wf_allvars = "allvars"
         self.assertEqual(fr.wf_allvars_set, {'a': '1', 'b': '2'})
 
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'a': '1', 'b': '2'}
         fr.wf_allvars = "allpost"
@@ -114,6 +125,7 @@ class FuzzRequestTest(unittest.TestCase):
             ('Host', 'www.wfuzz.org')
         ])
 
+        fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.wf_allvars = "allheaders"
         self.assertEqual(fr.wf_allvars_set, default_headers)
@@ -142,6 +154,15 @@ class FuzzRequestTest(unittest.TestCase):
         fr.params.post = {'a': '1', 'b': '2'}
         self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-a-b')
 
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-1')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = ''
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-')
 
 if __name__ == '__main__':
     unittest.main()
