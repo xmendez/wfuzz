@@ -61,6 +61,33 @@ class FuzzRequestTest(unittest.TestCase):
         self.assertEqual(fr.path, "FUZZ")
         self.assertEqual(fr.follow, False)
 
+    def test_setpostdata(self):
+        fr = FuzzRequest()
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = 'a=1'
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'a': '1'})
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = ''
+        self.assertEqual(fr.method, "POST")
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = {}
+        self.assertEqual(fr.method, "POST")
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = {'a': 1}
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'a': '1'})
+
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = {'a': '1'}
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'a': '1'})
+
+
 
 if __name__ == '__main__':
     unittest.main()
