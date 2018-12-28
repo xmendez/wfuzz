@@ -144,7 +144,8 @@ class params(object):
     @post.setter
     def post(self, pp):
         if isinstance(pp, dict):
-            self._req.setPostData("&".join(["=".join([n, str(v)]) if v is not None else n for n, v in list(pp.items())]))
+            for key, value in pp.items():
+                self._req.setVariablePOST(key, str(value))
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
@@ -344,24 +345,23 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     @property
     def wf_allvars_set(self):
         if self.wf_allvars == "allvars":
-            return self._request.getGETVars()
+            return self.params.get
         elif self.wf_allvars == "allpost":
-            return self._request.getPOSTVars()
+            return self.params.post
         elif self.wf_allvars == "allheaders":
-            return self._request.getHeaders()
+            return self.headers.request
         else:
             raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
 
     @wf_allvars_set.setter
     def wf_allvars_set(self, varset):
-        variable, payload_content = varset
         try:
             if self.wf_allvars == "allvars":
-                self._request.setVariableGET(variable, payload_content)
+                self.params.get = varset
             elif self.wf_allvars == "allpost":
-                self._request.setVariablePOST(variable, payload_content)
+                self.params.post = varset
             elif self.wf_allvars == "allheaders":
-                self._request.headers.add({variable: payload_content})
+                self._request.headers.add(varset)
             else:
                 raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
         except TypeError:
@@ -414,13 +414,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def to_cache_key(self):
         key = self._request.urlWithoutVariables
 
-        dicc = {}
-
-        for j in [i.name for i in self._request.getGETVars()]:
-            dicc[j] = True
-
-        for j in [i.name for i in self._request.getPOSTVars()]:
-            dicc[j] = True
+        dicc = {key: True for key in self.params.get.keys()}
+        dicc.update({key: True for key in self.params.post.keys()})
 
         # take URL parameters into consideration
         url_params = list(dicc.keys())
@@ -631,13 +626,13 @@ class FuzzResultFactory:
         if len(payload) > 1:
             raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
-        for variable in seed.history.wf_allvars_set:
+        for var_name in seed.history.wf_allvars_set.keys():
             payload_content = payload[0]
             fuzzres = seed.from_soft_copy()
-            fuzzres._description = variable.name + "=" + payload_content
+            fuzzres._description = var_name + "=" + payload_content
             fuzzres.payload.append(payload_content)
 
-            fuzzres.history.wf_allvars_set = (variable.name, payload_content)
+            fuzzres.history.wf_allvars_set = {var_name: payload_content}
 
             yield fuzzres
 
