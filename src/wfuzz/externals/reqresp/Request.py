@@ -334,7 +334,7 @@ class Request:
             else:
                 c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-            if req.postdata is not None:
+            if req.postdata:
                 c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req.postdata))
 
             c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
