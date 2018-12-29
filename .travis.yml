@@ -20,22 +20,13 @@ script:
   - flake8 --ignore=E501,E402,F401,W504 src tests
   - coverage run --append -m unittest discover -v -s tests/
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
-stages:
-  - test
-  - name: deploy
-    if: branch = master AND tag IS present
-jobs:
-  include:
-    - stage: deploy
-      python: 3.6
-      before_install: true
-      script: true
-      install: true
-      deploy:
-        provider: pypi
-        user: x4vi_mendez
-        password:
-          secure: 2RYIxfqS0J5wct9O7nnEkR3eJq4rd54WVwQi0CyUjHNbtPciQEtunyfYB7saoli3Y+e6iYAukVqeskYsCsuwZn6fi3nucp6pey+TZUHnsycQSCNGQfxBVOOv0iUCqgWIeu7/ImLuJvU6iBUpAiAsloAoboaqhFTTWaKk/Qfux5UPIKrERsY0SI0wfzu51SSgFYIeQMuRQiwqs5qzP+EHVP2gxdVL4164G6bGIGGadXXbxaZGN8qNfpAVKSA6/VZwz59YQQ75SN7GzPaagOcwvF+rBl6WtFOucpexDPtlgnTE7CASm0trULq+7p7CnP6FN2BcKDk9zl6QBwpmxSzd9O4JmpswGguiMrPIop0nvRWLOzw0/ofnXhHaxQCTiGAFjIEan/OrT/1OFmgpsbBcozZd7FCBLCl7qWVtPSpyXuVFuAbokRmQYsy8tlGtLxvCMDvgQcRYhVWcZKrGGdxZhH1GFoyEG3bDML3NF3JLpXdSZQ/qm57A3ATyzjaLCuidhPM52FET14sMeu8UPXlUaPBIzHtlQqF7h7AhorZvFg2wJbzfICf8wU7rMZip9WMQXsDWcvaVLyuIM30W7EjoKWFr1KaYeMf1cnmPE5N2PPABJWcFmVXXBymnamSmh9dRA2jpVfQnodAOxWUo/RUofjdRK2F+td6D/F4zV+WvDJE=
-        on:
-          branch: master
-          tags: true
+deploy:
+  provider: pypi
+  user: x4vi_mendez
+  password:
+    secure: qE2hD6gyopogdJh6Qs9B1s8LkTLiZ2b4jZzDojDOnhITve2hosOfoi2T/a9JrRxP9xeMJmt7t4B7F6h+qiSdi6fz2CLT8qAG5zJFfk/+ZqIQX3zvhthoG6QS8F4Qk7kNDMuaMOeMF3qtK5oSR/cqBY3Fs7SiF9wmH2OH7XBjFdOhRzs7Y8vVEXfxy6O4wHqXkwa6ZHXfuFPly/aZGj8CwlVF4qT6zQGpOrTAJneUonQGei2qIBGVSMSLGXHxndN3a1/RA0L+J3jZKb7zi6XyqAJvXTa3OqbxwSSEdLlUdzPrjLPuMuArgTgDErgSiDlwbceDwx7TlBJy2VEF2OwQ9KAIQFKkE6Rp/sp38l3Dnriv8gzi7N0sdaSAMDH5n8zvl6xJ5hqOnB+1jfpEiSQmvr7chi3OxpniG0eW9ThgZOSLjGp0TXGSh9P3jAiZPlt1HWmNoiwOuTwjue0Lx0MH2vYW1smHJSM+FMbdCL1GwFMsEmBX+2bFzaniuyUEmM5GBpj66Pa9yULho4FTC00Aumffl2A7gnSinYwLzjIB3zUMWFzZBaijLr8caeTYMnMdccNYxWcU4kE1h584FGtMDAO8IdEwW907ZTn0H/sTrb+lFs+x3H4oLc9i+/9j/K1G3jrKJfcTOuMm4D9df+lcfgRCQzB6RyiHJWlEdGEBrJM=
+  distributions: sdist bdist_wheel
+  on:
+    branch: master
+    tags: true
+    python: 3.6
