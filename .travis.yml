@@ -27,6 +27,5 @@ deploy:
     secure: A2BrU6qqQHSrJ7jvxOSr1/l4HdHT5EvRWvkufMR+kdq8I8qgTlGio22Tc4OSrD5Oe7Zz7ST7q3fJFRf8Kt/gdZp7DJeeVR5gK113EvquYQUdb+wbKiBHQ3hu7JBWAjrzUQ3mDPk5DJN77dUVByYoZUmWQVMyg2fmUnQxRdertLI=
   distributions: sdist bdist_wheel
   on:
-    tags: true
     branch: travis_pypi
     python: 3.6
