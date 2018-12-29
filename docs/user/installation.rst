@@ -32,7 +32,7 @@ Dependencies
 Wfuzz uses:
 
 * `pycurl <http://pycurl.sourceforge.net/>`_ library to perform HTTP requests.
-* `pyparsing <http://pyparsing.wikispaces.com/>`_ library to create filter's grammars.
+* `pyparsing <https://github.com/pyparsing/pyparsing>`_ library to create filter's grammars.
 * `JSON.miniy (C) Gerald Storer <https://github.com/getify/JSON.minify/blob/master/minify_json.py>`_ to read json recipes.
 
 PyCurl SSL bug
