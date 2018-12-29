@@ -436,7 +436,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         if options['follow']:
             self.follow = options['follow']
 
-        if options['postdata']:
+        if options['postdata'] is not None:
             self.params.post = options['postdata']
 
         if options['method']:
