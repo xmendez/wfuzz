@@ -88,7 +88,7 @@ class Request:
         @property
         def method(self):
             if self._method is None:
-                return "POST" if self.postdata else "GET"
+                return "POST" if self.getPOSTVars() else "GET"
 
             return self._method
 
@@ -234,8 +234,7 @@ class Request:
 
         def addHeader(self, key, value):
                 k = string.capwords(key, "-")
-                if k.lower() not in ["accept-encoding", "content-length", "if-modified-since", "if-none-match"]:
-                        self._headers[k] = value
+                self._headers[k] = value
 
         def delHeader(self, key):
             k = string.capwords(key, "-")
@@ -335,7 +334,7 @@ class Request:
             else:
                 c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-            if req.postdata:
+            if req.getPOSTVars():
                 c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req.postdata))
 
             c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)

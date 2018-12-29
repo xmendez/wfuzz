@@ -64,6 +64,9 @@ class VariablesSet:
         def parseUrlEncoded(self, cad):
                 dicc = []
 
+                if cad == '':
+                    dicc.append(Variable('', None))
+
                 for i in cad.split("&"):
                         if i:
                                 list = i.split("=", 1)

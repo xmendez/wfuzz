@@ -520,7 +520,7 @@ Which is equivalent to::
 
 A more interesting variation of the above examples could be::
 
-    $ wfuzz-cli.py -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "intext~FUZZ" http://testphp.vulnweb.com/search.php?test=query
+    $ wfuzz -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
