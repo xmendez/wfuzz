@@ -121,7 +121,7 @@ class FuzzRequestTest(unittest.TestCase):
 
         default_headers = dict([
             ('Content-Type', 'application/x-www-form-urlencoded'),
-            ('User-Agent', f'Wfuzz/{wfuzz_version}'),
+            ('User-Agent', 'Wfuzz/{}'.format(wfuzz_version)),
             ('Host', 'www.wfuzz.org')
         ])
 

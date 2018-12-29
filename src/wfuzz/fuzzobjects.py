@@ -414,8 +414,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def to_cache_key(self):
         key = self._request.urlWithoutVariables
 
-        dicc = {f'g{key}': True for key in self.params.get.keys()}
-        dicc.update({f'p{key}': True for key in self.params.post.keys()})
+        dicc = {'g{}'.format(key): True for key in self.params.get.keys()}
+        dicc.update({'p{}'.format(key): True for key in self.params.post.keys()})
 
         # take URL parameters into consideration
         url_params = list(dicc.keys())
