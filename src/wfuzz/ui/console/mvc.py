@@ -220,7 +220,6 @@ class View:
         if res.type == FuzzResult.result:
             if self.previous and len(res.payload) > 0 and isinstance(res.payload[0], FuzzResult):
                 sys.stdout.write("\n\r  |__   ")
-                res.payload[0].description = res.description
                 if self.verbose:
                     self._print_verbose(res.payload[0], print_nres=False)
                 else:
