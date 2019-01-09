@@ -34,7 +34,8 @@ Wfuzz uses:
 * `pycurl <http://pycurl.sourceforge.net/>`_ library to perform HTTP requests.
 * `pyparsing <https://github.com/pyparsing/pyparsing>`_ library to create filter's grammars.
 * `JSON.miniy (C) Gerald Storer <https://github.com/getify/JSON.minify/blob/master/minify_json.py>`_ to read json recipes.
-* `Chardet <https://chardet.github.io/>`_ to detect dictionaries encoding.
+* `chardet <https://chardet.github.io/>`_ to detect dictionaries encoding.
+* `coloroma <https://github.com/tartley/colorama/>`_ to support ANSI escape characters in Windows.
 
 Installation issues
 ===================
