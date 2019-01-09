@@ -29,7 +29,7 @@ install_requires = [
 ]
 
 if sys.platform.startswith("win"):
-    install_requires += ["coloroma"]
+    install_requires += ["colorama"]
 
 setup(
     name="wfuzz",
