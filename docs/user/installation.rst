@@ -74,9 +74,13 @@ This is due to the fact that, MacOS might need some tweaks before pycurl is inst
 
 #. Finally, if we re-install or execute wfuzz again it should work correctly.
 
-PyCurl SSL bug
----------
+Pycurl on Windows
+-----------------
 
+Install pycurl matching your python version from https://pypi.org/project/pycurl/#files
+
+PyCurl SSL bug
+--------------
 
 If you experience errors when using Wfuzz against SSL sites, it could be because an old know issue:
 
