@@ -58,7 +58,7 @@ class KeyPress(threading.Thread):
     def run(self):
         while self.do_job:
             k = self.inkey()
-            if ord(k) == 3:
+            if k and ord(k) == 3:
                 self.dispatcher.notify("q", key="q")
             elif k == 'p':
                 self.dispatcher.notify("p", key="p")
