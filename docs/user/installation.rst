@@ -34,6 +34,45 @@ Wfuzz uses:
 * `pycurl <http://pycurl.sourceforge.net/>`_ library to perform HTTP requests.
 * `pyparsing <https://github.com/pyparsing/pyparsing>`_ library to create filter's grammars.
 * `JSON.miniy (C) Gerald Storer <https://github.com/getify/JSON.minify/blob/master/minify_json.py>`_ to read json recipes.
+* `Chardet <https://chardet.github.io/>`_ to detect dictionaries encoding.
+
+Installation issues
+===================
+
+Pycurl on MacOS
+--------------------------
+
+Wfuzz uses pycurl as HTTP library. You might get errors like the listed below when running Wfuzz::
+
+    pycurl: libcurl link-time ssl backend (openssl) is different from compile-time ssl backend (none/other)
+
+Or::
+
+    pycurl: libcurl link-time ssl backend (none/other) is different from compile-time ssl backend (openssl)
+
+This is due to the fact that, MacOS might need some tweaks before pycurl is installed correctly:
+
+#. First you need to install OpenSSL via Homebrew::
+
+    $ brew install openssl
+
+#. Curl is normally already installed in MacOs, but to be sure it uses OpenSSL, we need to install it using brew::
+
+    $ brew install curl --with-openssl
+
+#. Curl is installed keg-only by brew. This means that is installed but not linked. Therefore, we need to instruct pip to use the recently installed curl before installing pycurl. We can do this permanently by changing our bash_profile::
+
+    $ echo 'export PATH="/usr/local/opt/curl/bin:$PATH"' >> ~/.bash_profile
+
+#. Or temporary in the current shell::
+
+    $ export PATH="/usr/local/opt/curl/bin:$PATH"
+
+#. Then, we need to install pycurl as follows::
+
+    $ PYCURL_SSL_LIBRARY=openssl LDFLAGS="-L/usr/local/opt/openssl/lib" CPPFLAGS="-I/usr/local/opt/openssl/include" pip install --no-cache-dir pycurl
+
+#. Finally, if we re-install or execute wfuzz again it should work correctly.
 
 PyCurl SSL bug
 ---------
