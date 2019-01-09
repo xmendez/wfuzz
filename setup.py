@@ -1,3 +1,4 @@
+import sys
 import re
 from setuptools import setup, find_packages
 
@@ -6,7 +7,7 @@ with open("README.md", "rb") as f:
 
 
 version = re.search(
-    '^__version__\s*=\s*"(.*)"',
+    r'^__version__\s*=\s*"(.*)"',
     open('src/wfuzz/__init__.py').read(),
     re.M
 ).group(1)
@@ -26,6 +27,9 @@ install_requires = [
     'configparser',
     'chardet',
 ]
+
+if sys.platform.startswith("win"):
+    install_requires += ["coloroma"]
 
 setup(
     name="wfuzz",
