@@ -33,7 +33,7 @@ class MyPriorityQueue(PriorityQueue):
         self._put_priority(self.max_prio + 1, item, wait)
 
     def get(self):
-        prio, item = PriorityQueue.get(self, True, 365 * 24 * 60 * 60)
+        prio, item = PriorityQueue.get(self, True)
 
         return item
 
