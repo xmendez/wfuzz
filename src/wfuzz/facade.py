@@ -28,7 +28,7 @@ class Settings(SettingsBase):
             ],
             general=[
                 ("default_printer", 'raw'),
-                ("cancel_on_plugin_except", "1"),
+                ("cancel_on_plugin_except", "0"),
                 ("concurrent_plugins", '3'),
                 ("lookup_dirs", '.'),
                 ("encode_space", '1')
