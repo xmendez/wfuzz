@@ -54,7 +54,7 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
             optsd = defaultdict(list)
 
             payload_cache = {}
@@ -191,8 +191,8 @@ class CLParser:
             raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(opt_list))
 
         # -A and script not allowed at the same time
-        if "--script" in list(optsd.keys()) and "-A" in list(optsd.keys()):
-            raise FuzzExceptBadOptions("Bad usage: --scripts and -A are incompatible options, -A already defines --script=default.")
+        if "--script" in list(optsd.keys()) and [key for key in optsd.keys() if key in ['-A', '--AA', '--AAA']]:
+            raise FuzzExceptBadOptions("Bad usage: --scripts and -A, --AA, --AAA are incompatible options.")
 
         if "-s" in list(optsd.keys()) and "-t" in list(optsd.keys()):
             print("WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored.")
@@ -413,7 +413,7 @@ class CLParser:
         if "-c" in optsd:
             options["colour"] = True
 
-        if "-A" in optsd:
+        if [key for key in optsd.keys() if key in ['-A', '--AA', '--AAA']]:
             options["verbose"] = True
             options["colour"] = True
 
@@ -447,6 +447,12 @@ class CLParser:
 
         if "-A" in optsd:
             options["script"] = "default"
+
+        if "--AA" in optsd:
+            options["script"] = "default,verbose"
+
+        if "--AAA" in optsd:
+            options["script"] = "default,discovery,verbose"
 
         if "--script" in optsd:
             options["script"] = "default" if optsd["--script"][0] == "" else optsd["--script"][0]

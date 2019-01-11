@@ -9,7 +9,7 @@ class title(BasePlugin):
     version = "0.1"
     summary = "Parses HTML page title"
     description = ("Parses HTML page title",)
-    category = ["default", "passive"]
+    category = ["verbose", "passive"]
     priority = 99
 
     parameters = (
