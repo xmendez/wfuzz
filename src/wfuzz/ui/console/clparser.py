@@ -86,14 +86,18 @@ class CLParser:
 
             options = FuzzSession()
 
+            cli_url = None
             if "-u" in optsd:
-                if url == "FUZZ":
-                    options["seed_payload"] = True
-                    url = optsd["-u"][0]
-                elif url is None:
-                    url = optsd["-u"][0]
-                else:
-                    raise FuzzExceptBadOptions("Specify the URL either with -u or last argument.")
+                if (url is not None and url != "FUZZ") or url == optsd["-u"][0]:
+                    raise FuzzExceptBadOptions("Specify the URL either with -u or last argument. If you want to use a full payload, it can only be specified with FUZZ.")
+
+                cli_url = optsd["-u"][0]
+
+            if url == "FUZZ" or cli_url == "FUZZ":
+                options["seed_payload"] = True
+
+            if cli_url:
+                url = cli_url
 
             # check command line options correctness
             self._check_options(optsd)
