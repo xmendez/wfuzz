@@ -2,7 +2,8 @@ import sys
 from wfuzz import __version__ as version
 import os
 if os.name == "nt":
-    import WConio
+    import colorama
+    colorama.init()
 
 
 examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
@@ -105,7 +106,7 @@ verbose_usage = '''%s\n\nOptions:
 \t--req-delay N             : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
 \t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
-\t-A                        : Alias for --script=default -v -c
+\t-A, --AA, --AAA           : Alias for --script=default,verbose,discovery -v -c
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
 \t--script-help=<plugins>   : Show help about scripts.
@@ -186,28 +187,17 @@ class Term:
         return (cc, wc)
 
     def delete_line(self):
-        if os.name != 'nt':
-            sys.stdout.write("\r" + Term.delete)
-        else:
-            WConio.clreol()
+        sys.stdout.write("\r" + Term.delete)
 
     def set_colour(self, colour):
         cc, wc = colour
 
-        if os.name != 'nt':
-            sys.stdout.write(cc)
-        else:
-            WConio.textcolor(wc)
+        sys.stdout.write(cc)
 
     def write(self, string, colour):
         cc, wc = colour
 
-        if os.name != 'nt':
-            sys.stdout.write(cc + string + Term.reset)
-        else:
-            WConio.textcolor(wc)
-            sys.stdout.write(string)
-            WConio.textcolor(8)
+        sys.stdout.write(cc + string + Term.reset)
 
     def go_up(self, lines):
         sys.stdout.write("\033[" + str(lines) + "A")

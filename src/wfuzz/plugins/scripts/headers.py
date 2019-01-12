@@ -9,7 +9,7 @@ class headers(BasePlugin):
     version = "0.1"
     summary = "Looks for server headers"
     description = ("Looks for new server headers",)
-    category = ["default", "passive"]
+    category = ["verbose", "passive"]
     priority = 99
     parameters = (
     )

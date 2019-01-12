@@ -17,7 +17,7 @@ class screenshot(BasePlugin):
         "Performs a screen capture using linux cutycapt tool",
         "The tool must be installed and in the executable path",
     )
-    category = ["active"]
+    category = ["tools", "active"]
     priority = 99
 
     parameters = (

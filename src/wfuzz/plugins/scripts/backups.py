@@ -19,7 +19,7 @@ class backups(BasePlugin):
     "* http://localhost/dir.EXTENSIONS",
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    category = ["active", "discovery"]
+    category = ["re-enqueue", "active", "discovery"]
     priority = 99
 
     parameters = (

@@ -15,7 +15,7 @@ class grep(BasePlugin):
         "Extracts the given regex pattern from the HTTP response and prints it",
         "(It is not a filter operator)",
     )
-    category = ["passive"]
+    category = ["tools"]
     priority = 99
 
     parameters = (

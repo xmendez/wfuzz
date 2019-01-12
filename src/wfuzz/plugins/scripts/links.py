@@ -19,7 +19,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses HTML looking for new content."
     description = ("Parses HTML looking for new content",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = (
