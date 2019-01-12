@@ -108,19 +108,18 @@ Verifying the problem
     >>> pycurl.version
     'libcurl/7.21.3 OpenSSL/0.9.8o zlib/1.2.3.4 libidn/1.18'
 
-Workaround
-^^^^^^^^
+Installing pycurl openssl flavour
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* We should built pycurl against openssl:
+In newer Ubuntu versions, you can install libcurl openssl flavour::
 
-In newer Ubuntu versions, you can install libcurl in openssl or gnutls flavour::
+    $ sudo apt install libcurl4-openssl-dev
+    $ sudo pip3 install --upgrade wfuzz 
 
-    # apt-cache search libcurl
-    libcurl4-gnutls-dev - development files and documentation for libcurl (GnuTLS flavour)
-    libcurl4-nss-dev - development files and documentation for libcurl (NSS flavour)
-    libcurl4-openssl-dev - development files and documentation for libcurl (OpenSSL flavour)
+Installing pycurl against openssl
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Alternatively, it can be done manually:
+Alternatively, it can be done manually:
 
 1. sudo apt-get install build-essential fakeroot dpkg-dev
 2. mkdir ~/python-pycurl-openssl
@@ -131,23 +130,11 @@ In newer Ubuntu versions, you can install libcurl in openssl or gnutls flavour::
 7. sudo dpkg-source -x pycurl_7.19.0-3build1.dsc
 8. cd pycurl-7.19.0
 9. edit debian/control file and replace all instances of “libcurl4-gnutls-dev” with “libcurl4-openssl-dev”
-10. sudo dpkg-buildpackage -rfakeroot -b
+10. sudo PYCURL_SSL_LIBRARY=openssl dpkg-buildpackage -rfakeroot -b
 11. sudo dpkg -i ../python-pycurl_7.19.0-3build1_i386.deb
 
-* Updates from other users:
+If there is still the error::
 
-Comment by andreas.fitzek, Sep 13, 2014
-Hi,
+    ImportError?: No module named bottle
 
-Got it working on Ubuntu 14.04 amd64 with step 10 being: sudo PYCURL_SSL_LIBRARY=openssl dpkg-buildpackage -rfakeroot -b
-
-Their are still some errors: ImportError?: No module named bottle
-
-But the library is working now with openssl::
-
-    >>> import pycurl
-    >>> pycurl.version 'PycURL/7.19.3 libcurl/7.35.0 OpenSSL/1.0.1f zlib/1.2.8 libidn/1.28 librtmp/2.3'
-
-Comment by DoommedRaven, Sep 14, 2014
-for your import error check this http://stackoverflow.com/questions/9122200/importerror-no-module-named-bottle
-
+Check this http://stackoverflow.com/questions/9122200/importerror-no-module-named-bottle
