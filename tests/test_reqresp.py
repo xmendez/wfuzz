@@ -3,6 +3,8 @@ import unittest
 # Python 2 and 3: urlib.parse
 
 from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz.fuzzobjects import FuzzResultFactory
+from wfuzz.ui.console.clparser import CLParser
 from wfuzz import __version__ as wfuzz_version
 
 
@@ -12,6 +14,25 @@ Content-Type: application/x-www-form-urlencoded
 User-Agent: Wfuzz/{}
 
 """.format(wfuzz_version)
+
+
+class FuzzResultFactoryTest(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(FuzzResultFactoryTest, self).__init__(*args, **kwargs)
+        self.maxDiff = 1000
+
+    def test_baseline(self):
+        options = CLParser(['wfuzz', '-z', 'range,1-1', 'http://localhost:9000/FUZZ{first}']).parse_cl()
+        seed = FuzzResultFactory.from_options(options)
+        baseline = FuzzResultFactory.from_baseline(seed, options)
+
+        self.assertEqual(baseline.description, 'first')
+
+        options = CLParser(['wfuzz', '-z', 'range,1-1', '-z', 'range,2-2', 'http://localhost:9000/FUZZ{first}/FUZ2Z{second}']).parse_cl()
+        seed = FuzzResultFactory.from_options(options)
+        baseline = FuzzResultFactory.from_baseline(seed, options)
+
+        self.assertEqual(baseline.description, 'first - second')
 
 
 class FuzzRequestTest(unittest.TestCase):

@@ -218,12 +218,12 @@ class View:
             self._print(res)
 
         if res.type == FuzzResult.result:
-            if self.previous and len(res.payload) > 0 and isinstance(res.payload[0], FuzzResult):
-                sys.stdout.write("\n\r  |__   ")
+            if self.previous and len(res.payload) > 0 and isinstance(res.payload[0].content, FuzzResult):
+                sys.stdout.write("\n\r |_     ")
                 if self.verbose:
-                    self._print_verbose(res.payload[0], print_nres=False)
+                    self._print_verbose(res.payload[0].content, print_nres=False)
                 else:
-                    self._print(res.payload[0], print_nres=False)
+                    self._print(res.payload[0].content, print_nres=False)
             sys.stdout.write("\n\r")
 
             for i in res.plugins_res:

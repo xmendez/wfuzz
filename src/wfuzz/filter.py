@@ -112,7 +112,7 @@ class FuzzResFilter:
         i = tokens[0]
 
         try:
-            return self.res.payload[i]
+            return self.res.payload[i].content
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError:
