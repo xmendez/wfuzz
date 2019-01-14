@@ -2,6 +2,8 @@ import re
 import os
 import sys
 import six
+from threading import Lock
+
 from chardet.universaldetector import UniversalDetector
 
 
@@ -151,3 +153,23 @@ def open_file_detect_encoding(file_path):
         return open(file_path, "r", encoding=detect_encoding(file_path).get('encoding', 'utf-8'))
     else:
         return open(file_path, "r")
+
+
+class MyCounter:
+    def __init__(self, count=0):
+        self._count = count
+        self._mutex = Lock()
+
+    def inc(self):
+        self._operation(1)
+
+    def dec(self):
+        self._operation(-1)
+
+    def _operation(self, dec):
+        with self._mutex:
+            self._count += dec
+
+    def __call__(self):
+        with self._mutex:
+            return self._count
