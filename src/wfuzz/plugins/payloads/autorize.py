@@ -14,7 +14,7 @@ class autorize(BasePayload):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     description = ("Reads burp extension autorize states",)
-    summary = "Returns fuzz results' from autororize."
+    summary = "Returns fuzz results' from autorize."
     category = ["default"]
     priority = 99
 
