@@ -26,7 +26,7 @@ from .utils import MyCounter
 auth_header = namedtuple("auth_header", "method credentials")
 
 
-class headers:
+class headers(object):
     def __init__(self, req):
         self._req = req
 
@@ -38,9 +38,9 @@ class headers:
     def request(self):
         return OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()])
 
-    def add(self, dd):
-        for k, v in list(dd.items()):
-            self._req._headers[k] = v
+    @request.setter
+    def request(self, dd):
+        self._req._headers.update(dd)
 
     def get_field(self, field):
         attr = field.split(".")
@@ -70,7 +70,7 @@ class headers:
         return ret.strip()
 
 
-class cookies:
+class cookies(object):
     def __init__(self, req):
         self._req = req
 
@@ -91,6 +91,10 @@ class cookies:
                 return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
         return {}
+
+    @request.setter
+    def request(self, values):
+        self._req._headers["Cookie"] = "; ".join(values)
 
     def get_field(self, field):
         attr = field.split(".")
@@ -190,7 +194,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self.wf_fuzz_methods = None
         self.wf_retries = 0
 
-        self.headers.add({"User-Agent": Facade().sett.get("connection", "user-agent")})
+        self.headers.request = {"User-Agent": Facade().sett.get("connection", "user-agent")}
 
     # methods for accessing HTTP requests information consistenly accross the codebase
 
@@ -362,7 +366,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             elif self.wf_allvars == "allpost":
                 self.params.post = varset
             elif self.wf_allvars == "allheaders":
-                self._request.headers.add(varset)
+                self._request.headers.request = varset
             else:
                 raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
         except TypeError:
@@ -445,9 +449,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             self.wf_fuzz_methods = options['method']
 
         if options['cookie']:
-            self.headers.add({"Cookie": "; ".join(options['cookie'])})
+            self.cookies.request = options['cookie']
 
-        self.headers.add(dict(options['headers']))
+        self.headers.request = dict(options['headers'])
 
         if options['allvars']:
             self.wf_allvars = options['allvars']
@@ -459,7 +463,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.wf_allvars = self.wf_allvars
         newreq.wf_fuzz_methods = self.wf_fuzz_methods
 
-        newreq.headers.add(self.headers.request)
+        newreq.headers.request = self.headers.request
         newreq.params.post = self.params.post
 
         newreq.follow = self.follow
