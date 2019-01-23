@@ -25,7 +25,7 @@ class FuzzResFilter:
     def __init__(self, ffilter=None, filter_string=None):
         if PYPARSING:
             quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
-            int_values = Word("0123456789")
+            int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
             error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
             bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
             field_value = Word(alphas + "." + "_" + "-")
