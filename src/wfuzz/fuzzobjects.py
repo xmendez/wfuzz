@@ -406,12 +406,12 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def from_http_object(self, c, bh, bb):
         return self._request.response_from_conn_object(c, bh, bb)
 
-    def update_from_raw_http(self, raw, scheme, raw_response=None):
+    def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
         self._request.parseRequest(raw, scheme)
 
         if raw_response:
             rp = Response()
-            rp.parseResponse(raw_response)
+            rp.parseResponse(raw_response, raw_content)
             self._request.response = rp
 
         return self._request
