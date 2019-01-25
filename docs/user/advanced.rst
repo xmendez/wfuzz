@@ -415,16 +415,18 @@ value|startswith('value')        value|sw('param')       Returns true if the val
 ============ ============== =============================================
 Name         Short version  Description
 ============ ============== =============================================
+url                         Wfuzz's result HTTP request url
 description                 Wfuzz's result description
 nres                        Wfuzz's result identifier
-code         c              HTTP response's code
+code         c              Wfuzz's result HTTP response's code
 chars        h              Wfuzz's result HTTP response chars
 lines        l              Wfuzz's result HTTP response lines
 words        w              Wfuzz's result HTTP response words
 md5                         Wfuzz's result HTTP response md5 hash
+history      r              Wfuzz's result associated FuzzRequest object
 ============ ============== =============================================
 
-Or FuzzRequest object's attribute such as:
+FuzzRequest object's attribute (you need to use the r. prefix) such as:
 
 ============================ =============================================
 Name                         Description
@@ -435,41 +437,43 @@ scheme                       HTTP request's scheme
 host                         HTTP request's host
 content                      HTTP response's content
 raw_content                  HTTP response's content including headers
-cookies.request              HTTP request cookie
-cookies.response             HTTP response cookie
-cookies.request.<<name>>     HTTP request cookie
-cookies.response.<<name>>    HTTP response cookie
-headers.request              All HTTP request headers
-headers.response             All HTTP response headers
-headers.request.<<name>>     HTTP request given header
-headers.response.<<name>>    HTTP response given header
-params                       All HTTP request GET and POST parameters
+cookies.all                  All HTTP request and response cookies
+cookies.request              HTTP requests cookieS
+cookies.response             HTTP response cookies
+cookies.request.<<name>>     Specified HTTP request cookie
+cookies.response.<<name>>    Specified HTTP response cookie
+headers.all                  All HTTP request and response headers
+headers.request              HTTP request headers
+headers.response             HTTP response headers
+headers.request.<<name>>     Specified HTTP request given header
+headers.response.<<name>>    Specified HTTP response given header
+params.all                   All HTTP request GET and POST parameters
 params.get                   All HTTP request GET parameters
 params.post                  All HTTP request POST parameters
-params.get/post.<<name>>     A given HTTP request GET/POST parameter
+params.get.<<name>>          Spcified HTTP request GET parameter
+params.post.<<name>>         Spcified HTTP request POST parameter
+pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
+is_path                      Returns true when the HTTP request path refers to a directory.
 ============================ =============================================
 
-URL field is broken in smaller parts using the urlparse Python's module, which parses a URL into: scheme://netloc/path;parameters?query#fragment.
+FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
 
-For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
+Urlparse parses a URL into: scheme://netloc/path;parameters?query#fragment. For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
 
 =================== =============================================
 Name                Value
 =================== =============================================
-url.scheme          http
-url.netloc          www.google.com
-url.path            /dir/test.php
-url.params
-url.query           id=1
-url.fragment      
-url.domain          google.com
-url.ffname          test.php
-url.fext            .php
-url.fname           test
-url.pstrip          Returns a hash of the request using the parameter's names without values (useful for unique operations)
-url.hasquery        Returns true when the URL contains a query string.
-url.ispath          Returns true when the URL path refers to a directory.
-url.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
+urlp.scheme          http
+urlp.netloc          www.google.com
+urlp.path            /dir/test.php
+urlp.params
+urlp.query           id=1
+urlp.fragment      
+urlp.ffname          test.php
+urlp.fext            .php
+urlp.fname           test
+urlp.hasquery        Returns true when the URL contains a query string.
+urlp.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
 =================== =============================================
 
 Payload instrospection can also be performed by using the keyword FUZZ:

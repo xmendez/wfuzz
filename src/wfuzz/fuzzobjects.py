@@ -22,6 +22,8 @@ from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
 from .utils import python2_3_convert_to_unicode
 from .utils import MyCounter
+from .utils import rgetattr
+from .utils import DotDict
 
 auth_header = namedtuple("auth_header", "method credentials")
 
@@ -32,42 +34,19 @@ class headers(object):
 
     @property
     def response(self):
-        return OrderedDict(self._req.response.getHeaders()) if self._req.response else {}
+        return DotDict(OrderedDict(self._req.response.getHeaders())) if self._req.response else {}
 
     @property
     def request(self):
-        return OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()])
+        return DotDict(OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()]))
 
     @request.setter
-    def request(self, dd):
-        self._req._headers.update(dd)
+    def request(self, values_dict):
+        self._req._headers.update(values_dict)
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
-
-        if num_fields == 2:
-            if attr[1] == "request":
-                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.request.items())])
-            elif attr[1] == "response":
-                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.response.items())])
-            else:
-                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-        elif num_fields != 3:
-            raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-
-        ret = ""
-        try:
-            if attr[1] == "request":
-                ret = self.request[attr[2]]
-            elif attr[1] == "response":
-                ret = self.response[attr[2]]
-            else:
-                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-        except KeyError:
-            pass
-
-        return ret.strip()
+    @property
+    def all(self):
+        return DotDict({**self.request, **self.response})
 
 
 class cookies(object):
@@ -79,7 +58,7 @@ class cookies(object):
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return DotDict(OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]]))
 
         return {}
 
@@ -88,7 +67,7 @@ class cookies(object):
         if 'Cookie' in self._req._headers:
             c = self._req._headers['Cookie'].split("; ")
             if c[0]:
-                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return DotDict(OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]]))
 
         return {}
 
@@ -96,34 +75,9 @@ class cookies(object):
     def request(self, values):
         self._req._headers["Cookie"] = "; ".join(values)
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
-
-        if num_fields == 2:
-
-            if attr[1] == "response":
-                if self._req.response:
-                    return self._req.response.getCookie()
-            elif attr[1] == "request":
-                return self._req['COOKIE']
-            else:
-                raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
-        elif num_fields == 3:
-            try:
-                if attr[1] == "request":
-                    return self.request[attr[2]]
-                elif attr[1] == "response":
-                    return self.response[attr[2]]
-                else:
-                    raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-            except KeyError:
-                return ""
-
-        else:
-            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response].<<name>>")
-
-        return ""
+    @property
+    def all(self):
+        return DotDict({**self.request, **self.response})
 
 
 class params(object):
@@ -132,7 +86,7 @@ class params(object):
 
     @property
     def get(self):
-        return OrderedDict([(x.name, x.value) for x in self._req.getGETVars()])
+        return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getGETVars()]))
 
     @get.setter
     def get(self, values):
@@ -144,7 +98,7 @@ class params(object):
 
     @property
     def post(self):
-        return OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()])
+        return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()]))
 
     @post.setter
     def post(self, pp):
@@ -154,35 +108,14 @@ class params(object):
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
+    @property
+    def all(self):
+        return DotDict({**self.get, **self.post})
 
-        if num_fields == 1 and attr[0] == "params":
-                pp = ", ".join(["%s:%s" % (x[0], x[1]) for x in list(dict(list(self.get.items()) + list(self.post.items())).items())])
-                return "" if not pp else pp
-        elif num_fields == 2:
-            if attr[1] == "get":
-                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.get.items())])
-            elif attr[1] == "post":
-                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.post.items())])
-            else:
-                raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
-        elif num_fields == 3:
-            ret = ""
-            try:
-                if attr[1] == "get":
-                    ret = self.get[attr[2]]
-                elif attr[1] == "post":
-                    ret = self.post[attr[2]]
-                else:
-                    raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
-            except KeyError:
-                pass
-
-            return ret
-        else:
-            raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
+    @all.setter
+    def all(self, values):
+        self.get = values
+        self.post = values
 
 
 class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
@@ -278,7 +211,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @code.setter
     def code(self, c):
-        self._request.response.code = c
+        self._request.response.code = int(c)
 
     @property
     def auth(self):
@@ -305,46 +238,6 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     @reqtime.setter
     def reqtime(self, t):
         self._request.totaltime = t
-
-    def set_field(self, field, value):
-        if field in ["url"]:
-            self.url = value
-
-    def get_field(self, field):
-        alias = dict([('c', 'code')])
-
-        if field in alias:
-            field = alias[field]
-
-        if field in ["url", "method", "scheme", "host", "content", "raw_content", "code"]:
-            return getattr(self, field)
-        elif field in ["code"]:
-            return str(getattr(self, field))
-        elif field.startswith("cookies"):
-            return self.cookies.get_field(field).strip()
-        elif field.startswith("headers"):
-            return self.headers.get_field(field)
-        elif field.startswith("params"):
-            return self.params.get_field(field)
-        elif field.startswith("url."):
-            attr = field.split(".")
-            allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "ffname", "fext", "fname", "isbllist", "hasquery"]
-
-            if len(attr) != 2:
-                raise FuzzExceptBadAPI("Url must be specified as url.<field>")
-
-            if attr[1] in allowed_attr:
-                return getattr(self.urlparse, attr[1])
-            elif attr[1] == "pstrip":
-                return self.to_cache_key()
-            elif attr[1] == "ispath":
-                return self.is_path
-            else:
-                raise FuzzExceptBadAPI("Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
-
-            return ""
-        else:
-            raise FuzzExceptBadAPI("Unknown FuzzResult attribute: %s." % (field,))
 
     # Info extra that wfuzz needs within an HTTP request
     @property
@@ -491,7 +384,7 @@ class FuzzResultFactory:
                             raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
                         try:
-                            subs = payload.get_field(field)
+                            subs = str(rgetattr(payload, field))
                         except AttributeError:
                             raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
 
@@ -742,9 +635,9 @@ class FuzzPayload():
 
         for fuzz_value in self.fields:
             if fuzz_value is None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(self.content.get_field('url'))
+                ret_str_values.append(rgetattr(self.content, 'url'))
             elif fuzz_value is not None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(self.content.get_field(fuzz_value))
+                ret_str_values.append(rgetattr(self.content, fuzz_value))
             elif fuzz_value is None:
                 ret_str_values.append(self.content)
             else:
@@ -797,20 +690,6 @@ class FuzzResult:
 
         return self
 
-    def set_field(self, field, value):
-        return self.history.set_field(field, value)
-
-    def get_field(self, field):
-        alias = dict([('l', 'lines'), ('h', 'chars'), ('w', 'words'), ('c', 'code')])
-
-        if field in alias:
-            field = alias[field]
-
-        if field in ["code", "description", "nres", "chars", "lines", "words", "md5"]:
-            return str(getattr(self, field))
-        else:
-            return self.history.get_field(field)
-
     def __str__(self):
         if self.type == FuzzResult.result:
             res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
@@ -830,6 +709,10 @@ class FuzzResult:
         return ret_str
 
     # parameters in common with fuzzrequest
+    @property
+    def content(self):
+        return self.history.content if self.history else ""
+
     @property
     def url(self):
         return self.history.url if self.history else ""

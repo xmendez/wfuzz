@@ -3,8 +3,10 @@ import os
 import sys
 import six
 from threading import Lock
+import functools
 
 from chardet.universaldetector import UniversalDetector
+from .exception import FuzzExceptIncorrectFilter
 
 
 def json_minify(string, strip_space=True):
@@ -173,3 +175,138 @@ class MyCounter:
     def __call__(self):
         with self._mutex:
             return self._count
+
+
+def _check_allowed_field(attr):
+    allowed_fields = [
+        "description",
+        "nres",
+        "code",
+        "chars",
+        "lines",
+        "words",
+        "md5",
+        'l',
+        'h',
+        'w',
+        'c',
+        'r',
+        'history',
+
+        'url',
+        'content',
+
+        "history.url",
+        "history.method",
+        "history.scheme",
+        "history.host",
+        "history.content",
+        "history.raw_content"
+        "history.is_path",
+        "history.pstrip",
+        "history.cookies",
+        "history.headers",
+        "history.params",
+
+        "r.url",
+        "r.method",
+        "r.scheme",
+        "r.host",
+        "r.content",
+        "r.raw_content"
+        "r.is_path",
+        "r.pstrip",
+        "r.cookies",
+        "r.headers",
+        "r.params",
+    ]
+
+    if [field for field in allowed_fields if attr.startswith(field)]:
+        return True
+    return False
+
+
+def _get_alias(attr):
+    attr_alias = {
+        'l': 'lines',
+        'h': 'chars',
+        'w': 'words',
+        'c': 'code',
+        'r': 'history',
+    }
+
+    if attr in attr_alias:
+        return attr_alias[attr]
+
+    return attr
+
+
+def rsetattr(obj, attr, new_val, operation):
+    if not _check_allowed_field(attr):
+        raise FuzzExceptIncorrectFilter("Unknown field {}".format(attr))
+
+    pre, _, post = attr.rpartition('.')
+
+    pre_post = None
+    if len(attr.split('.')) > 3:
+        pre_post = post
+        pre, _, post = pre.rpartition('.')
+
+    post = _get_alias(post)
+
+    try:
+        obj_to_set = rgetattr(obj, pre) if pre else obj
+        prev_val = rgetattr(obj, attr)
+
+        if pre_post is not None:
+            prev_val = DotDict({pre_post: prev_val})
+
+        if operation is not None:
+            val = operation(prev_val, new_val)
+        else:
+            if isinstance(prev_val, DotDict):
+                val = {pre_post: new_val}
+            else:
+                val = new_val
+
+        return setattr(obj_to_set, post, val)
+    except AttributeError:
+        raise FuzzExceptIncorrectFilter("rsetattr: Can't set '{}' attribute of {}.".format(post, obj_to_set.__class__))
+
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        attr = _get_alias(attr)
+        try:
+            return getattr(obj, attr, *args)
+        except AttributeError:
+            raise FuzzExceptIncorrectFilter("rgetattr: Can't get '{}' attribute from '{}'.".format(attr, obj.__class__))
+
+    if not _check_allowed_field(attr):
+        raise FuzzExceptIncorrectFilter("Unknown field {}".format(attr))
+
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+
+class DotDict(dict):
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+    def __getattr__(*args):
+        if args[1] not in args[0]:
+            raise KeyError("DotDict: Non-existing field {}".format(args[1]))
+
+        val = dict.get(*args, None)
+        return DotDict(val) if type(val) is dict else val
+        # return DotDict(val) if type(val) is dict else DotDict({args[1]: val})
+
+    def __add__(self, other):
+        if isinstance(other, str):
+            return DotDict({k: v + other for k, v in self.items()})
+        elif isinstance(other, DotDict):
+            self.update(other)
+            return self
+
+    def __radd__(self, other):
+        if isinstance(other, str):
+            return DotDict({k: other + v for k, v in self.items()})

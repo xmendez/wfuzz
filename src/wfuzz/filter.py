@@ -1,8 +1,11 @@
 from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
 from .fuzzobjects import FuzzResult
 
+from .utils import rgetattr, rsetattr
+
 import re
 import collections
+import operator
 
 # Python 2 and 3: alternative 4
 try:
@@ -49,7 +52,7 @@ class FuzzResFilter:
             operator = oneOf("and or")
             not_operator = Optional(oneOf("not"), "notpresent")
 
-            symbol_expr = Group(fuzz_statement + oneOf("= != < > >= <= =~ !~ ~") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
+            symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
 
             definition = fuzz_statement ^ symbol_expr
             definition_not = not_operator + definition
@@ -106,7 +109,7 @@ class FuzzResFilter:
     def __compute_res_value(self, tokens):
         self.stack["field"] = tokens[0]
 
-        return self.res.get_field(self.stack["field"])
+        return rgetattr(self.res, self.stack["field"])
 
     def __compute_fuzz_symbol(self, tokens):
         i = tokens[0]
@@ -127,7 +130,7 @@ class FuzzResFilter:
         self.stack["field"] = field
 
         try:
-            return fuzz_val.get_field(field) if field else fuzz_val
+            return rgetattr(fuzz_val, self.stack["field"]) if field else fuzz_val
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError as e:
@@ -190,32 +193,42 @@ class FuzzResFilter:
         return FuzzResult.ERROR_CODE
 
     def __compute_expr(self, tokens):
-        leftvalue, operator, rightvalue = tokens[0]
+        leftvalue, exp_operator, rightvalue = tokens[0]
+
+        field_to_set = self.stack.get('field', None)
 
         try:
-            if operator == "=":
+            if exp_operator in ["=", '==']:
                 return leftvalue == rightvalue
-            elif operator == "<=":
+            elif exp_operator == "<=":
                 return leftvalue <= rightvalue
-            elif operator == ">=":
+            elif exp_operator == ">=":
                 return leftvalue >= rightvalue
-            elif operator == "<":
+            elif exp_operator == "<":
                 return leftvalue < rightvalue
-            elif operator == ">":
+            elif exp_operator == ">":
                 return leftvalue > rightvalue
-            elif operator == "!=":
+            elif exp_operator == "!=":
                 return leftvalue != rightvalue
-            elif operator == "=~":
+            elif exp_operator == "=~":
                 regex = re.compile(rightvalue, re.MULTILINE | re.DOTALL)
                 return regex.search(leftvalue) is not None
-            elif operator == "!~":
+            elif exp_operator == "!~":
                 return rightvalue.lower() not in leftvalue.lower()
-            elif operator == "~":
+            elif exp_operator == "~":
                 return rightvalue.lower() in leftvalue.lower()
+            elif exp_operator == ":=":
+                rsetattr(self.res, field_to_set, rightvalue, None)
+            elif exp_operator == "=+":
+                rsetattr(self.res, field_to_set, rightvalue, operator.add)
+            elif exp_operator == "=-":
+                rsetattr(self.res, field_to_set, rightvalue, lambda x, y: y + x)
         except TypeError as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
         except ParseException as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+
+        return True
 
     def __myreduce(self, elements):
         first = elements[0]

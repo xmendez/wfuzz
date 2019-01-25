@@ -2,6 +2,8 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions
 from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.utils import rgetattr
+
 
 import datetime
 import string
@@ -69,7 +71,7 @@ class burpstate(BasePayload):
     def __next__(self):
         next_item = next(self._it)
 
-        return next_item if not self.attr else next_item.get_field(self.attr)
+        return next_item if not self.attr else rgetattr(next_item, self.attr)
 
     def milliseconds_to_date(self, milliseconds):
             '''Convert milliseconds since Epoch (from Java) to Python date structure:

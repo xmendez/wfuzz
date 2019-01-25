@@ -2,6 +2,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.utils import rgetattr
 
 import re
 
@@ -44,7 +45,7 @@ class burplog(BasePayload):
     def __next__(self):
         next_item = next(self._it)
 
-        return next_item if not self.attr else next_item.get_field(self.attr)
+        return next_item if not self.attr else rgetattr(next_item, self.attr)
 
     def parse_burp_log(self, burp_log):
         burp_file = None
