@@ -30,6 +30,113 @@ class CLParser:
         print(help_banner)
         print(usage)
 
+    def show_filter_usage(self):
+        print("""
+        * Operators: and or not = != < > >= <= =~ !~ ~ := =+ =-
+
+        * Basic primitives:
+
+        ============ ====================
+        Long Name    Description
+        ============ ====================
+        'string'     Quoted string
+        0..9+        Integer values
+        XXX          HTTP request error code
+        BBB          Baseline
+        ============ ====================
+
+        * Values can also be modified using the following operators:
+
+        ================================ ======================= =============================================
+        Name                             Short version           Description
+        ================================ ======================= =============================================
+        value|unquote()                  value|un()              Unquotes the value
+        value|lower()                    value|l()               lowercase of the value
+        value|upper()                                            uppercase of the value
+        value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
+        value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
+        value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
+        value|unique(value)              value|u(value)          Returns True if a value is unique.
+        value|startswith('value')        value|sw('param')       Returns true if the value string starts with param
+        ================================ ======================= =============================================
+
+        * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
+
+        ============ ============== =============================================
+        Name         Short version  Description
+        ============ ============== =============================================
+        url                         Wfuzz's result HTTP request url
+        description                 Wfuzz's result description
+        nres                        Wfuzz's result identifier
+        code         c              Wfuzz's result HTTP response's code
+        chars        h              Wfuzz's result HTTP response chars
+        lines        l              Wfuzz's result HTTP response lines
+        words        w              Wfuzz's result HTTP response words
+        md5                         Wfuzz's result HTTP response md5 hash
+        history      r              Wfuzz's result associated FuzzRequest object
+        ============ ============== =============================================
+
+        FuzzRequest object's attribute (you need to use the r. prefix) such as:
+
+        ============================ =============================================
+        Name                         Description
+        ============================ =============================================
+        url                          HTTP request's value
+        method                       HTTP request's verb
+        scheme                       HTTP request's scheme
+        host                         HTTP request's host
+        content                      HTTP response's content
+        raw_content                  HTTP response's content including headers
+        cookies.all                  All HTTP request and response cookies
+        cookies.request              HTTP requests cookieS
+        cookies.response             HTTP response cookies
+        cookies.request.<<name>>     Specified HTTP request cookie
+        cookies.response.<<name>>    Specified HTTP response cookie
+        headers.all                  All HTTP request and response headers
+        headers.request              HTTP request headers
+        headers.response             HTTP response headers
+        headers.request.<<name>>     Specified HTTP request given header
+        headers.response.<<name>>    Specified HTTP response given header
+        params.all                   All HTTP request GET and POST parameters
+        params.get                   All HTTP request GET parameters
+        params.post                  All HTTP request POST parameters
+        params.get.<<name>>          Spcified HTTP request GET parameter
+        params.post.<<name>>         Spcified HTTP request POST parameter
+        pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
+        is_path                      Returns true when the HTTP request path refers to a directory.
+        ============================ =============================================
+
+        FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
+
+        Urlparse parses a URL into: scheme://netloc/path;parameters?query#fragment. For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
+
+        =================== =============================================
+        Name                Value
+        =================== =============================================
+        urlp.scheme          http
+        urlp.netloc          www.google.com
+        urlp.path            /dir/test.php
+        urlp.params
+        urlp.query           id=1
+        urlp.fragment      
+        urlp.ffname          test.php
+        urlp.fext            .php
+        urlp.fname           test
+        urlp.hasquery        Returns true when the URL contains a query string.
+        urlp.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
+        =================== =============================================
+
+        Payload instrospection can also be performed by using the keyword FUZZ:
+
+        ============ ==============================================
+        Name         Description
+        ============ ==============================================
+        FUZnZ        Allows to access the Nth payload string
+        FUZnZ[field] Allows to access the Nth payload attributes
+        ============ ==============================================
+        """)
+        sys.exit(0)
+
     def show_plugins_help(self, registrant, cols=3, category="$all$"):
         print("\nAvailable %s:\n" % registrant)
         table_print([x[cols:] for x in Facade().proxy(registrant).get_plugins_ext(category)])
@@ -54,7 +161,7 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
             optsd = defaultdict(list)
 
             payload_cache = {}
@@ -146,6 +253,10 @@ class CLParser:
 
         if "--help" in optsd:
             self.show_verbose_usage()
+            sys.exit(0)
+
+        if "--filter-help" in optsd:
+            self.show_filter_usage()
             sys.exit(0)
 
         # Extensions help

@@ -364,6 +364,10 @@ Filter Language
 
 Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice".
 
+The information about the filter language can be also obtained executing::
+
+    wfuzz --filter-help
+
 A filter expression must be built using the following symbols and operators:
 
 * Boolean Operators
@@ -372,7 +376,7 @@ A filter expression must be built using the following symbols and operators:
 
 * Expression Operators
 
-Expressions operators such as "= != < > >= <=" could be used to check values. Additionally, the following for matching text are available:
+Expressions operators such as "= != < > >= <=" could be used to check values. Additionally, the following operators for matching text are available:
 
 ============ ====================================================================
 Operator     Description
@@ -380,6 +384,16 @@ Operator     Description
 =~           True when the regular expression specified matches the value.
 ~            Equivalent to Python's "str2" in "str1" (case insensitive)
 !~           Equivalent to Python's "str2" not in "str1" (case insensitive)
+============ ====================================================================
+
+Also, assignment operators:
+
+============ ====================================================================
+Operator     Description
+============ ====================================================================
+:=           Assigns a value
+=+           Concatenates value at the left
+=-           Concatenates value at the right
 ============ ====================================================================
 
 Where values could be:

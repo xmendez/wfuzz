@@ -80,6 +80,7 @@ usage = '''%s\n\nOptions:
 verbose_usage = '''%s\n\nOptions:
 \t-h/--help                 : This help
 \t--help                    : Advanced help
+\t--filter-help             : Filter language specification
 \t--version                 : Wfuzz version details
 \t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
 \t
