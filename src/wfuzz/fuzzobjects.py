@@ -46,7 +46,7 @@ class headers(object):
 
     @property
     def all(self):
-        return DotDict({**self.request, **self.response})
+        return self.request + self.response
 
 
 class cookies(object):
@@ -77,7 +77,7 @@ class cookies(object):
 
     @property
     def all(self):
-        return DotDict({**self.request, **self.response})
+        return self.request + self.response
 
 
 class params(object):
@@ -110,7 +110,7 @@ class params(object):
 
     @property
     def all(self):
-        return DotDict({**self.get, **self.post})
+        return self.get + self.post
 
     @all.setter
     def all(self, values):

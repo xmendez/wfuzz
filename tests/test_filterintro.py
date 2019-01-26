@@ -114,6 +114,19 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(fuzz_res.history.params.get.param, "test")
         self.assertEqual(fuzz_res.history.params.get, {'param': "test", 'param2': "2"})
 
+        ffilter = FuzzResFilter(filter_string="r.params.get.param2='2'")
+        self.assertEqual(ffilter.is_visible(fuzz_res), True)
+
+        fr.url = "http://www.wfuzz.org/path?param=1&param2=2"
+        ffilter = FuzzResFilter(filter_string="r.params.all=+'2'")
+        ffilter.is_visible(fuzz_res)
+        self.assertEqual(fuzz_res.history.params.all, {'param': "12", 'param2': "22"})
+
+        fr.url = "http://www.wfuzz.org/path?param=1&param2=2"
+        ffilter = FuzzResFilter(filter_string="r.params.all:='2'")
+        ffilter.is_visible(fuzz_res)
+        self.assertEqual(fuzz_res.history.params.all, {'param': "2", 'param2': "2"})
+
     def test_urlp(self):
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/path/test.php?param=1&param2=2"
@@ -154,3 +167,23 @@ class FilterTest(unittest.TestCase):
 
         ffilter = FuzzResFilter(filter_string="r.pstrip")
         self.assertEqual(ffilter.is_visible(fuzz_res), "http://www.wfuzz.org/path-gparam-gparam2")
+
+    def test_lwh(self):
+        fr = FuzzRequest()
+        fr.update_from_raw_http(raw_req, "http", raw_resp, b"Some line\n and words\nasdsdas")
+
+        fuzz_res = FuzzResult(history=fr)
+
+        ffilter = FuzzResFilter(filter_string="h=28 or w=6 or l=2")
+        ffilter.is_visible(fuzz_res)
+        self.assertEqual(True, ffilter.is_visible(fuzz_res))
+
+    def test_location(self):
+        fr = FuzzRequest()
+        fr.update_from_raw_http(raw_req, "http", raw_resp, b"Some line\n and words\nasdsdas")
+
+        fuzz_res = FuzzResult(history=fr)
+
+        ffilter = FuzzResFilter(filter_string="r.headers.response.Location")
+        ffilter.is_visible(fuzz_res)
+        self.assertEqual('https://wfuzz.readthedocs.io/en/latest/', ffilter.is_visible(fuzz_res))

@@ -257,7 +257,6 @@ def rsetattr(obj, attr, new_val, operation):
     try:
         obj_to_set = rgetattr(obj, pre) if pre else obj
         prev_val = rgetattr(obj, attr)
-
         if pre_post is not None:
             prev_val = DotDict({pre_post: prev_val})
 
@@ -265,7 +264,7 @@ def rsetattr(obj, attr, new_val, operation):
             val = operation(prev_val, new_val)
         else:
             if isinstance(prev_val, DotDict):
-                val = {pre_post: new_val}
+                val = {k: new_val for k, v in prev_val.items()}
             else:
                 val = new_val
 
@@ -296,7 +295,8 @@ class DotDict(dict):
         if args[1] not in args[0]:
             raise KeyError("DotDict: Non-existing field {}".format(args[1]))
 
-        val = dict.get(*args, None)
+        # python 3 val = dict.get(*args, None)
+        val = dict.get(*args)
         return DotDict(val) if type(val) is dict else val
         # return DotDict(val) if type(val) is dict else DotDict({args[1]: val})
 
@@ -304,8 +304,10 @@ class DotDict(dict):
         if isinstance(other, str):
             return DotDict({k: v + other for k, v in self.items()})
         elif isinstance(other, DotDict):
-            self.update(other)
-            return self
+            # python 3 return DotDict({**self, **other})
+            new_dic = DotDict(self)
+            new_dic.update(other)
+            return new_dic
 
     def __radd__(self, other):
         if isinstance(other, str):

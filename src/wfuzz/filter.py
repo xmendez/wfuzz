@@ -44,15 +44,15 @@ class FuzzResFilter:
             fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
             fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
 
-            res_value_op = (Word(alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+            res_value_op = (Word("0123456789" + alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
             basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
 
-            fuzz_statement = fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op ^ basic_primitives_op
+            fuzz_statement = basic_primitives_op ^ fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op
 
             operator = oneOf("and or")
             not_operator = Optional(oneOf("not"), "notpresent")
 
-            symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
+            symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ basic_primitives ^ fuzz_statement)).setParseAction(self.__compute_expr)
 
             definition = fuzz_statement ^ symbol_expr
             definition_not = not_operator + definition
