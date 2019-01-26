@@ -118,7 +118,7 @@ class CLParser:
         urlp.path            /dir/test.php
         urlp.params
         urlp.query           id=1
-        urlp.fragment      
+        urlp.fragment
         urlp.ffname          test.php
         urlp.fext            .php
         urlp.fname           test
