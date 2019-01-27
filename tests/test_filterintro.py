@@ -32,27 +32,22 @@ class FilterTest(unittest.TestCase):
         super(FilterTest, self).__init__(*args, **kwargs)
         self.maxDiff = 1000
 
-    def test_code_set(self):
+    def get_filtered_fuzzrequest(self, filter_str):
         fr = FuzzRequest()
         fr.update_from_raw_http(raw_req, "http", raw_resp, b"")
 
         fuzz_res = FuzzResult(history=fr)
 
-        ffilter = FuzzResFilter(filter_string="r.code:=429")
+        ffilter = FuzzResFilter(filter_string=filter_str)
         ffilter.is_visible(fuzz_res)
-        self.assertEqual(fuzz_res.code, 429)
 
-        ffilter = FuzzResFilter(filter_string="r.c:=404")
-        ffilter.is_visible(fuzz_res)
-        self.assertEqual(fuzz_res.code, 404)
+        return fuzz_res
 
-        ffilter = FuzzResFilter(filter_string="r.c=+404")
-        ffilter.is_visible(fuzz_res)
-        self.assertEqual(fuzz_res.code, 808)
-
-        ffilter = FuzzResFilter(filter_string="r.c=-404")
-        ffilter.is_visible(fuzz_res)
-        self.assertEqual(fuzz_res.code, 1212)
+    def test_code_set(self):
+        self.assertEqual(self.get_filtered_fuzzrequest("r.code:=429").code, 429)
+        self.assertEqual(self.get_filtered_fuzzrequest("r.c:=404").code, 404)
+        self.assertEqual(self.get_filtered_fuzzrequest("r.c=+404").code, 706)
+        self.assertEqual(self.get_filtered_fuzzrequest("r.c=-404").code, 706)
 
     def test_url_set(self):
         fr = FuzzRequest()
