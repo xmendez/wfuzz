@@ -630,14 +630,13 @@ class FuzzPayload():
         self.content = content
         self.fields = fields
 
-    def description(self):
+    def description(self, default):
         ret_str_values = []
-
         for fuzz_value in self.fields:
             if fuzz_value is None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(rgetattr(self.content, 'url'))
+                ret_str_values.append(default)
             elif fuzz_value is not None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(rgetattr(self.content, fuzz_value))
+                ret_str_values.append(str(rgetattr(self.content, fuzz_value)))
             elif fuzz_value is None:
                 ret_str_values.append(self.content)
             else:
@@ -702,7 +701,7 @@ class FuzzResult:
 
     @property
     def description(self):
-        ret_str = ' - '.join([payload.description() for payload in self.payload])
+        ret_str = ' - '.join([payload.description(self.url) for payload in self.payload])
         if self.exception:
             return ret_str + "! " + str(self.exception)
 
