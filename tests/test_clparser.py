@@ -9,7 +9,3 @@ class CLParserTest(unittest.TestCase):
             CLParser(['wfuzz', '-e', 'iterators']).parse_cl()
 
         self.assertEqual(cm.exception.code, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()
