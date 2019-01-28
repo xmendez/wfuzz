@@ -822,5 +822,6 @@ class PluginRequest(PluginItem):
         plreq = PluginRequest()
         plreq.source = source
         plreq.fuzzitem = res.to_new_url(url)
+        plreq.fuzzitem.payload = [FuzzPayload(url, [None])]
 
         return plreq
