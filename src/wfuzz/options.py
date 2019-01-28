@@ -44,7 +44,6 @@ class FuzzSession(UserDict):
 
     def _defaults(self):
         return dict(
-            seed_payload=False,
             send_discarded=False,
             console_printer="",
             hs=None,
@@ -90,6 +89,7 @@ class FuzzSession(UserDict):
             dictio=None,
 
             # these will be compiled
+            seed_payload=False,
             filter="",
             prefilter="",
             compiled_genreq=None,
@@ -225,6 +225,8 @@ class FuzzSession(UserDict):
         error = self.validate()
         if error:
             raise FuzzExceptBadOptions(error)
+
+        self.data["seed_payload"] = True if self.data["url"] == "FUZZ" else False
 
         # printer
         try:

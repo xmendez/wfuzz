@@ -200,9 +200,6 @@ class CLParser:
 
                 cli_url = optsd["-u"][0]
 
-            if url == "FUZZ" or cli_url == "FUZZ":
-                options["seed_payload"] = True
-
             if cli_url:
                 url = cli_url
 
