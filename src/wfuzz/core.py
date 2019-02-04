@@ -7,7 +7,7 @@ from .fuzzobjects import FuzzResultFactory, FuzzStats
 from .facade import Facade
 from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 
-from .filter import FuzzResFilter
+from .filter import FuzzResFilterSlice
 
 import re
 
@@ -24,7 +24,7 @@ from builtins import object
 
 class sliceit(object):
     def __init__(self, payload, slicestr):
-        self.ffilter = FuzzResFilter(filter_string=slicestr)
+        self.ffilter = FuzzResFilterSlice(filter_string=slicestr)
         self.payload = payload
 
     def __iter__(self):

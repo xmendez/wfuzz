@@ -37,7 +37,7 @@ class FuzzResFilter:
 
             operator_names = oneOf("m d e un u r l sw unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
 
-            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self.__compute_fuzz_symbol)
+            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
@@ -111,18 +111,18 @@ class FuzzResFilter:
 
         return rgetattr(self.res, self.stack["field"])
 
-    def __compute_fuzz_symbol(self, tokens):
+    def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]
 
-        try:
-            return self.res.payload[i].content
-        except IndexError:
-            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
-        except AttributeError:
-            if i == 0:
-                return self.res
-            else:
+        if isinstance(self.res, FuzzResult):
+            try:
+                return self.res.payload[i].content
+            except IndexError:
                 raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+        elif isinstance(self.res, str) and i == 0:
+            return self.res
+        else:
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
     def __compute_fuzz_value(self, tokens):
         fuzz_val, field = tokens
@@ -320,3 +320,13 @@ class FuzzResFilter:
             ffilter.hideparams['chars'] = filter_options["hh"]
 
         return ffilter
+
+
+class FuzzResFilterSlice(FuzzResFilter):
+    def _compute_fuzz_symbol(self, tokens):
+        i = tokens[0]
+
+        if i != 0:
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+
+        return self.res
