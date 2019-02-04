@@ -644,6 +644,9 @@ class FuzzPayload():
 
         return " - ".join(ret_str_values)
 
+    def __str__(self):
+        return "content: {} fields: {}".format(self.content, self.fields)
+
 
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel, discarded = list(range(8))
