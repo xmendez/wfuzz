@@ -38,6 +38,30 @@ REPLACE_HOSTNAMES = [
 # conn delays?
 # script args
 
+testing_savedsession_tests = [
+]
+
+savedsession_tests = [
+    # set values
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_fuzz", "FUZZ", dict(), None, ["http://localhost:9000/1"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_attr", "FUZZ[url]", dict(), None, ["http://localhost:9000/1"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_number", "FUZZ[url]FUZZ[c]", dict(), None, ["http://localhost:9000/1 - 404"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_url_number", "FUZZ[c]", dict(), None, ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_number", "FUZZ[url]FUZZ[c]", dict(), "r.c:=302", ["http://localhost:9000/1 - 302"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_rewrite_url", "FUZZ", dict(prefilter="r.url:=r.url|replace('1','2')"), None, ["http://localhost:9000/2"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_rewrite_url2", "FUZZ[url]", dict(), "r.url:=r.url|replace('1','2')", ["http://localhost:9000/2"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_assign_fuzz_symbol_op", "FUZZ[url]", dict(), "FUZZ[r.url]:=FUZZ[r.url|replace('1','2')]", ["http://localhost:9000/2"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_fuzz_symbol_op", "FUZZ", dict(), "FUZZ[r.url]=+'2'", ["http://localhost:9000/12"], None),
+
+    # fuzz value slice filters
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZZ[c]=404", ["http://localhost:9000/1"], None),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_value_code", "FUZZ", dict(), "c=404", ["http://localhost:9000/1"], None),
+
+    # fuzz value exceptions
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZ1Z[c]=404", ["http://localhost:9000/1"], "Unknown field"),
+    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZ2Z[c]=404", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
+]
+
 testing_tests = [
 ]
 
@@ -119,6 +143,7 @@ basic_tests = [
     # prefilter, slice
     ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a", "a", "a", "a", "a", "a"]], dict(prefilter="FUZZ|u()", ss="one"), [(200, '/dir/a')], None),
     ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
+    ("test_slice2", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("range", dict(default="1-10"), "FUZZ='1'")]), [(404, '/dir/1')], None),
 
     # follow
     ("test_follow", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["redirect"]], dict(follow=True, filter="content~'path=/echo'"), [(200, '/echo')], None),
@@ -304,6 +329,28 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
     return test
 
 
+def wfuzz_me_test_generator_previous_session(prev_session_cli, url, params, slicestr, expected_list):
+    def test(self):
+        temp_name = next(tempfile._get_candidate_names())
+        defult_tmp_dir = tempfile._get_default_tempdir()
+
+        filename = os.path.join(defult_tmp_dir, temp_name)
+
+        # first session
+        with wfuzz.get_session(prev_session_cli) as s:
+            ret_list = [x.description for x in s.fuzz(save=filename)]
+
+        # second session wfuzzp as payload
+        with wfuzz.FuzzSession(url=url, **params) as s:
+            fuzzed = s.fuzz(payloads=[("wfuzzp", dict(fn=filename), slicestr)])
+
+            ret_list = [x.description for x in fuzzed]
+
+        self.assertEqual(sorted(ret_list), sorted(expected_list))
+
+    return test
+
+
 def create_test(test_name, url, payloads, params, expected_res, extra_params, exception_str):
     test_fn = wfuzz_me_test_generator(url, payloads, params, expected_res, extra_params)
     if exception_str:
@@ -358,11 +405,29 @@ def duplicate_tests(test_list, group, test_gen_fun):
             setattr(DynamicTests, new_test, test_fn)
 
 
+def create_savedsession_tests(test_list, test_gen_fun):
+    """
+    generates wfuzz tests that run 2 times with recipe input, expecting same results.
+
+    """
+    for prev_cli, test_name, url, params, slicestr, expected_res, exception_str in test_list:
+        test_fn = test_gen_fun(prev_cli, url, params, slicestr, expected_res)
+        if exception_str:
+            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
+            setattr(DynamicTests, test_name, test_fn_exc)
+        else:
+            setattr(DynamicTests, test_name, test_fn)
+
+
 def create_tests():
     """
     Creates all dynamic tests
 
     """
+    if testing_savedsession_tests:
+        create_savedsession_tests(savedsession_tests, wfuzz_me_test_generator_previous_session)
+        return
+
     if testing_tests:
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
@@ -374,6 +439,9 @@ def create_tests():
 
         for t in basic_functioning_tests:
             create_tests_from_list(t)
+
+        # description tests
+        create_savedsession_tests(savedsession_tests, wfuzz_me_test_generator_previous_session)
 
         # duplicate tests with recipe
         duplicate_tests(basic_tests, "recipe", wfuzz_me_test_generator_recipe)
