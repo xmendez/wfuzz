@@ -198,7 +198,7 @@ class View:
         if summary.total_req > 0:
             print("Total requests: %d\r\n" % summary.total_req)
         else:
-                print("Total requests: <<unknown>>\r\n")
+            print("Total requests: <<unknown>>\r\n")
 
         if self.verbose:
             print("==============================================================================================================================================\r")

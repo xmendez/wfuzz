@@ -139,7 +139,7 @@ class FuzzSession(UserDict):
             if ([x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] or
                [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]) and \
                self.data['filter']:
-                    return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
+                return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
         except TypeError:
             return "Bad options: Filter must be specified in the form of [int, ... , int]."
 
@@ -262,7 +262,7 @@ class FuzzSession(UserDict):
         if self.data["compiled_genreq"].baseline is None and (FuzzResult.BASELINE_CODE in self.data['hc'] or
            FuzzResult.BASELINE_CODE in self.data['hl'] or FuzzResult.BASELINE_CODE in self.data['hw'] or
            FuzzResult.BASELINE_CODE in self.data['hh']):
-                raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
+            raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
 
         if self.data["script"]:
             Facade().scripts.kbase.update(self.data["script_args"])

@@ -243,7 +243,7 @@ def _get_alias(attr):
 
 def rsetattr(obj, attr, new_val, operation):
     if not _check_allowed_field(attr):
-        raise FuzzExceptIncorrectFilter("Unknown field {}".format(attr))
+        raise AttributeError("Unknown field {}".format(attr))
 
     pre, _, post = attr.rpartition('.')
 
@@ -270,7 +270,7 @@ def rsetattr(obj, attr, new_val, operation):
 
         return setattr(obj_to_set, post, val)
     except AttributeError:
-        raise FuzzExceptIncorrectFilter("rsetattr: Can't set '{}' attribute of {}.".format(post, obj_to_set.__class__))
+        raise AttributeError("rsetattr: Can't set '{}' attribute of {}.".format(post, obj_to_set.__class__))
 
 
 def rgetattr(obj, attr, *args):
@@ -279,10 +279,10 @@ def rgetattr(obj, attr, *args):
         try:
             return getattr(obj, attr, *args)
         except AttributeError:
-            raise FuzzExceptIncorrectFilter("rgetattr: Can't get '{}' attribute from '{}'.".format(attr, obj.__class__))
+            raise AttributeError("rgetattr: Can't get '{}' attribute from '{}'.".format(attr, obj.__class__))
 
     if not _check_allowed_field(attr):
-        raise FuzzExceptIncorrectFilter("Unknown field {}".format(attr))
+        raise AttributeError("Unknown field {}".format(attr))
 
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 

@@ -281,7 +281,7 @@ class FuzzResFilter:
 
             if res.code in self.hideparams['codes'] or res.lines in self.hideparams['lines'] \
                or res.words in self.hideparams['words'] or res.chars in self.hideparams['chars']:
-                    cond1 = self.hideparams['codes_show']
+                cond1 = self.hideparams['codes_show']
 
             if self.hideparams['regex']:
                 if self.hideparams['regex'].search(res.history.content):

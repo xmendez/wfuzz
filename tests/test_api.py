@@ -114,7 +114,3 @@ class APITests(unittest.TestCase):
 
         payload_list = list(wfuzz.payload(**{'iterator': 'product', 'payloads': [('range', {'default': '0-2', 'encoder': None}, None), ('range', {'default': '0-2', 'encoder': None}, None)]}))
         self.assertEqual(sorted(payload_list), sorted([('0', '0'), ('0', '1'), ('0', '2'), ('1', '0'), ('1', '1'), ('1', '2'), ('2', '0'), ('2', '1'), ('2', '2')]))
-
-
-if __name__ == '__main__':
-        unittest.main()

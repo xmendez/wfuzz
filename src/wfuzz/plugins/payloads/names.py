@@ -45,10 +45,10 @@ class names(BasePayload):
                 str3 = ""
                 str4 = ""
                 for i in range(0, len(parts) - 1):
-                        str1 = str1 + parts[i] + "."
-                        str2 = str2 + parts[i]
-                        str3 = str3 + parts[i][0] + "."
-                        str4 = str4 + parts[i][0]
+                    str1 = str1 + parts[i] + "."
+                    str2 = str2 + parts[i]
+                    str3 = str3 + parts[i][0] + "."
+                    str4 = str4 + parts[i][0]
                 str5 = str1 + parts[-1]
                 str6 = str2 + parts[-1]
                 str7 = str4 + parts[-1]

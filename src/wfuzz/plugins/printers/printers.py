@@ -234,7 +234,7 @@ class raw(BasePrinter):
         self.f.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"\n" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description))
 
         for i in res.plugins_res:
-                self.f.write("  |_ %s\n" % i.issue)
+            self.f.write("  |_ %s\n" % i.issue)
 
     def _print(self, res):
         if res.exception:
@@ -245,7 +245,7 @@ class raw(BasePrinter):
         self.f.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\n" % (res.lines, res.words, res.chars, res.description))
 
         for i in res.plugins_res:
-                self.f.write("  |_ %s\n" % i.issue)
+            self.f.write("  |_ %s\n" % i.issue)
 
     def result(self, res):
         if res.type == FuzzResult.result:

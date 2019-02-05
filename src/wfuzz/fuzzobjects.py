@@ -380,16 +380,16 @@ class FuzzResultFactory:
                 fields_array = []
 
                 for fuzz_word, field in marker_regex.findall(text):
-                        if not field:
-                            raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
+                    if not field:
+                        raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
-                        try:
-                            subs = str(rgetattr(payload, field))
-                        except AttributeError:
-                            raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
+                    try:
+                        subs = str(rgetattr(payload, field))
+                    except AttributeError:
+                        raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
 
-                        text = text.replace("%s[%s]" % (fuzz_word, field), subs)
-                        fields_array.append(field)
+                    text = text.replace("%s[%s]" % (fuzz_word, field), subs)
+                    fields_array.append(field)
 
                 return (text, fields_array)
             else:
