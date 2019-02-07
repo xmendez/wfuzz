@@ -42,28 +42,29 @@ testing_savedsession_tests = [
 ]
 
 savedsession_tests = [
+    # field fuzz values
+    ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
+    ("test_desc_attr", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]", ["http://localhost:9000/1"], None),
+    ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 404"], None),
+    ("test_desc_url_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[c]", ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
+
     # set values
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_fuzz", "FUZZ", dict(), None, ["http://localhost:9000/1"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_attr", "FUZZ[url]", dict(), None, ["http://localhost:9000/1"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_number", "FUZZ[url]FUZZ[c]", dict(), None, ["http://localhost:9000/1 - 404"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_url_number", "FUZZ[c]", dict(), None, ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_number", "FUZZ[url]FUZZ[c]", dict(), "r.c:=302", ["http://localhost:9000/1 - 302"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_rewrite_url", "FUZZ", dict(prefilter="r.url:=r.url|replace('1','2')"), None, ["http://localhost:9000/2"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_rewrite_url2", "FUZZ[url]", dict(), "r.url:=r.url|replace('1','2')", ["http://localhost:9000/2"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_assign_fuzz_symbol_op", "FUZZ[url]", dict(), "FUZZ[r.url]:=FUZZ[r.url|replace('1','2')]", ["http://localhost:9000/2"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_desc_concat_fuzz_symbol_op", "FUZZ", dict(), "FUZZ[r.url]=+'2'", ["http://localhost:9000/12"], None),
+    ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.c:=302 FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 302"], None),
+    ("test_desc_rewrite_url", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --prefilter=r.url:=r.url|replace('1','2') FUZZ", ["http://localhost:9000/2"], None),
+    ("test_desc_rewrite_url2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.url:=r.url|replace('1','2') FUZZ[url]", ["http://localhost:9000/2"], None),
 
     # fuzz value slice filters
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZZ[c]=404", ["http://localhost:9000/1"], None),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_value_code", "FUZZ", dict(), "c=404", ["http://localhost:9000/1"], None),
+    ("test_desc_concat_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --prefilter FUZZ[r.url]=+'2' FUZZ", ["http://localhost:9000/12"], None),
+    ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[c]=404 FUZZ", ["http://localhost:9000/1"], None),
+    ("test_fuzz_value_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice c=404 FUZZ", ["http://localhost:9000/1"], None),
 
     # fuzz value exceptions
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZ1Z[c]=404", ["http://localhost:9000/1"], "Unknown field"),
-    ("-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "test_fuzz_symbol_code", "FUZZ", dict(), "FUZ2Z[c]=404", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
+    ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ1Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Unknown field"),
+    ("test_fuzz_symbol_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ2Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
+    ("test_desc_assign_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url|replace('1','2')] FUZZ[url]", ["http://localhost:9000/2"], None),
 ]
 
 testing_tests = [
-    ("test_slice3", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("range", dict(default="1-10"), "FUZZ[c]=1")]), [(404, '/dir/1')], "aaaaaaaaaaa"),
 ]
 
 basic_tests = [
@@ -330,7 +331,7 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
     return test
 
 
-def wfuzz_me_test_generator_previous_session(prev_session_cli, url, params, slicestr, expected_list):
+def wfuzz_me_test_generator_previous_session(prev_session_cli, next_session_cli, expected_list):
     def test(self):
         temp_name = next(tempfile._get_candidate_names())
         defult_tmp_dir = tempfile._get_default_tempdir()
@@ -342,10 +343,8 @@ def wfuzz_me_test_generator_previous_session(prev_session_cli, url, params, slic
             ret_list = [x.description for x in s.fuzz(save=filename)]
 
         # second session wfuzzp as payload
-        with wfuzz.FuzzSession(url=url, **params) as s:
-            fuzzed = s.fuzz(payloads=[("wfuzzp", dict(fn=filename), slicestr)])
-
-            ret_list = [x.description for x in fuzzed]
+        with wfuzz.get_session(next_session_cli.replace("$$PREVFILE$$", filename)) as s:
+            ret_list = [x.description for x in s.fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(expected_list))
 
@@ -411,8 +410,8 @@ def create_savedsession_tests(test_list, test_gen_fun):
     generates wfuzz tests that run 2 times with recipe input, expecting same results.
 
     """
-    for prev_cli, test_name, url, params, slicestr, expected_res, exception_str in test_list:
-        test_fn = test_gen_fun(prev_cli, url, params, slicestr, expected_res)
+    for test_name, prev_cli, next_cli, expected_res, exception_str in test_list:
+        test_fn = test_gen_fun(prev_cli, next_cli, expected_res)
         if exception_str:
             test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
             setattr(DynamicTests, test_name, test_fn_exc)
