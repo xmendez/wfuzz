@@ -6,7 +6,6 @@ from threading import Lock
 import functools
 
 from chardet.universaldetector import UniversalDetector
-from .exception import FuzzExceptIncorrectFilter
 
 
 def json_minify(string, strip_space=True):
