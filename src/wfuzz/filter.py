@@ -199,7 +199,7 @@ class FuzzResFilter:
 
         try:
             if exp_operator in ["=", '==']:
-                return leftvalue == rightvalue
+                return str(leftvalue) == str(rightvalue)
             elif exp_operator == "<=":
                 return leftvalue <= rightvalue
             elif exp_operator == ">=":
