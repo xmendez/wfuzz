@@ -426,7 +426,7 @@ def create_tests():
 
     """
     if testing_savedsession_tests:
-        create_savedsession_tests(savedsession_tests, wfuzz_me_test_generator_previous_session)
+        create_savedsession_tests(testing_savedsession_tests, wfuzz_me_test_generator_previous_session)
         return
 
     if testing_tests:
