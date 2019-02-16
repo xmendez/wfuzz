@@ -41,6 +41,9 @@ REPLACE_HOSTNAMES = [
 testing_savedsession_tests = [
 ]
 
+testing_tests = [
+]
+
 savedsession_tests = [
     # field fuzz values
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
@@ -62,9 +65,16 @@ savedsession_tests = [
     ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ1Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Unknown field"),
     ("test_fuzz_symbol_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ2Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
     ("test_desc_assign_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url|replace('1','2')] FUZZ[url]", ["http://localhost:9000/2"], None),
-]
 
-testing_tests = [
+    # filter based on various payloads
+    ("test_fuzz_fuz2z_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ[url]/FUZ2Z", ['http://localhost:9000/1 - 404'], None),
+    ("test_fuzz_fuz2z_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ[url]", ['http://localhost:9000/1'], None),
+    ("test_fuzz_fuz2z_code3", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ", ['http://localhost:9000/1'], None),
+
+    # set values various payloads
+    ("test_set_fuzz_from_fuz2z_full", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+    ("test_set_fuzz_from_fuz2z_full2", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter FUZZ[r.params.get.param]:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+    ("test_set_fuzz_from_fuz2z_url", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ[url]", ["http://localhost:9000/1?param=1", "http://localhost:9000/1?param=1"], None),
 ]
 
 basic_tests = [

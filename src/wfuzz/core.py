@@ -113,6 +113,12 @@ class requestGenerator(object):
         self.dictio = self.get_dictio()
 
     def _check_dictio_len(self, element):
+        fuzz_words = self.options["compiled_prefilter"].get_fuzz_words() + self.get_fuzz_words()
+
+        if len(element) != len(set(fuzz_words)):
+            raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
+
+    def get_fuzz_words(self):
         marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
         fuzz_words = marker_regex.findall(str(self.seed.history))
         method, userpass = self.seed.history.auth
@@ -125,8 +131,7 @@ class requestGenerator(object):
         if self.options["seed_payload"]:
             fuzz_words += ["FUZZ"]
 
-        if len(element) != len(set(fuzz_words)):
-            raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
+        return fuzz_words
 
     def count(self):
         v = self.dictio.count()

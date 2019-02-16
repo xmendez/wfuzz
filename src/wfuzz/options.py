@@ -259,6 +259,12 @@ class FuzzSession(UserDict):
         # seed
         self.data["compiled_genreq"] = requestGenerator(self)
 
+        # Check payload num
+        fuzz_words = self.data["compiled_prefilter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
+
+        if self.data['allvars'] is None and len(set(fuzz_words)) == 0:
+            raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
+
         if self.data["compiled_genreq"].baseline is None and (FuzzResult.BASELINE_CODE in self.data['hc'] or
            FuzzResult.BASELINE_CODE in self.data['hl'] or FuzzResult.BASELINE_CODE in self.data['hw'] or
            FuzzResult.BASELINE_CODE in self.data['hh']):

@@ -441,9 +441,6 @@ class FuzzResultFactory:
             if desc:
                 fuzz_values_array += desc
 
-            if len(fuzz_values_array) == 0:
-                raise FuzzExceptBadOptions("No %s word!" % fuzz_word)
-
             newres.payload.append(FuzzPayload(payload_content, fuzz_values_array))
 
         newres.history.update_from_raw_http(rawReq, scheme)
@@ -704,7 +701,9 @@ class FuzzResult:
 
     @property
     def description(self):
-        ret_str = ' - '.join([payload.description(self.url) for payload in self.payload])
+        payl_descriptions = [payload.description(self.url) for payload in self.payload]
+        ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
+
         if self.exception:
             return ret_str + "! " + str(self.exception)
 

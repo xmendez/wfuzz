@@ -90,7 +90,7 @@ class FuzzResFilter:
             self.hideparams['filter_string'] = filter_string
 
         self.baseline = None
-        self.stack = {}
+        self.stack = []
 
         self._cache = collections.defaultdict(set)
 
@@ -107,9 +107,9 @@ class FuzzResFilter:
         self.baseline = res
 
     def __compute_res_value(self, tokens):
-        self.stack["field"] = tokens[0]
+        self.stack.append(tokens[0])
 
-        return rgetattr(self.res, self.stack["field"])
+        return rgetattr(self.res, tokens[0])
 
     def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]
@@ -127,17 +127,17 @@ class FuzzResFilter:
     def __compute_fuzz_value(self, tokens):
         fuzz_val, field = tokens
 
-        self.stack["field"] = field
+        self.stack.append(field)
 
         try:
-            return rgetattr(fuzz_val, self.stack["field"]) if field else fuzz_val
+            return rgetattr(fuzz_val, field) if field else fuzz_val
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError as e:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
     def __compute_bbb_value(self, tokens):
-        element = self.stack["field"]
+        element = self.stack[0] if self.stack else None
 
         if self.baseline is None:
             raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
@@ -195,7 +195,7 @@ class FuzzResFilter:
     def __compute_expr(self, tokens):
         leftvalue, exp_operator, rightvalue = tokens[0]
 
-        field_to_set = self.stack.get('field', None)
+        field_to_set = self.stack[0] if self.stack else None
 
         try:
             if exp_operator in ["=", '==']:
@@ -238,6 +238,7 @@ class FuzzResFilter:
             elif elements[i] == "or":
                 first = (first or elements[i + 1])
 
+        self.stack = []
         return first
 
     def __compute_not_operator(self, tokens):
@@ -320,6 +321,12 @@ class FuzzResFilter:
             ffilter.hideparams['chars'] = filter_options["hh"]
 
         return ffilter
+
+    def get_fuzz_words(self):
+        marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+        fuzz_words = marker_regex.findall(self.hideparams["filter_string"])
+
+        return fuzz_words
 
 
 class FuzzResFilterSlice(FuzzResFilter):
