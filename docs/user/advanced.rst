@@ -667,6 +667,18 @@ The above command will generate HTTP requests such as the following::
 
 You can filter the payload using the filter grammar as described before.
 
+The assignment operators can be used to modify previous requests easily, for example, let's add a quote to every parameter looking for SQL injection issues::
+
+    $ wfuzz -z range,1-5 --oF /tmp/session http://testphp.vulnweb.com/artists.php?artist=FUZZ
+    000003:  C=200    118 L      455 W         5326 Ch        "3"
+    ...
+    000004:  C=200     99 L      272 W         3868 Ch        "4"
+
+    $ wfuzz -z wfuzzp,/tmp/session --prefilter "r.params.get=+'\''" -A FUZZ
+    00010:  0.161s   C=200  101 L  287 W    3986 Ch    nginx/1.4.1  "http://testphp.vulnweb.com/artists.php?artist=1'"
+    |_  Error identified: Warning: mysql_fetch_array()
+    ...
+
 wfpayload
 ^^^^^^^^^
 
