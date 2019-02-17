@@ -92,7 +92,7 @@ class params(object):
     def get(self, values):
         if isinstance(values, dict):
             for key, value in values.items():
-                self._req.setVariableGET(key, value)
+                self._req.setVariableGET(key, str(value))
         else:
             raise FuzzExceptBadAPI("GET Parameters must be specified as a dictionary")
 
