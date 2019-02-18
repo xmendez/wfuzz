@@ -229,7 +229,7 @@ error_tests = [
     ("test_all_params_no_var", "%s:8000/echo" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "No variables on specified variable set"),
     ("test_bad_port", "%s:6666/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(), [], 'Failed to connect to localhost port 6666'),
     ("test_bad_num_payloads", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1)), list(range(1))], dict(), [], 'FUZZ words and number of payloads do not match'),
-    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(proxies=[("localhost", 888, "HTML")]), [], 'Failed to connect to localhost port 888'),
+    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(proxies=[("localhost", 888, "HTTP")]), [], 'Failed to connect to localhost port 888'),
     ("test_bad_num_dic", "%s:8000/iterators/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(iterator="zip"), [], 'Several dictionaries must be used when specifying an iterator'),
 ]
 
@@ -446,7 +446,7 @@ def create_tests():
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
         duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
-        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
+        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
         basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
@@ -464,7 +464,7 @@ def create_tests():
         duplicate_tests(basic_tests, "saveres", wfuzz_me_test_generator_saveres)
 
         # duplicate tests with proxy
-        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
+        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
 
 
 create_tests()
