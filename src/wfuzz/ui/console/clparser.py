@@ -472,7 +472,7 @@ class CLParser:
                 vals = p.split(":")
 
                 if len(vals) == 2:
-                    proxy.append((vals[0], vals[1], "HTML"))
+                    proxy.append((vals[0], vals[1], "HTTP"))
                 elif len(vals) == 3:
                     proxy.append((vals[0], vals[1], vals[2]))
                 else:

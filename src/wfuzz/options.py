@@ -128,8 +128,8 @@ class FuzzSession(UserDict):
 
         if self.data['proxies']:
             for ip, port, ttype in self.data['proxies']:
-                if ttype not in ("SOCKS5", "SOCKS4", "HTML"):
-                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+                if ttype not in ("SOCKS5", "SOCKS4", "HTTP"):
+                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
 
         try:
             if [x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] and \
