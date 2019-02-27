@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import copy
 import os
 import unittest
 import tempfile
@@ -42,6 +43,7 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
+    ("test_url_all_url_fuzz2", "FUZZ", [["http://webscantest.com/datastore/search_get_by_name.php?name=Rake"]], dict(), [(200, '/datastore/search_get_by_name.php')], None),
 ]
 
 savedsession_tests = [
@@ -82,6 +84,9 @@ savedsession_tests = [
 ]
 
 basic_tests = [
+    # different connect host ip
+    ("test_static_strquery_set_ip", "http://wfuzz.org/FUZZ?var=1&var2=2", [["anything"], ['PUT', 'GET', 'DELETE']], dict(connect_to_ip={'ip': '127.0.0.1', 'port': '9000'}, method='FUZ2Z', filter="content~'url' and content~'http://wfuzz.org'"), [(200, '/anything')] * 3, None),
+
     # encoding tests
     ("test_encode_cookie2_utf8_return", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(cookie=["test=FUZZ"], filter="content~'test=\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/anything')], None),
     ("test_encode_header_utf8_return", "%s/headers" % HTTPBIN_URL, [["は国"]], dict(headers=[("myheader", "FUZZ")], filter="content~'Myheader' and content~'\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/headers')], None),
@@ -263,6 +268,10 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
                     if proxied_payloads:
                         proxied_payloads = [[payload.replace(original_host, proxied_host) for payload in payloads_list] for payloads_list in proxied_payloads]
 
+                if 'connect_to_ip' in extra_params and extra_params['connect_to_ip']:
+                    extra_params['connect_to_ip']['ip'] = 'httpbin'
+                    extra_params['connect_to_ip']['port'] = '80'
+
             with wfuzz.FuzzSession(url=proxied_url) as s:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(proxied_payloads).fuzz(**extra_params)]
 
@@ -393,12 +402,13 @@ def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_ex
         if group == "_proxy_" and "encode" in test_name:
             continue
 
-        next_extra = dict(list(params.items()) + list(next_extra_params.items()))
+        next_extra = copy.deepcopy(params)
+        next_extra.update(next_extra_params)
         new_test = "%s_%s" % (test_name, group)
 
-        prev_extra = params
+        prev_extra = copy.deepcopy(params)
         if previous_extra_params:
-            prev_extra = dict(list(params.items()) + list(previous_extra_params.items()))
+            prev_extra.update(previous_extra_params)
 
         create_test(new_test, url, payloads, prev_extra, None, next_extra, exception_str)
 

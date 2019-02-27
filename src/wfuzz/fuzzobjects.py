@@ -3,6 +3,7 @@ import hashlib
 import re
 import itertools
 import operator
+import pycurl
 
 # Python 2 and 3
 import sys
@@ -126,6 +127,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self._allvars = None
         self.wf_fuzz_methods = None
         self.wf_retries = 0
+        self.wf_ip = None
 
         self.headers.request = {"User-Agent": Facade().sett.get("connection", "user-agent")}
 
@@ -294,7 +296,12 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return Facade().http_pool.perform(res)
 
     def to_http_object(self, c):
-        return Request.to_pycurl_object(c, self._request)
+        pycurl_c = Request.to_pycurl_object(c, self._request)
+
+        if self.wf_ip:
+            pycurl_c.setopt(pycurl.CONNECT_TO, ["::{}:{}".format(self.wf_ip['ip'], self.wf_ip['port'])])
+
+        return pycurl_c
 
     def from_http_object(self, c, bh, bb):
         return self._request.response_from_conn_object(c, bh, bb)
@@ -337,6 +344,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         if options['postdata'] is not None:
             self.params.post = options['postdata']
 
+        if options['connect_to_ip']:
+            self.wf_ip = options['connect_to_ip']
+
         if options['method']:
             self.method = options['method']
             self.wf_fuzz_methods = options['method']
@@ -355,6 +365,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.wf_proxy = self.wf_proxy
         newreq.wf_allvars = self.wf_allvars
         newreq.wf_fuzz_methods = self.wf_fuzz_methods
+        newreq.wf_ip = self.wf_ip
 
         newreq.headers.request = self.headers.request
         newreq.params.post = self.params.post

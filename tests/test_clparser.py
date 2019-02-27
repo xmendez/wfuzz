@@ -9,3 +9,23 @@ class CLParserTest(unittest.TestCase):
             CLParser(['wfuzz', '-e', 'iterators']).parse_cl()
 
         self.assertEqual(cm.exception.code, 0)
+
+    def test_ip_option(self):
+        options = CLParser(['wfuzz', '--ip', '127.0.0.1']).parse_cl()
+
+        self.assertEqual(options.data['connect_to_ip']['ip'], '127.0.0.1')
+        self.assertEqual(options.data['connect_to_ip']['port'], '80')
+
+        options = CLParser(['wfuzz', '--ip', '127.0.0.1:22']).parse_cl()
+
+        self.assertEqual(options.data['connect_to_ip']['ip'], '127.0.0.1')
+        self.assertEqual(options.data['connect_to_ip']['port'], '22')
+
+        options = CLParser(['wfuzz', '--ip', '127.0.0.1:']).parse_cl()
+
+        self.assertEqual(options.data['connect_to_ip']['ip'], '127.0.0.1')
+        self.assertEqual(options.data['connect_to_ip']['port'], '80')
+
+        with self.assertRaises(Exception) as cm:
+            options = CLParser(['wfuzz', '--ip', ':80']).parse_cl()
+        self.assertTrue("An IP must be specified" in str(cm.exception))

@@ -161,7 +161,7 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
             optsd = defaultdict(list)
 
             payload_cache = {}
@@ -436,6 +436,16 @@ class CLParser:
 
         if "--follow" in optsd or "-L" in optsd:
             options['follow'] = True
+
+        if "--ip" in optsd:
+            splitted = optsd["--ip"][0].partition(":")
+            if not splitted[0]:
+                raise FuzzExceptBadOptions("An IP must be specified")
+
+            options["connect_to_ip"] = {
+                "ip": splitted[0],
+                "port": splitted[2] if splitted[2] else "80"
+            }
 
         if "-d" in optsd:
             options['postdata'] = optsd["-d"][0]

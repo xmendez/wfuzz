@@ -284,6 +284,16 @@ You can combine a recipe with additional command line options, for example::
 
 In case of repeated options, command line options have precedence over options included in the recipe.
 
+Connect to an specific host
+---------------------------------------
+
+The --ip option can be used to connect to a specific host and port instead of the URL's host and port::
+
+    wfuzz -z range,1-1 --ip 127.0.0.1 http://www.google.com/anything/FUZZ
+
+This useful, for example, to test if a reverse proxy can be manipulated into misrouting requests to a destination of our choice.
+
+
 Scan Mode: Ignore Errors and Exceptions
 ---------------------------------------
 

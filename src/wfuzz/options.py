@@ -84,6 +84,7 @@ class FuzzSession(UserDict):
             allvars=None,
             script="",
             script_args={},
+            connect_to_ip=None,
 
             # this is equivalent to payloads but in a different format
             dictio=None,

@@ -103,6 +103,7 @@ verbose_usage = '''%s\n\nOptions:
 \t-s N                      : Specify time delay between requests (0 default)
 \t-R depth                  : Recursive path discovery being depth the maximum recursion level.
 \t-L,--follow               : Follow HTTP redirections
+\t--ip host:port            : Specify an IP to connect to instead of the URL's host in the format ip:port
 \t-Z                        : Scan mode (Connection errors will be ignored).
 \t--req-delay N             : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
 \t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
