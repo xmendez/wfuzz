@@ -43,7 +43,6 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
-    ("test_url_all_url_fuzz2", "FUZZ", [["http://webscantest.com/datastore/search_get_by_name.php?name=Rake"]], dict(), [(200, '/datastore/search_get_by_name.php')], None),
 ]
 
 savedsession_tests = [
@@ -80,6 +79,9 @@ savedsession_tests = [
     ("test_set_fuzz_from_fuz2z_full_all", "-z range,1-1 {}/FUZZ?param=1&param2=2".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z range,6-6 --prefilter r.params.all:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6&param2=6"], None),
     ("test_app_fuzz_from_fuz2z_full_all", "-z range,1-1 {}/FUZZ?param=1&param2=2".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z range,6-6 --prefilter r.params.all=+FUZ2Z FUZZ", ["http://localhost:9000/1?param=16&param2=26"], None),
     # fails ("test_set_fuzz_from_fuz2z_url", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ[url]", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+
+    # test different field
+    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", ["404"], None),
 
 ]
 

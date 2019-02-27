@@ -432,6 +432,7 @@ class FuzzResultFactory:
                 fuzz_values_array.append(None)
 
                 newres.history.update_from_options(seed_options)
+                newres.update_from_options(seed_options)
                 rawReq = str(newres.history)
                 rawUrl = newres.history.redirect_url
                 scheme = newres.history.scheme
@@ -542,7 +543,10 @@ class FuzzResultFactory:
         fr.wf_fuzz_methods = options['method']
         fr.update_from_options(options)
 
-        return FuzzResult(fr)
+        fuzz_res = FuzzResult(fr)
+        fuzz_res.update_from_options(options)
+
+        return fuzz_res
 
 
 class FuzzStats:
@@ -683,6 +687,8 @@ class FuzzResult:
 
         self.payload = []
 
+        self._description = None
+
     def update(self, exception=None):
         self.type = FuzzResult.result
 
@@ -712,6 +718,9 @@ class FuzzResult:
 
     @property
     def description(self):
+        if self._description:
+            return str(rgetattr(self, self._description))
+
         payl_descriptions = [payload.description(self.url) for payload in self.payload]
         ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
 
@@ -764,8 +773,12 @@ class FuzzResult:
         fr.type = self.type
         fr.rlevel = self.rlevel
         fr.payload = list(self.payload)
+        fr._description = self._description
 
         return fr
+
+    def update_from_options(self, options):
+        self._description = options['description']
 
     @staticmethod
     def to_new_exception(exception):

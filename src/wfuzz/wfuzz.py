@@ -68,13 +68,14 @@ def main_filter():
 \n\twfpayload [Options]\n\n
 \nOptions:\n
 \t--help              : This help
-\t--slice <filter>    : Filter payload\'s elements using the specified expression.
 \t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t		      Encoders category can be used. ie. url
 \t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--slice <filter>    : Filter payload\'s elements using the specified expression.
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
 \t-m iterator         : Specify an iterator for combining payloads (product by default)
+\t--field <field>     : Show a FuzzResult field instead of current payload
 """)
 
     from .api import payload
@@ -82,7 +83,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help", "slice=", "zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["field=", "help", "slice=", "zP="])
     except getopt.GetoptError as err:
         print((str(err)))
         usage()
@@ -92,10 +93,13 @@ def main_filter():
         usage()
         sys.exit()
 
+    field = None
     for o, value in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit()
+        if o in ("--field"):
+            field = value
 
     try:
         for res in payload(**CLParser(sys.argv).parse_cl()):
@@ -104,9 +108,7 @@ def main_filter():
             else:
                 r = res[0]
 
-            if "FuzzResult" in str(r.__class__):
-                r._description = r.url
-
+            r._description = field
             print(r)
 
     except KeyboardInterrupt:

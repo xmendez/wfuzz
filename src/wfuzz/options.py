@@ -28,7 +28,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -85,6 +85,7 @@ class FuzzSession(UserDict):
             script="",
             script_args={},
             connect_to_ip=None,
+            description=None,
 
             # this is equivalent to payloads but in a different format
             dictio=None,
