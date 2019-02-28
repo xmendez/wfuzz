@@ -127,9 +127,14 @@ class FuzzSession(UserDict):
             raise FuzzExceptBadOptions("Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
 
         if self.data['proxies']:
-            for ip, port, ttype in self.data['proxies']:
+            for i in range(0, len(self.data['proxies'])):
+                ip, port, ttype = self.data['proxies'][i]
+                if ttype == "HTTP":
+                    ttype = "HTML"
+                    self.data['proxies'][i] = (ip, port, ttype)
+
                 if ttype not in ("SOCKS5", "SOCKS4", "HTML"):
-                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
 
         try:
             if [x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] and \
