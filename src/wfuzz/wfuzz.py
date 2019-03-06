@@ -102,14 +102,20 @@ def main_filter():
             field = value
 
     try:
-        for res in payload(**CLParser(sys.argv).parse_cl()):
+        session_options = CLParser(sys.argv).parse_cl()
+        printer = View(session_options)
+        printer.header(None)
+
+        for res in payload(**session_options):
             if len(res) > 1:
                 raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
             else:
                 r = res[0]
 
             r._description = field
-            print(r)
+
+            printer.result(r)
+        print("")
 
     except KeyboardInterrupt:
         pass

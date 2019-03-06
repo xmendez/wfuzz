@@ -1,11 +1,18 @@
 import sys
 from collections import defaultdict
 import threading
+import operator
+from functools import reduce
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 
 from wfuzz.fuzzobjects import FuzzResult
 
 from .common import exec_banner, Term
 from .getch import _Getch
+from .output import getTerminalSize, wrap_always
 
 usage = '''\r\n
 Interactive keyboard commands:\r\n
@@ -136,22 +143,20 @@ class Controller:
 
 
 class View:
+    widths = [10, 8, 6, 6, 9, getTerminalSize()[0] - 65]
+    verbose_widths = [10, 10, 8, 6, 6, 9, 30, 30, getTerminalSize()[0] - 145]
+
     def __init__(self, session_options):
         self.colour = session_options["colour"]
         self.verbose = session_options["verbose"]
         self.previous = session_options["previous"]
         self.term = Term()
+        self.printed_lines = 1
 
     def _print_verbose(self, res, print_nres=True):
-        txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
+        txt_colour = Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
         if self.previous and self.colour and not print_nres:
-            txt_colour = Term.fgCyan, 8
-
-        self.term.set_colour(txt_colour)
-
-        if print_nres:
-            self.term.write("%05d:  " % (res.nres), txt_colour)
-        self.term.write("%.3fs   C=" % (res.timer), txt_colour)
+            txt_colour = Term.fgCyan
 
         location = ""
         if 'Location' in res.history.headers.response:
@@ -163,54 +168,101 @@ class View:
         if 'Server' in res.history.headers.response:
             server = res.history.headers.response['Server']
 
-        if res.exception:
-            self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("", 8))
-        else:
-            self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("", 8))
-
-        self.term.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description), txt_colour)
-
-        sys.stdout.flush()
-
-    def _print(self, res, print_nres=True):
-        txt_colour = ("", 8) if not res.is_baseline or not self.colour else (Term.fgCyan, 8)
-        if self.previous and self.colour and not print_nres:
-            txt_colour = Term.fgCyan, 8
+        rows = [
+            ("%09d:" % res.nres if print_nres else "", txt_colour),
+            ("%.3fs" % res.timer, txt_colour),
+            ("C=%s" % "XXX" if res.exception else str(res.code), self.term.get_colour(res.code) if self.colour else txt_colour),
+            ("%d L" % res.lines, txt_colour),
+            ("%d W" % res.words, txt_colour),
+            ("%d Ch" % res.chars, txt_colour),
+            (server, txt_colour),
+            (location, txt_colour),
+            ("\"%s\"" % str(res.description), txt_colour),
+        ]
 
         self.term.set_colour(txt_colour)
+        self.printed_lines = self._print_line(rows, self.verbose_widths)
 
-        if print_nres:
-            self.term.write("%06d:  C=" % (res.nres), txt_colour)
-        else:
-            self.term.write(" C=", txt_colour)
+    def _print_header(self, rows, maxWidths):
+        print("=" * (3 * len(maxWidths) + sum(maxWidths[:-1]) + 10))
+        self._print_line(rows, maxWidths)
+        sys.stdout.write("\n\r")
+        print("=" * (3 * len(maxWidths) + sum(maxWidths[:-1]) + 10))
+        print("")
 
-        if res.exception:
-            self.term.write("XXX", self.term.get_colour(res.code) if self.colour else ("", 8))
-        else:
-            self.term.write("%03d" % (res.code), self.term.get_colour(res.code) if self.colour else ("", 8))
-        self.term.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (res.lines, res.words, res.chars, res.description), txt_colour)
+    def _print_line(self, rows, maxWidths):
+        def wrap_row(rows, maxWidths):
+            newRows = [wrap_always(item[0], width).split('\n') for item, width in zip(rows, maxWidths)]
+            return [[substr or '' for substr in item] for item in zip_longest(*newRows)]
+
+        new_rows = wrap_row(rows, maxWidths)
+
+        for row in new_rows[:-1]:
+            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
+            sys.stdout.write("\n\r")
+
+        for row in new_rows[-1:]:
+            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
 
         sys.stdout.flush()
+        return len(new_rows)
+
+    def _print(self, res, print_nres=True):
+        txt_colour = Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
+        if self.previous and self.colour and not print_nres:
+            txt_colour = Term.fgCyan
+
+        rows = [
+            ("%09d:" % res.nres if print_nres else " |_", txt_colour),
+            ("C=%s" % "XXX" if res.exception else str(res.code), self.term.get_colour(res.code) if self.colour else txt_colour),
+            ("%d L" % res.lines, txt_colour),
+            ("%d W" % res.words, txt_colour),
+            ("%d Ch" % res.chars, txt_colour),
+            ("\"%s\"" % str(res.description), txt_colour),
+        ]
+
+        self.term.set_colour(txt_colour)
+        self.printed_lines = self._print_line(rows, self.widths)
 
     def header(self, summary):
         print(exec_banner)
-        print("Target: %s\r" % summary.url)
-        if summary.total_req > 0:
-            print("Total requests: %d\r\n" % summary.total_req)
-        else:
-            print("Total requests: <<unknown>>\r\n")
+        if summary:
+            print("Target: %s\r" % summary.url)
+            if summary.total_req > 0:
+                print("Total requests: %d\r\n" % summary.total_req)
+            else:
+                print("Total requests: <<unknown>>\r\n")
 
         if self.verbose:
-            print("==============================================================================================================================================\r")
-            print("ID   C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \r")
-            print("==============================================================================================================================================\r\n")
+            rows = [
+                ("ID", Term.noColour),
+                ("C.Time", Term.noColour),
+                ("Response", Term.noColour),
+                ("Lines", Term.noColour),
+                ("Word", Term.noColour),
+                ("Chars", Term.noColour),
+                ("Server", Term.noColour),
+                ("Redirect", Term.noColour),
+                ("Payload", Term.noColour),
+            ]
+
+            widths = self.verbose_widths
         else:
-            print("==================================================================\r")
-            print("ID   Response   Lines      Word         Chars          Payload    \r")
-            print("==================================================================\r\n")
+            rows = [
+                ("ID", Term.noColour),
+                ("Response", Term.noColour),
+                ("Lines", Term.noColour),
+                ("Word", Term.noColour),
+                ("Chars", Term.noColour),
+                ("Payload", Term.noColour),
+            ]
+
+            widths = self.widths
+
+        self._print_header(rows, widths)
 
     def result(self, res):
-        self.term.delete_line()
+        self.term.erase_lines(self.printed_lines)
 
         if self.verbose:
             self._print_verbose(res)
@@ -219,18 +271,28 @@ class View:
 
         if res.type == FuzzResult.result:
             if self.previous and len(res.payload) > 0 and isinstance(res.payload[0].content, FuzzResult):
-                sys.stdout.write("\n\r |_     ")
+                sys.stdout.write("\n\r")
                 if self.verbose:
                     self._print_verbose(res.payload[0].content, print_nres=False)
                 else:
                     self._print(res.payload[0].content, print_nres=False)
-            sys.stdout.write("\n\r")
 
-            for i in res.plugins_res:
-                print(" |_  %s\r" % i.issue)
+            if res.plugins_res:
+                sys.stdout.write("\n\r")
+
+                for i in res.plugins_res[:-1]:
+                    sys.stdout.write(" |_  %s\r" % i.issue)
+                    sys.stdout.write("\n\r")
+
+                for i in res.plugins_res[-1:]:
+                    sys.stdout.write(" |_  %s\r" % i.issue)
+
+            for i in range(self.printed_lines):
+                sys.stdout.write("\n\r")
 
     def footer(self, summary):
-        self.term.delete_line()
-        sys.stdout.write("\r\n")
+        self.term.erase_lines(self.printed_lines + 1)
+        sys.stdout.write("\n\r")
+        sys.stdout.write("\n\r")
 
         print(summary)

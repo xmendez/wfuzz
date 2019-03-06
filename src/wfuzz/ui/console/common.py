@@ -170,42 +170,40 @@ class Term:
     bgCyan = "\x1b[46m"
     bgWhite = "\x1b[47m"
 
+    noColour = ""
+
     def get_colour(self, code):
+        cc = ""
+
         if code == 0:
             cc = Term.fgYellow
-            wc = 12
         elif code >= 400 and code < 500:
             cc = Term.fgRed
-            wc = 12
         elif code >= 300 and code < 400:
             cc = Term.fgBlue
-            wc = 11
         elif code >= 200 and code < 300:
             cc = Term.fgGreen
-            wc = 10
         else:
             cc = Term.fgMagenta
-            wc = 1
 
-        return (cc, wc)
+        return cc
 
     def delete_line(self):
         sys.stdout.write("\r" + Term.delete)
 
     def set_colour(self, colour):
-        cc, wc = colour
-
-        sys.stdout.write(cc)
+        sys.stdout.write(colour)
 
     def write(self, string, colour):
-        cc, wc = colour
-
-        sys.stdout.write(cc + string + Term.reset)
+        sys.stdout.write(colour + string + Term.reset)
 
     def go_up(self, lines):
         sys.stdout.write("\033[" + str(lines) + "A")
 
     def erase_lines(self, lines):
-        for i in range(lines):
+        if lines <= 1:
             sys.stdout.write("\r" + Term.delete)
-            sys.stdout.write(Term.oneup)
+        else:
+            for i in range(lines - 1):
+                sys.stdout.write("\r" + Term.delete)
+                sys.stdout.write(Term.oneup)
