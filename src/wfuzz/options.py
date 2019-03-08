@@ -6,7 +6,8 @@ from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import (
     json_minify,
-    python2_3_convert_from_unicode
+    python2_3_convert_from_unicode,
+    _check_allowed_field
 )
 
 from .core import Fuzzer
@@ -124,6 +125,9 @@ class FuzzSession(UserDict):
 
         if self.data["rlevel"] < 0:
             return "Bad usage: Recursion level must be a positive int."
+
+        if self.data["description"] and not _check_allowed_field(self.data["description"]):
+            return "Bad usage: '{}' is not a valid field.".format(self.data['description'])
 
         if self.data['allvars'] not in [None, 'allvars', 'allpost', 'allheaders']:
             raise FuzzExceptBadOptions("Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
