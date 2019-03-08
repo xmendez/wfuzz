@@ -29,3 +29,26 @@ class CLParserTest(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             options = CLParser(['wfuzz', '--ip', ':80']).parse_cl()
         self.assertTrue("An IP must be specified" in str(cm.exception))
+
+    def test_ze_zd_option(self):
+        with self.assertRaises(Exception) as cm:
+            options = CLParser(['wfuzz', '-z', 'range,0-10', '--zD', '0-10', 'url']).parse_cl()
+        self.assertTrue("exclusive" in str(cm.exception))
+
+        options = CLParser(['wfuzz', '-z', 'range', '--zD', '0-1', '--zE', 'md5', 'url']).parse_cl()
+        self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': ['md5']}, None)])
+
+        options = CLParser(['wfuzz', '-z', 'range,0-1', '--zE', 'md5', 'url']).parse_cl()
+        self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': ['md5']}, None)])
+
+        options = CLParser(['wfuzz', '-z', 'range', '--zD', '0-1', '--zE', 'md5', 'url']).parse_cl()
+        self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': ['md5']}, None)])
+
+        options = CLParser(['wfuzz', '-z', 'range', '--zD', '0-1']).parse_cl()
+        self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': None}, None)])
+
+        options = CLParser(['wfuzz', '-z', 'range,0-1']).parse_cl()
+        self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': None}, None)])
+
+
+

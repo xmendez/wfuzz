@@ -108,6 +108,10 @@ Encoders are specified as a payload parameter. There are two equivalent ways of 
     00004:  C=404      7 L        12 W          168 Ch        "a2ef406e2c2351e0b9e80029c909242d"
     ...
 
+* The not so long way using the zE command line switch::
+
+    $ wfuzz -z file --zD wordlist/general/common.txt --zE md5 http://testphp.vulnweb.com/FUZZ
+
 * The not so long way::
 
     $ wfuzz -z file,wordlist/general/common.txt,md5 http://testphp.vulnweb.com/FUZZ

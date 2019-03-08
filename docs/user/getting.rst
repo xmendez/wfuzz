@@ -100,7 +100,11 @@ Each FUZZ keyword must have its corresponding payload. There are several equival
 
 * The long way explicitly defining the payload's parameter name through the command line::
 
-    $ wfuzz -z file --zP fn=wordlist/general/common.txt  http://testphp.vulnweb.com/FUZZ
+    $ wfuzz -z file --zP fn=wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+
+* The not so long way explicitly defining the payload's default parameter through the --zD command line option::
+
+    $ wfuzz -z file --zD wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
 * The not so long way defining only the value of the payload's default parameter::
 

@@ -161,12 +161,12 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
             optsd = defaultdict(list)
 
             payload_cache = {}
             for i, j in opts:
-                if i in ["-z", "--zP", "--slice", "-w"]:
+                if i in ["-z", "--zP", "--slice", "-w", "--zD", "--zE"]:
                     if i in ["-z", "-w"]:
                         if payload_cache:
                             optsd["payload"].append(payload_cache)
@@ -382,12 +382,23 @@ class CLParser:
             else:
                 name = vals[0]
 
+            default_param_cli = payload["--zD"] if "--zD" in payload else None
+            if default_param_cli and default_param:
+                raise FuzzExceptBadOptions("--zD and -z parameters are exclusive.")
+            elif default_param_cli:
+                default_param = default_param_cli
+
             if extraparams:
                 params = dict([x.split("=", 1) for x in extraparams.split(",")])
             if default_param:
                 params['default'] = default_param
 
             encoders = vals[2] if len(vals) == 3 else None
+            encoders_cli = payload["--zE"] if "--zE" in payload else None
+            if encoders_cli and encoders:
+                raise FuzzExceptBadOptions("--zE and -z encoders are exclusive.")
+            elif encoders_cli:
+                encoders = encoders_cli
 
             if encoders:
                 params['encoder'] = encoders.split("-")
