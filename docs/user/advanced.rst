@@ -482,6 +482,7 @@ params.get.<<name>>          Spcified HTTP request GET parameter
 params.post.<<name>>         Spcified HTTP request POST parameter
 pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
 is_path                      Returns true when the HTTP request path refers to a directory.
+reqtime                      Returns the total time that HTTP request took to be retrieved
 ============================ =============================================
 
 FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.

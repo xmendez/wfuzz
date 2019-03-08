@@ -177,6 +177,11 @@ class MyCounter:
 
 
 def _check_allowed_field(attr):
+    blacklisted_fields = [
+        "r.headers",
+        "r.params",
+        "r.cookies",
+    ]
     allowed_fields = [
         "description",
         "nres",
@@ -207,6 +212,7 @@ def _check_allowed_field(attr):
         "history.headers",
         "history.params",
 
+        "r.reqtime",
         "r.url",
         "r.method",
         "r.scheme",
@@ -219,6 +225,9 @@ def _check_allowed_field(attr):
         "r.headers",
         "r.params",
     ]
+
+    if attr in blacklisted_fields:
+        return False
 
     if [field for field in allowed_fields if attr.startswith(field)]:
         return True
