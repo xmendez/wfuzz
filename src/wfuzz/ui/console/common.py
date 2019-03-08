@@ -122,6 +122,8 @@ verbose_usage = '''%s\n\nOptions:
 \t                            Encoders category can be used. ie. url
 \t                            Use help as a payload to show payload plugin's details (you can filter using --slice)
 \t--zP <params>             : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--zD <default>            : Default parameter for the specified payload (it must be preceded by -z or -w).
+\t--zE <encoder>            : Encoder for the specified payload (it must be preceded by -z or -w).
 \t--slice <filter>          : Filter payload\'s elements using the specified expression. It must be preceded by -z.
 \t-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).
 \t-V alltype                : All parameters bruteforcing (allvars and allpost). No need for FUZZ keyword.
