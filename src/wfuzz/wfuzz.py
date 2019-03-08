@@ -68,6 +68,7 @@ def main_filter():
 \n\twfpayload [Options]\n\n
 \nOptions:\n
 \t--help              : This help
+\t-v                  : Verbose output
 \t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t		      Encoders category can be used. ie. url
@@ -83,7 +84,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["field=", "help", "slice=", "zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zP="])
     except getopt.GetoptError as err:
         print((str(err)))
         usage()
