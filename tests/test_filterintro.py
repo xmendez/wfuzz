@@ -88,6 +88,16 @@ class FilterTest(unittest.TestCase):
             ffilter.is_visible(fuzz_res)
             self.assertTrue("DotDict: Non-existing field" in str(context.exception))
 
+    def test_params_set_no_value(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/path?param"
+
+        fuzz_res = FuzzResult(history=fr)
+
+        ffilter = FuzzResFilter(filter_string="r.params.all=+'test'")
+        ffilter.is_visible(fuzz_res)
+        self.assertEqual(fuzz_res.history.params.get, {'param': None})
+
     def test_params_set(self):
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/path?param=1&param2=2"

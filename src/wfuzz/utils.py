@@ -385,7 +385,7 @@ class DotDict(dict):
 
     def __add__(self, other):
         if isinstance(other, str):
-            return DotDict({k: v + other for k, v in self.items()})
+            return DotDict({k: v + other for k, v in self.items() if v})
         elif isinstance(other, DotDict):
             # python 3 return DotDict({**self, **other})
             new_dic = DotDict(self)
@@ -394,4 +394,4 @@ class DotDict(dict):
 
     def __radd__(self, other):
         if isinstance(other, str):
-            return DotDict({k: other + v for k, v in self.items()})
+            return DotDict({k: other + v for k, v in self.items() if v})
