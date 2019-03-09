@@ -23,6 +23,9 @@ try:
     if "openssl".lower() not in pycurl.version.lower():
         print("\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.\n")
 
+    if not hasattr(pycurl, "CONNECT_TO"):
+        print("\nWarning: Pycurl and/or libcurl version is old. CONNECT_TO option is missing. Wfuzz --ip option will not be available.\n")
+
     if not hasattr(pycurl, "PATH_AS_IS"):
         print("\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n")
 
