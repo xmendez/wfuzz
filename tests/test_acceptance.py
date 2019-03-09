@@ -87,7 +87,7 @@ savedsession_tests = [
 
 basic_tests = [
     # different connect host ip
-    ("test_static_strquery_set_ip", "http://wfuzz.org/FUZZ?var=1&var2=2", [["anything"], ['PUT', 'GET', 'DELETE']], dict(connect_to_ip={'ip': '127.0.0.1', 'port': '9000'}, method='FUZ2Z', filter="content~'url' and content~'http://wfuzz.org'"), [(200, '/anything')] * 3, None),
+    # travis has an old pycurl version ("test_static_strquery_set_ip", "http://wfuzz.org/FUZZ?var=1&var2=2", [["anything"], ['PUT', 'GET', 'DELETE']], dict(connect_to_ip={'ip': '127.0.0.1', 'port': '9000'}, method='FUZ2Z', filter="content~'url' and content~'http://wfuzz.org'"), [(200, '/anything')] * 3, None),
 
     # encoding tests
     ("test_encode_cookie2_utf8_return", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(cookie=["test=FUZZ"], filter="content~'test=\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/anything')], None),
