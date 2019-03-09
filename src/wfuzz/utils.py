@@ -6,6 +6,8 @@ from threading import Lock
 import functools
 
 from chardet.universaldetector import UniversalDetector
+import chardet
+from .exception import FuzzExceptInternalError
 
 allowed_fields = [
     "description",
@@ -178,6 +180,87 @@ def convert_to_unicode(text):
         return text.encode("utf-8", errors='ignore')
     else:
         return text
+
+
+class FileDetOpener:
+    typical_encodings = [
+        'UTF-8',
+        'ISO-8859-1',
+        'Windows-1251',
+        'Shift JIS',
+        'Windows-1252',
+        'GB2312',
+        'EUC-KR',
+        'EUC-JP',
+        'GBK',
+        'ISO-8859-2',
+        'Windows-1250',
+        'ISO-8859-15',
+        'Windows-1256',
+        'ISO-8859-9',
+        'Big5',
+        'Windows-1254',
+    ]
+
+    def __init__(self, file_path, encoding=None):
+        self.cache = []
+        self.file_des = open(file_path, mode='rb')
+        self.det_encoding = encoding
+        self.encoding_forced = False
+
+    def reset(self):
+        self.file_des.seek(0)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        decoded_line = None
+        line = None
+        last_error = None
+
+        while decoded_line is None:
+
+            while self.det_encoding is None:
+                detect_encoding = self.detect_encoding().get('encoding', 'utf-8')
+                self.det_encoding = detect_encoding if detect_encoding is not None else 'utf-8'
+
+            if line is None:
+                if self.cache:
+                    line = self.cache.pop()
+                else:
+                    line = next(self.file_des)
+                    if not line:
+                        raise StopIteration
+
+            try:
+                decoded_line = line.decode(self.det_encoding)
+            except UnicodeDecodeError:
+                if last_error is not None and last_error:
+                    self.det_encoding = last_error.pop()
+                elif last_error is None and not self.encoding_forced:
+                    last_error = list(reversed(self.typical_encodings))
+                    last_error.append(chardet.detect(line).get('encoding'))
+                elif not last_error:
+                    raise FuzzExceptInternalError("Unable to decode wordlist file!")
+
+                decoded_line = None
+
+        return decoded_line
+
+    def detect_encoding(self):
+        detector = UniversalDetector()
+        detector.reset()
+
+        for line in self.file_des:
+            detector.feed(line)
+            self.cache.append(line)
+            if detector.done:
+                break
+
+        detector.close()
+
+        return detector.result
 
 
 def open_file_detect_encoding(file_path):
