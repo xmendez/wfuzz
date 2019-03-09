@@ -76,6 +76,9 @@ class Facade(with_metaclass(utils.Singleton, object)):
     def proxy(self, which):
         return self._load(which)
 
+    def get_registrants(self):
+        return self.__plugins.keys()
+
     def __getattr__(self, name):
         if name in ["printers", "payloads", "iterators", "encoders", "scripts"]:
             return self._load(name)

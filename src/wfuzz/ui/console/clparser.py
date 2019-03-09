@@ -2,6 +2,7 @@ import sys
 import getopt
 from collections import defaultdict
 
+from wfuzz.utils import allowed_fields
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
@@ -12,6 +13,9 @@ from .common import brief_usage
 from .common import verbose_usage
 from wfuzz import __version__ as version
 from .output import table_print
+
+short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
+long_opts = ['ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
 
 
 class CLParser:
@@ -142,6 +146,9 @@ class CLParser:
         table_print([x[cols:] for x in Facade().proxy(registrant).get_plugins_ext(category)])
         sys.exit(0)
 
+    def show_plugins_names(self, registrant):
+        print("\n".join(Facade().proxy(registrant).get_plugins_names("$all$")))
+
     def show_plugin_ext_help(self, registrant, category="$all$"):
         for p in Facade().proxy(registrant).get_plugins(category):
             print("Name: %s %s" % (p.name, p.version))
@@ -161,7 +168,7 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], short_opts, long_opts)
             optsd = defaultdict(list)
 
             payload_cache = {}
@@ -263,6 +270,30 @@ class CLParser:
                 script_string = "$all$"
 
             self.show_plugin_ext_help("scripts", category=script_string)
+
+        if "--ee" in optsd:
+            if "payloads" in optsd["--ee"]:
+                self.show_plugins_names("payloads")
+            elif "encoders" in optsd["--ee"]:
+                self.show_plugins_names("encoders")
+            elif "iterators" in optsd["--ee"]:
+                self.show_plugins_names("iterators")
+            elif "printers" in optsd["--ee"]:
+                self.show_plugins_names("printers")
+            elif "scripts" in optsd["--ee"]:
+                self.show_plugins_names("scripts")
+            elif "fields" in optsd["--ee"]:
+                print('\n'.join(allowed_fields))
+            elif "files" in optsd["--ee"]:
+                print('\n'.join(Facade().sett.get('general', 'lookup_dirs').split(",")))
+            elif "registrants" in optsd["--ee"]:
+                print('\n'.join(Facade().get_registrants()))
+            elif "options" in optsd["--ee"]:
+                print("\n".join(["-{}".format(opt) for opt in short_opts.replace(":", "")]))
+                print("\n".join(["--{}".format(opt.replace("=", "")) for opt in long_opts]))
+            else:
+                raise FuzzExceptBadOptions("Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
+            sys.exit(0)
 
         if "-e" in optsd:
             if "payloads" in optsd["-e"]:

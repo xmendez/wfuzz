@@ -7,6 +7,55 @@ import functools
 
 from chardet.universaldetector import UniversalDetector
 
+blacklisted_fields = [
+    "r.headers",
+    "r.params",
+    "r.cookies",
+]
+allowed_fields = [
+    "description",
+    "nres",
+    "code",
+    "chars",
+    "lines",
+    "words",
+    "md5",
+    'l',
+    'h',
+    'w',
+    'c',
+    'r',
+    'history',
+
+    'url',
+    'content',
+
+    "history.url",
+    "history.method",
+    "history.scheme",
+    "history.host",
+    "history.content",
+    "history.raw_content"
+    "history.is_path",
+    "history.pstrip",
+    "history.cookies",
+    "history.headers",
+    "history.params",
+
+    "r.reqtime",
+    "r.url",
+    "r.method",
+    "r.scheme",
+    "r.host",
+    "r.content",
+    "r.raw_content"
+    "r.is_path",
+    "r.pstrip",
+    "r.cookies",
+    "r.headers",
+    "r.params",
+]
+
 
 def json_minify(string, strip_space=True):
     '''
@@ -177,55 +226,6 @@ class MyCounter:
 
 
 def _check_allowed_field(attr):
-    blacklisted_fields = [
-        "r.headers",
-        "r.params",
-        "r.cookies",
-    ]
-    allowed_fields = [
-        "description",
-        "nres",
-        "code",
-        "chars",
-        "lines",
-        "words",
-        "md5",
-        'l',
-        'h',
-        'w',
-        'c',
-        'r',
-        'history',
-
-        'url',
-        'content',
-
-        "history.url",
-        "history.method",
-        "history.scheme",
-        "history.host",
-        "history.content",
-        "history.raw_content"
-        "history.is_path",
-        "history.pstrip",
-        "history.cookies",
-        "history.headers",
-        "history.params",
-
-        "r.reqtime",
-        "r.url",
-        "r.method",
-        "r.scheme",
-        "r.host",
-        "r.content",
-        "r.raw_content"
-        "r.is_path",
-        "r.pstrip",
-        "r.cookies",
-        "r.headers",
-        "r.params",
-    ]
-
     if attr in blacklisted_fields:
         return False
 
