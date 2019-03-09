@@ -40,7 +40,6 @@ REPLACE_HOSTNAMES = [
 # script args
 
 testing_savedsession_tests = [
-    ("test_app_fuzz_from_fuz2z_full_all", "-z range,1-1 {}/FUZZ?param=1&param2=2".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z range,6-6 --prefilter r.params.all=+FUZ2Z FUZZ", ["http://localhost:9000/1?param=16&param2=26"], None),
 ]
 
 testing_tests = [
