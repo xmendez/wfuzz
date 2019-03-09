@@ -79,10 +79,29 @@ class APITests(unittest.TestCase):
             payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'foo', 'encoder': None}, None)]}))
             self.assertEqual(payload_list, [('baz',), ('bar/spam',), ('bar/eggs',)])
 
+        class mock_file(object):
+            def __init__(self):
+                self.my_iter = iter([b"one", b"two"])
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                return next(self.my_iter)
+
+            def seek(self, pos):
+                self.my_iter = iter([b"one", b"two"])
+
+            next = __next__  # for Python 2
+
+        m = mock.MagicMock(name='open', spec=open)
+        m.return_value = iter([b"one", b"two"])
+        m.return_value = mock_file()
+
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
-        with mock.patch(mocked_fun, mock.mock_open(read_data="one\ntwo\n")):
+        with mock.patch(mocked_fun, m):
             payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual(payload_list, [('one',), ('two',)])
+            self.assertEqual(sorted(payload_list), sorted([('one',), ('two',)]))
 
         payload_list = list(wfuzz.payload(**{'payloads': [('hexrange', {'default': '09-10', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('09',), ('0a',), ('0b',), ('0c',), ('0d',), ('0e',), ('0f',), ('10',)])

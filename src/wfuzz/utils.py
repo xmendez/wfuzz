@@ -262,6 +262,8 @@ class FileDetOpener:
 
         return detector.result
 
+    next = __next__  # for Python 2
+
 
 def open_file_detect_encoding(file_path):
     def detect_encoding(file_path):
