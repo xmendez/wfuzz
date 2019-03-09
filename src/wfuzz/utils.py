@@ -7,11 +7,6 @@ import functools
 
 from chardet.universaldetector import UniversalDetector
 
-blacklisted_fields = [
-    "r.headers",
-    "r.params",
-    "r.cookies",
-]
 allowed_fields = [
     "description",
     "nres",
@@ -20,15 +15,14 @@ allowed_fields = [
     "lines",
     "words",
     "md5",
-    'l',
-    'h',
-    'w',
-    'c',
-    'r',
-    'history',
+    "l",
+    "h",
+    "w",
+    "c",
+    "history",
 
-    'url',
-    'content',
+    "url",
+    "content",
 
     "history.url",
     "history.method",
@@ -42,6 +36,7 @@ allowed_fields = [
     "history.headers",
     "history.params",
 
+    "r",
     "r.reqtime",
     "r.url",
     "r.method",
@@ -51,9 +46,9 @@ allowed_fields = [
     "r.raw_content"
     "r.is_path",
     "r.pstrip",
-    "r.cookies",
-    "r.headers",
-    "r.params",
+    "r.cookies.",
+    "r.headers.",
+    "r.params.",
 ]
 
 
@@ -226,9 +221,6 @@ class MyCounter:
 
 
 def _check_allowed_field(attr):
-    if attr in blacklisted_fields:
-        return False
-
     if [field for field in allowed_fields if attr.startswith(field)]:
         return True
     return False

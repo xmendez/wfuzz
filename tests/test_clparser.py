@@ -49,6 +49,3 @@ class CLParserTest(unittest.TestCase):
 
         options = CLParser(['wfuzz', '-z', 'range,0-1']).parse_cl()
         self.assertEqual(options.data['payloads'], [('range', {'default': '0-1', 'encoder': None}, None)])
-
-
-
