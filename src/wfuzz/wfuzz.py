@@ -72,6 +72,7 @@ def main_filter():
 \t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t		      Encoders category can be used. ie. url
+\t--zD default	    : Default argument for the specified payload (it must be preceded by -z or -w).
 \t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
 \t--slice <filter>    : Filter payload\'s elements using the specified expression.
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
@@ -84,7 +85,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zD=", "zP="])
     except getopt.GetoptError as err:
         print((str(err)))
         usage()
