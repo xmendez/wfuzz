@@ -555,6 +555,11 @@ A more interesting variation of the above examples could be::
 
     $ wfuzz -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
+You can use the fields as boolean values as well. For example, this filter will show only the requests with parameters::
+
+    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --filter 'r.params.all'
+
+
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
