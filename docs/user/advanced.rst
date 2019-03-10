@@ -293,7 +293,7 @@ Connect to an specific host
 
 The --ip option can be used to connect to a specific host and port instead of the URL's host and port::
 
-    wfuzz -z range,1-1 --ip 127.0.0.1 http://www.google.com/anything/FUZZ
+    $ wfuzz -z range,1-1 --ip 127.0.0.1 http://www.google.com/anything/FUZZ
 
 This useful, for example, to test if a reverse proxy can be manipulated into misrouting requests to a destination of our choice.
 
@@ -704,3 +704,9 @@ For example, the following will return a unique list of HTTP requests including 
     $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
 
 Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
+
+You can also select the field to show, for example::
+
+    $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
+    000000002:   200        118 L    455 W    5384 Ch     "{'artist': '1'}"
+    ...
