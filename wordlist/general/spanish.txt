@@ -40,11 +40,11 @@ carga
 cargar
 carpeta
 carta
-catalogo
-catalogos
 cas
 cast
 castellano
+catalogo
+catalogos
 centro
 centros
 certificado

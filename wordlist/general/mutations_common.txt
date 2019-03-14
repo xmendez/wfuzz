@@ -1,9 +1,9 @@
+~
 .001
 .002
 .1
 .2
 .7z
-.Z
 .back
 .backup
 .bak
@@ -40,10 +40,5 @@
 .tmp
 .txt
 .war
+.Z
 .zip
-~
-
-
-
-
-
