@@ -82,6 +82,21 @@ class FuzzRequestTest(unittest.TestCase):
         self.assertEqual(fr.path, "FUZZ")
         self.assertEqual(fr.follow, False)
 
+        fr.url = "http://www.wfuzz.org:80/a"
+        self.assertEqual(fr.host, "www.wfuzz.org:80")
+
+        fr.url = "https://www.wfuzz.org:80/a"
+        self.assertEqual(fr.host, "www.wfuzz.org:80")
+
+        fr.url = "www.wfuzz.org:80/a"
+        self.assertEqual(fr.host, "www.wfuzz.org:80")
+
+        fr.url = "www.wfuzz.org:80"
+        self.assertEqual(fr.host, "www.wfuzz.org:80")
+
+        fr.url = "www.wfuzz.org"
+        self.assertEqual(fr.host, "www.wfuzz.org")
+
     def test_setpostdata(self):
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
@@ -118,6 +133,19 @@ class FuzzRequestTest(unittest.TestCase):
         fr.params.post = {'a': '1'}
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = "{'a': '1'}"
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {"{'a': '1'}": None})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+        fr.headers.request = {'Content-Type': 'application/json'}
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'1': None})
 
     def test_setgetdata(self):
         fr = FuzzRequest()

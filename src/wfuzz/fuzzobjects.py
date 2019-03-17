@@ -189,7 +189,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @url.setter
     def url(self, u):
-        if not u.startswith("FUZ") and urlparse(u).scheme == "":
+        # urlparse goes wrong with IP:port without scheme (https://bugs.python.org/issue754016)
+        if not u.startswith("FUZ") and (urlparse(u).netloc == "" or urlparse(u).scheme == ""):
             u = "http://" + u
 
         if urlparse(u).path == "":
