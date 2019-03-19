@@ -119,7 +119,7 @@ basic_tests = [
     ("test_basic_auth", "%s/basic-auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("basic", "FUZZ:FUZZ")), [(200, '/basic-auth/userpass/userpass')], None),
     ("test_digest_auth", "%s/digest-auth/auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("digest", "FUZZ:FUZZ")), [(200, '/digest-auth/auth/userpass/userpass')], None),
     ("test_delayed_response", "%s/delay/FUZZ" % HTTPBIN_URL, [["2"]], dict(req_delay=1), [(200, '/delay/2')], 'Operation timed out'),
-    ("test_static_strquery_set", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~'\"args\":{\"var\":\"1\",\"var2\":\"2\"}'"), [(200, '/anything')] * 4, None),
+    ("test_static_strquery_set_multiple_method", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~FUZ2Z and content~'\"var\": \"1\"' and content~'\"var2\": \"2\"'"), [(200, '/anything')] * 4, None),
 
     # set static HTTP values
     ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content~'query=var=1&var=2'"), [(200, '/echo')], None),
