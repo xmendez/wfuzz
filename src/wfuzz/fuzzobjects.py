@@ -105,7 +105,7 @@ class params(object):
     def post(self, pp):
         if isinstance(pp, dict):
             for key, value in pp.items():
-                self._req.setVariablePOST(key, str(value))
+                self._req.setVariablePOST(key, str(value) if value is not None else value)
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
@@ -309,6 +309,10 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
         self._request.parseRequest(raw, scheme)
+
+        # Parse request sets postdata = '' when there's POST request without data
+        if self.method == "POST" and not self.params.post:
+            self.params.post = {'': None}
 
         if raw_response:
             rp = Response()

@@ -122,10 +122,10 @@ basic_tests = [
     ("test_static_strquery_set_multiple_method", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~FUZ2Z and content~'\"var\": \"1\"' and content~'\"var2\": \"2\"'"), [(200, '/anything')] * 4, None),
 
     # set static HTTP values
-    ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content~'query=var=1&var=2'"), [(200, '/echo')], None),
-    ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content~'POST_DATA=a=2'"), [(200, '/echo')], None),
-    ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content~'POST_DATA=2'"), [(200, '/echo')], None),
-    ("test_empty_postdata", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(postdata='', filter="content~'POST' and r.method='POST'"), [(200, '/anything')], None),
+    ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content=~'query=var=1&var=2$'"), [(200, '/echo')], None),
+    ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content=~'POST_DATA=a=2$'"), [(200, '/echo')], None),
+    ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content=~'POST_DATA=2$'"), [(200, '/echo')], None),
+    ("test_empty_postdata", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(postdata='', filter="content~'POST' and content~'\"form\": {},' and r.method='POST'"), [(200, '/anything')], None),
     ("test_static_method_set", "%s/FUZZ" % URL_LOCAL, [["dir"]], dict(method="OPTIONS", filter="content~'Message: Unsupported method (\\\'OPTIONS\\\')'"), [(501, '/dir/dir')], None),
     ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader: isset'"), [(200, '/echo')], None),
     ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1", ], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
