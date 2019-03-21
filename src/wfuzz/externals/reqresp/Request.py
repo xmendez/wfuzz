@@ -152,7 +152,7 @@ class Request:
             elif self.ContentType == "multipart/form-data":
                 return self.__variablesPOST.multipartEncoded()
             else:
-                return self.__uknPostData
+                return self.__variablesPOST.urlEncoded()
         else:
             raise AttributeError
 
@@ -228,7 +228,7 @@ class Request:
         elif self.ContentType == "multipart/form-data":
             self.__variablesPOST.parseMultipart(pd, boundary)
         else:
-            self.__uknPostData = pd
+            self.__variablesPOST.parseUrlEncoded(pd)
 
 ############################################################################
 

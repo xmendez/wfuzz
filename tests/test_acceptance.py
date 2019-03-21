@@ -46,6 +46,8 @@ testing_tests = [
 ]
 
 savedsession_tests = [
+    ("test_novalue_post_fuzz", "-z list --zD a -u {}/anything -d FUZZ".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
+
     # field fuzz values
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
     ("test_desc_attr", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]", ["http://localhost:9000/1"], None),
@@ -126,6 +128,9 @@ basic_tests = [
     ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content=~'POST_DATA=a=2$'"), [(200, '/echo')], None),
     ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content=~'POST_DATA=2$'"), [(200, '/echo')], None),
     ("test_empty_postdata", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(postdata='', filter="content~'POST' and content~'\"form\": {},' and r.method='POST'"), [(200, '/anything')], None),
+    ("test_static_postdata3_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "application/json")], postdata="2", filter="content=~'POST_DATA=2$' and content=~'command=POST$' and content~'Content-Type: application/json'"), [(200, '/echo')], None),
+    ("test_static_postdata3_set2", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "aaaa")], postdata="a=2&b=3", filter="content=~'POST_DATA=a=2&b=3$' and content=~'command=POST$' and content~'Content-Type: aaaa'"), [(200, '/echo')], None),
+    ("test_static_postdata3_set3", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "application/json")], postdata="{\"a\": \"2\"}", filter="content=~'POST_DATA={\"a\": \"2\"}$' and content=~'command=POST$' and content~'Content-Type: application/json'"), [(200, '/echo')], None),
     ("test_static_method_set", "%s/FUZZ" % URL_LOCAL, [["dir"]], dict(method="OPTIONS", filter="content~'Message: Unsupported method (\\\'OPTIONS\\\')'"), [(501, '/dir/dir')], None),
     ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader: isset'"), [(200, '/echo')], None),
     ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1", ], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
