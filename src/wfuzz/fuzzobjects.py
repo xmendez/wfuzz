@@ -44,6 +44,8 @@ class headers(object):
     @request.setter
     def request(self, values_dict):
         self._req._headers.update(values_dict)
+        if "Content-Type" in values_dict:
+            self._req.ContentType = values_dict['Content-Type']
 
     @property
     def all(self):
