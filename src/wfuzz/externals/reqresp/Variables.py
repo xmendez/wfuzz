@@ -1,4 +1,5 @@
 from .TextParser import TextParser
+import json
 
 
 class Variable:
@@ -60,6 +61,19 @@ class VariablesSet:
 
     def urlEncoded(self):
         return "&".join(["=".join([i.name, i.value]) if i.value is not None else i.name for i in self.variables])
+
+    def json_encoded(self):
+        dicc = {i.name: i.value for i in self.variables}
+
+        return json.dumps(dicc)
+
+    def parse_json_encoded(self, cad):
+        dicc = []
+
+        for key, value in json.loads(cad).items():
+            dicc.append(Variable(key, value))
+
+        self.variables = dicc
 
     def parseUrlEncoded(self, cad):
         dicc = []

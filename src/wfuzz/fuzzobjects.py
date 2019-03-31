@@ -342,6 +342,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         if options["url"] != "FUZZ":
             self.url = options["url"]
 
+        # headers must be parsed first as they might affect how reqresp parases other params
+        self.headers.request = dict(options['headers'])
+
         if options['auth'][0] is not None:
             self.auth = (options['auth'][0], options['auth'][1])
 
@@ -360,8 +363,6 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
         if options['cookie']:
             self.cookies.request = options['cookie']
-
-        self.headers.request = dict(options['headers'])
 
         if options['allvars']:
             self.wf_allvars = options['allvars']
