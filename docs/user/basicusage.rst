@@ -252,8 +252,7 @@ For example, to show results in json format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
-
-When in using the default output you can also select what FuzzResult's field to show instead of the payload::
+When in using the default output you can also select what FuzzResult's field to show instead of the payload description::
 
     $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --field r
     ...
@@ -262,3 +261,6 @@ When in using the default output you can also select what FuzzResult's field to 
                                                         User-Agent: Wfuzz/2.4
                                                         Host: testphp.vulnweb.com
     ...
+
+
+The above is useful, for example, to debug what exact HTTP request Wfuzz sent to the remote Web server. Check the filter language section in the advance usage document for the available fields.

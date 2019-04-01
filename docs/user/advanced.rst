@@ -485,6 +485,8 @@ is_path                      Returns true when the HTTP request path refers to a
 reqtime                      Returns the total time that HTTP request took to be retrieved
 ============================ =============================================
 
+It is worth noting that Wfuzz will try to parse the POST parameters according to the specified content type header. Currently, application/x-www-form-urlencoded, multipart/form-dat and application/json are supported.
+
 FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
 
 Urlparse parses a URL into: scheme://netloc/path;parameters?query#fragment. For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
