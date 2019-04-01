@@ -68,7 +68,7 @@ A FuzzSession object has all the methods of the main wfuzz API.
 The FuzzSession object allows you to persist certain parameters across fuzzing sessions::
 
     >>> import wfuzz
-    >>> s=wfuzz.FuzzSession(url="http://testphp.vulnweb.com/FUZZ")
+    >>> s = wfuzz.FuzzSession(url="http://testphp.vulnweb.com/FUZZ")
     >>> for r in s.fuzz(hc=[404], payloads=[("file",dict(fn="wordlist/general/common.txt"))]):
     ...     print r
     ... 
@@ -95,7 +95,8 @@ The get_payload function generates a Wfuzz payload from a Python iterable. It is
 Generating a new payload and start fuzzing is really simple::
 
     >>> import wfuzz
-    >>> for r in wfuzz.get_payload(range(5)).fuzz(url="http://testphp.vulnweb.com/FUZZ"):
+    >>> s = wfuzz.get_payload(range(5))
+    >>> for r in s.fuzz(url="http://testphp.vulnweb.com/FUZZ"):
     ...     print r
     ... 
     00012:  C=404      7 L        12 W          168 Ch        "0"
@@ -103,12 +104,13 @@ Generating a new payload and start fuzzing is really simple::
     00014:  C=404      7 L        12 W          168 Ch        "2"
     00015:  C=404      7 L        12 W          168 Ch        "3"
     00016:  C=404      7 L        12 W          168 Ch        "4"
-    >>> 
+    >>> s.close()
 
 The get_payloads method can be used when various payloads are needed::
 
     >>> import wfuzz
-    >>> for r in wfuzz.get_payloads([range(5), ["a","b"]]).fuzz(url="http://testphp.vulnweb.com/FUZZ/FUZ2Z"):
+    >>> s = wfuzz.get_payloads([range(5), ["a","b"]])
+    >>> for r in s.fuzz(url="http://testphp.vulnweb.com/FUZZ/FUZ2Z"):
     ...     print r
     ... 
     00028:  C=404      7 L        12 W          168 Ch        "4 - b"
@@ -121,7 +123,7 @@ The get_payloads method can be used when various payloads are needed::
     00020:  C=404      7 L        12 W          168 Ch        "0 - b"
     00023:  C=404      7 L        12 W          168 Ch        "2 - a"
     00019:  C=404      7 L        12 W          168 Ch        "0 - a"
-    >>> 
+    >>> s.close()
 
 Get session
 ===========
@@ -130,7 +132,8 @@ The get_session function generates a Wfuzz session object from the specified com
 
     $ python
     >>> import wfuzz
-    >>> for r in wfuzz.get_session("-z range,0-10 http://testphp.vulnweb.com/FUZZ").fuzz():
+    >>> s = wfuzz.get_session("-z range,0-10 http://testphp.vulnweb.com/FUZZ")
+    >>> for r in s.fuzz():
     ...     print r
     ... 
     00002:  C=404      7 L        12 W          168 Ch        "1"
@@ -144,4 +147,4 @@ The get_session function generates a Wfuzz session object from the specified com
     00007:  C=404      7 L        12 W          168 Ch        "6"
     00009:  C=404      7 L        12 W          168 Ch        "8"
     00010:  C=404      7 L        12 W          168 Ch        "9"
-
+    >>> s.close()
