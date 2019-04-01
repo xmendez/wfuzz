@@ -46,7 +46,10 @@ testing_tests = [
 ]
 
 savedsession_tests = [
+    # parse post params
     ("test_novalue_post_fuzz", "-z list --zD a -u {}/anything -d FUZZ".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
+    ("test_json_post_fuzz2", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.a", ["2"], None),
+    ("test_json_post_fuzz3", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
 
     # field fuzz values
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),

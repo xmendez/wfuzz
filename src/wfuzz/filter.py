@@ -109,7 +109,10 @@ class FuzzResFilter:
     def __compute_res_value(self, tokens):
         self.stack.append(tokens[0])
 
-        return rgetattr(self.res, tokens[0])
+        try:
+            return rgetattr(self.res, tokens[0])
+        except AttributeError:
+            raise FuzzExceptIncorrectFilter("Non-existing introspection field or HTTP parameter \"{}\"!".format(tokens[0]))
 
     def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]

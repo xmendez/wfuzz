@@ -51,6 +51,7 @@ class Request:
 
         self.__variablesGET = VariablesSet()
         self.__variablesPOST = VariablesSet()
+        self._non_parsed_post = None
 
         # diccionario, por ejemplo headers["Cookie"]
         self._headers = {
@@ -88,7 +89,7 @@ class Request:
     @property
     def method(self):
         if self._method is None:
-            return "POST" if self.getPOSTVars() else "GET"
+            return "POST" if (self.getPOSTVars() or self._non_parsed_post is not None) else "GET"
 
         return self._method
 
@@ -147,6 +148,9 @@ class Request:
         elif name == "path":
             return self.__path
         elif name == "postdata":
+            if self._non_parsed_post is not None:
+                return self._non_parsed_post
+
             if self.ContentType == "application/x-www-form-urlencoded":
                 return self.__variablesPOST.urlEncoded()
             elif self.ContentType == "multipart/form-data":
@@ -224,15 +228,18 @@ class Request:
         return self.__variablesPOST.variables
 
     def setPostData(self, pd, boundary=None):
-        self.__variablesPOST = VariablesSet()
-        if self.ContentType == "application/x-www-form-urlencoded":
-            self.__variablesPOST.parseUrlEncoded(pd)
-        elif self.ContentType == "multipart/form-data":
-            self.__variablesPOST.parseMultipart(pd, boundary)
-        elif self.ContentType == 'application/json':
-            self.__variablesPOST.parse_json_encoded(pd)
-        else:
-            self.__variablesPOST.parseUrlEncoded(pd)
+        try:
+            self.__variablesPOST = VariablesSet()
+            if self.ContentType == "application/x-www-form-urlencoded":
+                self.__variablesPOST.parseUrlEncoded(pd)
+            elif self.ContentType == "multipart/form-data":
+                self.__variablesPOST.parseMultipart(pd, boundary)
+            elif self.ContentType == 'application/json':
+                self.__variablesPOST.parse_json_encoded(pd)
+            else:
+                self.__variablesPOST.parseUrlEncoded(pd)
+        except Exception:
+            self._non_parsed_post = pd
 
 ############################################################################
 
@@ -338,7 +345,7 @@ class Request:
         else:
             c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-        if req.getPOSTVars():
+        if req.getPOSTVars() or req._non_parsed_post is not None:
             c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req.postdata))
 
         c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)

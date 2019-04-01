@@ -101,7 +101,10 @@ class params(object):
 
     @property
     def post(self):
-        return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()]))
+        if self._req._non_parsed_post is None:
+            return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()]))
+        else:
+            return self._req.postdata
 
     @post.setter
     def post(self, pp):
