@@ -87,6 +87,7 @@ class FuzzSession(UserDict):
             script_args={},
             connect_to_ip=None,
             description=None,
+            no_cache=False,
 
             # this is equivalent to payloads but in a different format
             dictio=None,
@@ -113,6 +114,9 @@ class FuzzSession(UserDict):
 
         if self.data['script'] and self.data['dryrun']:
             return "Bad usage: Plugins cannot work without making any HTTP request."
+
+        if self.data['no_cache'] not in [True, False]:
+            return "Bad usage: No-cache is a boolean value"
 
         if not self.data['url']:
             return "Bad usage: You must specify an URL."

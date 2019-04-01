@@ -110,6 +110,7 @@ verbose_usage = '''%s\n\nOptions:
 \t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
 \t-A, --AA, --AAA           : Alias for --script=default,verbose,discovery -v -c
+\t--no-cache                : Disable plugins cache. Every request will be scanned.
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
 \t--script-help=<plugins>   : Show help about scripts.

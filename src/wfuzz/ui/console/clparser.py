@@ -15,7 +15,7 @@ from wfuzz import __version__ as version
 from .output import table_print
 
 short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
-long_opts = ['ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
+long_opts = ['no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
 
 
 class CLParser:
@@ -572,6 +572,9 @@ class CLParser:
 
         if "--prev" in optsd:
             options["previous"] = True
+
+        if "--no-cache" in optsd:
+            options["no_cache"] = True
 
         if "-c" in optsd:
             options["colour"] = True

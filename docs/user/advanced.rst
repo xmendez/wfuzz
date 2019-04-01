@@ -241,6 +241,31 @@ An example, parsing a "robots.txt" file is shown below::
     Filtered Requests: 0
     Requests/sec.: 0
 
+In order to not scan the same requests (with the same parameters) over an over again, there is a cache,the cache can be disabled with the --no-cache flag.
+
+For example, if we target a web server with the same URL but different parameter values, we get::
+
+    $ wfuzz -z range --zD 0-3 -z list --zD "'" -u http://testphp.vulnweb.com/artists.php?artist=FUZZFUZ2Z -A
+
+    000000004:   0.195s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "3 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000001:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "0 - '"                                                                                                                                    
+    000000002:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "1 - '"                                                                                                                                    
+    000000003:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "2 - '"                                                                                                                                    
+
+But, if we do the same but disabling the cache::
+
+    $ wfuzz -z range --zD 0-3 -z list --zD "'" -u http://testphp.vulnweb.com/artists.php?artist=FUZZFUZ2Z -A --no-cache
+
+    000000004:   1.170s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "3 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000002:   1.173s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "1 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000001:   1.174s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "0 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000003:   1.173s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "2 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+
 Custom scripts
 ^^^^^^^^^^^^^^
 

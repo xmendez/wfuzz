@@ -19,6 +19,7 @@ CLI Option               Library Option
 -Z                       scanmode=True
 --req-delay N            req_delay=0
 --conn-delay N           conn_delay=0.0
+--no-cache               no_cache=True
 --script=<plugins>       script="plugins"
 --script-args n1=v1,...  script_args={n1: v1}
 -m iterator              iterator="iterator"
