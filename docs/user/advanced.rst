@@ -477,6 +477,7 @@ lines        l              Wfuzz's result HTTP response lines
 words        w              Wfuzz's result HTTP response words
 md5                         Wfuzz's result HTTP response md5 hash
 history      r              Wfuzz's result associated FuzzRequest object
+plugins                     Wfuzz's results associated plugins result in the form of {'plugin id': ['result']}
 ============ ============== =============================================
 
 FuzzRequest object's attribute (you need to use the r. prefix) such as:
@@ -586,6 +587,9 @@ You can use the fields as boolean values as well. For example, this filter will 
 
     $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --filter 'r.params.all'
 
+Results with plugin issues can be filter as well::
+
+    $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "'nginx'~plugins"
 
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

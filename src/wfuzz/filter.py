@@ -1,7 +1,7 @@
 from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
 from .fuzzobjects import FuzzResult
 
-from .utils import rgetattr, rsetattr
+from .utils import rgetattr, rsetattr, value_in_any_list_item
 
 import re
 import collections
@@ -216,20 +216,31 @@ class FuzzResFilter:
             elif exp_operator == "=~":
                 regex = re.compile(rightvalue, re.MULTILINE | re.DOTALL)
                 return regex.search(leftvalue) is not None
-            elif exp_operator == "!~":
-                return rightvalue.lower() not in leftvalue.lower()
-            elif exp_operator == "~":
-                return rightvalue.lower() in leftvalue.lower()
+            elif exp_operator in ["!~", "~"]:
+                ret = True
+
+                if isinstance(rightvalue, str):
+                    ret = rightvalue.lower() in leftvalue.lower()
+                elif isinstance(rightvalue, list):
+                    ret = value_in_any_list_item(leftvalue, rightvalue)
+                elif isinstance(rightvalue, dict):
+                    return len({k: v for (k, v) in rightvalue.items() if leftvalue.lower() in k.lower() or value_in_any_list_item(leftvalue, v)}) > 0
+                else:
+                    raise FuzzExceptBadOptions("Invalid operand type {}".format(rightvalue))
+
+                return ret if exp_operator == "~" else not ret
             elif exp_operator == ":=":
                 rsetattr(self.res, field_to_set, rightvalue, None)
             elif exp_operator == "=+":
                 rsetattr(self.res, field_to_set, rightvalue, operator.add)
             elif exp_operator == "=-":
                 rsetattr(self.res, field_to_set, rightvalue, lambda x, y: y + x)
+        except re.error as e:
+            raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
         except TypeError as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+            raise FuzzExceptBadOptions("Invalid operand types used in expression: %s" % str(e))
         except ParseException as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+            raise FuzzExceptBadOptions("Invalid filter: %s" % str(e))
 
         return True
 

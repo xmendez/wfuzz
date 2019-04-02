@@ -22,6 +22,7 @@ allowed_fields = [
     "w",
     "c",
     "history",
+    "plugins",
 
     "url",
     "content",
@@ -397,3 +398,10 @@ class DotDict(dict):
     def __radd__(self, other):
         if isinstance(other, str):
             return DotDict({k: other + v for k, v in self.items() if v})
+
+
+def value_in_any_list_item(value, list_obj):
+    if isinstance(list_obj, list):
+        return len([item for item in list_obj if value.lower() in item.lower()]) > 0
+    elif isinstance(list_obj, str):
+        return value.lower() in list_obj.lower()

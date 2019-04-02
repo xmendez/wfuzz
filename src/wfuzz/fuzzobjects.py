@@ -15,6 +15,7 @@ else:
 from threading import Lock
 from collections import namedtuple
 from collections import OrderedDict
+from collections import defaultdict
 
 from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
@@ -699,6 +700,15 @@ class FuzzResult:
         self.payload = []
 
         self._description = None
+
+    @property
+    def plugins(self):
+        dic = defaultdict(list)
+
+        for pl in self.plugins_res:
+            dic[pl.source].append(pl.issue)
+
+        return dic
 
     def update(self, exception=None):
         self.type = FuzzResult.result
