@@ -148,3 +148,25 @@ The get_session function generates a Wfuzz session object from the specified com
     00009:  C=404      7 L        12 W          168 Ch        "8"
     00010:  C=404      7 L        12 W          168 Ch        "9"
     >>> s.close()
+
+Interacting with the results
+============================
+
+Once a Wfuzz result is available the grammar defined in the filter language can be used to work with the results' values. For example::
+
+    $ python
+    >>> import wfuzz
+
+    >>> with wfuzz.get_session("-z list --zD test -u http://testphp.vulnweb.com/userinfo.php -d uname=FUZZ&pass=FUZZ") as s:
+    ...     for r in s.fuzz():
+    ...             print(r.history.cookies.response)
+    ...             print(r.history.params.all)
+    ...             print(r.history.params.post)
+    ...             print(r.history.params.post.uname)
+    ...             print(r.history.params.post['pass'])
+    {'login': 'test%2Ftest'}
+    {'uname': 'test', 'pass': 'test'}
+    {'uname': 'test', 'pass': 'test'}
+    test
+    test
+    >>>
