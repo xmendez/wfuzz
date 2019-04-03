@@ -14,7 +14,6 @@ else:
 
 from threading import Lock
 from collections import namedtuple
-from collections import OrderedDict
 from collections import defaultdict
 
 from .externals.reqresp import Request, Response
@@ -31,16 +30,20 @@ auth_header = namedtuple("auth_header", "method credentials")
 
 
 class headers(object):
+    class header(DotDict):
+        def __str__(self):
+            return "\n".join(["{}: {}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
     @property
     def response(self):
-        return DotDict(OrderedDict(self._req.response.getHeaders())) if self._req.response else {}
+        return headers.header(self._req.response.getHeaders()) if self._req.response else {}
 
     @property
     def request(self):
-        return DotDict(OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()]))
+        return headers.header([x.split(": ", 1) for x in self._req.getHeaders()])
 
     @request.setter
     def request(self, values_dict):
@@ -50,10 +53,14 @@ class headers(object):
 
     @property
     def all(self):
-        return self.request + self.response
+        return headers.header(self.request + self.response)
 
 
 class cookies(object):
+    class cookie(DotDict):
+        def __str__(self):
+            return "\n".join(["{}={}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
@@ -62,7 +69,7 @@ class cookies(object):
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return DotDict(OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]]))
+                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
         return {}
 
@@ -71,7 +78,7 @@ class cookies(object):
         if 'Cookie' in self._req._headers:
             c = self._req._headers['Cookie'].split("; ")
             if c[0]:
-                return DotDict(OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]]))
+                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
         return {}
 
@@ -81,16 +88,20 @@ class cookies(object):
 
     @property
     def all(self):
-        return self.request + self.response
+        return cookies.cookie(self.request + self.response)
 
 
 class params(object):
+    class param(DotDict):
+        def __str__(self):
+            return "\n".join(["{}={}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
     @property
     def get(self):
-        return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getGETVars()]))
+        return params.param([(x.name, x.value) for x in self._req.getGETVars()])
 
     @get.setter
     def get(self, values):
@@ -103,7 +114,7 @@ class params(object):
     @property
     def post(self):
         if self._req._non_parsed_post is None:
-            return DotDict(OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()]))
+            return params.param([(x.name, x.value) for x in self._req.getPOSTVars()])
         else:
             return self._req.postdata
 
@@ -117,7 +128,7 @@ class params(object):
 
     @property
     def all(self):
-        return self.get + self.post
+        return params.param(self.get + self.post)
 
     @all.setter
     def all(self, values):
