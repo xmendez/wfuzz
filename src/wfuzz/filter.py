@@ -220,7 +220,7 @@ class FuzzResFilter:
                 ret = True
 
                 if isinstance(rightvalue, str):
-                    ret = rightvalue.lower() in leftvalue.lower()
+                    ret = leftvalue.lower() in rightvalue.lower()
                 elif isinstance(rightvalue, list):
                     ret = value_in_any_list_item(leftvalue, rightvalue)
                 elif isinstance(rightvalue, dict):
