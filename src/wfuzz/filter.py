@@ -181,8 +181,13 @@ class FuzzResFilter:
         elif op == "lower" or op == "l":
             return leftvalue.lower()
         elif op == 'gregex' or op == "gre":
-            regex = re.compile(middlevalue, re.MULTILINE | re.DOTALL)
-            search_res = regex.search(leftvalue)
+            search_res = None
+            try:
+                regex = re.compile(middlevalue)
+                search_res = regex.search(leftvalue)
+            except re.error as e:
+                raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
+
             if search_res is None:
                 return ''
             return search_res.group(1)
