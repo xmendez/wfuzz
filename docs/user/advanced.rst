@@ -590,7 +590,7 @@ You can use the fields as boolean values as well. For example, this filter will 
 
 Results with plugin issues can be filter as well::
 
-    $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "'nginx'~plugins"
+    $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "plugins~'nginx'"
 
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

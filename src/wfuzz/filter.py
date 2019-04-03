@@ -226,12 +226,12 @@ class FuzzResFilter:
             elif exp_operator in ["!~", "~"]:
                 ret = True
 
-                if isinstance(rightvalue, str):
-                    ret = leftvalue.lower() in rightvalue.lower()
-                elif isinstance(rightvalue, list):
-                    ret = value_in_any_list_item(leftvalue, rightvalue)
-                elif isinstance(rightvalue, dict):
-                    return len({k: v for (k, v) in rightvalue.items() if leftvalue.lower() in k.lower() or value_in_any_list_item(leftvalue, v)}) > 0
+                if isinstance(leftvalue, str):
+                    ret = rightvalue.lower() in leftvalue.lower()
+                elif isinstance(leftvalue, list):
+                    ret = value_in_any_list_item(rightvalue, leftvalue)
+                elif isinstance(leftvalue, dict):
+                    return len({k: v for (k, v) in leftvalue.items() if rightvalue.lower() in k.lower() or value_in_any_list_item(rightvalue, v)}) > 0
                 else:
                     raise FuzzExceptBadOptions("Invalid operand type {}".format(rightvalue))
 

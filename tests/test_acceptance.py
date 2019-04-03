@@ -208,7 +208,7 @@ basic_tests = [
     ("test_filter_hw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="h=28 or w=6"), [(200, '/dir/a')], None),
     ("test_filter_intext", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content~'one'"), [(200, '/dir/a'), (200, '/dir/b')], None),
     ("test_filter_intext2", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content!~'one'"), [(200, '/dir/c')], None),
-    ("test_dict_filter_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="'value1'~r.params.get"), [(200, '/echo')], None),
+    ("test_dict_filter_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="r.params.get~'value1'"), [(200, '/echo')], None),
 
     # baseline
     ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
@@ -229,7 +229,7 @@ basic_tests = [
     # plugins
     ("test_robots", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(script="robots"), [(404, '/cal_endar/'), (404, '/crawlsnags/'), (404, '/osrun/'), (200, '/plugins/robots.txt'), (200, '/static/')], None),
     ("test_robots_hc", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(hc=[404], script="robots"), [(200, '/plugins/robots.txt'), (200, '/static/')], None),
-    ("test_plugins_filter", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(script='headers', filter="'unicorn'~plugins"), [(200, '/anything')], None),
+    ("test_plugins_filter", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(script='headers', filter="plugins~'unicorn'"), [(200, '/anything')], None),
 ]
 
 scanmode_tests = [
