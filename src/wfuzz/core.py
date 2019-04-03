@@ -113,7 +113,7 @@ class requestGenerator(object):
         self.dictio = self.get_dictio()
 
     def _check_dictio_len(self, element):
-        fuzz_words = self.options["compiled_prefilter"].get_fuzz_words() + self.get_fuzz_words()
+        fuzz_words = self.options["compiled_filter"].get_fuzz_words() + self.options["compiled_prefilter"].get_fuzz_words() + self.get_fuzz_words()
 
         if len(element) != len(set(fuzz_words)):
             raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")

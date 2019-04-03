@@ -270,7 +270,7 @@ class FuzzSession(UserDict):
         self.data["compiled_genreq"] = requestGenerator(self)
 
         # Check payload num
-        fuzz_words = self.data["compiled_prefilter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
+        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_prefilter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
 
         if self.data['allvars'] is None and len(set(fuzz_words)) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
