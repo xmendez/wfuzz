@@ -459,8 +459,8 @@ value|upper()                                            uppercase of the value
 value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
 value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
 value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
-value|unique(value)              value|u(value)          Returns True if a value is unique.
-value|startswith('value')        value|sw('param')       Returns true if the value string starts with param
+value|unique()                   value|u()               Returns True if a value is unique.
+value|startswith('value')        value|sw('value')       Returns true if the value string starts with param
 ================================ ======================= =============================================
 
 * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
