@@ -35,7 +35,7 @@ class FuzzResFilter:
 
             basic_primitives = int_values | quoted_str_value
 
-            operator_names = oneOf("m d e un u r l sw unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
+            operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
 
             fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
@@ -160,6 +160,7 @@ class FuzzResFilter:
 
     def __compute_perl_value(self, tokens):
         leftvalue, exp = tokens
+        # import pdb; pdb.set_trace()
 
         if exp:
             loc_op, middlevalue, rightvalue = exp
@@ -179,6 +180,12 @@ class FuzzResFilter:
             return leftvalue.upper()
         elif op == "lower" or op == "l":
             return leftvalue.lower()
+        elif op == 'gregex' or op == "gre":
+            regex = re.compile(middlevalue, re.MULTILINE | re.DOTALL)
+            search_res = regex.search(leftvalue)
+            if search_res is None:
+                return ''
+            return search_res.group(1)
         elif op == 'startswith' or op == "sw":
             return leftvalue.strip().startswith(middlevalue)
         elif op == 'unique' or op == "u":

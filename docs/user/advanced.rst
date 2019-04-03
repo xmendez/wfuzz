@@ -461,6 +461,7 @@ value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(
 value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
 value|unique()                   value|u()               Returns True if a value is unique.
 value|startswith('value')        value|sw('value')       Returns true if the value string starts with param
+value|gregex('expression')       value|gre('exp')        Returns first regex group that matches in value
 ================================ ======================= =============================================
 
 * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
