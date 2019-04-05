@@ -117,14 +117,9 @@ class FuzzResFilter:
     def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]
 
-        if isinstance(self.res, FuzzResult):
-            try:
-                return self.res.payload[i].content
-            except IndexError:
-                raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
-        elif isinstance(self.res, str) and i == 0:
-            return self.res
-        else:
+        try:
+            return self.res.payload[i].content
+        except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
     def __compute_fuzz_value(self, tokens):
