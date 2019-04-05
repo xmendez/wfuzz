@@ -1,6 +1,4 @@
 from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
-from .fuzzobjects import FuzzResult
-
 from .utils import rgetattr, rsetattr, value_in_any_list_item
 
 import re
@@ -13,7 +11,7 @@ try:
 except ImportError:
     from urllib import unquote
 
-from .facade import Facade
+from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
 
 PYPARSING = True
@@ -95,13 +93,13 @@ class FuzzResFilter:
         self._cache = collections.defaultdict(set)
 
     def set_baseline(self, res):
-        if FuzzResult.BASELINE_CODE in self.hideparams['lines']:
+        if BASELINE_CODE in self.hideparams['lines']:
             self.hideparams['lines'].append(res.lines)
-        if FuzzResult.BASELINE_CODE in self.hideparams['codes']:
+        if BASELINE_CODE in self.hideparams['codes']:
             self.hideparams['codes'].append(res.code)
-        if FuzzResult.BASELINE_CODE in self.hideparams['words']:
+        if BASELINE_CODE in self.hideparams['words']:
             self.hideparams['words'].append(res.words)
-        if FuzzResult.BASELINE_CODE in self.hideparams['chars']:
+        if BASELINE_CODE in self.hideparams['chars']:
             self.hideparams['chars'].append(res.chars)
 
         self.baseline = res
@@ -200,7 +198,7 @@ class FuzzResFilter:
         return ret
 
     def __compute_xxx_value(self, tokens):
-        return FuzzResult.ERROR_CODE
+        return ERROR_CODE
 
     def __compute_expr(self, tokens):
         leftvalue, exp_operator, rightvalue = tokens[0]

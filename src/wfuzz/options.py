@@ -1,7 +1,7 @@
 from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
-from .facade import Facade
+from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
-from .fuzzobjects import FuzzResult, FuzzStats
+from .fuzzobjects import FuzzStats
 from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import (
@@ -250,15 +250,15 @@ class FuzzSession(UserDict):
             self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)
 
         try:
-            self.data['hc'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['hc']]
-            self.data['hw'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['hw']]
-            self.data['hl'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['hl']]
-            self.data['hh'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['hh']]
+            self.data['hc'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hc']]
+            self.data['hw'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hw']]
+            self.data['hl'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hl']]
+            self.data['hh'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hh']]
 
-            self.data['sc'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['sc']]
-            self.data['sw'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['sw']]
-            self.data['sl'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['sl']]
-            self.data['sh'] = [FuzzResult.BASELINE_CODE if i == "BBB" else FuzzResult.ERROR_CODE if i == "XXX" else int(i) for i in self.data['sh']]
+            self.data['sc'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sc']]
+            self.data['sw'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sw']]
+            self.data['sl'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sl']]
+            self.data['sh'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sh']]
         except ValueError:
             raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
 
@@ -275,9 +275,9 @@ class FuzzSession(UserDict):
         if self.data['allvars'] is None and len(set(fuzz_words)) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
 
-        if self.data["compiled_genreq"].baseline is None and (FuzzResult.BASELINE_CODE in self.data['hc'] or
-           FuzzResult.BASELINE_CODE in self.data['hl'] or FuzzResult.BASELINE_CODE in self.data['hw'] or
-           FuzzResult.BASELINE_CODE in self.data['hh']):
+        if self.data["compiled_genreq"].baseline is None and (BASELINE_CODE in self.data['hc'] or
+           BASELINE_CODE in self.data['hl'] or BASELINE_CODE in self.data['hw'] or
+           BASELINE_CODE in self.data['hh']):
             raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
 
         if self.data["script"]:

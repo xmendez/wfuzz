@@ -10,6 +10,8 @@ import os
 # python2 and 3: metaclass
 from future.utils import with_metaclass
 
+ERROR_CODE = -1
+BASELINE_CODE = -2
 
 class Settings(SettingsBase):
     def get_config_file(self):

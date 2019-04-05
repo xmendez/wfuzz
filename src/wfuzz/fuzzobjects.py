@@ -18,7 +18,7 @@ from collections import defaultdict
 
 from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
-from .facade import Facade
+from .facade import Facade, ERROR_CODE
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
 from .utils import python2_3_convert_to_unicode
@@ -686,8 +686,6 @@ class FuzzPayload():
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel, discarded = list(range(8))
     newid = itertools.count(0)
-    ERROR_CODE = -1
-    BASELINE_CODE = -2
 
     def __init__(self, history=None, exception=None, track_id=True):
         self.history = history
@@ -777,7 +775,7 @@ class FuzzResult:
         # elif not self.history.code:
             # return 0
         else:
-            return FuzzResult.ERROR_CODE
+            return ERROR_CODE
 
     @property
     def timer(self):
