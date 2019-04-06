@@ -401,7 +401,7 @@ These timeouts are really handy when you are using Wfuzz to bruteforce resources
 Filter Language
 ---------------
 
-Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice".
+Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice, --field".
 
 The information about the filter language can be also obtained executing::
 

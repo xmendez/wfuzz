@@ -252,7 +252,7 @@ For example, to show results in json format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
-When in using the default output you can also select an additional FuzzResult's field to show together with the payload description::
+When using the default output you can also select an additional FuzzResult's field to show together with the payload description::
 
     $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --field r
     ...
