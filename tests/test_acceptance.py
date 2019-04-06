@@ -181,7 +181,7 @@ basic_tests = [
 
     # all params
     ("test_all_params_get", "%s:8000/echo?var=1&var2=2" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], None),
-    ("test_all_params_post", "%s" % ECHO_URL, [["onevalue"]], dict(allvars="allpost", postdata="a=1&b=2", filter="content~'POST_DATA=a=onevalue&b=2' or content~'POST_DATA=a=1&b=onevalue'"), [(200, '/echo'), (200, '/echo')], None),
+    ("test_all_params_post", "%s" % ECHO_URL, [["onevalue"]], dict(allvars="allpost", postdata="a=1&b=2", filter="content~'command=POST' and (content~'a=onevalue' and content~'b=2') or (content~'a=1' and content~'b=onevalue')"), [(200, '/echo'), (200, '/echo')], None),
 
     # simple filter
     ("test_codes_HC", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[404]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
