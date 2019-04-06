@@ -16,6 +16,7 @@ from threading import Lock
 from collections import namedtuple
 from collections import defaultdict
 
+from .filter import FuzzResFilter
 from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
 from .facade import Facade, ERROR_CODE
@@ -748,9 +749,6 @@ class FuzzResult:
 
     @property
     def description(self):
-        if self._description:
-            return str(rgetattr(self, self._description))
-
         payl_descriptions = [payload.description(self.url) for payload in self.payload]
         ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
 
@@ -758,6 +756,15 @@ class FuzzResult:
             return ret_str + "! " + str(self.exception)
 
         return ret_str
+
+    def get_full_description(self):
+        if self._description is not None:
+            return "{} | {}".format(self.description, self.eval(self._description))
+
+        return self.description
+
+    def eval(self, expr):
+        return FuzzResFilter(filter_string=expr).is_visible(self)
 
     # parameters in common with fuzzrequest
     @property

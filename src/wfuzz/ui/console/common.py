@@ -95,7 +95,7 @@ verbose_usage = '''%s\n\nOptions:
 \t--interact                : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run                 : Print the results of applying the requests without actually making any HTTP request.
 \t--prev                    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
-\t--field <field>           : Show the specified FuzzResult field instead of the current payload
+\t--field <expr>            : Show the specified language expression together with the current payload
 \t
 \t-p addr                   : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.

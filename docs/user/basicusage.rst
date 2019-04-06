@@ -252,11 +252,11 @@ For example, to show results in json format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
-When in using the default output you can also select what FuzzResult's field to show instead of the payload description::
+When in using the default output you can also select an additional FuzzResult's field to show together with the payload description::
 
     $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --field r
     ...
-    000000001:   200        99 L     272 W    3868 Ch   GET /artists.php?artist=0 HTTP/1.1
+    000000001:   200        99 L     272 W    3868 Ch   0 | GET /artists.php?artist=0 HTTP/1.1
                                                         Content-Type: application/x-www-form-urlencoded
                                                         User-Agent: Wfuzz/2.4
                                                         Host: testphp.vulnweb.com

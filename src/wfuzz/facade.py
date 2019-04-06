@@ -13,6 +13,7 @@ from future.utils import with_metaclass
 ERROR_CODE = -1
 BASELINE_CODE = -2
 
+
 class Settings(SettingsBase):
     def get_config_file(self):
         return os.path.join(utils.get_home(check=True), "wfuzz.ini")

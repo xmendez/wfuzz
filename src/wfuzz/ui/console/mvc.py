@@ -1,8 +1,6 @@
 import sys
 from collections import defaultdict
 import threading
-import operator
-from functools import reduce
 try:
     from itertools import zip_longest
 except ImportError:
@@ -177,7 +175,7 @@ class View:
             ("%d Ch" % res.chars, txt_colour),
             (server, txt_colour),
             (location, txt_colour),
-            ("\"%s\"" % str(res.description), txt_colour),
+            ("\"%s\"" % res.get_full_description(), txt_colour),
         ]
 
         self.term.set_colour(txt_colour)
@@ -218,7 +216,7 @@ class View:
             ("%d L" % res.lines, txt_colour),
             ("%d W" % res.words, txt_colour),
             ("%d Ch" % res.chars, txt_colour),
-            ("\"%s\"" % str(res.description), txt_colour),
+            ("\"%s\"" % res.get_full_description(), txt_colour),
         ]
 
         self.term.set_colour(txt_colour)

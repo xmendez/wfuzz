@@ -8,7 +8,6 @@ import tempfile
 
 import wfuzz
 
-
 LOCAL_DOMAIN = "http://localhost"
 URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
 HTTPD_PORT = 8000
@@ -86,7 +85,7 @@ savedsession_tests = [
     # fails ("test_set_fuzz_from_fuz2z_url", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ[url]", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
 
     # test different field
-    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", ["404"], None),
+    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", [404], None),
 
 ]
 
@@ -376,11 +375,11 @@ def wfuzz_me_test_generator_previous_session(prev_session_cli, next_session_cli,
 
         # first session
         with wfuzz.get_session(prev_session_cli) as s:
-            ret_list = [x.description for x in s.fuzz(save=filename)]
+            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz(save=filename)]
 
         # second session wfuzzp as payload
         with wfuzz.get_session(next_session_cli.replace("$$PREVFILE$$", filename)) as s:
-            ret_list = [x.description for x in s.fuzz()]
+            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(expected_list))
 

@@ -170,3 +170,8 @@ Once a Wfuzz result is available the grammar defined in the filter language can 
     test
     test
     >>>
+
+The result object has also a method to evaluate a language expression::
+
+    >> print(r.eval("r.cookies.response"))
+    login=test%2Ftest
