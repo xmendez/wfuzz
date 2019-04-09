@@ -749,6 +749,9 @@ class FuzzResult:
 
     @property
     def description(self):
+        if not self.payload:
+            return self.url
+
         payl_descriptions = [payload.description(self.url) for payload in self.payload]
         ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
 
