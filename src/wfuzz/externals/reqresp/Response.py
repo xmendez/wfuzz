@@ -175,6 +175,7 @@ class Response:
             else:
                 self._headers = []
 
+        # TODO: this might add to rawbody not directly to __content
         while tp.skip(1):
             self.addContent(tp.lastFull_line)
 
@@ -216,11 +217,12 @@ class Response:
             rawbody = deflated_data
             self.delHeader("Content-Encoding")
 
-        # Try to get charset encoding from headers
-        content_encoding = get_encoding_from_headers(dict(self.getHeaders()))
+        if rawbody is not None:
+            # Try to get charset encoding from headers
+            content_encoding = get_encoding_from_headers(dict(self.getHeaders()))
 
-        # fallback to default encoding
-        if content_encoding is None:
-            content_encoding = "utf-8"
+            # fallback to default encoding
+            if content_encoding is None:
+                content_encoding = "utf-8"
 
-        self.__content = python2_3_convert_from_unicode(rawbody.decode(content_encoding, errors='replace'))
+            self.__content = python2_3_convert_from_unicode(rawbody.decode(content_encoding, errors='replace'))
