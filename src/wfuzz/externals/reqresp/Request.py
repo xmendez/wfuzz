@@ -453,8 +453,9 @@ class Request:
         self.setUrl(prot + "://" + self._headers["Host"] + pathTMP)
 
         pd = ""
+        # TODO: hacky, might need to change tp.readline returning read bytes instead
         while tp.readLine():
-            pd += tp.lastFull_line
+            pd += tp.lastline
 
         if pd:
             boundary = None
