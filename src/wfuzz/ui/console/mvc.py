@@ -167,7 +167,7 @@ class View:
             server = res.history.headers.response['Server']
 
         rows = [
-            ("%09d:" % res.nres if print_nres else "", txt_colour),
+            ("%09d:" % res.nres if print_nres else " |_", txt_colour),
             ("%.3fs" % res.timer, txt_colour),
             ("C=%s" % "XXX" if res.exception else str(res.code), self.term.get_colour(res.code) if self.colour else txt_colour),
             ("%d L" % res.lines, txt_colour),
