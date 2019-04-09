@@ -7,7 +7,7 @@ _wfuzz() {
     local cur prev
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
-    WFUZZ_EX="./wfuzz"
+    WFUZZ_EX="wfuzz"
 
     # Change to your wordlists' base directory
     WLDIR=$($WFUZZ_EX --ee files)
@@ -63,4 +63,4 @@ _wfuzz() {
     esac
 }
 
-complete -F _wfuzz -o default ./wfuzz
+complete -F _wfuzz -o default wfuzz
