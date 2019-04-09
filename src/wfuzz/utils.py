@@ -209,6 +209,9 @@ class FileDetOpener:
         self.det_encoding = encoding
         self.encoding_forced = False
 
+    def close(self):
+        self.file_des.close()
+
     def reset(self):
         self.file_des.seek(0)
 
