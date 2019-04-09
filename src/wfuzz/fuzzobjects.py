@@ -72,7 +72,7 @@ class cookies(object):
             if c[0]:
                 return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
-        return {}
+        return cookies.cookie({})
 
     @property
     def request(self):
@@ -81,7 +81,7 @@ class cookies(object):
             if c[0]:
                 return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
-        return {}
+        return cookies.cookie({})
 
     @request.setter
     def request(self, values):
