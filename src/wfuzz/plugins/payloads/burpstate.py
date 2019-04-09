@@ -21,6 +21,8 @@ class burpstate(BasePayload):
     author = ("Xavi Mendez (@xmendez)", )
     version = "0.1"
     description = (
+        "*ALERT*: https://portswigger.net/blog/goodbye-state-files-we-wont-miss-you",
+        "",
         "Returns fuzz results' from a Burp saved state file. This payload's code is based on burp2xml.py:",
         "Developed by Paul Haas, <phaas AT redspin DOT com> under Redspin. Inc.",
         "Licensed under the GNU Public License version 3.0 (2008-2009)",
