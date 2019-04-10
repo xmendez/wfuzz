@@ -295,14 +295,15 @@ class MyCounter:
         self._mutex = Lock()
 
     def inc(self):
-        self._operation(1)
+        return self._operation(1)
 
     def dec(self):
-        self._operation(-1)
+        return self._operation(-1)
 
     def _operation(self, dec):
         with self._mutex:
             self._count += dec
+            return self._count
 
     def __call__(self):
         with self._mutex:
