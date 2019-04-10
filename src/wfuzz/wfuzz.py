@@ -9,6 +9,8 @@ from .ui.console.mvc import Controller, KeyPress, View
 from .ui.console.common import help_banner2
 from .ui.console.clparser import CLParser
 
+from .fuzzobjects import FuzzResult
+
 
 def main():
     kb = None
@@ -105,8 +107,7 @@ def main_filter():
 
     try:
         session_options = CLParser(sys.argv).parse_cl()
-        printer = View(session_options)
-        printer.header(None)
+        printer = None
 
         for res in payload(**session_options):
             if len(res) > 1:
@@ -114,10 +115,18 @@ def main_filter():
             else:
                 r = res[0]
 
-            r._description = field
+            # TODO: option to not show headers in fuzzres
+            # TODO: all should be same object
+            if isinstance(r, FuzzResult):
+                if printer is None:
+                    printer = View(session_options)
+                    printer.header(None)
 
-            printer.result(r)
-        print("")
+                if field:
+                    r._description = field
+                printer.result(r)
+            else:
+                print(r)
 
     except KeyboardInterrupt:
         pass
