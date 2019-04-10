@@ -20,7 +20,10 @@ class Settings(SettingsBase):
 
     def set_defaults(self):
         return dict(
-            plugins=[("bing_apikey", '')],
+            plugins=[
+                ("bing_apikey", ''),
+                ("shodan_apikey", '')
+            ],
             kbase=[("discovery.blacklist", '.svg-.css-.js-.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
             connection=[
                 ("concurrent", '10'),
