@@ -97,6 +97,7 @@ class requestGenerator(object):
         self.options = options
         self.seed = FuzzResultFactory.from_options(options)
         self.baseline = FuzzResultFactory.from_baseline(self.seed, options)
+        self._payload_list = []
         self.dictio = self.get_dictio()
 
         self.stats = FuzzStats.from_requestGenerator(self)
@@ -175,6 +176,10 @@ class requestGenerator(object):
 
             return FuzzResultFactory.from_seed(self.seed, n, self.options)
 
+    def close(self):
+        for payload in self._payload_list:
+            payload.close()
+
     def get_dictio(self):
         class wrapper(object):
             def __init__(self, iterator):
@@ -190,6 +195,7 @@ class requestGenerator(object):
                 return str(next(self._it))
 
         selected_dic = []
+        self._payload_list = []
 
         if self.options["dictio"]:
             for d in [wrapper(x) for x in self.options["dictio"]]:
@@ -205,6 +211,7 @@ class requestGenerator(object):
                     raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
                 p = Facade().payloads.get_plugin(name)(params)
+                self._payload_list.append(p)
                 pp = dictionary(p, params["encoder"]) if "encoder" in params else p
                 selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
 

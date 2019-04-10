@@ -121,6 +121,9 @@ class BasePayload(object):
     def __iter__(self):
         raise FuzzExceptPluginError("Method iter not implemented")
 
+    def close(self):
+        pass
+
     def find_file(self, name):
         if os.path.exists(name):
             return name

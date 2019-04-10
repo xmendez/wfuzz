@@ -82,7 +82,8 @@ def main_filter():
 \t--field <field>     : Show a FuzzResult field instead of current payload
 """)
 
-    from .api import payload
+    # TODO: from .api import payload
+    from .api import FuzzSession
     from .exception import FuzzExceptBadOptions
     import getopt
 
@@ -105,18 +106,22 @@ def main_filter():
         if o in ("--field"):
             field = value
 
+    session = None
+
     try:
         session_options = CLParser(sys.argv).parse_cl()
+        # TODO: api.payload will block with new shodanp
+        session = FuzzSession(**session_options)
         printer = None
 
-        for res in payload(**session_options):
+        for res in session.payload():
             if len(res) > 1:
                 raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
             else:
                 r = res[0]
 
             # TODO: option to not show headers in fuzzres
-            # TODO: all should be same object
+            # TODO: all should be same object type and no need for isinstance
             if isinstance(r, FuzzResult):
                 if printer is None:
                     printer = View(session_options)
@@ -134,6 +139,9 @@ def main_filter():
         print(("\nFatal exception: %s" % str(e)))
     except Exception as e:
         print(("\nUnhandled exception: %s" % str(e)))
+    finally:
+        if session:
+            session.close()
 
 
 def main_encoder():

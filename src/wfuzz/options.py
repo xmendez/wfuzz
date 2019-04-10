@@ -194,7 +194,9 @@ class FuzzSession(UserDict):
 
     def payload(self, **kwargs):
         self.data.update(kwargs)
-        return requestGenerator(self).get_dictio()
+        # TODO: maybe compile here? or think how to make work and not deadlock from the api
+        self.data['compiled_genreq'] = requestGenerator(self)
+        return self.data['compiled_genreq'].get_dictio()
 
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
@@ -290,6 +292,12 @@ class FuzzSession(UserDict):
         return self
 
     def close(self):
-        self.http_pool.deregister()
+        if self.http_pool:
+            self.http_pool.deregister()
+
         if self.fz:
             self.fz.cancel_job()
+
+        # TODO: deadlock when using api.payload()
+        elif self.data['compiled_genreq'] is not None:
+            self.data['compiled_genreq'].close()
