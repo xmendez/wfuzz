@@ -226,12 +226,15 @@ class CLParser:
             self._parse_scripts(optsd, options)
 
             if "--dump-recipe" in optsd:
-                error = options.validate()
-                if error:
-                    raise FuzzExceptBadOptions(error)
+                print(exec_banner)
+
+                for error_msg in options.validate():
+                    print("WARNING: {}".format(error_msg))
+
+                if error_msg:
+                    print("")
 
                 options.export_to_file(optsd["--dump-recipe"][0])
-                print(exec_banner)
                 print("Recipe written to %s." % (optsd["--dump-recipe"][0],))
                 sys.exit(0)
 

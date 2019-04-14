@@ -105,29 +105,31 @@ class FuzzSession(UserDict):
         self.data.update(options)
 
     def validate(self):
+        error_list = []
+
         if self.data['dictio'] and self.data['payloads']:
-            return "Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified."
+            raise FuzzExceptBadOptions("Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified.")
 
         if self.data['rlevel'] > 0 and self.data['dryrun']:
-            return "Bad usage: Recursion cannot work without making any HTTP request."
+            error_list.append("Bad usage: Recursion cannot work without making any HTTP request.")
 
         if self.data['script'] and self.data['dryrun']:
-            return "Bad usage: Plugins cannot work without making any HTTP request."
+            error_list.append("Bad usage: Plugins cannot work without making any HTTP request.")
 
         if self.data['no_cache'] not in [True, False]:
-            return "Bad usage: No-cache is a boolean value"
+            raise FuzzExceptBadOptions("Bad usage: No-cache is a boolean value")
 
         if not self.data['url']:
-            return "Bad usage: You must specify an URL."
+            error_list.append("Bad usage: You must specify an URL.")
 
         if not self.data['payloads'] and not self.data["dictio"]:
-            return "Bad usage: You must specify a payload."
+            error_list.append("Bad usage: You must specify a payload.")
 
         if self.data["hs"] and self.data["ss"]:
-            return "Bad usage: Hide and show regex filters flags are mutually exclusive. Only one could be specified."
+            raise FuzzExceptBadOptions("Bad usage: Hide and show regex filters flags are mutually exclusive. Only one could be specified.")
 
         if self.data["rlevel"] < 0:
-            return "Bad usage: Recursion level must be a positive int."
+            raise FuzzExceptBadOptions("Bad usage: Recursion level must be a positive int.")
 
         if self.data['allvars'] not in [None, 'allvars', 'allpost', 'allheaders']:
             raise FuzzExceptBadOptions("Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
@@ -140,14 +142,16 @@ class FuzzSession(UserDict):
         try:
             if [x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] and \
                [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]:
-                return "Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified."
+                raise FuzzExceptBadOptions("Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified.")
 
             if ([x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] or
                [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]) and \
                self.data['filter']:
-                return "Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified."
+                raise FuzzExceptBadOptions("Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified.")
         except TypeError:
-            return "Bad options: Filter must be specified in the form of [int, ... , int]."
+            raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int].")
+
+        return error_list
 
     def export_to_file(self, filename):
         try:
@@ -232,7 +236,7 @@ class FuzzSession(UserDict):
         # Validate options
         error = self.validate()
         if error:
-            raise FuzzExceptBadOptions(error)
+            raise FuzzExceptBadOptions(error[0])
 
         self.data["seed_payload"] = True if self.data["url"] == "FUZZ" else False
 
