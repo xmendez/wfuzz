@@ -7,7 +7,7 @@ from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
 from wfuzz.exception import FuzzException, FuzzExceptBadOptions, FuzzExceptBadInstall
-from .common import help_banner
+from .common import help_banner, exec_banner
 from .common import usage
 from .common import brief_usage
 from .common import verbose_usage
@@ -231,7 +231,7 @@ class CLParser:
                     raise FuzzExceptBadOptions(error)
 
                 options.export_to_file(optsd["--dump-recipe"][0])
-                print(help_banner)
+                print(exec_banner)
                 print("Recipe written to %s." % (optsd["--dump-recipe"][0],))
                 sys.exit(0)
 
