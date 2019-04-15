@@ -19,7 +19,7 @@ class shodanp(BasePayload):
     parameters = (
         ("search", "", True, "Shodan search string."),
         ("page", "0", False, "Offset page, starting at zero."),
-        # TODO: ("limit", "0", False, "Number of results (1 query credit = 100 results). Zero for all."),
+        ("limit", "0", False, "Number of pages (1 query credit = 100 results). Zero for all."),
     )
 
     default_parameter = "search"

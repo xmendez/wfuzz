@@ -145,6 +145,7 @@ class ShodanIter():
         self.api = shodan.Shodan(key)
         self._dork = dork
         self._page = MyCounter(page)
+        self._page_limit = limit
 
         self.results_queue = Queue(self.MAX_ENQUEUED_RES)
         self.page_queue = Queue()
@@ -163,6 +164,11 @@ class ShodanIter():
 
             if self._cancel_job:
                 self.page_queue.task_done()
+                continue
+
+            if page > self._page_limit:
+                self.page_queue.task_done()
+                self.results_queue.put(None)
                 continue
 
             try:
