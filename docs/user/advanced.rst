@@ -401,7 +401,7 @@ These timeouts are really handy when you are using Wfuzz to bruteforce resources
 Filter Language
 ---------------
 
-Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice, --field".
+Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice, --field and --efield".
 
 The information about the filter language can be also obtained executing::
 
@@ -745,5 +745,11 @@ Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF 
 You can also select the field to show, for example::
 
     $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
-    000000002:   200        118 L    455 W    5384 Ch     "{'artist': '1'}"
+    artist=5
+    ...
+
+Or::
+
+    $ wfpayload -z wfuzzp --zD /tmp/session --efield r.params.get
+    000000006:   200        99 L     272 W    3868 Ch     "5 | artist=5"
     ...

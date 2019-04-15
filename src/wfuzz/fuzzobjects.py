@@ -710,6 +710,7 @@ class FuzzResult:
         self.payload = []
 
         self._description = None
+        self._show_field = False
 
     @property
     def plugins(self):
@@ -747,8 +748,7 @@ class FuzzResult:
         else:
             return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel", "discarded")[self.type]
 
-    @property
-    def description(self):
+    def _payload_description(self):
         if not self.payload:
             return self.url
 
@@ -760,11 +760,14 @@ class FuzzResult:
 
         return ret_str
 
-    def get_full_description(self):
-        if self._description is not None:
-            return "{} | {}".format(self.description, self.eval(self._description))
+    @property
+    def description(self):
+        if self._show_field is True:
+            return self.eval(self._description)
+        elif self._show_field is False and self._description is not None:
+            return "{} | {}".format(self._payload_description(), self.eval(self._description))
 
-        return self.description
+        return self._payload_description()
 
     def eval(self, expr):
         return FuzzResFilter(filter_string=expr).is_visible(self)
@@ -814,11 +817,13 @@ class FuzzResult:
         fr.rlevel = self.rlevel
         fr.payload = list(self.payload)
         fr._description = self._description
+        fr._show_field = self._show_field
 
         return fr
 
     def update_from_options(self, options):
         self._description = options['description']
+        self._show_field = options['show_field']
 
     @staticmethod
     def to_new_exception(exception):

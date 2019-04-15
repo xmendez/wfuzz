@@ -79,7 +79,8 @@ def main_filter():
 \t--slice <filter>    : Filter payload\'s elements using the specified expression.
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
 \t-m iterator         : Specify an iterator for combining payloads (product by default)
-\t--field <field>     : Show a FuzzResult field instead of current payload
+\t--field <expr>      : Do not show the payload but the specified language expression
+\t--efield <expr>     : Show the specified language expression together with the current payload
 """)
 
     # TODO: from .api import payload
@@ -88,7 +89,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zD=", "zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zD=", "zP=", "efield="])
     except getopt.GetoptError as err:
         print((str(err)))
         usage()
@@ -99,12 +100,17 @@ def main_filter():
         sys.exit()
 
     field = None
+    raw_output = False
+
     for o, value in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit()
+        if o in ("--efield"):
+            field = value
         if o in ("--field"):
             field = value
+            raw_output = True
 
     session = None
 
@@ -120,16 +126,19 @@ def main_filter():
             else:
                 r = res[0]
 
-            # TODO: option to not show headers in fuzzres
             # TODO: all should be same object type and no need for isinstance
             if isinstance(r, FuzzResult):
-                if printer is None:
-                    printer = View(session_options)
-                    printer.header(None)
+                if raw_output:
+                    print(r.eval(field if field is not None else "url"))
+                else:
+                    if printer is None:
+                        printer = View(session_options)
+                        printer.header(None)
 
-                if field:
-                    r._description = field
-                printer.result(r)
+                    if field:
+                        r._description = field
+                        r._show_field = False
+                    printer.result(r)
             else:
                 print(r)
 
