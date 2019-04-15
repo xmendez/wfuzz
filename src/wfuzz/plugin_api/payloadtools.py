@@ -145,7 +145,7 @@ class ShodanIter():
         self.api = shodan.Shodan(key)
         self._dork = dork
         self._page = MyCounter(page)
-        self._page_limit = limit
+        self._page_limit = self._page() + limit
 
         self.results_queue = Queue(self.MAX_ENQUEUED_RES)
         self.page_queue = Queue()
@@ -166,7 +166,7 @@ class ShodanIter():
                 self.page_queue.task_done()
                 continue
 
-            if page > self._page_limit:
+            if page >= self._page_limit:
                 self.page_queue.task_done()
                 self.results_queue.put(None)
                 continue
@@ -182,7 +182,10 @@ class ShodanIter():
                     self.page_queue.put(self._page.inc())
             except shodan.APIError as e:
                 self.page_queue.task_done()
-                self.results_queue.put(e)
+                if "Invalid page size" in str(e):
+                    self.results_queue.put(None)
+                else:
+                    self.results_queue.put(e)
                 continue
 
     def __iter__(self):
