@@ -84,7 +84,7 @@ verbose_usage = '''%s\n\nOptions:
 \t--version                 : Wfuzz version details
 \t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
 \t
-\t--recipe <filename>       : Reads options from a recipe
+\t--recipe <filename>       : Reads options from a recipe. Repeat for various recipes.
 \t--dump-recipe <filename>  : Prints current options as a recipe
 \t--oF <filename>           : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
 \t

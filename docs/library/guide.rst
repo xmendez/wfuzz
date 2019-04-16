@@ -7,7 +7,7 @@ All options that are available within the Wfuzz command line interface are avail
 CLI Option               Library Option
 ======================== =====================================================================================
 <URL>                    url="url"
---recipe <filename>      recipe="filename"
+--recipe <filename>      recipe=["filename"]
 --oF <filename>          save="filename"
 -f filename,printer      printer=("filename", "printer")
 --dry-run                dryrun=True

@@ -215,7 +215,8 @@ class CLParser:
 
             # parse options from recipe first
             if "--recipe" in optsd:
-                options.import_from_file(optsd["--recipe"][0])
+                for recipe in optsd["--recipe"]:
+                    options.import_from_file(recipe)
 
             # command line has priority over recipe
             self._parse_options(optsd, options)
@@ -327,7 +328,7 @@ class CLParser:
 
     def _check_options(self, optsd):
         # Check for repeated flags
-        opt_list = [i for i in optsd if i not in ["-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
+        opt_list = [i for i in optsd if i not in ["--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
         if opt_list:
             raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(opt_list))
 

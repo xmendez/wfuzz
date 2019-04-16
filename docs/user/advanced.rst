@@ -311,7 +311,11 @@ You can combine a recipe with additional command line options, for example::
 
     $ wfuzz --recipe /tmp/recipe -b cookie1=value
 
-In case of repeated options, command line options have precedence over options included in the recipe.
+Several recipes can also be combined::
+
+    $ wfuzz --recipe /tmp/recipe --recipe /tmp/recipe2
+
+In case of repeated options, command line options have precedence over options included in the recipe. Last recipe has precedence.
 
 Connect to an specific host
 ---------------------------------------

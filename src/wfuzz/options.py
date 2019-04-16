@@ -32,7 +32,8 @@ class FuzzSession(UserDict):
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
-            self.import_from_file(kwargs["recipe"])
+            for recipe in kwargs["recipe"]:
+                self.import_from_file(recipe)
 
         self.update(kwargs)
 
@@ -64,7 +65,7 @@ class FuzzSession(UserDict):
             verbose=False,
             interactive=False,
             dryrun=False,
-            recipe="",
+            recipe=[],
             save="",
             proxies=None,
             conn_delay=int(Facade().sett.get('connection', 'conn_delay')),
