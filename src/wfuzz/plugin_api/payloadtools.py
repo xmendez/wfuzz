@@ -145,7 +145,7 @@ class ShodanIter():
         self.api = shodan.Shodan(key)
         self._dork = dork
         self._page = MyCounter(page)
-        self._page_limit = self._page() + limit
+        self._page_limit = self._page() + limit if limit > 0 else -1
 
         self.results_queue = Queue(self.MAX_ENQUEUED_RES)
         self.page_queue = Queue()
@@ -166,7 +166,7 @@ class ShodanIter():
                 self.page_queue.task_done()
                 continue
 
-            if page >= self._page_limit:
+            if self._page_limit > 0 and page >= self._page_limit:
                 self.page_queue.task_done()
                 self.results_queue.put(None)
                 continue
