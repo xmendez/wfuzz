@@ -231,8 +231,7 @@ class CLParser:
                 for error_msg in options.validate():
                     print("WARNING: {}".format(error_msg))
 
-                if error_msg:
-                    print("")
+                print("")
 
                 options.export_to_file(optsd["--dump-recipe"][0])
                 print("Recipe written to %s." % (optsd["--dump-recipe"][0],))
