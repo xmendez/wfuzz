@@ -90,8 +90,14 @@ class APITests(unittest.TestCase):
             def close(self):
                 pass
 
-            def read(self, pos):
-                return self.outfile.read(pos)
+            def read(self, *args, **kwargs):
+                return self.outfile.read(*args, **kwargs)
+
+            def seek(self, *args, **kwargs):
+                return self.outfile.seek(*args, **kwargs)
+
+            def tell(self):
+                return self.outfile.tell()
 
         # load plugins before mocking file object
         Facade().payloads
