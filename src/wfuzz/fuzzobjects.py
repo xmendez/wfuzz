@@ -755,19 +755,23 @@ class FuzzResult:
         payl_descriptions = [payload.description(self.url) for payload in self.payload]
         ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
 
-        if self.exception:
-            return ret_str + "! " + str(self.exception)
-
         return ret_str
 
     @property
     def description(self):
-        if self._show_field is True:
-            return self.eval(self._description)
-        elif self._show_field is False and self._description is not None:
-            return "{} | {}".format(self._payload_description(), self.eval(self._description))
+        ret_str = ""
 
-        return self._payload_description()
+        if self._show_field is True:
+            ret_str = self.eval(self._description)
+        elif self._show_field is False and self._description is not None:
+            ret_str = "{} | {}".format(self._payload_description(), self.eval(self._description))
+        else:
+            ret_str = self._payload_description()
+
+        if self.exception:
+            return ret_str + "! " + str(self.exception)
+
+        return ret_str
 
     def eval(self, expr):
         return FuzzResFilter(filter_string=expr).is_visible(self)
