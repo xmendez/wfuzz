@@ -12,7 +12,7 @@ class shodanp(BasePayload):
         "Queries the Shodan API",
     )
 
-    summary = "Returns hostnames or IPs of a given Shodan API search (needs api key)."
+    summary = "Returns URLs of a given Shodan API search (needs api key)."
     category = ["default"]
     priority = 99
 
@@ -44,8 +44,12 @@ class shodanp(BasePayload):
 
     def __next__(self):
         match = next(self._it)
+
+        port = match['port']
+        scheme = 'https' if 'ssl' in match or port == 443 else 'http'
+
         if match['hostnames']:
             for hostname in match['hostnames']:
-                return hostname
+                return "{}://{}:{}".format(scheme, hostname, port)
         else:
-            return match['ip_str']
+            return "{}://{}:{}".format(scheme, match['ip_str'], port)
