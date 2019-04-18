@@ -355,7 +355,7 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
             ret_list = [(x.code, x.history.urlparse.path) for x in fuzzed]
 
         # repeat test with recipe as only parameter
-        with wfuzz.FuzzSession(recipe=filename) as s:
+        with wfuzz.FuzzSession(recipe=[filename]) as s:
             if payloads is None:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.fuzz()]
             else:
