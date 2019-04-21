@@ -31,7 +31,7 @@ The obtained output is shown below::
     Filtered Requests: 0
     Requests/sec.: 225.4143
 
-Wfuzz output allows to analyze the web server responses and filter the desired results based on the HTTP response message obtained, for example, response codes, response length, etc.
+Wfuzz output allows to analyse the web server responses and filter the desired results based on the HTTP response message obtained, for example, response codes, response length, etc.
 
 Each line provides the following information:
 
@@ -236,7 +236,7 @@ Here the {} defines the value of the FUZZ word for this first HTTP request, and 
 Regex filters
 ^^^^^^^^^^^^^
 
-The command line parameters "--ss" and "--hs" allow to filter the responses using a regular expression against the returned content. For example, the following allows to find web servers vulnerables to "shellshock" (see http://edge-security.blogspot.co.uk/2014/10/scan-for-shellshock-with-wfuzz.html for more information)::
+The command line parameters "--ss" and "--hs" allow to filter the responses using a regular expression against the returned content. For example, the following allows to find web servers vulnerable to "shellshock" (see http://edge-security.blogspot.co.uk/2014/10/scan-for-shellshock-with-wfuzz.html for more information)::
 
     $ wfuzz -H "User-Agent: () { :;}; echo; echo vulnerable" --ss vulnerable -w cgis.txt http://localhost:8000/FUZZ     
 

@@ -4,7 +4,7 @@ Advanced Usage
 Wfuzz global options
 --------------------
 
-Wfuzz global options can be tweaked by modifying the "wfuzz.ini" at the user's home direcory::
+Wfuzz global options can be tweaked by modifying the "wfuzz.ini" at the user's home directory::
 
     ~/.wfuzz$ cat wfuzz.ini 
 
@@ -196,9 +196,9 @@ Wfuzz's web application vulnerability scanner is supported by plugins. A list of
 
 Scripts are grouped in categories. A script could belong to several categories at the same time.
 
-Thre are two general categories:
+There are two general categories:
 
-* passive: Passive scripts analyze existing requests and responses without performing new requests.
+* passive: Passive scripts analyse existing requests and responses without performing new requests.
 * active: Active scripts perform new requests to the application to probe it for vulnerabilities.
 
 Additional categories are:
@@ -330,7 +330,7 @@ This useful, for example, to test if a reverse proxy can be manipulated into mis
 Scan Mode: Ignore Errors and Exceptions
 ---------------------------------------
 
-In the event of a network problem (e.g. DNS failure, refused connection, etc), Wfuzz will raise an exception and stop execution as shown below::
+In the event of a network problem (e.g. DNS failure, refused connection, etc.), Wfuzz will raise an exception and stop execution as shown below::
 
     $ wfuzz -z list,support-web-none http://FUZZ.google.com/
     ********************************************************
@@ -400,7 +400,7 @@ Timeouts
 
 You can tell Wfuzz to stop waiting for server to response a connection request after a given number of seconds --conn-delay and also the maximum number of seconds that the response is allowed to take using --req-delay parameter.
 
-These timeouts are really handy when you are using Wfuzz to bruteforce resources behind a proxy, ports, hostnames, virtual hosts, etc.
+These timeouts are really handy when you are using Wfuzz to brute force resources behind a proxy, ports, hostnames, virtual hosts, etc.
 
 Filter Language
 ---------------
@@ -458,8 +458,8 @@ BBB          Baseline
 Name                             Short version           Description
 ================================ ======================= =============================================
 value|unquote()                  value|un()              Unquotes the value
-value|lower()                    value|l()               lowercase of the value
-value|upper()                                            uppercase of the value
+value|lower()                    value|l()               lower-case of the value
+value|upper()                                            upper-case of the value
 value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
 value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
 value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
@@ -538,7 +538,7 @@ urlp.hasquery        Returns true when the URL contains a query string.
 urlp.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
 =================== =============================================
 
-Payload instrospection can also be performed by using the keyword FUZZ:
+Payload introspection can also be performed by using the keyword FUZZ:
 
 ============ ==============================================
 Name         Description
@@ -552,7 +552,7 @@ Where field is one of the described above.
 Filtering results
 ^^^^^^^^^^^^^^^^^
 
-The --filter command line parameter in conjuntion with the described filter language allows you to peform more complex result triage than the standard filter switches such as "--hc/hl/hw/hh", "--sc/sl/sw/sh" and "-ss/hs".
+The --filter command line parameter in conjunction with the described filter language allows you to perform more complex result triage than the standard filter switches such as "--hc/hl/hw/hh", "--sc/sl/sw/sh" and "-ss/hs".
 
 An example below::
 
@@ -576,7 +576,7 @@ An example below::
     Filtered Requests: 9
     Requests/sec.: 7.572076
 
-Using result and payload instrospection to look for specific content returned in the response::
+Using result and payload introspection to look for specific content returned in the response::
 
     $ wfuzz -z list,echoedback -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
@@ -602,8 +602,8 @@ Filtering a payload
 Slice
 """""""
 
-The --slice command line parameter in conjuntion with the described filter language allows you to filter a payload.
-The payload to filter, specified by the -z switch must preceed --slice comamand line parameter.
+The --slice command line parameter in conjunction with the described filter language allows you to filter a payload.
+The payload to filter, specified by the -z switch must precede --slice command line parameter.
 
 An example is shown below::
 
@@ -642,7 +642,7 @@ In this context you are filtering a FuzzResult object, which is the result of co
 Reutilising previous results
 --------------------------------------
 
-Previously performed HTTP requests/responses contain a treasure trove of data. Wfuzz payloads and object instrospection (explained in the filter grammar section) exposes a Python object interface to requests/responses recorded by Wfuzz or other tools.
+Previously performed HTTP requests/responses contain a treasure trove of data. Wfuzz payloads and object introspection (explained in the filter grammar section) exposes a Python object interface to requests/responses recorded by Wfuzz or other tools.
 
 This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
@@ -665,7 +665,7 @@ $ wfuzz --oF /tmp/session -z range,0-10 http://www.google.com/dir/test.php?id=FU
 
 Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
-Then, you can reutilise those results by using the denoted payloads. To repeat a request exactly how it was stored, you must use the FUZZ keywork on the command line::
+Then, you can reutilise those results by using the denoted payloads. To repeat a request exactly how it was stored, you must use the FUZZ keyword on the command line::
 
     $ wfuzz -z burpstate,a_burp_state.burp FUZZ
 
@@ -691,7 +691,7 @@ Previous requests can also be modified by using the usual command line switches.
       |__    C=200    114 L      373 W         5347 Ch        "http://testphp.vulnweb.com/userinfo.php"
 
 
-* Same request against another url::
+* Same request against another URL::
 
     $ wfuzz -z burpstate,a_burp_state.burp -H "addme: header" -u http://www.otherhost.com FUZZ
 
@@ -701,7 +701,7 @@ If you do not want to use the full saved request:
 
     $ wfuzz -z wfuzzp,/tmp/session --zP attr=url FUZZ
 
-* Or by specyfing the FUZZ keyword and a field name in the form of FUZZ[field]::
+* Or by specifying the FUZZ keyword and a field name in the form of FUZZ[field]::
 
     $ wfuzz -z wfuzzp,/tmp/session FUZZ[url]
 
@@ -744,7 +744,7 @@ For example, the following will return a unique list of HTTP requests including 
 
     $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
 
-Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
+Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and therefore the above will find all the requests exposing the CSRF token in the URL.
 
 You can also select the field to show, for example::
 

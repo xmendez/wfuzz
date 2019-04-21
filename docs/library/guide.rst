@@ -46,7 +46,7 @@ Fuzzing a URL with wfuzz library is very simple. Firstly, import the wfuzz modul
 
 >>> import wfuzz
 
-Now, let's try to fuzz a webpage to look for hidden content, such as directories. For this example, let's use Acunetix's testphp (http://testphp.vulnweb.com/)::
+Now, let's try to fuzz a web page to look for hidden content, such as directories. For this example, let's use Acunetix's testphp (http://testphp.vulnweb.com/)::
 
     >>> import wfuzz
     >>> for r in wfuzz.fuzz(url="http://testphp.vulnweb.com/FUZZ", hc=[404], payloads=[("file",dict(fn="wordlist/general/common.txt"))]):
@@ -90,7 +90,7 @@ FuzzSession can also be used as context manager::
 Get payload
 ===========
 
-The get_payload function generates a Wfuzz payload from a Python iterable. It is a quick and flexible way of getting a payload programatically without using Wfuzz payloads plugins.
+The get_payload function generates a Wfuzz payload from a Python iterable. It is a quick and flexible way of getting a payload programmatically without using Wfuzz payloads plugins.
 
 Generating a new payload and start fuzzing is really simple::
 
@@ -128,7 +128,7 @@ The get_payloads method can be used when various payloads are needed::
 Get session
 ===========
 
-The get_session function generates a Wfuzz session object from the specified command line. It is a quick way of getting a payload programatically from a string representing CLI options::
+The get_session function generates a Wfuzz session object from the specified command line. It is a quick way of getting a payload programmatically from a string representing CLI options::
 
     $ python
     >>> import wfuzz

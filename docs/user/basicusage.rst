@@ -116,7 +116,7 @@ Headers can also be fuzzed::
 Fuzzing HTTP Verbs
 ------------------
 
-HTTP verbs fuzzing can be specified using the -X swith::
+HTTP verbs fuzzing can be specified using the -X switch::
 
     $ wfuzz -z list,GET-HEAD-POST-TRACE-OPTIONS -X FUZZ http://testphp.vulnweb.com/
     ********************************************************
@@ -193,7 +193,7 @@ If you want to fuzz a resource from a protected website you can also use "--basi
 Recursion
 ---------
 
-The -R swith can be used to specify a payload recursion's depth. For example, if you want to search for existing directories and then fuzz within these directories again using the same payload you can use the following command::
+The -R switch can be used to specify a payload recursion's depth. For example, if you want to search for existing directories and then fuzz within these directories again using the same payload you can use the following command::
 
     $ wfuzz -z list,"admin-CVS-cgi\-bin"  -R1 http://testphp.vulnweb.com/FUZZ
     ********************************************************
@@ -236,7 +236,7 @@ Wfuzz supports writing the results to a file in a different format. This is perf
 
     $ wfuzz -e printers
 
-For example, to write results to an output file in json format use the following command::
+For example, to write results to an output file in JSON format use the following command::
 
     $ wfuzz -f /tmp/outfile,json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
@@ -248,7 +248,7 @@ Wfuzz supports showing the results in various formats. This is performed by plug
 
     $ wfuzz -e printers
 
-For example, to show results in json format use the following command::
+For example, to show results in JSON format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
