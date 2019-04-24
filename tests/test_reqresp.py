@@ -53,7 +53,7 @@ class FuzzResultFactoryTest(unittest.TestCase):
         fr.update_from_raw_http(raw_req, 'https', raw_response_header, raw_response_body)
 
         self.assertEqual(fr.code, 404)
-        self.assertEqual(len(fr.content), 1560)
+        self.assertEqual(fr.content.count("\n"), 11)
 
 
 class FuzzRequestTest(unittest.TestCase):
