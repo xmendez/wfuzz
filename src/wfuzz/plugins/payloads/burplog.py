@@ -6,7 +6,11 @@ from wfuzz.utils import rgetattr
 
 import re
 
-CRLF = "\r\n"
+import sys
+if sys.version_info < (3, 0):
+    from io import open
+
+CRLF = "\n"
 DELIMITER = "%s%s" % ('=' * 54, CRLF)
 CRLF_DELIMITER = CRLF + DELIMITER
 HEADER = re.compile(r'(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
@@ -51,7 +55,7 @@ class burplog(BasePayload):
         burp_file = None
 
         try:
-            burp_file = open(self.find_file(burp_log), 'rb')
+            burp_file = open(self.find_file(burp_log), 'r', encoding="utf-8", errors="surrogateescape")
 
             history = 'START'
 

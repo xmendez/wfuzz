@@ -22,7 +22,7 @@ from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInterna
 from .facade import Facade, ERROR_CODE
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
-from .utils import python2_3_convert_to_unicode
+from .utils import python2_3_convert_to_unicode, python2_3_convert_from_unicode
 from .utils import MyCounter
 from .utils import rgetattr
 from .utils import DotDict
@@ -323,7 +323,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return pycurl_c
 
     def from_http_object(self, c, bh, bb):
-        return self._request.response_from_conn_object(c, bh, bb)
+        raw_header = python2_3_convert_from_unicode(bh.decode("utf-8", errors='surrogateescape'))
+        return self._request.response_from_conn_object(c, raw_header, bb)
 
     def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
         self._request.parseRequest(raw, scheme)
@@ -334,6 +335,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
         if raw_response:
             rp = Response()
+            raw_response = python2_3_convert_from_unicode(raw_response.decode("utf-8", errors='surrogateescape'))
             rp.parseResponse(raw_response, raw_content)
             self._request.response = rp
 

@@ -138,7 +138,6 @@ class Response:
         self._headers = []
 
         tp = TextParser()
-        rawheader = python2_3_convert_from_unicode(rawheader.decode("utf-8", errors='replace'))
         tp.setSource("string", rawheader)
 
         tp.readUntil(r"(HTTP\S*) ([0-9]+)")
