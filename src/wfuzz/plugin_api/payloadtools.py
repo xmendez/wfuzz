@@ -184,6 +184,8 @@ class ShodanIter():
                 self.page_queue.task_done()
                 if "Invalid page size" in str(e):
                     self.results_queue.put(None)
+                elif "Insufficient query credits" in str(e):
+                    self.results_queue.put(None)
                 else:
                     self.results_queue.put(e)
                 continue
@@ -217,8 +219,6 @@ class ShodanIter():
         self._threads = []
 
         self.results_queue.put(None)
-        self._cancel_job = False
-        self._started = False
 
     def __next__(self):
         if not self._started:
@@ -230,6 +230,8 @@ class ShodanIter():
 
         if res is None:
             self._stop()
+            self._cancel_job = False
+            self._started = False
             raise StopIteration
         elif isinstance(res, Exception):
             self._stop()
