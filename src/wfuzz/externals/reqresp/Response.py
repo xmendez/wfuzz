@@ -168,6 +168,7 @@ class Response:
                     break
 
             # curl sometimes sends two headers when using follow, 302 and the final header
+            # also when using proxies
             tp.readLine()
             if not tp.search(r"(HTTP\S*) ([0-9]+)"):
                 break

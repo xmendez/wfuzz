@@ -370,16 +370,10 @@ class Request:
 
         self.totaltime = conn.getinfo(pycurl.TOTAL_TIME)
 
-        rp = Response()
-        rp.parseResponse(header, rawbody=body)
+        self.response = Response()
+        self.response.parseResponse(header, rawbody=body)
 
-        if self.schema == "https" and self.__proxy:
-            self.response = Response()
-            self.response.parseResponse(rp.getContent())
-        else:
-            self.response = rp
-
-        return rp
+        return self.response
 
     def perform(self):
         self.__performHead = ""
