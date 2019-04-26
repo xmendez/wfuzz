@@ -108,6 +108,7 @@ class requestGenerator(object):
 
     def stop(self):
         self.stats.cancelled = True
+        self.close()
 
     def restart(self, seed):
         self.seed = seed

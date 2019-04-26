@@ -83,8 +83,7 @@ def main_filter():
 \t--efield <expr>     : Show the specified language expression together with the current payload
 """)
 
-    # TODO: from .api import payload
-    from .api import FuzzSession
+    from .api import payload
     from .exception import FuzzExceptBadOptions
     import getopt
 
@@ -112,15 +111,11 @@ def main_filter():
             field = value
             raw_output = True
 
-    session = None
-
     try:
         session_options = CLParser(sys.argv).parse_cl()
-        # TODO: api.payload will block with new shodanp
-        session = FuzzSession(**session_options)
         printer = None
 
-        for res in session.payload():
+        for res in payload(**session_options):
             if len(res) > 1:
                 raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
             else:
@@ -148,9 +143,6 @@ def main_filter():
         print(("\nFatal exception: %s" % str(e)))
     except Exception as e:
         print(("\nUnhandled exception: %s" % str(e)))
-    finally:
-        if session:
-            session.close()
 
 
 def main_encoder():
