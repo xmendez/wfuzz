@@ -40,7 +40,6 @@ class FuzzSession(UserDict):
         self.cache = HttpCache()
         self.http_pool = None
 
-        self.fz = None
         self.stats = FuzzStats()
 
     def _defaults(self):
@@ -210,16 +209,17 @@ class FuzzSession(UserDict):
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
 
+        fz = None
         try:
-            self.fz = Fuzzer(self.compile())
+            fz = Fuzzer(self.compile())
 
-            for f in self.fz:
+            for f in fz:
                 yield f
 
         finally:
-            if self.fz:
-                self.fz.cancel_job()
-                self.stats.update(self.fz.genReq.stats)
+            if fz:
+                fz.cancel_job()
+                self.stats.update(fz.genReq.stats)
 
     def get_payloads(self, iterator):
         self.data["dictio"] = iterator
@@ -303,6 +303,3 @@ class FuzzSession(UserDict):
     def close(self):
         if self.http_pool:
             self.http_pool.deregister()
-
-        if self.fz:
-            self.fz.cancel_job()
