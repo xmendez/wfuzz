@@ -221,6 +221,10 @@ class FuzzSession(UserDict):
                 fz.cancel_job()
                 self.stats.update(fz.genReq.stats)
 
+            if self.http_pool:
+                self.http_pool.deregister()
+                self.http_pool = None
+
     def get_payloads(self, iterator):
         self.data["dictio"] = iterator
 
@@ -303,3 +307,4 @@ class FuzzSession(UserDict):
     def close(self):
         if self.http_pool:
             self.http_pool.deregister()
+            self.http_pool = None

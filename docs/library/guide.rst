@@ -75,7 +75,6 @@ The FuzzSession object allows you to persist certain parameters across fuzzing s
     00060:  C=301      7 L        12 W          184 Ch        "admin"
     00183:  C=403     10 L        29 W          263 Ch        "cgi-bin"
     ...
-    >>> s.close()
 
 FuzzSession can also be used as context manager::
 
@@ -104,7 +103,6 @@ Generating a new payload and start fuzzing is really simple::
     00014:  C=404      7 L        12 W          168 Ch        "2"
     00015:  C=404      7 L        12 W          168 Ch        "3"
     00016:  C=404      7 L        12 W          168 Ch        "4"
-    >>> s.close()
 
 The get_payloads method can be used when various payloads are needed::
 
@@ -123,7 +121,6 @@ The get_payloads method can be used when various payloads are needed::
     00020:  C=404      7 L        12 W          168 Ch        "0 - b"
     00023:  C=404      7 L        12 W          168 Ch        "2 - a"
     00019:  C=404      7 L        12 W          168 Ch        "0 - a"
-    >>> s.close()
 
 Get session
 ===========
@@ -147,7 +144,6 @@ The get_session function generates a Wfuzz session object from the specified com
     00007:  C=404      7 L        12 W          168 Ch        "6"
     00009:  C=404      7 L        12 W          168 Ch        "8"
     00010:  C=404      7 L        12 W          168 Ch        "9"
-    >>> s.close()
 
 Interacting with the results
 ============================
