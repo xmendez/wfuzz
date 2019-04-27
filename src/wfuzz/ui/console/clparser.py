@@ -1,8 +1,9 @@
+import re
 import sys
 import getopt
 from collections import defaultdict
 
-from wfuzz.utils import allowed_fields
+from wfuzz.utils import allowed_fields, get_path
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
@@ -33,113 +34,6 @@ class CLParser:
     def show_usage(self):
         print(help_banner)
         print(usage)
-
-    def show_filter_usage(self):
-        print("""
-        * Operators: and or not = != < > >= <= =~ !~ ~ := =+ =-
-
-        * Basic primitives:
-
-        ============ ====================
-        Long Name    Description
-        ============ ====================
-        'string'     Quoted string
-        0..9+        Integer values
-        XXX          HTTP request error code
-        BBB          Baseline
-        ============ ====================
-
-        * Values can also be modified using the following operators:
-
-        ================================ ======================= =============================================
-        Name                             Short version           Description
-        ================================ ======================= =============================================
-        value|unquote()                  value|un()              Unquotes the value
-        value|lower()                    value|l()               lowercase of the value
-        value|upper()                                            uppercase of the value
-        value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
-        value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
-        value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
-        value|unique(value)              value|u(value)          Returns True if a value is unique.
-        value|startswith('value')        value|sw('param')       Returns true if the value string starts with param
-        ================================ ======================= =============================================
-
-        * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
-
-        ============ ============== =============================================
-        Name         Short version  Description
-        ============ ============== =============================================
-        url                         Wfuzz's result HTTP request url
-        description                 Wfuzz's result description
-        nres                        Wfuzz's result identifier
-        code         c              Wfuzz's result HTTP response's code
-        chars        h              Wfuzz's result HTTP response chars
-        lines        l              Wfuzz's result HTTP response lines
-        words        w              Wfuzz's result HTTP response words
-        md5                         Wfuzz's result HTTP response md5 hash
-        history      r              Wfuzz's result associated FuzzRequest object
-        ============ ============== =============================================
-
-        FuzzRequest object's attribute (you need to use the r. prefix) such as:
-
-        ============================ =============================================
-        Name                         Description
-        ============================ =============================================
-        url                          HTTP request's value
-        method                       HTTP request's verb
-        scheme                       HTTP request's scheme
-        host                         HTTP request's host
-        content                      HTTP response's content
-        raw_content                  HTTP response's content including headers
-        cookies.all                  All HTTP request and response cookies
-        cookies.request              HTTP requests cookieS
-        cookies.response             HTTP response cookies
-        cookies.request.<<name>>     Specified HTTP request cookie
-        cookies.response.<<name>>    Specified HTTP response cookie
-        headers.all                  All HTTP request and response headers
-        headers.request              HTTP request headers
-        headers.response             HTTP response headers
-        headers.request.<<name>>     Specified HTTP request given header
-        headers.response.<<name>>    Specified HTTP response given header
-        params.all                   All HTTP request GET and POST parameters
-        params.get                   All HTTP request GET parameters
-        params.post                  All HTTP request POST parameters
-        params.get.<<name>>          Spcified HTTP request GET parameter
-        params.post.<<name>>         Spcified HTTP request POST parameter
-        pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
-        is_path                      Returns true when the HTTP request path refers to a directory.
-        ============================ =============================================
-
-        FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
-
-        Urlparse parses a URL into: scheme://netloc/path;parameters?query#fragment. For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
-
-        =================== =============================================
-        Name                Value
-        =================== =============================================
-        urlp.scheme          http
-        urlp.netloc          www.google.com
-        urlp.path            /dir/test.php
-        urlp.params
-        urlp.query           id=1
-        urlp.fragment
-        urlp.ffname          test.php
-        urlp.fext            .php
-        urlp.fname           test
-        urlp.hasquery        Returns true when the URL contains a query string.
-        urlp.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
-        =================== =============================================
-
-        Payload instrospection can also be performed by using the keyword FUZZ:
-
-        ============ ==============================================
-        Name         Description
-        ============ ==============================================
-        FUZnZ        Allows to access the Nth payload string
-        FUZnZ[field] Allows to access the Nth payload attributes
-        ============ ==============================================
-        """)
-        sys.exit(0)
 
     def show_plugins_help(self, registrant, cols=3, category="$all$"):
         print("\nAvailable %s:\n" % registrant)
@@ -263,7 +157,12 @@ class CLParser:
             sys.exit(0)
 
         if "--filter-help" in optsd:
-            self.show_filter_usage()
+            text_regex = re.compile("Filter Language\n---------------\n\n(.*?)Filtering results", re.MULTILINE | re.DOTALL)
+            try:
+                print(text_regex.search(open(get_path("../docs/user/advanced.rst")).read()).group(1))
+            except IOError:
+                print(text_regex.search(open(get_path("../../docs/user/advanced.rst")).read()).group(1))
+
             sys.exit(0)
 
         # Extensions help
