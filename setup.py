@@ -24,7 +24,7 @@ install_requires = [
     'pyparsing',
     'future',
     'six',
-    'configparser',
+    'configparser;python_version<"3.5"',
     'chardet',
 ]
 
