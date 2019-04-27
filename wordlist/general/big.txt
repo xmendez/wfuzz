@@ -1,3 +1,5 @@
+~
+@
 0
 00
 000000
@@ -73,27 +75,6 @@
 911
 92072
 99999999
-@
-Administration
-DEMO
-Demo
-Log
-Logs
-PRUEBA
-PRUEBAS
-Pages
-Prova
-Provas
-Pruebas
-Servlet
-Servlets
-Sources
-Statistics
-Stats
-TEST
-TESTS
-Test
-Tests
 a
 a12345
 a1b2c3
@@ -139,6 +120,7 @@ admin
 administracio
 administracion
 administration
+Administration
 administrator
 adminsitradores
 adminsql
@@ -285,8 +267,6 @@ audit
 auditoria
 august
 aupa
-aupa
-aurrera
 aurrera
 austin
 auth
@@ -310,7 +290,6 @@ backup
 backups
 badass
 badger
-bai
 bai
 bailey
 bak
@@ -337,8 +316,8 @@ baseball
 basf
 basic
 basil
-baskeT
 basket
+baskeT
 basketba
 bass
 bassoon
@@ -582,10 +561,10 @@ cfdocs
 cfi
 cfj
 cgi
+cgibin
 cgi-bin
 cgi-bin/
 cgi-win
-cgibin
 cgj
 challeng
 champion
@@ -794,7 +773,6 @@ data
 database
 databases
 dataz
-dataz
 dato
 datos
 dav
@@ -827,6 +805,8 @@ demamar
 demanas
 demanda
 demo
+Demo
+DEMO
 demos
 denali
 denise
@@ -933,7 +913,6 @@ dundee
 dusty
 dylan
 e
-e-mail
 eager
 eagle
 eagle1
@@ -976,6 +955,7 @@ elliot
 elsie
 elvis
 email
+e-mail
 emerald
 emily
 emmanuel
@@ -1011,7 +991,6 @@ eric
 erica
 erika
 erin
-erreala
 erreala
 error
 errors
@@ -1050,7 +1029,6 @@ externes
 externos
 extra
 extranet
-ez
 ez
 fairway
 faith
@@ -1218,7 +1196,6 @@ goober
 goofy
 gopher
 gora
-gora
 gordon
 gorgeous
 gorges
@@ -1281,7 +1258,6 @@ harold
 harrison
 harry
 harvey
-hasi
 hasi
 hawaii
 hawk
@@ -1353,7 +1329,6 @@ id
 idbc
 idiot
 iguana
-ikusi
 ikusi
 iloveyou
 image
@@ -1642,6 +1617,7 @@ locals
 lock
 lockout
 log
+Log
 logan
 logfile
 logfiles
@@ -1652,6 +1628,7 @@ login
 logon
 logout
 logs
+Logs
 lois
 lolo
 london
@@ -1692,7 +1669,6 @@ main
 maint
 major
 majordom
-makusi
 makusi
 malcolm
 malcom
@@ -1857,9 +1833,9 @@ mp3
 mp3s
 mqseries
 ms
-ms-sql
 msql
 mssql
+ms-sql
 muestra
 muestras
 muffin
@@ -1868,8 +1844,8 @@ music
 mustang
 mutant
 my
-my-sql
 mysql
+my-sql
 nada
 nagel
 names
@@ -1997,6 +1973,7 @@ packer
 packers
 pad
 pages
+Pages
 pagina
 paginas
 pagines
@@ -2083,8 +2060,8 @@ phoenix1
 phone
 photo
 php
-phpMyAdmin
 phpmyadmin
+phpMyAdmin
 piano
 picasso
 pickle
@@ -2184,18 +2161,23 @@ protect
 protel
 protozoa
 prova
+Prova
 prova1
 prova2
 provas
+Provas
 proveedores
 proyecto
 proyectos
 prueba
+PRUEBA
 prueba00
 prueba01
 prueba1
 prueba2
 pruebas
+Pruebas
+PRUEBAS
 ps
 psalms
 psycho
@@ -2357,7 +2339,6 @@ safety
 sailing
 sailor
 saioa
-saioa
 sal
 sales
 sally
@@ -2415,9 +2396,9 @@ scuba1
 sean
 search
 seattle
+secció
 seccio
 seccion
-secció
 secret
 secreto
 secrets
@@ -2438,15 +2419,17 @@ serenity
 sergei
 serveis
 server
-server_stats
 servers
+server_stats
 service
 services
 servicio
 servicios
 servidor
 servlet
+Servlet
 servlets
+Servlets
 sesame
 session
 sessions
@@ -2547,6 +2530,7 @@ sophie
 sossina
 source
 sources
+Sources
 space
 spain
 spanish
@@ -2592,7 +2576,9 @@ stat
 station
 statistic
 statistics
+Statistics
 stats
+Stats
 status
 stealth
 steele
@@ -2671,7 +2657,6 @@ symmetry
 sys
 sysadmin
 system
-t-bone
 tabla
 tablas
 tacobell
@@ -2693,10 +2678,10 @@ tarzan
 tasha
 tattoo
 taula
-taula
 tauler
 taurus
 taylor
+t-bone
 teacher
 tech
 techno
@@ -2720,6 +2705,8 @@ teresa
 terminal
 terry
 test
+Test
+TEST
 test00
 test01
 test1
@@ -2728,6 +2715,8 @@ test2
 tester
 testing
 tests
+Tests
+TESTS
 testtest
 texas
 text
@@ -2971,8 +2960,8 @@ wisdom
 wizard
 wolf
 wolf1
-wolfMan
 wolfgang
+wolfMan
 wolverin
 wolves
 wombat
@@ -3033,4 +3022,3 @@ zmodem
 zombie
 zorro
 zxcvbnm
-~

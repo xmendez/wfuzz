@@ -1,11 +1,10 @@
-master
-environment
 classes
 css
+docs
+environment
 images
 includes
-scripts
-images
-docs
-test
+master
 prueba
+scripts
+test

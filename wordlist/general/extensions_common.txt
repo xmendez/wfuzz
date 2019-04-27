@@ -1,3 +1,4 @@
+/
 .asp
 .aspx
 .bat
@@ -25,4 +26,3 @@
 .sql
 .txt
 .xml
-/
