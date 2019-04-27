@@ -31,7 +31,7 @@ The obtained output is shown below::
     Filtered Requests: 0
     Requests/sec.: 225.4143
 
-Wfuzz output allows to analyze the web server responses and filter the desired results based on the HTTP response message obtained, for example, response codes, response length, etc.
+Wfuzz output allows to analyse the web server responses and filter the desired results based on the HTTP response message obtained, for example, response codes, response length, etc.
 
 Each line provides the following information:
 
@@ -100,7 +100,11 @@ Each FUZZ keyword must have its corresponding payload. There are several equival
 
 * The long way explicitly defining the payload's parameter name through the command line::
 
-    $ wfuzz -z file --zP fn=wordlist/general/common.txt  http://testphp.vulnweb.com/FUZZ
+    $ wfuzz -z file --zP fn=wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
+
+* The not so long way explicitly defining the payload's default parameter through the --zD command line option::
+
+    $ wfuzz -z file --zD wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
 * The not so long way defining only the value of the payload's default parameter::
 
@@ -232,7 +236,7 @@ Here the {} defines the value of the FUZZ word for this first HTTP request, and 
 Regex filters
 ^^^^^^^^^^^^^
 
-The command line parameters "--ss" and "--hs" allow to filter the responses using a regular expression against the returned content. For example, the following allows to find web servers vulnerables to "shellshock" (see http://edge-security.blogspot.co.uk/2014/10/scan-for-shellshock-with-wfuzz.html for more information)::
+The command line parameters "--ss" and "--hs" allow to filter the responses using a regular expression against the returned content. For example, the following allows to find web servers vulnerable to "shellshock" (see http://edge-security.blogspot.co.uk/2014/10/scan-for-shellshock-with-wfuzz.html for more information)::
 
     $ wfuzz -H "User-Agent: () { :;}; echo; echo vulnerable" --ss vulnerable -w cgis.txt http://localhost:8000/FUZZ     
 

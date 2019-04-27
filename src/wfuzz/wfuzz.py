@@ -9,6 +9,8 @@ from .ui.console.mvc import Controller, KeyPress, View
 from .ui.console.common import help_banner2
 from .ui.console.clparser import CLParser
 
+from .fuzzobjects import FuzzResult
+
 
 def main():
     kb = None
@@ -68,13 +70,17 @@ def main_filter():
 \n\twfpayload [Options]\n\n
 \nOptions:\n
 \t--help              : This help
-\t--slice <filter>    : Filter payload\'s elements using the specified expression.
+\t-v                  : Verbose output
 \t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
 \t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t		      Encoders category can be used. ie. url
+\t--zD default	    : Default argument for the specified payload (it must be preceded by -z or -w).
 \t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--slice <filter>    : Filter payload\'s elements using the specified expression.
 \t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
 \t-m iterator         : Specify an iterator for combining payloads (product by default)
+\t--field <expr>      : Do not show the payload but the specified language expression
+\t--efield <expr>     : Show the specified language expression together with the current payload
 """)
 
     from .api import payload
@@ -82,7 +88,7 @@ def main_filter():
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hz:m:w:", ["help", "slice=", "zP="])
+        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zD=", "zP=", "efield="])
     except getopt.GetoptError as err:
         print((str(err)))
         usage()
@@ -92,22 +98,44 @@ def main_filter():
         usage()
         sys.exit()
 
+    field = None
+    raw_output = False
+
     for o, value in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit()
+        if o in ("--efield"):
+            field = value
+        if o in ("--field"):
+            field = value
+            raw_output = True
 
     try:
-        for res in payload(**CLParser(sys.argv).parse_cl()):
+        session_options = CLParser(sys.argv).parse_cl()
+        printer = None
+
+        for res in payload(**session_options):
             if len(res) > 1:
                 raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
             else:
                 r = res[0]
 
-            if "FuzzResult" in str(r.__class__):
-                r._description = r.url
+            # TODO: all should be same object type and no need for isinstance
+            if isinstance(r, FuzzResult):
+                if raw_output:
+                    print(r.eval(field if field is not None else "url"))
+                else:
+                    if printer is None:
+                        printer = View(session_options)
+                        printer.header(None)
 
-            print(r)
+                    if field:
+                        r._description = field
+                        r._show_field = False
+                    printer.result(r)
+            else:
+                print(r)
 
     except KeyboardInterrupt:
         pass

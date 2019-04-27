@@ -4,7 +4,7 @@ Advanced Usage
 Wfuzz global options
 --------------------
 
-Wfuzz global options can be tweaked by modifying the "wfuzz.ini" at the user's home direcory::
+Wfuzz global options can be tweaked by modifying the "wfuzz.ini" at the user's home directory::
 
     ~/.wfuzz$ cat wfuzz.ini 
 
@@ -108,6 +108,10 @@ Encoders are specified as a payload parameter. There are two equivalent ways of 
     00004:  C=404      7 L        12 W          168 Ch        "a2ef406e2c2351e0b9e80029c909242d"
     ...
 
+* The not so long way using the zE command line switch::
+
+    $ wfuzz -z file --zD wordlist/general/common.txt --zE md5 http://testphp.vulnweb.com/FUZZ
+
 * The not so long way::
 
     $ wfuzz -z file,wordlist/general/common.txt,md5 http://testphp.vulnweb.com/FUZZ
@@ -192,9 +196,9 @@ Wfuzz's web application vulnerability scanner is supported by plugins. A list of
 
 Scripts are grouped in categories. A script could belong to several categories at the same time.
 
-Thre are two general categories:
+There are two general categories:
 
-* passive: Passive scripts analyze existing requests and responses without performing new requests.
+* passive: Passive scripts analyse existing requests and responses without performing new requests.
 * active: Active scripts perform new requests to the application to probe it for vulnerabilities.
 
 Additional categories are:
@@ -236,6 +240,31 @@ An example, parsing a "robots.txt" file is shown below::
     Processed Requests: 5 (1 + 4)
     Filtered Requests: 0
     Requests/sec.: 0
+
+In order to not scan the same requests (with the same parameters) over an over again, there is a cache,the cache can be disabled with the --no-cache flag.
+
+For example, if we target a web server with the same URL but different parameter values, we get::
+
+    $ wfuzz -z range --zD 0-3 -z list --zD "'" -u http://testphp.vulnweb.com/artists.php?artist=FUZZFUZ2Z -A
+
+    000000004:   0.195s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "3 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000001:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "0 - '"                                                                                                                                    
+    000000002:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "1 - '"                                                                                                                                    
+    000000003:   0.198s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "2 - '"                                                                                                                                    
+
+But, if we do the same but disabling the cache::
+
+    $ wfuzz -z range --zD 0-3 -z list --zD "'" -u http://testphp.vulnweb.com/artists.php?artist=FUZZFUZ2Z -A --no-cache
+
+    000000004:   1.170s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "3 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000002:   1.173s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "1 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000001:   1.174s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "0 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
+    000000003:   1.173s       200        101 L    287 W    3986 Ch     nginx/1.4.1                                                       "2 - '"                                                                                                                                    
+    |_  Error identified: Warning: mysql_fetch_array()
 
 Custom scripts
 ^^^^^^^^^^^^^^
@@ -282,12 +311,26 @@ You can combine a recipe with additional command line options, for example::
 
     $ wfuzz --recipe /tmp/recipe -b cookie1=value
 
-In case of repeated options, command line options have precedence over options included in the recipe.
+Several recipes can also be combined::
+
+    $ wfuzz --recipe /tmp/recipe --recipe /tmp/recipe2
+
+In case of repeated options, command line options have precedence over options included in the recipe. Last recipe has precedence.
+
+Connect to an specific host
+---------------------------------------
+
+The --ip option can be used to connect to a specific host and port instead of the URL's host and port::
+
+    $ wfuzz -z range,1-1 --ip 127.0.0.1 http://www.google.com/anything/FUZZ
+
+This useful, for example, to test if a reverse proxy can be manipulated into misrouting requests to a destination of our choice.
+
 
 Scan Mode: Ignore Errors and Exceptions
 ---------------------------------------
 
-In the event of a network problem (e.g. DNS failure, refused connection, etc), Wfuzz will raise an exception and stop execution as shown below::
+In the event of a network problem (e.g. DNS failure, refused connection, etc.), Wfuzz will raise an exception and stop execution as shown below::
 
     $ wfuzz -z list,support-web-none http://FUZZ.google.com/
     ********************************************************
@@ -357,12 +400,16 @@ Timeouts
 
 You can tell Wfuzz to stop waiting for server to response a connection request after a given number of seconds --conn-delay and also the maximum number of seconds that the response is allowed to take using --req-delay parameter.
 
-These timeouts are really handy when you are using Wfuzz to bruteforce resources behind a proxy, ports, hostnames, virtual hosts, etc.
+These timeouts are really handy when you are using Wfuzz to brute force resources behind a proxy, ports, hostnames, virtual hosts, etc.
 
 Filter Language
 ---------------
 
-Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice".
+Wfuzz's filter language grammar is build using `pyparsing <http://pyparsing.wikispaces.com/>`_, therefore it must be installed before using the command line parameters "--filter, --prefilter, --slice, --field and --efield".
+
+The information about the filter language can be also obtained executing::
+
+    wfuzz --filter-help
 
 A filter expression must be built using the following symbols and operators:
 
@@ -372,7 +419,7 @@ A filter expression must be built using the following symbols and operators:
 
 * Expression Operators
 
-Expressions operators such as "= != < > >= <=" could be used to check values. Additionally, the following for matching text are available:
+Expressions operators such as "= != < > >= <=" could be used to check values. Additionally, the following operators for matching text are available:
 
 ============ ====================================================================
 Operator     Description
@@ -380,6 +427,16 @@ Operator     Description
 =~           True when the regular expression specified matches the value.
 ~            Equivalent to Python's "str2" in "str1" (case insensitive)
 !~           Equivalent to Python's "str2" not in "str1" (case insensitive)
+============ ====================================================================
+
+Also, assignment operators:
+
+============ ====================================================================
+Operator     Description
+============ ====================================================================
+:=           Assigns a value
+=+           Concatenates value at the left
+=-           Concatenates value at the right
 ============ ====================================================================
 
 Where values could be:
@@ -401,13 +458,14 @@ BBB          Baseline
 Name                             Short version           Description
 ================================ ======================= =============================================
 value|unquote()                  value|un()              Unquotes the value
-value|lower()                    value|l()               lowercase of the value
-value|upper()                                            uppercase of the value
+value|lower()                    value|l()               lower-case of the value
+value|upper()                                            upper-case of the value
 value|encode('encoder', 'value') value|e('enc', 'val')   Returns encoder.encode(value)
 value|decode('decoder', 'value') value|d('dec', 'val')   Returns encoder.decode(value)
 value|replace('what', 'with')    value|r('what', 'with') Returns value replacing what for with
-value|unique(value)              value|u(value)          Returns True if a value is unique.
-value|startswith('value')        value|sw('param')       Returns true if the value string starts with param
+value|unique()                   value|u()               Returns True if a value is unique.
+value|startswith('value')        value|sw('value')       Returns true if the value string starts with param
+value|gregex('expression')       value|gre('exp')        Returns first regex group that matches in value
 ================================ ======================= =============================================
 
 * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
@@ -415,16 +473,19 @@ value|startswith('value')        value|sw('param')       Returns true if the val
 ============ ============== =============================================
 Name         Short version  Description
 ============ ============== =============================================
+url                         Wfuzz's result HTTP request url
 description                 Wfuzz's result description
 nres                        Wfuzz's result identifier
-code         c              HTTP response's code
+code         c              Wfuzz's result HTTP response's code
 chars        h              Wfuzz's result HTTP response chars
 lines        l              Wfuzz's result HTTP response lines
 words        w              Wfuzz's result HTTP response words
 md5                         Wfuzz's result HTTP response md5 hash
+history      r              Wfuzz's result associated FuzzRequest object
+plugins                     Wfuzz's results associated plugins result in the form of {'plugin id': ['result']}
 ============ ============== =============================================
 
-Or FuzzRequest object's attribute such as:
+FuzzRequest object's attribute (you need to use the r. prefix) such as:
 
 ============================ =============================================
 Name                         Description
@@ -435,44 +496,49 @@ scheme                       HTTP request's scheme
 host                         HTTP request's host
 content                      HTTP response's content
 raw_content                  HTTP response's content including headers
-cookies.request              HTTP request cookie
-cookies.response             HTTP response cookie
-cookies.request.<<name>>     HTTP request cookie
-cookies.response.<<name>>    HTTP response cookie
-headers.request              All HTTP request headers
-headers.response             All HTTP response headers
-headers.request.<<name>>     HTTP request given header
-headers.response.<<name>>    HTTP response given header
-params                       All HTTP request GET and POST parameters
+cookies.all                  All HTTP request and response cookies
+cookies.request              HTTP requests cookieS
+cookies.response             HTTP response cookies
+cookies.request.<<name>>     Specified HTTP request cookie
+cookies.response.<<name>>    Specified HTTP response cookie
+headers.all                  All HTTP request and response headers
+headers.request              HTTP request headers
+headers.response             HTTP response headers
+headers.request.<<name>>     Specified HTTP request given header
+headers.response.<<name>>    Specified HTTP response given header
+params.all                   All HTTP request GET and POST parameters
 params.get                   All HTTP request GET parameters
 params.post                  All HTTP request POST parameters
-params.get/post.<<name>>     A given HTTP request GET/POST parameter
+params.get.<<name>>          Spcified HTTP request GET parameter
+params.post.<<name>>         Spcified HTTP request POST parameter
+pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
+is_path                      Returns true when the HTTP request path refers to a directory.
+reqtime                      Returns the total time that HTTP request took to be retrieved
 ============================ =============================================
 
-URL field is broken in smaller parts using the urlparse Python's module, which parses a URL into: scheme://netloc/path;parameters?query#fragment.
+It is worth noting that Wfuzz will try to parse the POST parameters according to the specified content type header. Currently, application/x-www-form-urlencoded, multipart/form-dat and application/json are supported.
 
-For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
+FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
+
+Urlparse parses a URL into: scheme://netloc/path;parameters?query#fragment. For example, for the "http://www.google.com/dir/test.php?id=1" URL you can get the following values:
 
 =================== =============================================
 Name                Value
 =================== =============================================
-url.scheme          http
-url.netloc          www.google.com
-url.path            /dir/test.php
-url.params
-url.query           id=1
-url.fragment      
-url.domain          google.com
-url.ffname          test.php
-url.fext            .php
-url.fname           test
-url.pstrip          Returns a hash of the request using the parameter's names without values (useful for unique operations)
-url.hasquery        Returns true when the URL contains a query string.
-url.ispath          Returns true when the URL path refers to a directory.
-url.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
+urlp.scheme          http
+urlp.netloc          www.google.com
+urlp.path            /dir/test.php
+urlp.params
+urlp.query           id=1
+urlp.fragment      
+urlp.ffname          test.php
+urlp.fext            .php
+urlp.fname           test
+urlp.hasquery        Returns true when the URL contains a query string.
+urlp.isbllist        Returns true when the URL file extension is included in the configuration discovery's blacklist
 =================== =============================================
 
-Payload instrospection can also be performed by using the keyword FUZZ:
+Payload introspection can also be performed by using the keyword FUZZ:
 
 ============ ==============================================
 Name         Description
@@ -486,7 +552,7 @@ Where field is one of the described above.
 Filtering results
 ^^^^^^^^^^^^^^^^^
 
-The --filter command line parameter in conjuntion with the described filter language allows you to peform more complex result triage than the standard filter switches such as "--hc/hl/hw/hh", "--sc/sl/sw/sh" and "-ss/hs".
+The --filter command line parameter in conjunction with the described filter language allows you to perform more complex result triage than the standard filter switches such as "--hc/hl/hw/hh", "--sc/sl/sw/sh" and "-ss/hs".
 
 An example below::
 
@@ -510,7 +576,7 @@ An example below::
     Filtered Requests: 9
     Requests/sec.: 7.572076
 
-Using result and payload instrospection to look for specific content returned in the response::
+Using result and payload introspection to look for specific content returned in the response::
 
     $ wfuzz -z list,echoedback -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
@@ -522,14 +588,22 @@ A more interesting variation of the above examples could be::
 
     $ wfuzz -w fuzzdb/attack/xss/xss-rsnake.txt -d searchFor=FUZZ --filter "content~FUZZ" http://testphp.vulnweb.com/search.php?test=query
 
+You can use the fields as boolean values as well. For example, this filter will show only the requests with parameters::
+
+    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --filter 'r.params.all'
+
+Results with plugin issues can be filter as well::
+
+    $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "plugins~'nginx'"
+
 Filtering a payload
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Slice
 """""""
 
-The --slice command line parameter in conjuntion with the described filter language allows you to filter a payload.
-The payload to filter, specified by the -z switch must preceed --slice comamand line parameter.
+The --slice command line parameter in conjunction with the described filter language allows you to filter a payload.
+The payload to filter, specified by the -z switch must precede --slice command line parameter.
 
 An example is shown below::
 
@@ -568,7 +642,7 @@ In this context you are filtering a FuzzResult object, which is the result of co
 Reutilising previous results
 --------------------------------------
 
-Previously performed HTTP requests/responses contain a treasure trove of data. Wfuzz payloads and object instrospection (explained in the filter grammar section) exposes a Python object interface to requests/responses recorded by Wfuzz or other tools.
+Previously performed HTTP requests/responses contain a treasure trove of data. Wfuzz payloads and object introspection (explained in the filter grammar section) exposes a Python object interface to requests/responses recorded by Wfuzz or other tools.
 
 This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
@@ -591,7 +665,7 @@ $ wfuzz --oF /tmp/session -z range,0-10 http://www.google.com/dir/test.php?id=FU
 
 Wfuzz can read burp's (TM) log or saved states. This allows to filter or reutilise burp proxy requests and responses.
 
-Then, you can reutilise those results by using the denoted payloads. To repeat a request exactly how it was stored, you must use the FUZZ keywork on the command line::
+Then, you can reutilise those results by using the denoted payloads. To repeat a request exactly how it was stored, you must use the FUZZ keyword on the command line::
 
     $ wfuzz -z burpstate,a_burp_state.burp FUZZ
 
@@ -617,7 +691,7 @@ Previous requests can also be modified by using the usual command line switches.
       |__    C=200    114 L      373 W         5347 Ch        "http://testphp.vulnweb.com/userinfo.php"
 
 
-* Same request against another url::
+* Same request against another URL::
 
     $ wfuzz -z burpstate,a_burp_state.burp -H "addme: header" -u http://www.otherhost.com FUZZ
 
@@ -627,7 +701,7 @@ If you do not want to use the full saved request:
 
     $ wfuzz -z wfuzzp,/tmp/session --zP attr=url FUZZ
 
-* Or by specyfing the FUZZ keyword and a field name in the form of FUZZ[field]::
+* Or by specifying the FUZZ keyword and a field name in the form of FUZZ[field]::
 
     $ wfuzz -z wfuzzp,/tmp/session FUZZ[url]
 
@@ -649,6 +723,18 @@ The above command will generate HTTP requests such as the following::
 
 You can filter the payload using the filter grammar as described before.
 
+The assignment operators can be used to modify previous requests easily, for example, let's add a quote to every parameter looking for SQL injection issues::
+
+    $ wfuzz -z range,1-5 --oF /tmp/session http://testphp.vulnweb.com/artists.php?artist=FUZZ
+    000003:  C=200    118 L      455 W         5326 Ch        "3"
+    ...
+    000004:  C=200     99 L      272 W         3868 Ch        "4"
+
+    $ wfuzz -z wfuzzp,/tmp/session --prefilter "r.params.get=+'\''" -A FUZZ
+    00010:  0.161s   C=200  101 L  287 W    3986 Ch    nginx/1.4.1  "http://testphp.vulnweb.com/artists.php?artist=1'"
+    |_  Error identified: Warning: mysql_fetch_array()
+    ...
+
 wfpayload
 ^^^^^^^^^
 
@@ -658,4 +744,16 @@ For example, the following will return a unique list of HTTP requests including 
 
     $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
 
-Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and thefore the above will find all the requests exposing the CSRF token in the URL.
+Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and therefore the above will find all the requests exposing the CSRF token in the URL.
+
+You can also select the field to show, for example::
+
+    $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
+    artist=5
+    ...
+
+Or::
+
+    $ wfpayload -z wfuzzp --zD /tmp/session --efield r.params.get
+    000000006:   200        99 L     272 W    3868 Ch     "5 | artist=5"
+    ...

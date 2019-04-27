@@ -188,7 +188,7 @@ class JobMan(FuzzQueue):
     def process(self, res):
         # process request through plugins
         if not res.exception:
-            if self.cache.update_cache(res.history, "processed"):
+            if self.options['no_cache'] or self.cache.update_cache(res.history, "processed"):
 
                 plugins_res_queue = Queue()
 
@@ -212,7 +212,7 @@ class JobMan(FuzzQueue):
                             self._throw(FuzzExceptPluginError(item.issue))
                         res.plugins_res.append(item)
                     elif item.plugintype == PluginItem.backfeed:
-                        if self.cache.update_cache(item.fuzzitem.history, "backfeed"):
+                        if self.options['no_cache'] or self.cache.update_cache(item.fuzzitem.history, "backfeed"):
                             res.plugins_backfeed.append(item)
                     else:
                         raise FuzzExceptInternalError("Jobman: Unknown pluginitem type in queue!")

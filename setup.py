@@ -33,6 +33,8 @@ if sys.platform.startswith("win"):
 
 setup(
     name="wfuzz",
+    include_package_data=True,
+    data_files=[('docs/user', ['docs/user/advanced.rst'])],
     packages=find_packages(where='src'),
     package_dir={'wfuzz': 'src/wfuzz'},
     entry_points={

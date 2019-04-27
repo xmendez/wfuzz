@@ -110,22 +110,22 @@ class ModuleFilterTests(unittest.TestCase):
                 self.assertTrue("Multiple plugins found" in str(context.exception))
 
     def test_simple_filter(self):
-            with mock.patch('imp.find_module') as mocked_find_module:
-                with mock.patch('imp.load_module') as mocked_load_module:
-                    mocked_find_module.return_value = (None, '/any/project.py', ('.py', 'U', 1))
-                    mocked_load_module.return_value = sys.modules[__name__]
+        with mock.patch('imp.find_module') as mocked_find_module:
+            with mock.patch('imp.load_module') as mocked_load_module:
+                mocked_find_module.return_value = (None, '/any/project.py', ('.py', 'U', 1))
+                mocked_load_module.return_value = sys.modules[__name__]
 
-                    br = BRegistrant(FileLoader(**{"filename": 'project1.py', "base_path": 'any'}))
+                br = BRegistrant(FileLoader(**{"filename": 'project1.py', "base_path": 'any'}))
 
-                    with self.assertRaises(Exception) as context:
-                        modulefilter.PYPARSING = False
-                        br.get_plugins_names('not aggressive')
-                    self.assertTrue("Pyparsing missing, complex filters not allowed." in str(context.exception))
-
+                with self.assertRaises(Exception) as context:
                     modulefilter.PYPARSING = False
-                    self.assertEqual(sorted(br.get_plugins_names("test*")), sorted(['test_plugin1', 'test_plugin2', 'test_plugin3']))
-                    self.assertEqual(sorted(br.get_plugins_names("test_plugin1,test_plugin2")), sorted(['test_plugin1', 'test_plugin2']))
-                    self.assertEqual(sorted(br.get_plugins_names("test_plugin5")), sorted([]))
+                    br.get_plugins_names('not aggressive')
+                self.assertTrue("Pyparsing missing, complex filters not allowed." in str(context.exception))
+
+                modulefilter.PYPARSING = False
+                self.assertEqual(sorted(br.get_plugins_names("test*")), sorted(['test_plugin1', 'test_plugin2', 'test_plugin3']))
+                self.assertEqual(sorted(br.get_plugins_names("test_plugin1,test_plugin2")), sorted(['test_plugin1', 'test_plugin2']))
+                self.assertEqual(sorted(br.get_plugins_names("test_plugin5")), sorted([]))
 
     def test_plugin_decorator(self):
         with self.assertRaises(Exception) as context:
@@ -135,7 +135,3 @@ class ModuleFilterTests(unittest.TestCase):
 
             test_plugin4()
             self.assertTrue("Required method method4 not implemented" in str(context.exception))
-
-
-if __name__ == '__main__':
-    unittest.main()

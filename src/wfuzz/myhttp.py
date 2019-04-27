@@ -152,10 +152,10 @@ class HttpPool:
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
             elif ptype == "SOCKS4":
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
-            elif ptype == "HTML":
+            elif ptype == "HTTP":
                 pass
             else:
-                raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTML, SOCKS4 or SOCKS5.")
+                raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
         else:
             c.setopt(pycurl.PROXY, "")
 

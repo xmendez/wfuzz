@@ -28,6 +28,14 @@ class FuzzRequestUrlMixing(object):
         return parse_url(self.url)
 
     @property
+    def urlp(self):
+        return parse_url(self.url)
+
+    @property
+    def pstrip(self):
+        return self.to_cache_key()
+
+    @property
     def is_path(self):
         if self.code == 200 and self.url[-1] == '/':
             return True

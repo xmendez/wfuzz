@@ -2,10 +2,15 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.utils import rgetattr
 
 import re
 
-CRLF = "\r\n"
+import sys
+if sys.version_info < (3, 0):
+    from io import open
+
+CRLF = "\n"
 DELIMITER = "%s%s" % ('=' * 54, CRLF)
 CRLF_DELIMITER = CRLF + DELIMITER
 HEADER = re.compile(r'(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
@@ -44,13 +49,13 @@ class burplog(BasePayload):
     def __next__(self):
         next_item = next(self._it)
 
-        return next_item if not self.attr else next_item.get_field(self.attr)
+        return next_item if not self.attr else rgetattr(next_item, self.attr)
 
     def parse_burp_log(self, burp_log):
         burp_file = None
 
         try:
-            burp_file = open(self.find_file(burp_log), 'rb')
+            burp_file = open(self.find_file(burp_log), 'r', encoding="utf-8", errors="surrogateescape")
 
             history = 'START'
 

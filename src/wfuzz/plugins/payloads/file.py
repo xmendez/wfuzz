@@ -1,7 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import BasePayload
-from wfuzz.utils import open_file_detect_encoding
+from wfuzz.utils import FileDetOpener
 
 
 @moduleman_plugin
@@ -18,6 +18,8 @@ class file(BasePayload):
 
     parameters = (
         ("fn", "", True, "Filename of a valid dictionary"),
+        ("count", 'True', False, "Indicates if the number of words in the file should be counted."),
+        ("encoding", 'Auto', False, "Indicates the file encoding."),
     )
 
     default_parameter = "fn"
@@ -26,23 +28,27 @@ class file(BasePayload):
         BasePayload.__init__(self, params)
 
         try:
-            self.f = open_file_detect_encoding(self.find_file(self.params["fn"]))
+            encoding = self.params['encoding'] if self.params['encoding'].lower() != 'auto' else None
+            self.f = FileDetOpener(self.find_file(self.params["fn"]), encoding)
         except IOError as e:
             raise FuzzExceptBadFile("Error opening file. %s" % str(e))
 
         self.__count = None
 
     def __next__(self):
-        line = self.f.readline()
+        line = next(self.f)
         if not line:
             self.f.close()
             raise StopIteration
         return line.strip()
 
     def count(self):
+        if self.params["count"].lower() == 'false':
+            return -1
+
         if self.__count is None:
-            self.__count = len(self.f.readlines())
-            self.f.seek(0)
+            self.__count = len(list(self.f))
+            self.f.reset()
 
         return self.__count
 

@@ -10,6 +10,9 @@ import os
 # python2 and 3: metaclass
 from future.utils import with_metaclass
 
+ERROR_CODE = -1
+BASELINE_CODE = -2
+
 
 class Settings(SettingsBase):
     def get_config_file(self):
@@ -17,7 +20,10 @@ class Settings(SettingsBase):
 
     def set_defaults(self):
         return dict(
-            plugins=[("bing_apikey", '')],
+            plugins=[
+                ("bing_apikey", ''),
+                ("shodan_apikey", '')
+            ],
             kbase=[("discovery.blacklist", '.svg-.css-.js-.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
             connection=[
                 ("concurrent", '10'),
@@ -75,6 +81,9 @@ class Facade(with_metaclass(utils.Singleton, object)):
 
     def proxy(self, which):
         return self._load(which)
+
+    def get_registrants(self):
+        return self.__plugins.keys()
 
     def __getattr__(self, name):
         if name in ["printers", "payloads", "iterators", "encoders", "scripts"]:

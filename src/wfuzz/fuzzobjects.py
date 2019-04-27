@@ -3,6 +3,7 @@ import hashlib
 import re
 import itertools
 import operator
+import pycurl
 
 # Python 2 and 3
 import sys
@@ -13,63 +14,54 @@ else:
 
 from threading import Lock
 from collections import namedtuple
-from collections import OrderedDict
+from collections import defaultdict
 
+from .filter import FuzzResFilter
 from .externals.reqresp import Request, Response
 from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
-from .facade import Facade
+from .facade import Facade, ERROR_CODE
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
-from .utils import python2_3_convert_to_unicode
+from .utils import python2_3_convert_to_unicode, python2_3_convert_from_unicode
+from .utils import MyCounter
+from .utils import rgetattr
+from .utils import DotDict
 
 auth_header = namedtuple("auth_header", "method credentials")
 
 
-class headers:
+class headers(object):
+    class header(DotDict):
+        def __str__(self):
+            return "\n".join(["{}: {}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
     @property
     def response(self):
-        return OrderedDict(self._req.response.getHeaders()) if self._req.response else {}
+        return headers.header(self._req.response.getHeaders()) if self._req.response else {}
 
     @property
     def request(self):
-        return OrderedDict([x.split(": ", 1) for x in self._req.getHeaders()])
+        return headers.header([x.split(": ", 1) for x in self._req.getHeaders()])
 
-    def add(self, dd):
-        for k, v in list(dd.items()):
-            self._req._headers[k] = v
+    @request.setter
+    def request(self, values_dict):
+        self._req._headers.update(values_dict)
+        if "Content-Type" in values_dict:
+            self._req.ContentType = values_dict['Content-Type']
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
-
-        if num_fields == 2:
-            if attr[1] == "request":
-                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.request.items())])
-            elif attr[1] == "response":
-                return ", ".join(["%s:%s" % (x[0], x[1]) for x in list(self.response.items())])
-            else:
-                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-        elif num_fields != 3:
-            raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-
-        ret = ""
-        try:
-            if attr[1] == "request":
-                ret = self.request[attr[2]]
-            elif attr[1] == "response":
-                ret = self.response[attr[2]]
-            else:
-                raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-        except KeyError:
-            pass
-
-        return ret.strip()
+    @property
+    def all(self):
+        return headers.header(self.request + self.response)
 
 
-class cookies:
+class cookies(object):
+    class cookie(DotDict):
+        def __str__(self):
+            return "\n".join(["{}={}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
@@ -78,106 +70,71 @@ class cookies:
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
-        return {}
+        return cookies.cookie({})
 
     @property
     def request(self):
         if 'Cookie' in self._req._headers:
             c = self._req._headers['Cookie'].split("; ")
             if c[0]:
-                return OrderedDict([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
 
-        return {}
+        return cookies.cookie({})
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
+    @request.setter
+    def request(self, values):
+        self._req._headers["Cookie"] = "; ".join(values)
 
-        if num_fields == 2:
-
-            if attr[1] == "response":
-                if self._req.response:
-                    return self._req.response.getCookie()
-            elif attr[1] == "request":
-                return self._req['COOKIE']
-            else:
-                raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response]")
-        elif num_fields == 3:
-            try:
-                if attr[1] == "request":
-                    return self.request[attr[2]]
-                elif attr[1] == "response":
-                    return self.response[attr[2]]
-                else:
-                    raise FuzzExceptBadAPI("headers must be specified in the form of headers.[request|response].<header name>")
-            except KeyError:
-                return ""
-
-        else:
-            raise FuzzExceptBadAPI("Cookie must be specified in the form of cookies.[request|response].<<name>>")
-
-        return ""
+    @property
+    def all(self):
+        return cookies.cookie(self.request + self.response)
 
 
 class params(object):
+    class param(DotDict):
+        def __str__(self):
+            return "\n".join(["{}={}".format(k, v) for k, v in self.items()])
+
     def __init__(self, req):
         self._req = req
 
     @property
     def get(self):
-        return OrderedDict([(x.name, x.value) for x in self._req.getGETVars()])
+        return params.param([(x.name, x.value) for x in self._req.getGETVars()])
 
     @get.setter
     def get(self, values):
         if isinstance(values, dict):
             for key, value in values.items():
-                self._req.setVariableGET(key, value)
+                self._req.setVariableGET(key, str(value))
         else:
             raise FuzzExceptBadAPI("GET Parameters must be specified as a dictionary")
 
     @property
     def post(self):
-        return OrderedDict([(x.name, x.value) for x in self._req.getPOSTVars()])
+        if self._req._non_parsed_post is None:
+            return params.param([(x.name, x.value) for x in self._req.getPOSTVars()])
+        else:
+            return self._req.postdata
 
     @post.setter
     def post(self, pp):
         if isinstance(pp, dict):
             for key, value in pp.items():
-                self._req.setVariablePOST(key, str(value))
+                self._req.setVariablePOST(key, str(value) if value is not None else value)
         elif isinstance(pp, str):
             self._req.setPostData(pp)
 
-    def get_field(self, field):
-        attr = field.split(".")
-        num_fields = len(attr)
+    @property
+    def all(self):
+        return params.param(self.get + self.post)
 
-        if num_fields == 1 and attr[0] == "params":
-                pp = ", ".join(["%s:%s" % (x[0], x[1]) for x in list(dict(list(self.get.items()) + list(self.post.items())).items())])
-                return "" if not pp else pp
-        elif num_fields == 2:
-            if attr[1] == "get":
-                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.get.items())])
-            elif attr[1] == "post":
-                return ", ".join(["%s=%s" % (x[0], x[1]) for x in list(self.post.items())])
-            else:
-                raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
-        elif num_fields == 3:
-            ret = ""
-            try:
-                if attr[1] == "get":
-                    ret = self.get[attr[2]]
-                elif attr[1] == "post":
-                    ret = self.post[attr[2]]
-                else:
-                    raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
-            except KeyError:
-                pass
-
-            return ret
-        else:
-            raise FuzzExceptBadAPI("Parameters must be specified as params.[get/post].<name>")
+    @all.setter
+    def all(self, values):
+        self.get = values
+        self.post = values
 
 
 class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
@@ -188,8 +145,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self._allvars = None
         self.wf_fuzz_methods = None
         self.wf_retries = 0
+        self.wf_ip = None
 
-        self.headers.add({"User-Agent": Facade().sett.get("connection", "user-agent")})
+        self.headers.request = {"User-Agent": Facade().sett.get("connection", "user-agent")}
 
     # methods for accessing HTTP requests information consistenly accross the codebase
 
@@ -249,7 +207,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @url.setter
     def url(self, u):
-        if not u.startswith("FUZ") and urlparse(u).scheme == "":
+        # urlparse goes wrong with IP:port without scheme (https://bugs.python.org/issue754016)
+        if not u.startswith("FUZ") and (urlparse(u).netloc == "" or urlparse(u).scheme == ""):
             u = "http://" + u
 
         if urlparse(u).path == "":
@@ -273,7 +232,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @code.setter
     def code(self, c):
-        self._request.response.code = c
+        self._request.response.code = int(c)
 
     @property
     def auth(self):
@@ -301,46 +260,6 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def reqtime(self, t):
         self._request.totaltime = t
 
-    def set_field(self, field, value):
-        if field in ["url"]:
-            self.url = value
-
-    def get_field(self, field):
-        alias = dict([('c', 'code')])
-
-        if field in alias:
-            field = alias[field]
-
-        if field in ["url", "method", "scheme", "host", "content", "raw_content", "code"]:
-            return getattr(self, field)
-        elif field in ["code"]:
-            return str(getattr(self, field))
-        elif field.startswith("cookies"):
-            return self.cookies.get_field(field).strip()
-        elif field.startswith("headers"):
-            return self.headers.get_field(field)
-        elif field.startswith("params"):
-            return self.params.get_field(field)
-        elif field.startswith("url."):
-            attr = field.split(".")
-            allowed_attr = ["scheme", "netloc", "path", "params", "query", "fragment", "ffname", "fext", "fname", "isbllist", "hasquery"]
-
-            if len(attr) != 2:
-                raise FuzzExceptBadAPI("Url must be specified as url.<field>")
-
-            if attr[1] in allowed_attr:
-                return getattr(self.urlparse, attr[1])
-            elif attr[1] == "pstrip":
-                return self.to_cache_key()
-            elif attr[1] == "ispath":
-                return self.is_path
-            else:
-                raise FuzzExceptBadAPI("Unknown url attribute. It must be one of %s" % ",".join(allowed_attr))
-
-            return ""
-        else:
-            raise FuzzExceptBadAPI("Unknown FuzzResult attribute: %s." % (field,))
-
     # Info extra that wfuzz needs within an HTTP request
     @property
     def wf_allvars_set(self):
@@ -361,7 +280,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             elif self.wf_allvars == "allpost":
                 self.params.post = varset
             elif self.wf_allvars == "allheaders":
-                self._request.headers.add(varset)
+                self._request.headers.request = varset
             else:
                 raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
         except TypeError:
@@ -396,17 +315,28 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return Facade().http_pool.perform(res)
 
     def to_http_object(self, c):
-        return Request.to_pycurl_object(c, self._request)
+        pycurl_c = Request.to_pycurl_object(c, self._request)
+
+        if self.wf_ip:
+            pycurl_c.setopt(pycurl.CONNECT_TO, ["::{}:{}".format(self.wf_ip['ip'], self.wf_ip['port'])])
+
+        return pycurl_c
 
     def from_http_object(self, c, bh, bb):
-        return self._request.response_from_conn_object(c, bh, bb)
+        raw_header = python2_3_convert_from_unicode(bh.decode("utf-8", errors='surrogateescape'))
+        return self._request.response_from_conn_object(c, raw_header, bb)
 
-    def update_from_raw_http(self, raw, scheme, raw_response=None):
+    def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
         self._request.parseRequest(raw, scheme)
+
+        # Parse request sets postdata = '' when there's POST request without data
+        if self.method == "POST" and not self.params.post:
+            self.params.post = {'': None}
 
         if raw_response:
             rp = Response()
-            rp.parseResponse(raw_response)
+            raw_response = python2_3_convert_from_unicode(raw_response.decode("utf-8", errors='surrogateescape'))
+            rp.parseResponse(raw_response, raw_content)
             self._request.response = rp
 
         return self._request
@@ -430,6 +360,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         if options["url"] != "FUZZ":
             self.url = options["url"]
 
+        # headers must be parsed first as they might affect how reqresp parases other params
+        self.headers.request = dict(options['headers'])
+
         if options['auth'][0] is not None:
             self.auth = (options['auth'][0], options['auth'][1])
 
@@ -439,14 +372,15 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         if options['postdata'] is not None:
             self.params.post = options['postdata']
 
+        if options['connect_to_ip']:
+            self.wf_ip = options['connect_to_ip']
+
         if options['method']:
             self.method = options['method']
             self.wf_fuzz_methods = options['method']
 
         if options['cookie']:
-            self.headers.add({"Cookie": "; ".join(options['cookie'])})
-
-        self.headers.add(dict(options['headers']))
+            self.cookies.request = options['cookie']
 
         if options['allvars']:
             self.wf_allvars = options['allvars']
@@ -457,8 +391,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.wf_proxy = self.wf_proxy
         newreq.wf_allvars = self.wf_allvars
         newreq.wf_fuzz_methods = self.wf_fuzz_methods
+        newreq.wf_ip = self.wf_ip
 
-        newreq.headers.add(self.headers.request)
+        newreq.headers.request = self.headers.request
         newreq.params.post = self.params.post
 
         newreq.follow = self.follow
@@ -476,29 +411,29 @@ class FuzzResultFactory:
     def replace_fuzz_word(text, fuzz_word, payload):
         marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
 
-        for fw, field in marker_regex.findall(text):
+        for fuzz_word, field in marker_regex.findall(text):
             if field:
                 marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
-                subs_array = []
+                fields_array = []
 
-                for fw, field in marker_regex.findall(text):
-                        if not field:
-                            raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
+                for fuzz_word, field in marker_regex.findall(text):
+                    if not field:
+                        raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
 
-                        try:
-                            subs = payload.get_field(field)
-                        except AttributeError:
-                            raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
+                    try:
+                        subs = str(rgetattr(payload, field))
+                    except AttributeError:
+                        raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
 
-                        text = text.replace("%s[%s]" % (fw, field), subs)
-                        subs_array.append(subs)
+                    text = text.replace("%s[%s]" % (fuzz_word, field), subs)
+                    fields_array.append(field)
 
-                return (text, subs_array)
+                return (text, fields_array)
             else:
                 try:
-                    return (text.replace(fuzz_word, payload), [payload])
+                    return (text.replace(fuzz_word, payload), [None])
                 except TypeError:
-                    raise FuzzExceptBadOptions("Tried to replace FUZZ with a whole fuzzresult payload.")
+                    raise FuzzExceptBadOptions("Tried to replace {} with a whole fuzzresult payload.".format(fuzz_word))
 
     @staticmethod
     def from_seed(seed, payload, seed_options):
@@ -509,29 +444,27 @@ class FuzzResultFactory:
         scheme = newres.history.scheme
         auth_method, userpass = newres.history.auth
 
-        descr_array = []
-
         for payload_pos, payload_content in enumerate(payload, start=1):
             fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
 
-            newres.payload.append(payload_content)
+            fuzz_values_array = []
 
             # substitute entire seed when using a request payload generator without specifying field
             if fuzz_word == "FUZZ" and seed_options["seed_payload"] and isinstance(payload_content, FuzzResult):
                 # new seed
                 newres = payload_content.from_soft_copy()
+                newres.payload = []
 
-                descr_array.append(newres.history.redirect_url)
+                fuzz_values_array.append(None)
 
-                newres.payload = [payload_content]
                 newres.history.update_from_options(seed_options)
-                newres._description = ""
+                newres.update_from_options(seed_options)
                 rawReq = str(newres.history)
                 rawUrl = newres.history.redirect_url
                 scheme = newres.history.scheme
                 auth_method, userpass = newres.history.auth
 
-            desc = None
+            desc = []
 
             if auth_method and (userpass.count(fuzz_word)):
                 userpass, desc = FuzzResultFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
@@ -544,20 +477,15 @@ class FuzzResultFactory:
                 scheme, desc = FuzzResultFactory.replace_fuzz_word(scheme, fuzz_word, payload_content)
 
             if desc:
-                descr_array += desc
+                fuzz_values_array += desc
 
-            if len(descr_array) == 0:
-                raise FuzzExceptBadOptions("No %s word!" % fuzz_word)
+            newres.payload.append(FuzzPayload(payload_content, fuzz_values_array))
 
         newres.history.update_from_raw_http(rawReq, scheme)
         newres.history.url = rawUrl
         if auth_method != 'None':
             newres.history.auth = (auth_method, userpass)
 
-        if newres._description:
-            newres._description += " - "
-
-        newres._description += " - ".join(descr_array)
         newres.type = FuzzResult.result
 
         return newres
@@ -614,9 +542,7 @@ class FuzzResultFactory:
             baseline_res.history.update_from_raw_http(rawReq, scheme)
 
         baseline_res = FuzzResultFactory.from_seed(baseline_res, baseline_payload, options)
-
         baseline_res.is_baseline = True
-        baseline_res.payload = baseline_payload
 
         return baseline_res
 
@@ -629,8 +555,7 @@ class FuzzResultFactory:
         for var_name in seed.history.wf_allvars_set.keys():
             payload_content = payload[0]
             fuzzres = seed.from_soft_copy()
-            fuzzres._description = var_name + "=" + payload_content
-            fuzzres.payload.append(payload_content)
+            fuzzres.payload.append(FuzzPayload(payload_content, [None]))
 
             fuzzres.history.wf_allvars_set = {var_name: payload_content}
 
@@ -644,27 +569,10 @@ class FuzzResultFactory:
         fr.wf_fuzz_methods = options['method']
         fr.update_from_options(options)
 
-        return FuzzResult(fr)
+        fuzz_res = FuzzResult(fr)
+        fuzz_res.update_from_options(options)
 
-
-class MyCounter:
-    def __init__(self, count=0):
-        self._count = count
-        self._mutex = Lock()
-
-    def inc(self):
-        self._operation(1)
-
-    def dec(self):
-        self._operation(-1)
-
-    def _operation(self, dec):
-        with self._mutex:
-            self._count += dec
-
-    def __call__(self):
-        with self._mutex:
-            return self._count
+        return fuzz_res
 
 
 class FuzzStats:
@@ -755,18 +663,38 @@ class FuzzStats:
         self.pending_seeds._operation(fuzzstats2.pending_seeds())
 
 
+class FuzzPayload():
+    def __init__(self, content, fields):
+        self.content = content
+        self.fields = fields
+
+    def description(self, default):
+        ret_str_values = []
+        for fuzz_value in self.fields:
+            if fuzz_value is None and isinstance(self.content, FuzzResult):
+                ret_str_values.append(default)
+            elif fuzz_value is not None and isinstance(self.content, FuzzResult):
+                ret_str_values.append(str(rgetattr(self.content, fuzz_value)))
+            elif fuzz_value is None:
+                ret_str_values.append(self.content)
+            else:
+                ret_str_values.append(fuzz_value)
+
+        return " - ".join(ret_str_values)
+
+    def __str__(self):
+        return "content: {} fields: {}".format(self.content, self.fields)
+
+
 class FuzzResult:
     seed, backfeed, result, error, startseed, endseed, cancel, discarded = list(range(8))
     newid = itertools.count(0)
-    ERROR_CODE = -1
-    BASELINE_CODE = -2
 
     def __init__(self, history=None, exception=None, track_id=True):
         self.history = history
 
         self.type = None
         self.exception = exception
-        self._description = ""
         self.is_baseline = False
         self.rlevel = 1
         self.nres = next(FuzzResult.newid) if track_id else 0
@@ -783,12 +711,23 @@ class FuzzResult:
 
         self.payload = []
 
+        self._description = None
+        self._show_field = False
+
+    @property
+    def plugins(self):
+        dic = defaultdict(list)
+
+        for pl in self.plugins_res:
+            dic[pl.source].append(pl.issue)
+
+        return dic
+
     def update(self, exception=None):
         self.type = FuzzResult.result
 
         if exception:
             self.exception = exception
-            self._description = self._description + "! " + str(self.exception)
 
         if self.history and self.history.content:
             m = hashlib.md5()
@@ -801,20 +740,6 @@ class FuzzResult:
 
         return self
 
-    def set_field(self, field, value):
-        return self.history.set_field(field, value)
-
-    def get_field(self, field):
-        alias = dict([('l', 'lines'), ('h', 'chars'), ('w', 'words'), ('c', 'code')])
-
-        if field in alias:
-            field = alias[field]
-
-        if field in ["code", "description", "nres", "chars", "lines", "words", "md5"]:
-            return str(getattr(self, field))
-        else:
-            return self.history.get_field(field)
-
     def __str__(self):
         if self.type == FuzzResult.result:
             res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
@@ -825,11 +750,39 @@ class FuzzResult:
         else:
             return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel", "discarded")[self.type]
 
+    def _payload_description(self):
+        if not self.payload:
+            return self.url
+
+        payl_descriptions = [payload.description(self.url) for payload in self.payload]
+        ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
+
+        return ret_str
+
     @property
     def description(self):
-        return self._description
+        ret_str = ""
+
+        if self._show_field is True:
+            ret_str = self.eval(self._description)
+        elif self._show_field is False and self._description is not None:
+            ret_str = "{} | {}".format(self._payload_description(), self.eval(self._description))
+        else:
+            ret_str = self._payload_description()
+
+        if self.exception:
+            return ret_str + "! " + str(self.exception)
+
+        return ret_str
+
+    def eval(self, expr):
+        return FuzzResFilter(filter_string=expr).is_visible(self)
 
     # parameters in common with fuzzrequest
+    @property
+    def content(self):
+        return self.history.content if self.history else ""
+
     @property
     def url(self):
         return self.history.url if self.history else ""
@@ -841,7 +794,7 @@ class FuzzResult:
         # elif not self.history.code:
             # return 0
         else:
-            return FuzzResult.ERROR_CODE
+            return ERROR_CODE
 
     @property
     def timer(self):
@@ -865,13 +818,18 @@ class FuzzResult:
         fr = FuzzResult(self.history.from_copy(), track_id=track_id)
 
         fr.exception = self.exception
-        fr._description = self._description
         fr.is_baseline = self.is_baseline
         fr.type = self.type
         fr.rlevel = self.rlevel
         fr.payload = list(self.payload)
+        fr._description = self._description
+        fr._show_field = self._show_field
 
         return fr
+
+    def update_from_options(self, options):
+        self._description = options['description']
+        self._show_field = options['show_field']
 
     @staticmethod
     def to_new_exception(exception):
@@ -890,7 +848,6 @@ class FuzzResult:
     def to_new_url(self, url):
         fr = self.from_soft_copy()
         fr.history.url = str(url)
-        fr._description = fr.history.path
         fr.rlevel = self.rlevel + 1
         fr.type = FuzzResult.backfeed
         fr.is_baseline = False
@@ -942,5 +899,6 @@ class PluginRequest(PluginItem):
         plreq = PluginRequest()
         plreq.source = source
         plreq.fuzzitem = res.to_new_url(url)
+        plreq.fuzzitem.payload = [FuzzPayload(url, [None])]
 
         return plreq

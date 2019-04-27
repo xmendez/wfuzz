@@ -1,8 +1,9 @@
 from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
-from .fuzzobjects import FuzzResult
+from .utils import rgetattr, rsetattr, value_in_any_list_item
 
 import re
 import collections
+import operator
 
 # Python 2 and 3: alternative 4
 try:
@@ -10,7 +11,7 @@ try:
 except ImportError:
     from urllib import unquote
 
-from .facade import Facade
+from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
 
 PYPARSING = True
@@ -25,33 +26,34 @@ class FuzzResFilter:
     def __init__(self, ffilter=None, filter_string=None):
         if PYPARSING:
             quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
-            int_values = Word("0123456789")
+            int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
             error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
             bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
             field_value = Word(alphas + "." + "_" + "-")
+            reserverd_words = oneOf("BBB XXX")
 
             basic_primitives = int_values | quoted_str_value
 
-            operator_names = oneOf("m d e un u r l sw unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
+            operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
 
-            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self.__compute_fuzz_symbol)
+            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
             fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
             fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
 
-            res_value_op = (Word(alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+            res_value_op = (~reserverd_words + Word("0123456789" + alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
             basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
 
-            fuzz_statement = fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op ^ basic_primitives_op
+            fuzz_statement = basic_primitives_op ^ fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op
 
             operator = oneOf("and or")
             not_operator = Optional(oneOf("not"), "notpresent")
 
-            symbol_expr = Group(fuzz_statement + oneOf("= != < > >= <= =~ !~ ~") + (bbb_value ^ error_value ^ fuzz_statement ^ basic_primitives)).setParseAction(self.__compute_expr)
+            symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ basic_primitives ^ fuzz_statement)).setParseAction(self.__compute_expr)
 
-            definition = fuzz_statement ^ symbol_expr
+            definition = symbol_expr ^ fuzz_statement
             definition_not = not_operator + definition
             definition_expr = definition_not + ZeroOrMore(operator + definition_not)
 
@@ -87,54 +89,52 @@ class FuzzResFilter:
             self.hideparams['filter_string'] = filter_string
 
         self.baseline = None
-        self.stack = {}
+        self.stack = []
 
         self._cache = collections.defaultdict(set)
 
     def set_baseline(self, res):
-        if FuzzResult.BASELINE_CODE in self.hideparams['lines']:
+        if BASELINE_CODE in self.hideparams['lines']:
             self.hideparams['lines'].append(res.lines)
-        if FuzzResult.BASELINE_CODE in self.hideparams['codes']:
+        if BASELINE_CODE in self.hideparams['codes']:
             self.hideparams['codes'].append(res.code)
-        if FuzzResult.BASELINE_CODE in self.hideparams['words']:
+        if BASELINE_CODE in self.hideparams['words']:
             self.hideparams['words'].append(res.words)
-        if FuzzResult.BASELINE_CODE in self.hideparams['chars']:
+        if BASELINE_CODE in self.hideparams['chars']:
             self.hideparams['chars'].append(res.chars)
 
         self.baseline = res
 
     def __compute_res_value(self, tokens):
-        self.stack["field"] = tokens[0]
+        self.stack.append(tokens[0])
 
-        return self.res.get_field(self.stack["field"])
+        try:
+            return rgetattr(self.res, tokens[0])
+        except AttributeError:
+            raise FuzzExceptIncorrectFilter("Non-existing introspection field or HTTP parameter \"{}\"!".format(tokens[0]))
 
-    def __compute_fuzz_symbol(self, tokens):
+    def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]
 
         try:
-            return self.res.payload[i]
+            return self.res.payload[i].content
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
-        except AttributeError:
-            if i == 0:
-                return self.res
-            else:
-                raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
     def __compute_fuzz_value(self, tokens):
         fuzz_val, field = tokens
 
-        self.stack["field"] = field
+        self.stack.append(field)
 
         try:
-            return fuzz_val.get_field(field) if field else fuzz_val
+            return rgetattr(fuzz_val, field) if field else fuzz_val
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError as e:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
     def __compute_bbb_value(self, tokens):
-        element = self.stack["field"]
+        element = self.stack[0] if self.stack else None
 
         if self.baseline is None:
             raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
@@ -154,6 +154,7 @@ class FuzzResFilter:
 
     def __compute_perl_value(self, tokens):
         leftvalue, exp = tokens
+        # import pdb; pdb.set_trace()
 
         if exp:
             loc_op, middlevalue, rightvalue = exp
@@ -173,6 +174,17 @@ class FuzzResFilter:
             return leftvalue.upper()
         elif op == "lower" or op == "l":
             return leftvalue.lower()
+        elif op == 'gregex' or op == "gre":
+            search_res = None
+            try:
+                regex = re.compile(middlevalue)
+                search_res = regex.search(leftvalue)
+            except re.error as e:
+                raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
+
+            if search_res is None:
+                return ''
+            return search_res.group(1)
         elif op == 'startswith' or op == "sw":
             return leftvalue.strip().startswith(middlevalue)
         elif op == 'unique' or op == "u":
@@ -187,35 +199,56 @@ class FuzzResFilter:
         return ret
 
     def __compute_xxx_value(self, tokens):
-        return FuzzResult.ERROR_CODE
+        return ERROR_CODE
 
     def __compute_expr(self, tokens):
-        leftvalue, operator, rightvalue = tokens[0]
+        leftvalue, exp_operator, rightvalue = tokens[0]
+
+        field_to_set = self.stack[0] if self.stack else None
 
         try:
-            if operator == "=":
-                return leftvalue == rightvalue
-            elif operator == "<=":
+            if exp_operator in ["=", '==']:
+                return str(leftvalue) == str(rightvalue)
+            elif exp_operator == "<=":
                 return leftvalue <= rightvalue
-            elif operator == ">=":
+            elif exp_operator == ">=":
                 return leftvalue >= rightvalue
-            elif operator == "<":
+            elif exp_operator == "<":
                 return leftvalue < rightvalue
-            elif operator == ">":
+            elif exp_operator == ">":
                 return leftvalue > rightvalue
-            elif operator == "!=":
+            elif exp_operator == "!=":
                 return leftvalue != rightvalue
-            elif operator == "=~":
+            elif exp_operator == "=~":
                 regex = re.compile(rightvalue, re.MULTILINE | re.DOTALL)
                 return regex.search(leftvalue) is not None
-            elif operator == "!~":
-                return rightvalue.lower() not in leftvalue.lower()
-            elif operator == "~":
-                return rightvalue.lower() in leftvalue.lower()
+            elif exp_operator in ["!~", "~"]:
+                ret = True
+
+                if isinstance(leftvalue, str):
+                    ret = rightvalue.lower() in leftvalue.lower()
+                elif isinstance(leftvalue, list):
+                    ret = value_in_any_list_item(rightvalue, leftvalue)
+                elif isinstance(leftvalue, dict):
+                    return len({k: v for (k, v) in leftvalue.items() if rightvalue.lower() in k.lower() or value_in_any_list_item(rightvalue, v)}) > 0
+                else:
+                    raise FuzzExceptBadOptions("Invalid operand type {}".format(rightvalue))
+
+                return ret if exp_operator == "~" else not ret
+            elif exp_operator == ":=":
+                rsetattr(self.res, field_to_set, rightvalue, None)
+            elif exp_operator == "=+":
+                rsetattr(self.res, field_to_set, rightvalue, operator.add)
+            elif exp_operator == "=-":
+                rsetattr(self.res, field_to_set, rightvalue, lambda x, y: y + x)
+        except re.error as e:
+            raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
         except TypeError as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+            raise FuzzExceptBadOptions("Invalid operand types used in expression: %s" % str(e))
         except ParseException as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+            raise FuzzExceptBadOptions("Invalid filter: %s" % str(e))
+
+        return True
 
     def __myreduce(self, elements):
         first = elements[0]
@@ -225,6 +258,7 @@ class FuzzResFilter:
             elif elements[i] == "or":
                 first = (first or elements[i + 1])
 
+        self.stack = []
         return first
 
     def __compute_not_operator(self, tokens):
@@ -268,7 +302,7 @@ class FuzzResFilter:
 
             if res.code in self.hideparams['codes'] or res.lines in self.hideparams['lines'] \
                or res.words in self.hideparams['words'] or res.chars in self.hideparams['chars']:
-                    cond1 = self.hideparams['codes_show']
+                cond1 = self.hideparams['codes_show']
 
             if self.hideparams['regex']:
                 if self.hideparams['regex'].search(res.history.content):
@@ -307,3 +341,19 @@ class FuzzResFilter:
             ffilter.hideparams['chars'] = filter_options["hh"]
 
         return ffilter
+
+    def get_fuzz_words(self):
+        marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+        fuzz_words = marker_regex.findall(self.hideparams["filter_string"])
+
+        return fuzz_words
+
+
+class FuzzResFilterSlice(FuzzResFilter):
+    def _compute_fuzz_symbol(self, tokens):
+        i = tokens[0]
+
+        if i != 0:
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+
+        return self.res

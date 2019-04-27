@@ -1,0 +1,66 @@
+# wfuzz bash completion file
+# by Xavier Mendez (xavi.mendez@gmail.com) aka Javi
+
+_wfuzz() {
+    
+    COMPREPLY=()
+    local cur prev
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    WFUZZ_EX="wfuzz"
+
+    # Change to your wordlists' base directory
+    WLDIR=$($WFUZZ_EX --ee files)
+    
+    common_options="-z[PAYLOAD] --zD[DEFAULT] --zE[ENCODERS] --hc[HIDE_HTTP_CODES] -d[POST_DATA] "
+
+    case "$prev" in
+	-u)
+	    COMPREPLY=( $( compgen -W "http https" -- $cur ) )
+	    ;;
+	-w)
+            COMPREPLY=( $(compgen -W "$(find $WLDIR -type f -iname "*.txt")" -- $cur) )
+	    ;;
+	-w)
+            COMPREPLY=( $(compgen -W "$(find $WLDIR -type f -iname "*.txt")" -- $cur) )
+	    ;;
+	-z)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee payloads)" -- $cur))
+	    ;;
+	-e)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee registrants)" -- $cur))
+	    ;;
+	-m)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee iterators)" -- $cur))
+	    ;;
+	-o)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee printers)" -- $cur))
+	    ;;
+	--script-help)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee scripts)" -- $cur))
+	    ;;
+	--script)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee scripts)" -- $cur))
+	    ;;
+	--field)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee fields)" -- $cur))
+	    ;;
+	--zE)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee encoders)" -- $cur))
+	    ;;
+	-V)
+	    COMPREPLY=( $( compgen -W "allvars allpost allheaders" -- $cur ) )
+	    ;;
+	-X)
+	    COMPREPLY=( $( compgen -W "FUZZ OPTIONS PUT DELETE POST GET TRACE CONNECT HEAD" -- $cur ) )
+	    ;;
+	--hc)
+	    COMPREPLY=( $( compgen -W "400 401 301 302 500 404 200" -- $cur ) )
+	    ;;
+	*)
+	    COMPREPLY=($(compgen -W "$($WFUZZ_EX --ee options)" -- $cur))
+	    ;;
+    esac
+}
+
+complete -F _wfuzz -o default wfuzz

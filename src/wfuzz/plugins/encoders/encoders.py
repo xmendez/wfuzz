@@ -232,8 +232,8 @@ class doble_nibble_hex:
         for c in strt:
             if not c == "%":
                 if s.search(c):
-                        fin += c
-                        continue
+                    fin += c
+                    continue
                 fin += con % ord(c)
             else:
                 fin += c

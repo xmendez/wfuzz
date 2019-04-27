@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import copy
 import os
 import unittest
 import tempfile
 
 import wfuzz
-
 
 LOCAL_DOMAIN = "http://localhost"
 URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
@@ -38,10 +38,61 @@ REPLACE_HOSTNAMES = [
 # conn delays?
 # script args
 
+testing_savedsession_tests = [
+]
+
 testing_tests = [
 ]
 
+savedsession_tests = [
+    # parse post params
+    ("test_novalue_post_fuzz", "-z list --zD a -u {}/anything -d FUZZ".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
+    ("test_json_post_fuzz2", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.a", ["2"], None),
+    ("test_json_post_fuzz3", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
+
+    # field fuzz values
+    ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
+    ("test_desc_attr", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]", ["http://localhost:9000/1"], None),
+    ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 404"], None),
+    ("test_desc_url_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[c]", ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
+
+    # set values
+    ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.c:=302 FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 302"], None),
+    ("test_desc_rewrite_url", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --prefilter=r.url:=r.url|replace('1','2') FUZZ", ["http://localhost:9000/2"], None),
+    ("test_desc_rewrite_url2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.url:=r.url|replace('1','2') FUZZ[url]", ["http://localhost:9000/2"], None),
+
+    # fuzz value slice filters
+    ("test_desc_concat_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --prefilter FUZZ[r.url]=+'2' FUZZ", ["http://localhost:9000/12"], None),
+    ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[c]=404 FUZZ", ["http://localhost:9000/1"], None),
+    ("test_fuzz_value_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice c=404 FUZZ", ["http://localhost:9000/1"], None),
+
+    # fuzz value exceptions
+    ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ1Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Unknown field"),
+    ("test_fuzz_symbol_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ2Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
+    ("test_desc_assign_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url|replace('1','2')] FUZZ[url]", ["http://localhost:9000/2"], None),
+    ("test_fuzz_param_int", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.params.get:=2 FUZZ", ["http://localhost:9000/2"], "Non existent FUZZ payload"),
+
+    # filter based on various payloads
+    ("test_fuzz_fuz2z_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ[url]/FUZ2Z", ['http://localhost:9000/1 - 404'], None),
+    ("test_fuzz_fuz2z_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ[url]", ['http://localhost:9000/1'], None),
+    ("test_fuzz_fuz2z_code3", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,404-302-200 --prefilter FUZZ[code]=FUZ2Z FUZZ", ['http://localhost:9000/1'], None),
+
+    # set values various payloads
+    ("test_set_fuzz_from_fuz2z_full", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+    ("test_set_fuzz_from_fuz2z_full2", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter FUZZ[r.params.get.param]:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+    ("test_set_fuzz_from_fuz2z_full_all", "-z range,1-1 {}/FUZZ?param=1&param2=2".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z range,6-6 --prefilter r.params.all:=FUZ2Z FUZZ", ["http://localhost:9000/1?param=6&param2=6"], None),
+    ("test_app_fuzz_from_fuz2z_full_all", "-z range,1-1 {}/FUZZ?param=1&param2=2".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z range,6-6 --prefilter r.params.all=+FUZ2Z FUZZ", ["http://localhost:9000/1?param=16&param2=26"], None),
+    # fails ("test_set_fuzz_from_fuz2z_url", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ[url]", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
+
+    # test different field
+    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", [404], None),
+
+]
+
 basic_tests = [
+    # different connect host ip
+    # travis has an old pycurl version ("test_static_strquery_set_ip", "http://wfuzz.org/FUZZ?var=1&var2=2", [["anything"], ['PUT', 'GET', 'DELETE']], dict(connect_to_ip={'ip': '127.0.0.1', 'port': '9000'}, method='FUZ2Z', filter="content~'url' and content~'http://wfuzz.org'"), [(200, '/anything')] * 3, None),
+
     # encoding tests
     ("test_encode_cookie2_utf8_return", "%s/anything" % HTTPBIN_URL, [["は国"]], dict(cookie=["test=FUZZ"], filter="content~'test=\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/anything')], None),
     ("test_encode_header_utf8_return", "%s/headers" % HTTPBIN_URL, [["は国"]], dict(headers=[("myheader", "FUZZ")], filter="content~'Myheader' and content~'\\\\u00e3\\\\u0081\\\\u00af\\\\u00e5\\\\u009b\\\\u00bd'"), [(200, '/headers')], None),
@@ -52,7 +103,7 @@ basic_tests = [
     ("test_encode_url_filter", "%s/FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="url~'は国'"), [(404, '/は国')], None),
     # ("test_encode_var", "%s/anything?var=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="content~'\"は国\"'"), [(200, '/anything')], None),
     ("test_encode_var", "%s/anything?var=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="content~'\"\\\\u306f\\\\u56fd\"'"), [(200, '/anything')], None),
-    ("test_encode_redirect", "%s/redirect-to?url=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="headers.response.Location='%C3%A3%C2%81%C2%AF%C3%A5%C2%9B%C2%BD'"), [(302, '/redirect-to')], None),
+    ("test_encode_redirect", "%s/redirect-to?url=FUZZ" % HTTPBIN_URL, [["は国"]], dict(filter="r.headers.response.Location='%C3%A3%C2%81%C2%AF%C3%A5%C2%9B%C2%BD'"), [(302, '/redirect-to')], None),
     # ("test_encode_cookie", "%s/cookies" % HTTPBIN_URL, [["は国"]], dict(cookie=["cookie1=FUZZ"], follow=True, filter="content~FUZZ"), [(200, '/cookies')], None),
     ("test_encode_cookie", "%s/cookies" % HTTPBIN_URL, [["は国"]], dict(cookie=["cookie1=FUZZ"], follow=True, filter="content~'\\\\u306f\\\\u56fd'"), [(200, '/cookies')], None),
 
@@ -72,13 +123,17 @@ basic_tests = [
     ("test_basic_auth", "%s/basic-auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("basic", "FUZZ:FUZZ")), [(200, '/basic-auth/userpass/userpass')], None),
     ("test_digest_auth", "%s/digest-auth/auth/FUZZ/FUZZ" % HTTPBIN_URL, [["userpass"]], dict(auth=("digest", "FUZZ:FUZZ")), [(200, '/digest-auth/auth/userpass/userpass')], None),
     ("test_delayed_response", "%s/delay/FUZZ" % HTTPBIN_URL, [["2"]], dict(req_delay=1), [(200, '/delay/2')], 'Operation timed out'),
-    ("test_static_strquery_set", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~'\"args\":{\"var\":\"1\",\"var2\":\"2\"}'"), [(200, '/anything')] * 4, None),
+    ("test_static_strquery_set_multiple_method", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content~FUZ2Z and content~'\"var\": \"1\"' and content~'\"var2\": \"2\"'"), [(200, '/anything')] * 4, None),
+    ("test_static_strquery_set_multiple_method_gre", "%s/FUZZ?var=1&var2=2" % HTTPBIN_URL, [["anything"], ['PUT', 'GET', 'POST', 'DELETE']], dict(method='FUZ2Z', filter="content|gre('\"method\": \"(.*)?\",')=FUZ2Z and content~'\"var\": \"1\"' and content~'\"var2\": \"2\"'"), [(200, '/anything')] * 4, None),
 
     # set static HTTP values
-    ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content~'query=var=1&var=2'"), [(200, '/echo')], None),
-    ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content~'POST_DATA=a=2'"), [(200, '/echo')], None),
-    ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content~'POST_DATA=2'"), [(200, '/echo')], None),
-    ("test_empty_postdata", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(postdata='', filter="content~'POST' and method='POST'"), [(200, '/anything')], None),
+    ("test_static_strquery_set", "%s:8000/FUZZ?var=1&var=2" % LOCAL_DOMAIN, [["echo"]], dict(filter="content=~'query=var=1&var=2$'"), [(200, '/echo')], None),
+    ("test_static_postdata_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="a=2", filter="content=~'POST_DATA=a=2$'"), [(200, '/echo')], None),
+    ("test_static_postdata2_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(postdata="2", filter="content=~'POST_DATA=2$'"), [(200, '/echo')], None),
+    ("test_empty_postdata", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(postdata='', filter="content~'POST' and content~'\"form\": {},' and r.method='POST'"), [(200, '/anything')], None),
+    ("test_static_postdata3_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "application/json")], postdata="2", filter="content=~'POST_DATA=2$' and content=~'command=POST$' and content~'Content-Type: application/json'"), [(200, '/echo')], None),
+    ("test_static_postdata3_set2", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "aaaa")], postdata="a=2&b=3", filter="(content=~'POST_DATA=a=2&b=3$' or content=~'POST_DATA=b=3&a=2$') and content=~'command=POST$' and content~'Content-Type: aaaa'"), [(200, '/echo')], None),
+    ("test_static_postdata3_set3", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("Content-Type", "application/json")], postdata="{\"a\": \"2\"}", filter="content=~'POST_DATA={\"a\": \"2\"}$' and content=~'command=POST$' and content~'Content-Type: application/json'"), [(200, '/echo')], None),
     ("test_static_method_set", "%s/FUZZ" % URL_LOCAL, [["dir"]], dict(method="OPTIONS", filter="content~'Message: Unsupported method (\\\'OPTIONS\\\')'"), [(501, '/dir/dir')], None),
     ("test_static_header_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(headers=[("myheader", "isset")], filter="content~'Myheader: isset'"), [(200, '/echo')], None),
     ("test_static_cookie_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(cookie=["cookie1=value1", ], filter="content~'Cookie: cookie1=value1'"), [(200, '/echo')], None),
@@ -106,7 +161,7 @@ basic_tests = [
     ("test_url_hostname2_fuzz", "http://FUZZ/dir/a", [["localhost:8000"]], dict(), [(200, '/dir/a')], None),
     ("test_url_schema_fuzz", "FUZZ://localhost:8000/dir/a", [["http"]], dict(), [(200, '/dir/a')], None),
     ("test_url_all_url_fuzz", "FUZZ", [["http://localhost:8000/dir/a"]], dict(), [(200, '/dir/a')], None),
-    ("test_url_all_url_fuzz2", "FUZZ", [["http://webscantest.com/datastore/search_get_by_name.php?name=Rake"]], dict(), [(200, '/datastore/search_get_by_name.php')], None),
+    ("test_url_all_url_fuzz2", "FUZZ", [["%s/anything/datastore/search_get_by_name.php?name=Rake" % HTTPBIN_URL]], dict(), [(200, '/anything/datastore/search_get_by_name.php')], None),
 
     # edge cases
     ("test_vhost_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(headers=[("Host", "FUZZ")], filter="content~'Host:' and content~FUZZ"), [(200, '/echo'), (200, '/echo')], None),
@@ -119,13 +174,14 @@ basic_tests = [
     # prefilter, slice
     ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a", "a", "a", "a", "a", "a"]], dict(prefilter="FUZZ|u()", ss="one"), [(200, '/dir/a')], None),
     ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
+    ("test_slice2", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("range", dict(default="1-10"), "FUZZ='1'")]), [(404, '/dir/1')], None),
 
     # follow
     ("test_follow", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["redirect"]], dict(follow=True, filter="content~'path=/echo'"), [(200, '/echo')], None),
 
     # all params
     ("test_all_params_get", "%s:8000/echo?var=1&var2=2" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], None),
-    ("test_all_params_post", "%s" % ECHO_URL, [["onevalue"]], dict(allvars="allpost", postdata="a=1&b=2", filter="content~'POST_DATA=a=onevalue&b=2' or content~'POST_DATA=a=1&b=onevalue'"), [(200, '/echo'), (200, '/echo')], None),
+    ("test_all_params_post", "%s" % ECHO_URL, [["onevalue"]], dict(allvars="allpost", postdata="a=1&b=2", filter="content~'command=POST' and (content~'a=onevalue' and content~'b=2') or (content~'a=1' and content~'b=onevalue')"), [(200, '/echo'), (200, '/echo')], None),
 
     # simple filter
     ("test_codes_HC", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[404]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
@@ -152,6 +208,7 @@ basic_tests = [
     ("test_filter_hw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="h=28 or w=6"), [(200, '/dir/a')], None),
     ("test_filter_intext", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content~'one'"), [(200, '/dir/a'), (200, '/dir/b')], None),
     ("test_filter_intext2", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content!~'one'"), [(200, '/dir/c')], None),
+    ("test_dict_filter_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="r.params.get~'value1'"), [(200, '/echo')], None),
 
     # baseline
     ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
@@ -172,6 +229,7 @@ basic_tests = [
     # plugins
     ("test_robots", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(script="robots"), [(404, '/cal_endar/'), (404, '/crawlsnags/'), (404, '/osrun/'), (200, '/plugins/robots.txt'), (200, '/static/')], None),
     ("test_robots_hc", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(hc=[404], script="robots"), [(200, '/plugins/robots.txt'), (200, '/static/')], None),
+    ("test_plugins_filter", "%s/FUZZ" % HTTPBIN_URL, [["anything"]], dict(script='headers', filter="plugins~'unicorn'"), [(200, '/anything')], None),
 ]
 
 scanmode_tests = [
@@ -188,7 +246,7 @@ error_tests = [
     ("test_all_params_no_var", "%s:8000/echo" % LOCAL_DOMAIN, [["avalue"]], dict(allvars="allvars", filter="content~'query=var=avalue&var2=2' or content~'var=1&var2=avalue'"), [(200, '/echo'), (200, '/echo')], "No variables on specified variable set"),
     ("test_bad_port", "%s:6666/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(), [], 'Failed to connect to localhost port 6666'),
     ("test_bad_num_payloads", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1)), list(range(1))], dict(), [], 'FUZZ words and number of payloads do not match'),
-    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(proxies=[("localhost", 888, "HTML")]), [], 'Failed to connect to localhost port 888'),
+    ("test_bad_proxy", "%s:8000/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(proxies=[("localhost", 888, "HTTP")]), [], 'Failed to connect to localhost port 888'),
     ("test_bad_num_dic", "%s:8000/iterators/FUZZ" % LOCAL_DOMAIN, [list(range(1))], dict(iterator="zip"), [], 'Several dictionaries must be used when specifying an iterator'),
 ]
 
@@ -221,6 +279,10 @@ def wfuzz_me_test_generator(url, payloads, params, expected_list, extra_params):
                     proxied_url = proxied_url.replace(original_host, proxied_host)
                     if proxied_payloads:
                         proxied_payloads = [[payload.replace(original_host, proxied_host) for payload in payloads_list] for payloads_list in proxied_payloads]
+
+                if 'connect_to_ip' in extra_params and extra_params['connect_to_ip']:
+                    extra_params['connect_to_ip']['ip'] = 'httpbin'
+                    extra_params['connect_to_ip']['port'] = '80'
 
             with wfuzz.FuzzSession(url=proxied_url) as s:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(proxied_payloads).fuzz(**extra_params)]
@@ -293,13 +355,33 @@ def wfuzz_me_test_generator_recipe(url, payloads, params, expected_list):
             ret_list = [(x.code, x.history.urlparse.path) for x in fuzzed]
 
         # repeat test with recipe as only parameter
-        with wfuzz.FuzzSession(recipe=filename) as s:
+        with wfuzz.FuzzSession(recipe=[filename]) as s:
             if payloads is None:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.fuzz()]
             else:
                 same_list = [(x.code, x.history.urlparse.path) for x in s.get_payloads(payloads).fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(same_list))
+
+    return test
+
+
+def wfuzz_me_test_generator_previous_session(prev_session_cli, next_session_cli, expected_list):
+    def test(self):
+        temp_name = next(tempfile._get_candidate_names())
+        defult_tmp_dir = tempfile._get_default_tempdir()
+
+        filename = os.path.join(defult_tmp_dir, temp_name)
+
+        # first session
+        with wfuzz.get_session(prev_session_cli) as s:
+            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz(save=filename)]
+
+        # second session wfuzzp as payload
+        with wfuzz.get_session(next_session_cli.replace("$$PREVFILE$$", filename)) as s:
+            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz()]
+
+        self.assertEqual(sorted(ret_list), sorted(expected_list))
 
     return test
 
@@ -332,12 +414,13 @@ def duplicate_tests_diff_params(test_list, group, next_extra_params, previous_ex
         if group == "_proxy_" and "encode" in test_name:
             continue
 
-        next_extra = dict(list(params.items()) + list(next_extra_params.items()))
+        next_extra = copy.deepcopy(params)
+        next_extra.update(next_extra_params)
         new_test = "%s_%s" % (test_name, group)
 
-        prev_extra = params
+        prev_extra = copy.deepcopy(params)
         if previous_extra_params:
-            prev_extra = dict(list(params.items()) + list(previous_extra_params.items()))
+            prev_extra.update(previous_extra_params)
 
         create_test(new_test, url, payloads, prev_extra, None, next_extra, exception_str)
 
@@ -358,22 +441,43 @@ def duplicate_tests(test_list, group, test_gen_fun):
             setattr(DynamicTests, new_test, test_fn)
 
 
+def create_savedsession_tests(test_list, test_gen_fun):
+    """
+    generates wfuzz tests that run 2 times with recipe input, expecting same results.
+
+    """
+    for test_name, prev_cli, next_cli, expected_res, exception_str in test_list:
+        test_fn = test_gen_fun(prev_cli, next_cli, expected_res)
+        if exception_str:
+            test_fn_exc = wfuzz_me_test_generator_exception(test_fn, exception_str)
+            setattr(DynamicTests, test_name, test_fn_exc)
+        else:
+            setattr(DynamicTests, test_name, test_fn)
+
+
 def create_tests():
     """
     Creates all dynamic tests
 
     """
+    if testing_savedsession_tests:
+        create_savedsession_tests(testing_savedsession_tests, wfuzz_me_test_generator_previous_session)
+        return
+
     if testing_tests:
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
         duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
-        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
+        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
         basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
 
         for t in basic_functioning_tests:
             create_tests_from_list(t)
+
+        # description tests
+        create_savedsession_tests(savedsession_tests, wfuzz_me_test_generator_previous_session)
 
         # duplicate tests with recipe
         duplicate_tests(basic_tests, "recipe", wfuzz_me_test_generator_recipe)
@@ -382,7 +486,7 @@ def create_tests():
         duplicate_tests(basic_tests, "saveres", wfuzz_me_test_generator_saveres)
 
         # duplicate tests with proxy
-        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTML")]), None)
+        duplicate_tests_diff_params(basic_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
 
 
 create_tests()

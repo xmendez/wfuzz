@@ -1,17 +1,22 @@
+import re
 import sys
 import getopt
 from collections import defaultdict
 
+from wfuzz.utils import allowed_fields, get_path
 from wfuzz.filter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
 from wfuzz.exception import FuzzException, FuzzExceptBadOptions, FuzzExceptBadInstall
-from .common import help_banner
+from .common import help_banner, exec_banner
 from .common import usage
 from .common import brief_usage
 from .common import verbose_usage
 from wfuzz import __version__ as version
 from .output import table_print
+
+short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
+long_opts = ['efield=', 'no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
 
 
 class CLParser:
@@ -35,6 +40,9 @@ class CLParser:
         table_print([x[cols:] for x in Facade().proxy(registrant).get_plugins_ext(category)])
         sys.exit(0)
 
+    def show_plugins_names(self, registrant):
+        print("\n".join(Facade().proxy(registrant).get_plugins_names("$all$")))
+
     def show_plugin_ext_help(self, registrant, category="$all$"):
         for p in Facade().proxy(registrant).get_plugins(category):
             print("Name: %s %s" % (p.name, p.version))
@@ -54,12 +62,12 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:", ['AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev'])
+            opts, args = getopt.getopt(self.argv[1:], short_opts, long_opts)
             optsd = defaultdict(list)
 
             payload_cache = {}
             for i, j in opts:
-                if i in ["-z", "--zP", "--slice", "-w"]:
+                if i in ["-z", "--zP", "--slice", "-w", "--zD", "--zE"]:
                     if i in ["-z", "-w"]:
                         if payload_cache:
                             optsd["payload"].append(payload_cache)
@@ -93,9 +101,6 @@ class CLParser:
 
                 cli_url = optsd["-u"][0]
 
-            if url == "FUZZ" or cli_url == "FUZZ":
-                options["seed_payload"] = True
-
             if cli_url:
                 url = cli_url
 
@@ -104,7 +109,8 @@ class CLParser:
 
             # parse options from recipe first
             if "--recipe" in optsd:
-                options.import_from_file(optsd["--recipe"][0])
+                for recipe in optsd["--recipe"]:
+                    options.import_from_file(recipe)
 
             # command line has priority over recipe
             self._parse_options(optsd, options)
@@ -115,12 +121,14 @@ class CLParser:
             self._parse_scripts(optsd, options)
 
             if "--dump-recipe" in optsd:
-                error = options.validate()
-                if error:
-                    raise FuzzExceptBadOptions(error)
+                print(exec_banner)
+
+                for error_msg in options.validate():
+                    print("WARNING: {}".format(error_msg))
+
+                print("")
 
                 options.export_to_file(optsd["--dump-recipe"][0])
-                print(help_banner)
                 print("Recipe written to %s." % (optsd["--dump-recipe"][0],))
                 sys.exit(0)
 
@@ -148,6 +156,15 @@ class CLParser:
             self.show_verbose_usage()
             sys.exit(0)
 
+        if "--filter-help" in optsd:
+            text_regex = re.compile("Filter Language\n---------------\n\n(.*?)Filtering results", re.MULTILINE | re.DOTALL)
+            try:
+                print(text_regex.search(open(get_path("../docs/user/advanced.rst")).read()).group(1))
+            except IOError:
+                print(text_regex.search(open(get_path("../../docs/user/advanced.rst")).read()).group(1))
+
+            sys.exit(0)
+
         # Extensions help
         if "--script-help" in optsd:
             script_string = optsd["--script-help"][0]
@@ -155,6 +172,30 @@ class CLParser:
                 script_string = "$all$"
 
             self.show_plugin_ext_help("scripts", category=script_string)
+
+        if "--ee" in optsd:
+            if "payloads" in optsd["--ee"]:
+                self.show_plugins_names("payloads")
+            elif "encoders" in optsd["--ee"]:
+                self.show_plugins_names("encoders")
+            elif "iterators" in optsd["--ee"]:
+                self.show_plugins_names("iterators")
+            elif "printers" in optsd["--ee"]:
+                self.show_plugins_names("printers")
+            elif "scripts" in optsd["--ee"]:
+                self.show_plugins_names("scripts")
+            elif "fields" in optsd["--ee"]:
+                print('\n'.join(allowed_fields))
+            elif "files" in optsd["--ee"]:
+                print('\n'.join(Facade().sett.get('general', 'lookup_dirs').split(",")))
+            elif "registrants" in optsd["--ee"]:
+                print('\n'.join(Facade().get_registrants()))
+            elif "options" in optsd["--ee"]:
+                print("\n".join(["-{}".format(opt) for opt in short_opts.replace(":", "")]))
+                print("\n".join(["--{}".format(opt.replace("=", "")) for opt in long_opts]))
+            else:
+                raise FuzzExceptBadOptions("Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
+            sys.exit(0)
 
         if "-e" in optsd:
             if "payloads" in optsd["-e"]:
@@ -186,7 +227,7 @@ class CLParser:
 
     def _check_options(self, optsd):
         # Check for repeated flags
-        opt_list = [i for i in optsd if i not in ["-z", "--zP", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
+        opt_list = [i for i in optsd if i not in ["--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
         if opt_list:
             raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(opt_list))
 
@@ -274,12 +315,23 @@ class CLParser:
             else:
                 name = vals[0]
 
+            default_param_cli = payload["--zD"] if "--zD" in payload else None
+            if default_param_cli and default_param:
+                raise FuzzExceptBadOptions("--zD and -z parameters are exclusive.")
+            elif default_param_cli:
+                default_param = default_param_cli
+
             if extraparams:
                 params = dict([x.split("=", 1) for x in extraparams.split(",")])
             if default_param:
                 params['default'] = default_param
 
             encoders = vals[2] if len(vals) == 3 else None
+            encoders_cli = payload["--zE"] if "--zE" in payload else None
+            if encoders_cli and encoders:
+                raise FuzzExceptBadOptions("--zE and -z encoders are exclusive.")
+            elif encoders_cli:
+                encoders = encoders_cli
 
             if encoders:
                 params['encoder'] = encoders.split("-")
@@ -329,6 +381,25 @@ class CLParser:
         if "--follow" in optsd or "-L" in optsd:
             options['follow'] = True
 
+        if "--field" in optsd:
+            options['description'] = optsd["--field"][0]
+            options["show_field"] = True
+        elif "--efield" in optsd:
+            options['description'] = optsd["--efield"][0]
+            options["show_field"] = False
+        else:
+            options["show_field"] = None
+
+        if "--ip" in optsd:
+            splitted = optsd["--ip"][0].partition(":")
+            if not splitted[0]:
+                raise FuzzExceptBadOptions("An IP must be specified")
+
+            options["connect_to_ip"] = {
+                "ip": splitted[0],
+                "port": splitted[2] if splitted[2] else "80"
+            }
+
         if "-d" in optsd:
             options['postdata'] = optsd["-d"][0]
 
@@ -364,7 +435,7 @@ class CLParser:
                 vals = p.split(":")
 
                 if len(vals) == 2:
-                    proxy.append((vals[0], vals[1], "HTML"))
+                    proxy.append((vals[0], vals[1], "HTTP"))
                 elif len(vals) == 3:
                     proxy.append((vals[0], vals[1], vals[2]))
                 else:
@@ -409,6 +480,9 @@ class CLParser:
 
         if "--prev" in optsd:
             options["previous"] = True
+
+        if "--no-cache" in optsd:
+            options["no_cache"] = True
 
         if "-c" in optsd:
             options["colour"] = True
