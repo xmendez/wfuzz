@@ -125,13 +125,16 @@ Alternatively, it can be done manually:
 2. mkdir ~/python-pycurl-openssl
 3. cd ~/python-pycurl-openssl
 4. sudo apt-get source python-pycurl
-5. sudo apt-get build-dep python-pycurl
-6. sudo apt-get install libcurl4-openssl-dev
-7. sudo dpkg-source -x pycurl_7.19.0-3build1.dsc
-8. cd pycurl-7.19.0
-9. edit debian/control file and replace all instances of “libcurl4-gnutls-dev” with “libcurl4-openssl-dev”
-10. sudo PYCURL_SSL_LIBRARY=openssl dpkg-buildpackage -rfakeroot -b
-11. sudo dpkg -i ../python-pycurl_7.19.0-3build1_i386.deb
+5. sudo apt-get build-dep python-pycurl -y
+6. sudo apt-get install libcurl4-openssl-dev -y
+*** CAUTION: BE CAREFUL WITH THIS OR DELETE THE DIRECTORY MANUALLY TO BE SAFE ***
+7. sudo rm -r ./*/ ; dpkg-source -x pycurl_7*.dsc # *** CAUTION: BE CAREFUL WITH THIS OR DELETE THE DIRECTORY MANUALLY TO BE SAFE ***
+8. cd pycurl*/
+9. edit debian/control file and replace all instances of “libcurl4-gnutls-dev” with “libcurl4-openssl-dev”:
+sed -i 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/g' debian/control
+sed -i 's/rm -f/rm -rf/g' debian/rules # fix debian/rules 'rm -r' typo preventing existing directory delete
+10. sudo PYCURL_SSL_LIBRARY=openssl; dpkg-buildpackage -rfakeroot -b -uc -us
+11. sudo dpkg -i ../python-pycurl_7*.deb
 
 If there is still the error::
 
