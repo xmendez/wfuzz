@@ -42,9 +42,9 @@ def main():
         printer.header(fz.genReq.stats)
 
         for res in fz:
-            printer.result(res)
+            printer.result(res, fz.genReq.stats)
 
-        printer.footer(fz.genReq.stats)
+        printer.footer(fz.genReq.stats, rm_extra=True)
     except FuzzException as e:
         print("\nFatal exception: {}".format(str(e)))
     except KeyboardInterrupt:

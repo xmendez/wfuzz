@@ -1,3 +1,5 @@
+
+
 import sys
 from collections import defaultdict
 import threading
@@ -189,18 +191,24 @@ class View:
         print("")
 
     def _print_line(self, rows, maxWidths):
+        # print("calling _print_line")
         def wrap_row(rows, maxWidths):
             newRows = [wrap_always(item[0], width).split('\n') for item, width in zip(rows, maxWidths)]
             return [[substr or '' for substr in item] for item in zip_longest(*newRows)]
 
         new_rows = wrap_row(rows, maxWidths)
 
+        # print("row length", len(new_rows))
         for row in new_rows[:-1]:
-            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
+            a = "   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])])
+            # print("a: ", a)
+            sys.stdout.write(a)
             sys.stdout.write("\n\r")
 
         for row in new_rows[-1:]:
-            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
+            a = "   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])])
+            # print("a: ", a)
+            sys.stdout.write(a)
 
         sys.stdout.flush()
         return len(new_rows)
@@ -259,14 +267,19 @@ class View:
 
         self._print_header(rows, widths)
 
-    def result(self, res):
+    def result(self, res, summary=None):
         self.term.erase_lines(self.printed_lines)
+        if summary and res.nres and res.nres != 1:
+            sys.stdout.write('\x1b[1A')  # cursor up
+            self.term.erase_lines(self.printed_lines)
 
+        # print temp result
         if self.verbose:
             self._print_verbose(res)
         else:
             self._print(res)
 
+        # print if not filtered out
         if res.type == FuzzResult.result:
             if self.previous and len(res.payload) > 0 and isinstance(res.payload[0].content, FuzzResult):
                 sys.stdout.write("\n\r")
@@ -288,8 +301,20 @@ class View:
             for i in range(self.printed_lines):
                 sys.stdout.write("\n\r")
 
-    def footer(self, summary):
-        self.term.erase_lines(self.printed_lines + 1)
+        # print progress
+        self._print_progress(res, summary)
+
+    @staticmethod
+    def _print_progress(res, summary):
+        highlight_color = "\033[1;32;40m"
+        normal_text_color = "\033[0;37;40m"
+
+        if summary and res.nres:
+            progress = (res.nres / summary.total_req) * 100
+            sys.stdout.write("\n" + highlight_color + f"[ {round(progress, 2)}% ]" + normal_text_color)
+
+    def footer(self, summary, rm_extra=False):
+        self.term.erase_lines(self.printed_lines + 1 if not rm_extra else self.printed_lines + 2)
         sys.stdout.write("\n\r")
         sys.stdout.write("\n\r")
 
