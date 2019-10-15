@@ -253,5 +253,25 @@ class FuzzRequestTest(unittest.TestCase):
 
         self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
 
+    def test_cache_key_get_var(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?a&b=1"
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-ga-gb')
+
+    def test_get_vars(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?a&b=1"
+        self.assertEqual(fr.params.get, {'a': None, 'b': '1'})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?"
+        self.assertEqual(fr.params.get, {})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        self.assertEqual(fr.params.get, {})
+
+
 if __name__ == '__main__':
     unittest.main()
