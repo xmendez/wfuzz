@@ -237,6 +237,21 @@ class FuzzRequestTest(unittest.TestCase):
         fr.params.post = ''
         self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p')
 
+    def test_cache_key_json_header_before(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+        fr.headers.request = {'Content-Type': 'application/json'}
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
+
+    def test_cache_key_json_header_after(self):
+        fr = FuzzRequest()
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
 
 if __name__ == '__main__':
     unittest.main()
