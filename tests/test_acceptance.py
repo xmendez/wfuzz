@@ -49,6 +49,8 @@ savedsession_tests = [
     ("test_novalue_post_fuzz", "-z list --zD a -u {}/anything -d FUZZ".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
     ("test_json_post_fuzz2", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.a", ["2"], None),
     ("test_json_post_fuzz3", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
+    ("test_json_nested", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.nested.this", [2], None),
+    ("test_json_nested2", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.another", [1], None),
 
     # field fuzz values
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
@@ -443,7 +445,7 @@ def duplicate_tests(test_list, group, test_gen_fun):
 
 def create_savedsession_tests(test_list, test_gen_fun):
     """
-    generates wfuzz tests that run 2 times with recipe input, expecting same results.
+    generates wfuzz tests that run 2 times with a saved session, expecting same results.
 
     """
     for test_name, prev_cli, next_cli, expected_res, exception_str in test_list:
