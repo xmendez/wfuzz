@@ -18,7 +18,7 @@ from collections import defaultdict
 
 from .filter import FuzzResFilter
 from .externals.reqresp import Request, Response
-from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
+from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
 from .facade import Facade, ERROR_CODE
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
@@ -114,18 +114,22 @@ class params(object):
 
     @property
     def post(self):
-        if self._req._non_parsed_post is None:
-            return params.param([(x.name, x.value) for x in self._req.getPOSTVars()])
-        else:
-            return self._req.postdata
+        return params.param([(x.name, x.value) for x in self._req.getPOSTVars()])
 
     @post.setter
     def post(self, pp):
         if isinstance(pp, dict):
             for key, value in pp.items():
                 self._req.setVariablePOST(key, str(value) if value is not None else value)
+
+            self._req._non_parsed_post = self._req._variablesPOST.urlEncoded()
+
         elif isinstance(pp, str):
             self._req.setPostData(pp)
+
+    @property
+    def raw_post(self):
+        return self._req._non_parsed_post
 
     @property
     def all(self):
@@ -330,8 +334,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self._request.parseRequest(raw, scheme)
 
         # Parse request sets postdata = '' when there's POST request without data
-        if self.method == "POST" and not self.params.post:
-            self.params.post = {'': None}
+        if self.method == "POST" and self.params.raw_post is None:
+            self.params.post = ''
 
         if raw_response:
             rp = Response()
@@ -394,7 +398,7 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.wf_ip = self.wf_ip
 
         newreq.headers.request = self.headers.request
-        newreq.params.post = self.params.post
+        newreq.params.post = self.params.raw_post
 
         newreq.follow = self.follow
         newreq.auth = self.auth

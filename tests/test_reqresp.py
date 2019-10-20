@@ -118,11 +118,34 @@ class FuzzRequestTest(unittest.TestCase):
         fr.url = "www.wfuzz.org"
         self.assertEqual(fr.host, "www.wfuzz.org")
 
+    def test_empy_post(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = ''
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'': None})
+        self.assertEqual(fr.params.raw_post, '')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = {}
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {})
+        self.assertEqual(fr.params.raw_post, '')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = None
+        self.assertEqual(fr.method, "GET")
+        self.assertEqual(fr.params.post, {})
+        self.assertEqual(fr.params.raw_post, None)
+
     def test_setpostdata(self):
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = 'a=1'
         self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.raw_post, 'a=1')
         self.assertEqual(fr.params.post, {'a': '1'})
 
         fr = FuzzRequest()
@@ -130,43 +153,27 @@ class FuzzRequestTest(unittest.TestCase):
         fr.params.post = '1'
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'1': None})
-
-        fr = FuzzRequest()
-        fr.url = "http://www.wfuzz.org/"
-        fr.params.post = ''
-        self.assertEqual(fr.method, "POST")
-        self.assertEqual(fr.params.post, {'': None})
-
-        fr = FuzzRequest()
-        fr.url = "http://www.wfuzz.org/"
-        fr.params.post = {}
-        self.assertEqual(fr.method, "GET")
-        self.assertEqual(fr.params.post, {})
+        self.assertEqual(fr.params.raw_post, '1')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'a': 1}
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
+        self.assertEqual(fr.params.raw_post, 'a=1')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = {'a': '1'}
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {'a': '1'})
+        self.assertEqual(fr.params.raw_post, 'a=1')
 
         fr = FuzzRequest()
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = "{'a': '1'}"
         self.assertEqual(fr.method, "POST")
         self.assertEqual(fr.params.post, {"{'a': '1'}": None})
-
-        fr = FuzzRequest()
-        fr.url = "http://www.wfuzz.org/"
-        fr.params.post = '1'
-        fr.headers.request = {'Content-Type': 'application/json'}
-        self.assertEqual(fr.method, "POST")
-        self.assertEqual(fr.params.post, {'1': None})
 
     def test_setgetdata(self):
         fr = FuzzRequest()
@@ -236,6 +243,72 @@ class FuzzRequestTest(unittest.TestCase):
         fr.url = "http://www.wfuzz.org/"
         fr.params.post = ''
         self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p')
+
+    def test_cache_key_json_header_before(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+        fr.headers.request = {'Content-Type': 'application/json'}
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
+
+    def test_cache_key_json_header_after(self):
+        fr = FuzzRequest()
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-p1')
+
+    def test_cache_key_get_var(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?a&b=1"
+
+        self.assertEqual(fr.to_cache_key(), 'http://www.wfuzz.org/-ga-gb')
+
+    def test_get_vars(self):
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?a&b=1"
+        self.assertEqual(fr.params.get, {'a': None, 'b': '1'})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/?"
+        self.assertEqual(fr.params.get, {})
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        self.assertEqual(fr.params.get, {})
+
+    def test_setpostdata_with_json(self):
+        fr = FuzzRequest()
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '{"string": "Foo bar","boolean": false}'
+        self.assertEqual(fr.params.post, {'string': 'Foo bar', 'boolean': False})
+
+        fr = FuzzRequest()
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '{"array": [1,2]}'
+        self.assertEqual(fr.params.post, {'array': [1, 2]})
+
+    def test_post_bad_json(self):
+        fr = FuzzRequest()
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.url = "http://www.wfuzz.org/"
+        fr.params.post = '1'
+
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'1': None})
+        self.assertEqual(fr.params.raw_post, '1')
+
+        fr = FuzzRequest()
+        fr.url = "http://www.wfuzz.org/"
+        fr.headers.request = {'Content-Type': 'application/json'}
+        fr.params.post = 'a=1'
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.raw_post, "a=1")
+        self.assertEqual(fr.params.post, {'a': '1'})
 
 
 if __name__ == '__main__':

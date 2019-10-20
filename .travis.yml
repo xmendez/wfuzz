@@ -7,6 +7,7 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
@@ -32,3 +33,7 @@ deploy:
       - /^v.*$/
     tags: true
     python: 3.6
+addons:
+  apt:
+    packages:
+    - libcurl4-openssl-dev

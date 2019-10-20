@@ -508,7 +508,8 @@ headers.request.<<name>>     Specified HTTP request given header
 headers.response.<<name>>    Specified HTTP response given header
 params.all                   All HTTP request GET and POST parameters
 params.get                   All HTTP request GET parameters
-params.post                  All HTTP request POST parameters
+params.post                  HTTP request POST parameters in returned as a dictionary
+params.raw_post              HTTP request POST parameters payload
 params.get.<<name>>          Spcified HTTP request GET parameter
 params.post.<<name>>         Spcified HTTP request POST parameter
 pstrip                       Returns a signature of the HTTP request using the parameter's names without values (useful for unique operations)
@@ -516,7 +517,7 @@ is_path                      Returns true when the HTTP request path refers to a
 reqtime                      Returns the total time that HTTP request took to be retrieved
 ============================ =============================================
 
-It is worth noting that Wfuzz will try to parse the POST parameters according to the specified content type header. Currently, application/x-www-form-urlencoded, multipart/form-dat and application/json are supported.
+It is worth noting that Wfuzz will try to parse the POST parameters according to the specified content type header. Currently, application/x-www-form-urlencoded, multipart/form-dat and application/json are supported. This is prone to error depending on the data format, raw_post will not try to do any processing.
 
 FuzzRequest URL field is broken in smaller (read only) parts using the urlparse Python's module in the urlp attribute.
 

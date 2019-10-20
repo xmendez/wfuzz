@@ -83,11 +83,11 @@ class VariablesSet:
 
         for i in cad.split("&"):
             if i:
-                list = i.split("=", 1)
-                if len(list) == 1:
-                    dicc.append(Variable(list[0], None))
-                elif len(list) == 2:
-                    dicc.append(Variable(list[0], list[1]))
+                var_list = i.split("=", 1)
+                if len(var_list) == 1:
+                    dicc.append(Variable(var_list[0], None))
+                elif len(var_list) == 2:
+                    dicc.append(Variable(var_list[0], var_list[1]))
 
         self.variables = dicc
 
