@@ -60,4 +60,4 @@ class wfuzzp(BasePayload):
         except IOError as e:
             raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))
         except EOFError:
-            raise StopIteration
+            return
