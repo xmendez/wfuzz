@@ -9,6 +9,7 @@ python:
   - "3.6"
   - "3.7"
 before_install:
+  - apt install -y libcurl4-openssl-dev
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
   - pip install coverage 
