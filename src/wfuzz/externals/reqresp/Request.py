@@ -50,7 +50,7 @@ class Request:
         self.multiPOSThead = {}
 
         self.__variablesGET = VariablesSet()
-        self.__variablesPOST = VariablesSet()
+        self._variablesPOST = VariablesSet()
         self._non_parsed_post = None
 
         # diccionario, por ejemplo headers["Cookie"]
@@ -89,7 +89,7 @@ class Request:
     @property
     def method(self):
         if self._method is None:
-            return "POST" if (self.getPOSTVars() or self._non_parsed_post is not None) else "GET"
+            return "POST" if self._non_parsed_post is not None else "GET"
 
         return self._method
 
@@ -148,17 +148,14 @@ class Request:
         elif name == "path":
             return self.__path
         elif name == "postdata":
-            if self._non_parsed_post is not None:
-                return self._non_parsed_post
-
             if self.ContentType == "application/x-www-form-urlencoded":
-                return self.__variablesPOST.urlEncoded()
+                return self._variablesPOST.urlEncoded()
             elif self.ContentType == "multipart/form-data":
-                return self.__variablesPOST.multipartEncoded()
+                return self._variablesPOST.multipartEncoded()
             elif self.ContentType == 'application/json':
-                return self.__variablesPOST.json_encoded()
+                return self._variablesPOST.json_encoded()
             else:
-                return self.__variablesPOST.urlEncoded()
+                return self._variablesPOST.urlEncoded()
         else:
             raise AttributeError
 
@@ -210,10 +207,10 @@ class Request:
         return self.__variablesGET.existsVar(key)
 
     def existPOSTVar(self, key):
-        return self.__variablesPOST.existsVar(key)
+        return self._variablesPOST.existsVar(key)
 
     def setVariablePOST(self, key, value):
-        v = self.__variablesPOST.getVariable(key)
+        v = self._variablesPOST.getVariable(key)
         v.update(value)
 #       self._headers["Content-Length"] = str(len(self.postdata))
 
@@ -225,21 +222,25 @@ class Request:
         return self.__variablesGET.variables
 
     def getPOSTVars(self):
-        return self.__variablesPOST.variables
+        return self._variablesPOST.variables
 
     def setPostData(self, pd, boundary=None):
+        self._non_parsed_post = pd
+        self._variablesPOST = VariablesSet()
+
         try:
-            self.__variablesPOST = VariablesSet()
-            if self.ContentType == "application/x-www-form-urlencoded":
-                self.__variablesPOST.parseUrlEncoded(pd)
-            elif self.ContentType == "multipart/form-data":
-                self.__variablesPOST.parseMultipart(pd, boundary)
+            if self.ContentType == "multipart/form-data":
+                self._variablesPOST.parseMultipart(pd, boundary)
             elif self.ContentType == 'application/json':
-                self.__variablesPOST.parse_json_encoded(pd)
+                self._variablesPOST.parse_json_encoded(pd)
             else:
-                self.__variablesPOST.parseUrlEncoded(pd)
+                self._variablesPOST.parseUrlEncoded(pd)
         except Exception:
-            self._non_parsed_post = pd
+            try:
+                self._variablesPOST.parseUrlEncoded(pd)
+            except Exception:
+                print("Warning: POST parameters not parsed")
+                pass
 
 ############################################################################
 
@@ -345,8 +346,8 @@ class Request:
         else:
             c.setopt(pycurl.CUSTOMREQUEST, req.method)
 
-        if req.getPOSTVars() or req._non_parsed_post is not None:
-            c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req.postdata))
+        if req._non_parsed_post is not None:
+            c.setopt(pycurl.POSTFIELDS, python2_3_convert_to_unicode(req._non_parsed_post))
 
         c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
 
@@ -393,7 +394,7 @@ class Request:
     # ######## ESTE conjunto de funciones no es necesario para el uso habitual de la clase
 
     def getAll(self):
-        pd = self.postdata
+        pd = self._non_parsed_post if self._non_parsed_post else ''
         string = str(self.method) + " " + str(self.pathWithVariables) + " " + str(self.protocol) + "\n"
         for i, j in self._headers.items():
             string += i + ": " + j + "\n"
@@ -421,7 +422,7 @@ class Request:
         tp = TextParser()
         tp.setSource("string", rawRequest)
 
-        self.__variablesPOST = VariablesSet()
+        self._variablesPOST = VariablesSet()
         self._headers = {}                # diccionario, por ejemplo headers["Cookie"]
 
         tp.readLine()
