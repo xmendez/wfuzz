@@ -339,7 +339,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
         if raw_response:
             rp = Response()
-            raw_response = python2_3_convert_from_unicode(raw_response.decode("utf-8", errors='surrogateescape'))
+            if not isinstance(raw_response, str):
+                raw_response = python2_3_convert_from_unicode(raw_response.decode("utf-8", errors='surrogateescape'))
             rp.parseResponse(raw_response, raw_content)
             self._request.response = rp
 
