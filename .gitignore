@@ -60,3 +60,6 @@ target/
 *.swo
 
 wfuzz.ini
+
+# Jetbrains IDE
+.idea
