@@ -4,18 +4,9 @@
 #
 #    pip-compile --output-file requirements.txt setup.py
 #
-certifi==2019.6.16        # via requests
 chardet==3.0.4
-click-plugins==1.1.1      # via shodan
-click==7.0                # via click-plugins, shodan
-colorama==0.4.1           # via shodan
 configparser==3.5.0
 future==0.17.1
-idna==2.8                 # via requests
 pycurl==7.43.0.2
 pyparsing==2.3.0
-requests==2.22.0          # via shodan
-shodan==1.13.0
 six==1.11.0
-urllib3==1.25.3           # via requests
-xlsxwriter==1.1.8         # via shodan
