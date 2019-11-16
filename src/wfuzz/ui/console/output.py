@@ -132,8 +132,6 @@ def _getTerminalSize_linux():
     import struct
     import os
 
-    terminalSize = None
-
     def ioctl_GWINSZ(fd):
         try:
             cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
@@ -153,8 +151,4 @@ def _getTerminalSize_linux():
             cr = (os.environ.get('LINES'), os.environ.get('COLUMNS'))
         except Exception:
             return None
-    try:
-        terminalSize = [int(cr[1]), int(cr[0])]
-    except Exception:
-        terminalSize = None
-    return terminalSize
+    return int(cr[1]), int(cr[0])
