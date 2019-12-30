@@ -131,6 +131,6 @@ class VariablesSet:
             if value[-2:] == "\r\n":
                 value = value[:-2]
 
-            dicc.append(Variable(var, value, headers))
+            dicc.append(Variable(var, value.strip(), headers))
 
         self.variables = dicc

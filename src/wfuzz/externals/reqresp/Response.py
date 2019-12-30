@@ -176,6 +176,9 @@ class Response:
                 self._headers = []
 
         # TODO: this might add to rawbody not directly to __content
+        if tp.lastFull_line:
+            self.addContent(tp.lastFull_line)
+
         while tp.skip(1):
             self.addContent(tp.lastFull_line)
 
