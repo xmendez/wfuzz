@@ -450,7 +450,7 @@ class Request:
         pd = ""
         # TODO: hacky, might need to change tp.readline returning read bytes instead
         while tp.readLine():
-            pd += tp.lastline
+            pd += tp.lastFull_line
 
         if pd:
             boundary = None
