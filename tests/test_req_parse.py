@@ -2,6 +2,37 @@ import unittest
 
 from wfuzz.fuzzobjects import FuzzRequest
 
+
+http_post_request = '''POST /slipstream/view HTTP/1.1
+Host: www
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0
+Accept: */*
+Accept-Language: en-GB,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: https://www
+Content-Type: text/plain;charset=UTF-8
+Origin: https://www
+Content-Length: 3387
+Connection: close
+
+
+
+a=1'''
+
+
+http_get_request = '''GET /sttc/bpk-fonts/55b577a1.woff2 HTTP/1.1
+Host: js.skyscnr.com
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0
+Accept: application/font-woff2;q=1.0,application/font-woff;q=0.9,*/*;q=0.8
+Accept-Language: en-GB,en;q=0.5
+Accept-Encoding: gzip, deflate
+Origin: https://www.skyscanner.es
+Connection: close
+Referer: https://js.skyscnr.com/sttc/oc-registry/components/base-stylesheet/0.1.33/build//static/css/main.e09b44e2.css
+
+
+'''
+
 http_response = '''HTTP/1.1 201 Created
 Content-Type: application/json
 Content-Length: 51
@@ -113,3 +144,17 @@ class ParseRequestTest(unittest.TestCase):
 
         self.assertEqual(fr.content, "LINE_1")
         self.assertEqual(fr.code, 200)
+
+    def test_parse_get_crlf_request(self):
+        fr = FuzzRequest()
+        fr.update_from_raw_http(http_get_request, "https", "\n\n\n")
+
+        self.assertEqual(fr.method, "GET")
+        self.assertEqual(fr.params.raw_post, None)
+
+    def test_parse_crlf_post_request(self):
+        fr = FuzzRequest()
+        fr.update_from_raw_http(http_post_request, "https", "\n\n\n")
+
+        self.assertEqual(fr.method, "POST")
+        self.assertEqual(fr.params.post, {'a': '1'})

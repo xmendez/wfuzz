@@ -175,7 +175,11 @@ class Response:
             else:
                 self._headers = []
 
-        # TODO: this might add to rawbody not directly to __content
+        # ignore CRLFs until request line
+        while tp.lastline == '' and tp.readLine():
+            pass
+
+        # TODO: this should be added to rawbody not directly to __content
         if tp.lastFull_line:
             self.addContent(tp.lastFull_line)
 
