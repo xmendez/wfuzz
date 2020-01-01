@@ -565,21 +565,6 @@ class FuzzResultFactory:
         return baseline_res
 
     @staticmethod
-    def from_all_fuzz_request(seed, payload):
-        # only a fuzz payload is allowed using this technique
-        if len(payload) > 1:
-            raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
-
-        for var_name in seed.history.wf_allvars_set.keys():
-            payload_content = payload[0]
-            fuzzres = seed.from_soft_copy()
-            fuzzres.payload.append(FuzzPayload(payload_content, [None]))
-
-            fuzzres.history.wf_allvars_set = {var_name: payload_content}
-
-            yield fuzzres
-
-    @staticmethod
     def from_options(options):
         fr = FuzzRequest()
 

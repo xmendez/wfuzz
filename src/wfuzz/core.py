@@ -1,15 +1,13 @@
 from .fuzzobjects import FuzzResult
 
 from .myqueues import MyPriorityQueue, QueueManager
-from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver
+from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver, AllVarQ
 
 from .fuzzobjects import FuzzResultFactory, FuzzStats
 from .facade import Facade
 from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 
 from .filter import FuzzResFilterSlice
-
-import re
 
 # Python 2 and 3: zip_longest
 try:
@@ -102,10 +100,6 @@ class requestGenerator(object):
 
         self.stats = FuzzStats.from_requestGenerator(self)
 
-        self._allvar_gen = None
-        if self.seed.history.wf_allvars is not None:
-            self._allvar_gen = self.__allvars_gen(self.dictio)
-
     def stop(self):
         self.stats.cancelled = True
         self.close()
@@ -131,19 +125,6 @@ class requestGenerator(object):
     def __iter__(self):
         return self
 
-    def __allvars_gen(self, dic):
-        # no FUZZ keyword allowed
-        marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
-        if len(marker_regex.findall(str(self.seed.history))) > 0:
-            raise FuzzExceptBadOptions("FUZZ words not allowed when using all parameters brute forcing.")
-
-        if len(self.seed.history.wf_allvars_set) == 0:
-            raise FuzzExceptBadOptions("No variables on specified variable set: " + self.seed.history.wf_allvars)
-
-        for payload in dic:
-            for r in FuzzResultFactory.from_all_fuzz_request(self.seed, payload):
-                yield r
-
     def __next__(self):
         if self.stats.cancelled:
             raise StopIteration
@@ -151,14 +132,11 @@ class requestGenerator(object):
         if self.baseline and self.stats.processed() == 0 and self.stats.pending_seeds() <= 1:
             return self.baseline
 
-        if self.seed.history.wf_allvars is not None:
-            return next(self._allvar_gen)
-        else:
-            n = next(self.dictio)
-            if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1):
-                self._check_dictio_len(n)
+        n = next(self.dictio)
+        if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1):
+            self._check_dictio_len(n)
 
-            return FuzzResultFactory.from_seed(self.seed, n, self.options)
+        return FuzzResultFactory.from_seed(self.seed, n, self.options)
 
     def close(self):
         for payload in self._payload_list:
@@ -223,7 +201,10 @@ class Fuzzer(object):
         self.qmanager = QueueManager(options)
         self.results_queue = MyPriorityQueue()
 
-        self.qmanager.add("seed_queue", SeedQ(options))
+        if options["allvars"]:
+            self.qmanager.add("allvars_queue", AllVarQ(options))
+        else:
+            self.qmanager.add("seed_queue", SeedQ(options))
 
         for prefilter_idx, prefilter in enumerate(options.get('compiled_prefilter')):
             if prefilter.is_active():
