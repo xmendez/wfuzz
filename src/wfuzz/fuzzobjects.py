@@ -18,7 +18,7 @@ from collections import defaultdict
 
 from .filter import FuzzResFilter
 from .externals.reqresp import Request, Response
-from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
+from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions, FuzzExceptInternalError
 from .facade import Facade, ERROR_CODE
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
@@ -142,6 +142,8 @@ class params(object):
 
 
 class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
+    SIMPLE_FUZZ_REGEX = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+
     def __init__(self):
         self._request = Request()
 
@@ -409,6 +411,17 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.method = self.wf_fuzz_methods if self.wf_fuzz_methods else self.method
 
         return newreq
+
+    def get_fuzz_words(self):
+        fuzz_words = re.findall(self.SIMPLE_FUZZ_REGEX, str(self))
+        method, userpass = self.auth
+
+        fuzz_words += re.findall(self.SIMPLE_FUZZ_REGEX, self.scheme)
+
+        if method:
+            fuzz_words += re.findall(self.SIMPLE_FUZZ_REGEX, userpass)
+
+        return fuzz_words
 
 
 class FuzzResultFactory:

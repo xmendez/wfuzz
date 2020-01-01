@@ -245,6 +245,17 @@ class FuzzSession(UserDict):
     def __exit__(self, *args):
         self.close()
 
+    def get_fuzz_words(self):
+        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_genreq"].seed.history.get_fuzz_words()
+
+        for prefilter in self.data["compiled_prefilter"]:
+            fuzz_words += prefilter.get_fuzz_words()
+
+        if self.data["url"] == "FUZZ":
+            fuzz_words.append("FUZZ")
+
+        return set(fuzz_words)
+
     def compile(self):
         # Validate options
         error = self.validate()
@@ -286,11 +297,9 @@ class FuzzSession(UserDict):
         self.data["compiled_genreq"] = requestGenerator(self)
 
         # Check payload num
-        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
-        for prefilter in self.data["compiled_prefilter"]:
-            fuzz_words += prefilter.get_fuzz_words()
+        fuzz_words = self.get_fuzz_words()
 
-        if self.data['allvars'] is None and len(set(fuzz_words)) == 0:
+        if self.data['allvars'] is None and len(fuzz_words) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
 
         if self.data["compiled_genreq"].baseline is None and (BASELINE_CODE in self.data['hc'] or
