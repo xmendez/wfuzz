@@ -17,6 +17,7 @@ from .output import table_print
 
 short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
 long_opts = ['efield=', 'no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
+REPEATABLE_OPTS = ["--prefilter", "--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"]
 
 
 class CLParser:
@@ -227,7 +228,7 @@ class CLParser:
 
     def _check_options(self, optsd):
         # Check for repeated flags
-        opt_list = [i for i in optsd if i not in ["--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"] and len(optsd[i]) > 1]
+        opt_list = [i for i in optsd if i not in REPEATABLE_OPTS and len(optsd[i]) > 1]
         if opt_list:
             raise FuzzExceptBadOptions("Bad usage: Only one %s option could be specified at the same time." % " ".join(opt_list))
 
@@ -259,7 +260,9 @@ class CLParser:
         if "--prefilter" in optsd:
             if not PYPARSING:
                 raise FuzzExceptBadInstall("--prefilter switch needs pyparsing module.")
-            filter_params['prefilter'] = optsd["--prefilter"][0]
+
+            for prefilter_opt in optsd["--prefilter"]:
+                filter_params['prefilter'].append(prefilter_opt)
 
         if "--filter" in optsd:
             if not PYPARSING:

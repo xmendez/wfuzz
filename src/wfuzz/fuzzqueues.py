@@ -139,10 +139,10 @@ class FilterQ(FuzzQueue):
 
 
 class SliceQ(FuzzQueue):
-    def __init__(self, options):
+    def __init__(self, options, prefilter):
         FuzzQueue.__init__(self, options)
 
-        self.ffilter = options.get("compiled_prefilter")
+        self.ffilter = prefilter
 
     def get_name(self):
         return 'slice_thread'

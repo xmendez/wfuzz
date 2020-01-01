@@ -115,7 +115,9 @@ class requestGenerator(object):
         self.dictio = self.get_dictio()
 
     def _check_dictio_len(self, element):
-        fuzz_words = self.options["compiled_filter"].get_fuzz_words() + self.options["compiled_prefilter"].get_fuzz_words() + self.get_fuzz_words()
+        fuzz_words = self.options["compiled_filter"].get_fuzz_words() + self.get_fuzz_words()
+        for prefilter in self.options["compiled_prefilter"]:
+            fuzz_words += prefilter.get_fuzz_words()
 
         if len(element) != len(set(fuzz_words)):
             raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
@@ -242,8 +244,9 @@ class Fuzzer(object):
 
         self.qmanager.add("seed_queue", SeedQ(options))
 
-        if options.get('compiled_prefilter').is_active():
-            self.qmanager.add("slice_queue", SliceQ(options))
+        for prefilter_idx, prefilter in enumerate(options.get('compiled_prefilter')):
+            if prefilter.is_active():
+                self.qmanager.add("slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter))
 
         if options.get("dryrun"):
             self.qmanager.add("http_queue", DryRunQ(options))

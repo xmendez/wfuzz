@@ -174,7 +174,7 @@ basic_tests = [
     ("test_cat_encoding", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, None, dict(payloads=[("list", dict(values="value1", encoder=["default"]))], filter="content~'path=/echo?var=' and (content~'9946687e5fa0dab5993ededddb398d2e' or content~'value1')"), [(200, '/echo'), (200, '/echo')], None),
 
     # prefilter, slice
-    ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a", "a", "a", "a", "a", "a"]], dict(prefilter="FUZZ|u()", ss="one"), [(200, '/dir/a')], None),
+    ("test_prefilter", "%s/FUZZ" % URL_LOCAL, [["a", "a", "a", "a", "a", "a"]], dict(prefilter=["FUZZ|u()"], ss="one"), [(200, '/dir/a')], None),
     ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
     ("test_slice2", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("range", dict(default="1-10"), "FUZZ='1'")]), [(404, '/dir/1')], None),
 

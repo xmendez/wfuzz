@@ -30,7 +30,7 @@ CLI Option               Library Option
 --sc/sl/sw/sh N[,N]+     sc/sl/sw/sh=[N,N]
 --ss/hs regex            ss/hs="regex"
 --filter <filter>        filter="filter exp"
---prefilter <filter>     prefilter="prefilter exp"
+--prefilter <filter>     prefilter=["prefilter exp"]
 -b cookie                cookie=["cookie1=value1",]
 -d postdata              postdata="postdata"
 -H header                headers=[("header1", "value1"),]

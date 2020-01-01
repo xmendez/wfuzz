@@ -95,10 +95,10 @@ class FuzzSession(UserDict):
             # these will be compiled
             seed_payload=False,
             filter="",
-            prefilter="",
+            prefilter=[],
             compiled_genreq=None,
             compiled_filter=None,
-            compiled_prefilter=None,
+            compiled_prefilter=[],
             compiled_printer=None,
         )
 
@@ -166,17 +166,21 @@ class FuzzSession(UserDict):
             with open(filename, 'r') as f:
                 self.import_json(f.read())
         except IOError:
-            raise FuzzExceptBadFile("Error loading recipe file.")
+            raise FuzzExceptBadFile("Error loading recipe file {}.".format(filename))
+        except json.decoder.JSONDecodeError as e:
+            raise FuzzExceptBadRecipe("Incorrect JSON recipe {} format: {}".format(filename, str(e)))
 
     def import_json(self, data):
         js = json.loads(json_minify(data))
 
         try:
             if js['version'] == "0.2" and 'wfuzz_recipe' in js:
-                for section in js['wfuzz_recipe'].keys():
-                    for k, v in js['wfuzz_recipe'].items():
-                        if k not in self.keys_not_to_dump:
-                            # python 2 and 3 hack
+                for k, v in js['wfuzz_recipe'].items():
+                    if k not in self.keys_not_to_dump:
+                        # python 2 and 3 hack
+                        if k in self.data and isinstance(self.data[k], list):
+                            self.data[k] += python2_3_convert_from_unicode(v)
+                        else:
                             self.data[k] = python2_3_convert_from_unicode(v)
             else:
                 raise FuzzExceptBadRecipe("Unsupported recipe version.")
@@ -275,13 +279,16 @@ class FuzzSession(UserDict):
 
         # filter options
         self.data["compiled_filter"] = FuzzResFilter.from_options(self)
-        self.data["compiled_prefilter"] = FuzzResFilter(filter_string=self.data['prefilter'])
+        for prefilter in self.data['prefilter']:
+            self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
 
         # seed
         self.data["compiled_genreq"] = requestGenerator(self)
 
         # Check payload num
-        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_prefilter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
+        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_genreq"].get_fuzz_words()
+        for prefilter in self.data["compiled_prefilter"]:
+            fuzz_words += prefilter.get_fuzz_words()
 
         if self.data['allvars'] is None and len(set(fuzz_words)) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")

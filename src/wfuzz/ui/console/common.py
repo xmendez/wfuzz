@@ -140,7 +140,7 @@ verbose_usage = '''%s\n\nOptions:
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex             : Show/hide responses with the specified regex within the content
 \t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
-\t--prefilter <filter>      : Filter items before fuzzing using the specified expression.
+\t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
 ''' % (header_usage)
 
 

@@ -90,13 +90,21 @@ Wfuzz is more than a web content scanner:
 - Wfuzz is a completely modular framework and makes it easy for even the newest of Python developers to contribute. Building plugins is simple and takes little more than a few minutes.
 - Wfuzz exposes a simple language interface to the previous HTTP requests/responses performed using Wfuzz or other tools, such as Burp. This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
-User Guide
+Installation Guide
 ==================
 
 .. toctree::
    :maxdepth: 2
 
    user/installation
+   user/breaking
+
+User Guide
+==================
+
+.. toctree::
+   :maxdepth: 2
+
    user/getting
    user/basicusage
    user/advanced
