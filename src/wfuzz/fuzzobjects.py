@@ -35,9 +35,6 @@ class FuzzItem(object):
     def __str__(self):
         return "FuzzItem, type: {}".format(self.item_type.name)
 
-    def get_type(self):
-        raise NotImplementedError
-
     def __lt__(self, other):
         return self.item_id < other.item_id
 
