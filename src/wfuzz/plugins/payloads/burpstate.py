@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions
-from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
+from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.utils import rgetattr
 

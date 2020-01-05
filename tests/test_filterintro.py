@@ -2,8 +2,8 @@ import unittest
 
 # Python 2 and 3: urlib.parse
 
-from wfuzz.fuzzobjects import FuzzRequest
 from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.filter import FuzzResFilter
 
 

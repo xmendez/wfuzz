@@ -2,7 +2,7 @@ import unittest
 
 # Python 2 and 3: urlib.parse
 
-from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.fuzzobjects import FuzzResultFactory
 from wfuzz.ui.console.clparser import CLParser
 from wfuzz import __version__ as wfuzz_version

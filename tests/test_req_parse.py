@@ -1,6 +1,6 @@
 import unittest
 
-from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz.fuzzrequest import FuzzRequest
 
 
 http_post_request = '''POST /slipstream/view HTTP/1.1

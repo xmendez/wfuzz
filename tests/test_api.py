@@ -6,8 +6,8 @@ import pickle as pickle
 
 import wfuzz
 from wfuzz.facade import Facade
-from wfuzz.fuzzobjects import FuzzRequest
 from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzrequest import FuzzRequest
 
 try:
     # Python >= 3.3

@@ -3,7 +3,7 @@ import base64
 
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult
-from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.utils import rgetattr
