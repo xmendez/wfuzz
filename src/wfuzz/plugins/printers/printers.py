@@ -5,7 +5,7 @@ from xml.dom import minidom
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
-from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzobjects import FuzzType
 
 
 @moduleman_plugin
@@ -73,7 +73,7 @@ class magictree(BasePrinter):
         self.node_service = self.__create_xml_element(node_port, "service", "http")
 
     def result(self, fuzz_result):
-        if fuzz_result.type == FuzzResult.result:
+        if fuzz_result.item_type == FuzzType.RESULT:
             node_url = self.__create_xml_element(self.node_service, "url", str(fuzz_result.url))
 
             if 'Server' in fuzz_result.history.headers.response:
@@ -111,7 +111,7 @@ class html(BasePrinter):
         self.f.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url))
 
     def result(self, fuzz_result):
-        if fuzz_result.type == FuzzResult.result:
+        if fuzz_result.item_type == FuzzType.RESULT:
             htmlc = "<font>"
 
             if fuzz_result.code >= 400 and fuzz_result.code < 500:
@@ -151,7 +151,7 @@ class json(BasePrinter):
         pass
 
     def result(self, res):
-        if res.type == FuzzResult.result:
+        if res.item_type == FuzzType.RESULT:
             server = ""
             if 'Server' in res.history.headers.response:
                 server = res.history.headers.response['Server']
@@ -248,7 +248,7 @@ class raw(BasePrinter):
             self.f.write("  |_ %s\n" % i.issue)
 
     def result(self, res):
-        if res.type == FuzzResult.result:
+        if res.item_type == FuzzType.RESULT:
             if self.verbose:
                 self._print_verbose(res)
             else:
@@ -287,7 +287,7 @@ class csv(BasePrinter):
         self._print_csv(["id", "response", "lines", "word", "chars", "request", "success"])
 
     def result(self, res):
-        if res.type == FuzzResult.result:
+        if res.item_type == FuzzType.RESULT:
             line = [res.nres,
                     res.code,
                     res.lines,

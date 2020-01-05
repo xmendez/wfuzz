@@ -4,7 +4,7 @@ import gzip
 from threading import Thread, Event
 from queue import Queue
 
-from .fuzzobjects import FuzzResult, FuzzPayload
+from .fuzzobjects import FuzzResult, FuzzPayload, FuzzType, FuzzItem
 from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
 from .myqueues import FuzzRRQueue
@@ -39,7 +39,7 @@ class AllVarQ(FuzzQueue):
             yield fuzzres
 
     def process(self, item):
-        if item.type == FuzzResult.startseed:
+        if item.item_type == FuzzType.STARTSEED:
             self.genReq.stats.pending_seeds.inc()
         else:
             raise FuzzExceptInternalError("AllVarQ: Unknown item type in queue!")
@@ -49,7 +49,7 @@ class AllVarQ(FuzzQueue):
                 self.genReq.stats.pending_fuzz.inc()
                 self.send(fuzzres)
 
-        self.send_last(FuzzResult.to_new_signal(FuzzResult.endseed))
+        self.send_last(FuzzItem(FuzzType.ENDSEED))
 
 
 class SeedQ(FuzzQueue):
@@ -65,9 +65,9 @@ class SeedQ(FuzzQueue):
         self.genReq.stop()
 
     def process(self, item):
-        if item.type == FuzzResult.startseed:
+        if item.item_type == FuzzType.STARTSEED:
             self.genReq.stats.pending_seeds.inc()
-        elif item.type == FuzzResult.seed:
+        elif item.item_type == FuzzType.SEED:
             self.genReq.restart(item)
         else:
             raise FuzzExceptInternalError("SeedQ: Unknown item type in queue!")
@@ -102,7 +102,7 @@ class SeedQ(FuzzQueue):
         except StopIteration:
             pass
 
-        self.send_last(FuzzResult.to_new_signal(FuzzResult.endseed))
+        self.send_last(FuzzItem(FuzzType.ENDSEED))
 
 
 class SaveQ(FuzzQueue):
@@ -153,8 +153,8 @@ class RoutingQ(FuzzQueue):
         return 'RoutingQ'
 
     def process(self, item):
-        if item.type in self.routes:
-            self.routes[item.type].put(item)
+        if item.item_type in self.routes:
+            self.routes[item.item_type].put(item)
         else:
             self.queue_out.put(item)
 

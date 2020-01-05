@@ -56,8 +56,6 @@ class autorize(BasePayload):
                     item.history = FuzzRequest()
                     item.history.update_from_raw_http(raw_req1, schema1)
 
-                    item.type = FuzzResult.result
-
                     yield item
         except IOError as e:
             raise FuzzExceptBadFile("Error opening wfuzz payload file. %s" % str(e))

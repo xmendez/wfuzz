@@ -1,4 +1,4 @@
-from .fuzzobjects import FuzzResult
+from .fuzzobjects import FuzzType
 
 from .myqueues import MyPriorityQueue, QueueManager
 from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver, AllVarQ
@@ -225,8 +225,8 @@ class Fuzzer(object):
             rq = RoutingQ(
                 options,
                 {
-                    FuzzResult.seed: self.qmanager["seed_queue"],
-                    FuzzResult.backfeed: self.qmanager["http_queue"]
+                    FuzzType.SEED: self.qmanager["seed_queue"],
+                    FuzzType.BACKFEED: self.qmanager["http_queue"]
                 }
             )
 
@@ -257,7 +257,7 @@ class Fuzzer(object):
         # done! (None sent has gone through all queues).
         if not res:
             raise StopIteration
-        elif res.type == FuzzResult.error:
+        elif res.item_type == FuzzType.ERROR:
             raise res.exception
 
         return res

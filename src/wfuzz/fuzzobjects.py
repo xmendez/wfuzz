@@ -4,6 +4,7 @@ import re
 import itertools
 import operator
 import pycurl
+from enum import Enum
 
 # Python 2 and 3
 import sys
@@ -28,6 +29,10 @@ from .utils import rgetattr
 from .utils import DotDict
 
 auth_header = namedtuple("auth_header", "method credentials")
+
+
+class FuzzType(Enum):
+    SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, DISCARDED = range(8)
 
 
 class headers(object):
@@ -139,6 +144,38 @@ class params(object):
     def all(self, values):
         self.get = values
         self.post = values
+
+
+class FuzzItem(object):
+    newid = itertools.count(0)
+
+    def __init__(self, item_type):
+        self.item_id = next(FuzzItem.newid)
+        self.item_type = item_type
+
+    def __str__(self):
+        return "FuzzItem, type: {}".format(self.item_type.name)
+
+    def get_type(self):
+        raise NotImplementedError
+
+    def __lt__(self, other):
+        return self.item_id < other.item_id
+
+    def __le__(self, other):
+        return self.item_id <= other.item_id
+
+    def __gt__(self, other):
+        return self.item_id > other.item_id
+
+    def __ge__(self, other):
+        return self.item_id >= other.item_id
+
+    def __eq__(self, other):
+        return self.item_id == other.item_id
+
+    def __ne__(self, other):
+        return self.item_id != other.item_id
 
 
 class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
@@ -504,8 +541,6 @@ class FuzzResultFactory:
         if auth_method != 'None':
             newres.history.auth = (auth_method, userpass)
 
-        newres.type = FuzzResult.result
-
         return newres
 
     @staticmethod
@@ -689,14 +724,19 @@ class FuzzPayload():
         return "content: {} fields: {}".format(self.content, self.fields)
 
 
-class FuzzResult:
-    seed, backfeed, result, error, startseed, endseed, cancel, discarded = list(range(8))
+class FuzzError(FuzzItem):
+    def __init__(self, exception):
+        FuzzItem.__init__(self, FuzzType.ERROR)
+        self.exception = exception
+
+
+class FuzzResult(FuzzItem):
     newid = itertools.count(0)
 
     def __init__(self, history=None, exception=None, track_id=True):
+        FuzzItem.__init__(self, FuzzType.RESULT)
         self.history = history
 
-        self.type = None
         self.exception = exception
         self.is_baseline = False
         self.rlevel = 1
@@ -727,8 +767,7 @@ class FuzzResult:
         return dic
 
     def update(self, exception=None):
-        self.type = FuzzResult.result
-
+        self.item_type = FuzzType.RESULT
         if exception:
             self.exception = exception
 
@@ -744,14 +783,11 @@ class FuzzResult:
         return self
 
     def __str__(self):
-        if self.type == FuzzResult.result:
-            res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
-            for i in self.plugins_res:
-                res += "\n  |_ %s" % i.issue
+        res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
+        for i in self.plugins_res:
+            res += "\n  |_ %s" % i.issue
 
-            return res
-        else:
-            return "Control result, type: %s" % ("seed", "backfeed", "result", "error", "startseed", "endseed", "cancel", "discarded")[self.type]
+        return res
 
     def _payload_description(self):
         if not self.payload:
@@ -808,12 +844,12 @@ class FuzzResult:
     def to_new_seed(self):
         seed = self.from_soft_copy(False)
 
-        if seed.type == FuzzResult.error:
+        if seed.item_type == FuzzType.ERROR:
             raise FuzzExceptInternalError("A new seed cannot be created with a Fuzz item representing an error.")
 
         seed.history.url = self.history.recursive_url
         seed.rlevel += 1
-        seed.type = FuzzResult.seed
+        seed.item_type = FuzzType.SEED
 
         return seed
 
@@ -822,7 +858,7 @@ class FuzzResult:
 
         fr.exception = self.exception
         fr.is_baseline = self.is_baseline
-        fr.type = self.type
+        fr.item_type = self.item_type
         fr.rlevel = self.rlevel
         fr.payload = list(self.payload)
         fr._description = self._description
@@ -834,46 +870,14 @@ class FuzzResult:
         self._description = options['description']
         self._show_field = options['show_field']
 
-    @staticmethod
-    def to_new_exception(exception):
-        fr = FuzzResult(exception=exception, track_id=False)
-        fr.type = FuzzResult.error
-
-        return fr
-
-    @staticmethod
-    def to_new_signal(signal):
-        fr = FuzzResult(track_id=False)
-        fr.type = signal
-
-        return fr
-
     def to_new_url(self, url):
         fr = self.from_soft_copy()
         fr.history.url = str(url)
         fr.rlevel = self.rlevel + 1
-        fr.type = FuzzResult.backfeed
+        fr.item_type = FuzzType.BACKFEED
         fr.is_baseline = False
 
         return fr
-
-    def __lt__(self, other):
-        return self.nres < other.nres
-
-    def __le__(self, other):
-        return self.nres <= other.nres
-
-    def __gt__(self, other):
-        return self.nres > other.nres
-
-    def __ge__(self, other):
-        return self.nres >= other.nres
-
-    def __eq__(self, other):
-        return self.nres == other.nres
-
-    def __ne__(self, other):
-        return self.nres != other.nres
 
 
 class PluginItem:
