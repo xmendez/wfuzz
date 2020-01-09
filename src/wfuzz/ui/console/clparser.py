@@ -465,16 +465,6 @@ class CLParser:
             conn_options["concurrent"] = int(optsd["-t"][0])
 
     def _parse_options(self, optsd, options):
-        '''
-        options = dict(
-            printer = (None,None),
-            colour = False,
-            interactive = False,
-            dryrun = False,
-            recipe = "",
-        )
-        '''
-
         if "--oF" in optsd:
             options["save"] = optsd['--oF'][0]
 
@@ -509,7 +499,7 @@ class CLParser:
             options["recipe"] = optsd['--recipe'][0]
 
         if "--dry-run" in optsd:
-            options["dryrun"] = True
+            options["mode"] = "dryrun"
 
         if "--interact" in optsd:
             options["interactive"] = True

@@ -210,7 +210,7 @@ class Fuzzer(object):
             if prefilter.is_active():
                 self.qmanager.add("slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter))
 
-        if options.get("dryrun"):
+        if options.get("mode") == "dryrun":
             self.qmanager.add("http_queue", DryRunQ(options))
         else:
             # http_queue breaks process rules due to being asynchronous. Someone has to collects its sends, for proper fuzzqueue's count and sync purposes

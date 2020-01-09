@@ -28,7 +28,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "mode"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -63,7 +63,7 @@ class FuzzSession(UserDict):
             previous=False,
             verbose=False,
             interactive=False,
-            dryrun=False,
+            mode="http",
             recipe=[],
             save="",
             proxies=None,
@@ -111,10 +111,10 @@ class FuzzSession(UserDict):
         if self.data['dictio'] and self.data['payloads']:
             raise FuzzExceptBadOptions("Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified.")
 
-        if self.data['rlevel'] > 0 and self.data['dryrun']:
+        if self.data['rlevel'] > 0 and self.data['mode'] == 'dryrun':
             error_list.append("Bad usage: Recursion cannot work without making any HTTP request.")
 
-        if self.data['script'] and self.data['dryrun']:
+        if self.data['script'] and self.data['mode'] == 'dryrun':
             error_list.append("Bad usage: Plugins cannot work without making any HTTP request.")
 
         if self.data['no_cache'] not in [True, False]:

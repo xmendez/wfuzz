@@ -10,7 +10,7 @@ CLI Option               Library Option
 --recipe <filename>      recipe=["filename"]
 --oF <filename>          save="filename"
 -f filename,printer      printer=("filename", "printer")
---dry-run                dryrun=True
+--dry-run                mode="dryrun"
 -p addr                  proxies=[("ip","port","type")]
 -t N                     concurrent=N
 -s N                     delay=0.0
