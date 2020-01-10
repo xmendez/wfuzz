@@ -23,6 +23,8 @@ except ImportError:
 
 
 class FuzzResFilter:
+    FUZZ_MARKER_REGEX = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+
     def __init__(self, ffilter=None, filter_string=None):
         if PYPARSING:
             quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
@@ -343,8 +345,7 @@ class FuzzResFilter:
         return ffilter
 
     def get_fuzz_words(self):
-        marker_regex = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
-        fuzz_words = marker_regex.findall(self.hideparams["filter_string"])
+        fuzz_words = self.FUZZ_MARKER_REGEX.findall(self.hideparams["filter_string"])
 
         return fuzz_words
 
