@@ -45,16 +45,12 @@ def main():
             printer.result(res)
 
         printer.footer(fz.genReq.stats)
-    except FuzzException as e:
-        print("\nFatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
         print("\nFinishing pending requests...")
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
         print("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e)))
-    except Exception as e:
-        print("\nUnhandled exception: {}".format(str(e)))
     finally:
         if session_options:
             session_options.close()

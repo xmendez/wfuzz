@@ -38,7 +38,7 @@ class FuzzResFilter:
 
             operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
 
-            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0]) - 1]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
+            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0])]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
             operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
 
             fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
@@ -116,10 +116,10 @@ class FuzzResFilter:
             raise FuzzExceptIncorrectFilter("Non-existing introspection field or HTTP parameter \"{}\"!".format(tokens[0]))
 
     def _compute_fuzz_symbol(self, tokens):
-        i = tokens[0]
+        p_index = tokens[0]
 
         try:
-            return self.res.payload[i].content
+            return self.res.payload_man.get_payload_content(p_index)
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
@@ -351,10 +351,11 @@ class FuzzResFilter:
 
 
 class FuzzResFilterSlice(FuzzResFilter):
+    # When using slice we don't have previous payload context but directly a word from the dictionary
     def _compute_fuzz_symbol(self, tokens):
         i = tokens[0]
 
-        if i != 0:
+        if i != 1:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
         return self.res

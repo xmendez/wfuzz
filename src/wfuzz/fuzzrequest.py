@@ -1,4 +1,3 @@
-import re
 import pycurl
 
 # Python 2 and 3
@@ -133,8 +132,6 @@ class params(object):
 
 
 class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
-    SIMPLE_FUZZ_REGEX = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
-
     def __init__(self):
         self._request = Request()
 
@@ -150,6 +147,14 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     def __str__(self):
         return self._request.getAll()
+
+    @property
+    def raw_request(self):
+        return self._request.getAll()
+
+    @raw_request.setter
+    def raw_request(self, rawReq, scheme):
+        self.update_from_raw_http(rawReq, scheme)
 
     @property
     def raw_content(self):
@@ -398,14 +403,3 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         newreq.method = self.wf_fuzz_methods if self.wf_fuzz_methods else self.method
 
         return newreq
-
-    def get_fuzz_words(self):
-        fuzz_words = re.findall(self.SIMPLE_FUZZ_REGEX, str(self))
-        method, userpass = self.auth
-
-        fuzz_words += re.findall(self.SIMPLE_FUZZ_REGEX, self.scheme)
-
-        if method:
-            fuzz_words += re.findall(self.SIMPLE_FUZZ_REGEX, userpass)
-
-        return fuzz_words

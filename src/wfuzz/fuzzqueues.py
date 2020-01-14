@@ -4,7 +4,7 @@ import gzip
 from threading import Thread, Event
 from queue import Queue
 
-from .fuzzobjects import FuzzResult, FuzzPayload, FuzzType, FuzzItem
+from .fuzzobjects import FuzzResult, FuzzType, FuzzItem, FPayloadManager
 from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
 from .myqueues import FuzzRRQueue
@@ -25,14 +25,20 @@ class AllVarQ(FuzzQueue):
     def cancel(self):
         self.genReq.stop()
 
-    def from_all_fuzz_request(self, payload):
-        if len(payload) > 1:
+    def from_all_fuzz_request(self, dictio_list):
+        if len(dictio_list) > 1:
             raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
 
         for var_name in self.seed.history.wf_allvars_set.keys():
-            payload_content = payload[0]
+            payload_content = dictio_list[0]
             fuzzres = FuzzResult(self.seed.history.from_copy())
-            fuzzres.payload.append(FuzzPayload(payload_content, [None]))
+            fuzzres.payload_man = FPayloadManager()
+            fuzzres.payload_man.add({
+                "full_marker": None,
+                "word": None,
+                "index": None,
+                "field": None
+            }, payload_content)
 
             fuzzres.history.wf_allvars_set = {var_name: payload_content}
 
@@ -64,6 +70,17 @@ class SeedQ(FuzzQueue):
     def cancel(self):
         self.genReq.stop()
 
+    def send_baseline(self):
+        fuzz_baseline = self.options["compiled_baseline"]
+
+        if fuzz_baseline is not None and self.genReq.stats.pending_seeds() == 1:
+            self.genReq.stats.pending_fuzz.inc()
+            self.send_first(fuzz_baseline)
+
+            # wait for BBB to be completed before generating more items
+            while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
+                time.sleep(0.0001)
+
     def process(self, item):
         if item.item_type == FuzzType.STARTSEED:
             self.genReq.stats.pending_seeds.inc()
@@ -72,27 +89,18 @@ class SeedQ(FuzzQueue):
         else:
             raise FuzzExceptInternalError("SeedQ: Unknown item type in queue!")
 
+        self.send_baseline()
+        self.send_dictionary()
+
+    def send_dictionary(self):
         # Empty dictionary?
         try:
             fuzzres = next(self.genReq)
-
-            if fuzzres.is_baseline:
-                self.genReq.stats.pending_fuzz.inc()
-                self.send_first(fuzzres)
-
-                # wait for BBB to be completed before generating more items
-                while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
-                    time.sleep(0.0001)
-
         except StopIteration:
             raise FuzzExceptBadOptions("Empty dictionary! Please check payload or filter.")
 
         # Enqueue requests
         try:
-            if fuzzres.is_baseline:
-                # more after baseline?
-                fuzzres = next(self.genReq)
-
             while fuzzres:
                 self.genReq.stats.pending_fuzz.inc()
                 if self.delay:

@@ -1,7 +1,8 @@
 from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
 from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
-from .fuzzobjects import FuzzStats
+from .fuzzfactory import reqfactory
+from .fuzzobjects import FuzzStats, FuzzResult
 from .filter import FuzzResFilter
 from .core import requestGenerator
 from .utils import (
@@ -100,6 +101,8 @@ class FuzzSession(UserDict):
             compiled_filter=None,
             compiled_prefilter=[],
             compiled_printer=None,
+            compiled_seed=None,
+            compiled_baseline=None,
         )
 
     def update(self, options):
@@ -204,6 +207,7 @@ class FuzzSession(UserDict):
     def payload(self, **kwargs):
         try:
             self.data.update(kwargs)
+            self.compile_seeds()
             self.data['compiled_genreq'] = requestGenerator(self)
             for r in self.data['compiled_genreq'].get_dictio():
                 yield r
@@ -246,7 +250,7 @@ class FuzzSession(UserDict):
         self.close()
 
     def get_fuzz_words(self):
-        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_genreq"].seed.history.get_fuzz_words()
+        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_seed"].payload_man.get_fuzz_words()
 
         for prefilter in self.data["compiled_prefilter"]:
             fuzz_words += prefilter.get_fuzz_words()
@@ -255,6 +259,22 @@ class FuzzSession(UserDict):
             fuzz_words.append("FUZZ")
 
         return set(fuzz_words)
+
+    def compile_seeds(self):
+        seed_parser = reqfactory.create("request_from_options", self)
+        seed = reqfactory.create("request_removing_baseline_markers", seed_parser)
+
+        self.data["compiled_seed"] = FuzzResult(seed)
+        self.data["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed)
+
+        baseline_payloadman = reqfactory.create("baseline_payloadman_from_request", seed_parser)
+        if baseline_payloadman.payloads:
+            self.data["compiled_baseline"] = reqfactory.create("fuzzres_from_pm_and_request", baseline_payloadman, seed_parser)
+            self.data["compiled_baseline"].is_baseline = True
+            self.data["compiled_baseline"]._description = self.data['description']
+            self.data["compiled_baseline"]._show_field = self.data['show_field']
+        else:
+            self.data["compiled_baseline"] = None
 
     def compile(self):
         # Validate options
@@ -293,7 +313,7 @@ class FuzzSession(UserDict):
         for prefilter in self.data['prefilter']:
             self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
 
-        # seed
+        self.compile_seeds()
         self.data["compiled_genreq"] = requestGenerator(self)
 
         # Check payload num

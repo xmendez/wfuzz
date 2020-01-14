@@ -1,9 +1,10 @@
-from .fuzzobjects import FuzzType
+from .fuzzfactory import reqfactory
+from .fuzzobjects import FuzzType, FuzzResult
 
 from .myqueues import MyPriorityQueue, QueueManager
 from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver, AllVarQ
 
-from .fuzzobjects import FuzzResultFactory, FuzzStats
+from .fuzzobjects import FuzzStats
 from .facade import Facade
 from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 
@@ -93,8 +94,8 @@ class dictionary(object):
 class requestGenerator(object):
     def __init__(self, options):
         self.options = options
-        self.seed = FuzzResultFactory.from_options(options)
-        self.baseline = FuzzResultFactory.from_baseline(self.seed, options)
+        self.seed = options["compiled_seed"]
+        self.baseline = options["compiled_baseline"]
         self._payload_list = []
         self.dictio = self.get_dictio()
 
@@ -105,7 +106,9 @@ class requestGenerator(object):
         self.close()
 
     def restart(self, seed):
-        self.seed = seed
+        self.options["compiled_seed"] = seed
+        self.options["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed.history)
+        self.seed = self.options["compiled_seed"]
         self.dictio = self.get_dictio()
 
     def _check_dictio_len(self, element):
@@ -129,14 +132,19 @@ class requestGenerator(object):
         if self.stats.cancelled:
             raise StopIteration
 
-        if self.baseline and self.stats.processed() == 0 and self.stats.pending_seeds() <= 1:
-            return self.baseline
-
-        n = next(self.dictio)
+        dictio_item = next(self.dictio)
         if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1):
-            self._check_dictio_len(n)
+            self._check_dictio_len(dictio_item)
 
-        return FuzzResultFactory.from_seed(self.seed, n, self.options)
+        if self.options["seed_payload"] and isinstance(dictio_item[0], FuzzResult):
+            new_seed = dictio_item[0].from_soft_copy()
+            new_seed.history.update_from_options(self.options)
+            new_seed.update_from_options(self.options)
+            new_seed.payload_man = reqfactory.create("empty_payloadman", dictio_item)
+
+            return new_seed
+        else:
+            return reqfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
 
     def close(self):
         for payload in self._payload_list:

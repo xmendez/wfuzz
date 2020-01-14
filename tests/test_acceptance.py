@@ -42,6 +42,7 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
+    ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
 ]
 
 savedsession_tests = [

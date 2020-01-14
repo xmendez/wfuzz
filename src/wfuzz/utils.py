@@ -332,8 +332,8 @@ def _get_alias(attr):
 
 
 def rsetattr(obj, attr, new_val, operation):
-    if not _check_allowed_field(attr):
-        raise AttributeError("Unknown field {}".format(attr))
+    # if not _check_allowed_field(attr):
+    #    raise AttributeError("Unknown field {}".format(attr))
 
     pre, _, post = attr.rpartition('.')
 
@@ -371,8 +371,8 @@ def rgetattr(obj, attr, *args):
         except AttributeError:
             raise AttributeError("rgetattr: Can't get '{}' attribute from '{}'.".format(attr, obj.__class__))
 
-    if not _check_allowed_field(attr):
-        raise AttributeError("Unknown field {}".format(attr))
+    # if not _check_allowed_field(attr):
+        # raise AttributeError("Unknown field {}".format(attr))
 
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
@@ -409,3 +409,14 @@ def value_in_any_list_item(value, list_obj):
         return len([item for item in list_obj if value.lower() in item.lower()]) > 0
     elif isinstance(list_obj, str):
         return value.lower() in list_obj.lower()
+
+
+class ObjectFactory:
+    def __init__(self, builders):
+        self._builders = builders
+
+    def create(self, key, *args, **kwargs):
+        builder = self._builders.get(key)
+        if not builder:
+            raise ValueError(key)
+        return builder(*args, **kwargs)

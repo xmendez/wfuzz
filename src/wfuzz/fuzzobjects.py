@@ -2,23 +2,18 @@ import time
 import hashlib
 import re
 import itertools
-import operator
 from enum import Enum
 
 from threading import Lock
-from collections import namedtuple
 from collections import defaultdict
 
-from .fuzzrequest import FuzzRequest
 from .filter import FuzzResFilter
-from .exception import FuzzExceptBadOptions, FuzzExceptInternalError
+from .exception import FuzzExceptInternalError
 from .facade import ERROR_CODE
 
 from .utils import python2_3_convert_to_unicode
 from .utils import MyCounter
 from .utils import rgetattr
-
-auth_header = namedtuple("auth_header", "method credentials")
 
 
 class FuzzType(Enum):
@@ -52,158 +47,6 @@ class FuzzItem(object):
 
     def __ne__(self, other):
         return self.item_id != other.item_id
-
-
-class FuzzResultFactory:
-    @staticmethod
-    def replace_fuzz_word(text, fuzz_word, payload):
-        marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
-
-        for fuzz_word, field in marker_regex.findall(text):
-            if field:
-                marker_regex = re.compile(r"(%s)(?:\[(.*?)\])?" % (fuzz_word,), re.MULTILINE | re.DOTALL)
-                fields_array = []
-
-                for fuzz_word, field in marker_regex.findall(text):
-                    if not field:
-                        raise FuzzExceptBadOptions("You must specify a field when using a payload containing a full fuzz request, ie. FUZZ[url], or use FUZZ only to repeat the same request.")
-
-                    try:
-                        subs = str(rgetattr(payload, field))
-                    except AttributeError:
-                        raise FuzzExceptBadOptions("A FUZZ[field] expression must be used with a fuzzresult payload not a string.")
-
-                    text = text.replace("%s[%s]" % (fuzz_word, field), subs)
-                    fields_array.append(field)
-
-                return (text, fields_array)
-            else:
-                try:
-                    return (text.replace(fuzz_word, payload), [None])
-                except TypeError:
-                    raise FuzzExceptBadOptions("Tried to replace {} with a whole fuzzresult payload.".format(fuzz_word))
-
-    @staticmethod
-    def from_seed(seed, payload, seed_options):
-        newres = seed.from_soft_copy()
-
-        rawReq = str(newres.history)
-        rawUrl = newres.history.redirect_url
-        scheme = newres.history.scheme
-        auth_method, userpass = newres.history.auth
-
-        for payload_pos, payload_content in enumerate(payload, start=1):
-            fuzz_word = "FUZ" + str(payload_pos) + "Z" if payload_pos > 1 else "FUZZ"
-
-            fuzz_values_array = []
-
-            # substitute entire seed when using a request payload generator without specifying field
-            if fuzz_word == "FUZZ" and seed_options["seed_payload"] and isinstance(payload_content, FuzzResult):
-                # new seed
-                newres = payload_content.from_soft_copy()
-                newres.payload = []
-
-                fuzz_values_array.append(None)
-
-                newres.history.update_from_options(seed_options)
-                newres.update_from_options(seed_options)
-                rawReq = str(newres.history)
-                rawUrl = newres.history.redirect_url
-                scheme = newres.history.scheme
-                auth_method, userpass = newres.history.auth
-
-            desc = []
-
-            if auth_method and (userpass.count(fuzz_word)):
-                userpass, desc = FuzzResultFactory.replace_fuzz_word(userpass, fuzz_word, payload_content)
-            if newres.history.redirect_url.count(fuzz_word):
-                rawUrl, desc = FuzzResultFactory.replace_fuzz_word(rawUrl, fuzz_word, payload_content)
-            if rawReq.count(fuzz_word):
-                rawReq, desc = FuzzResultFactory.replace_fuzz_word(rawReq, fuzz_word, payload_content)
-
-            if scheme.count(fuzz_word):
-                scheme, desc = FuzzResultFactory.replace_fuzz_word(scheme, fuzz_word, payload_content)
-
-            if desc:
-                fuzz_values_array += desc
-
-            newres.payload.append(FuzzPayload(payload_content, fuzz_values_array))
-
-        newres.history.update_from_raw_http(rawReq, scheme)
-        newres.history.url = rawUrl
-        if auth_method != 'None':
-            newres.history.auth = (auth_method, userpass)
-
-        return newres
-
-    @staticmethod
-    def from_baseline(fuzzresult, options):
-        scheme = fuzzresult.history.scheme
-        rawReq = str(fuzzresult.history)
-        auth_method, userpass = fuzzresult.history.auth
-
-        # get the baseline payload ordered by fuzz number and only one value per same fuzz keyword.
-        b1 = dict([matchgroup.groups() for matchgroup in re.finditer(r"FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", rawReq, re.MULTILINE | re.DOTALL)])
-        b2 = dict([matchgroup.groups() for matchgroup in re.finditer(r"FUZ(\d*)Z(?:\[.*?\])?(?:{(.*?)})?", userpass, re.MULTILINE | re.DOTALL)])
-        baseline_control = dict(list(b1.items()) + list(b2.items()))
-        baseline_payload = [x[1] for x in sorted(list(baseline_control.items()), key=operator.itemgetter(0))]
-
-        # if there is no marker, there is no baseline request
-        if not [x for x in baseline_payload if x is not None]:
-            return None
-
-        # remove baseline marker from seed request
-        for i in baseline_payload:
-            if not i:
-                raise FuzzExceptBadOptions("You must supply a baseline value for all the FUZZ words.")
-            rawReq = rawReq.replace("{" + i + "}", '')
-
-            if fuzzresult.history.wf_fuzz_methods:
-                fuzzresult.history.wf_fuzz_methods = fuzzresult.history.wf_fuzz_methods.replace("{" + i + "}", '')
-
-            if auth_method:
-                userpass = userpass.replace("{" + i + "}", '')
-
-        # re-parse seed without baseline markers
-        fuzzresult.history.update_from_raw_http(rawReq, scheme)
-        if auth_method:
-            fuzzresult.history.auth = (auth_method, userpass)
-
-        # create baseline request from seed
-        baseline_res = fuzzresult.from_soft_copy()
-
-        # remove field markers from baseline
-        marker_regex = re.compile(r"(FUZ\d*Z)\[(.*?)\]", re.DOTALL)
-        results = marker_regex.findall(rawReq)
-        if results:
-            for fw, f in results:
-                rawReq = rawReq.replace("%s[%s]" % (fw, f), fw)
-
-                if fuzzresult.history.wf_fuzz_methods:
-                    fuzzresult.history.wf_fuzz_methods = fuzzresult.history.wf_fuzz_methods.replace("{" + i + "}", '')
-
-                if auth_method:
-                    userpass = userpass.replace("{" + i + "}", '')
-
-            baseline_res.history.update_from_raw_http(rawReq, scheme)
-
-        baseline_res = FuzzResultFactory.from_seed(baseline_res, baseline_payload, options)
-        baseline_res.is_baseline = True
-
-        return baseline_res
-
-    @staticmethod
-    def from_options(options):
-        fr = FuzzRequest()
-
-        fr.url = options['url']
-        fr.wf_fuzz_methods = options['method']
-        fr.update_from_options(options)
-
-        fuzz_res = FuzzResult(fr)
-        fuzz_res.update_from_options(options)
-
-        return fuzz_res
 
 
 class FuzzStats:
@@ -295,26 +138,86 @@ class FuzzStats:
 
 
 class FuzzPayload():
-    def __init__(self, content, fields):
-        self.content = content
-        self.fields = fields
+    def __init__(self):
+        self.marker = None
+        self.word = None
+        self.index = None
+        self.field = None
+        self.content = None
+        self.is_baseline = False
+
+    @property
+    def value(self):
+        if self.content is None:
+            return None
+        return self.content if self.field is None else str(rgetattr(self.content, self.field))
 
     def description(self, default):
-        ret_str_values = []
-        for fuzz_value in self.fields:
-            if fuzz_value is None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(default)
-            elif fuzz_value is not None and isinstance(self.content, FuzzResult):
-                ret_str_values.append(str(rgetattr(self.content, fuzz_value)))
-            elif fuzz_value is None:
-                ret_str_values.append(self.content)
-            else:
-                ret_str_values.append(fuzz_value)
+        if self.is_baseline:
+            return self.content
 
-        return " - ".join(ret_str_values)
+        if self.marker is None:
+            return ""
+
+        if self.field is None and isinstance(self.content, FuzzResult):
+            return rgetattr(self.content, default)
+        elif self.field is not None and isinstance(self.content, FuzzResult):
+            return str(rgetattr(self.content, self.field))
+
+        return self.value
 
     def __str__(self):
-        return "content: {} fields: {}".format(self.content, self.fields)
+        return "index: {} marker: {} content: {} field: {} value: {}".format(self.index, self.marker, self.content.__class__, self.field, self.value)
+
+
+class FPayloadManager():
+    def __init__(self):
+        self.payloads = defaultdict(list)
+
+    def add(self, payload_dict, content=None, is_baseline=False):
+        fp = FuzzPayload()
+        fp.marker = payload_dict["full_marker"]
+        fp.word = payload_dict["word"]
+        fp.index = int(payload_dict["index"]) if payload_dict["index"] is not None else 1
+        fp.field = payload_dict["field"]
+        fp.content = content
+        fp.is_baseline = is_baseline
+
+        self.payloads[fp.index].append(fp)
+
+    def update_from_dictio(self, dictio_item):
+        for index, dictio_payload in enumerate(dictio_item, 1):
+            if index in self.payloads:
+                for fuzz_payload in self.payloads[index]:
+                    fuzz_payload.content = dictio_payload
+            else:
+                # payload generated not used in seed but in filters
+                self.add({
+                    "full_marker": None,
+                    "word": None,
+                    "index": index,
+                    "field": None
+                }, dictio_item[index - 1])
+
+    def get_fuzz_words(self):
+        return [payload.word for payload in self.get_payloads()]
+
+    def get_payload_content(self, index):
+        return self.payloads[index][0].content
+
+    def get_payloads(self):
+        for index, elem_list in sorted(self.payloads.items()):
+            for elem in elem_list:
+                yield elem
+
+    def description(self):
+        payl_descriptions = [payload.description("url") for payload in self.get_payloads()]
+        ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
+
+        return ret_str
+
+    def __str__(self):
+        return '\n'.join([str(payload) for payload in self.get_payloads()])
 
 
 class FuzzError(FuzzItem):
@@ -345,7 +248,7 @@ class FuzzResult(FuzzItem):
         self.plugins_res = []
         self.plugins_backfeed = []
 
-        self.payload = []
+        self.payload_man = None
 
         self._description = None
         self._show_field = False
@@ -382,15 +285,6 @@ class FuzzResult(FuzzItem):
 
         return res
 
-    def _payload_description(self):
-        if not self.payload:
-            return self.url
-
-        payl_descriptions = [payload.description(self.url) for payload in self.payload]
-        ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
-
-        return ret_str
-
     @property
     def description(self):
         ret_str = ""
@@ -398,9 +292,12 @@ class FuzzResult(FuzzItem):
         if self._show_field is True:
             ret_str = self.eval(self._description)
         elif self._show_field is False and self._description is not None:
-            ret_str = "{} | {}".format(self._payload_description(), self.eval(self._description))
+            ret_str = "{} | {}".format(self.payload_man.description(), self.eval(self._description))
         else:
-            ret_str = self._payload_description()
+            ret_str = self.payload_man.description()
+
+        if not ret_str:
+            ret_str = self.url
 
         if self.exception:
             return ret_str + "! " + str(self.exception)
@@ -453,7 +350,7 @@ class FuzzResult(FuzzItem):
         fr.is_baseline = self.is_baseline
         fr.item_type = self.item_type
         fr.rlevel = self.rlevel
-        fr.payload = list(self.payload)
+        fr.payload_man = self.payload_man
         fr._description = self._description
         fr._show_field = self._show_field
 
@@ -499,6 +396,12 @@ class PluginRequest(PluginItem):
         plreq = PluginRequest()
         plreq.source = source
         plreq.fuzzitem = res.to_new_url(url)
-        plreq.fuzzitem.payload = [FuzzPayload(url, [None])]
+        plreq.fuzzitem.payload_man = FPayloadManager()
+        plreq.fuzzitem.payload_man.add({
+            "full_marker": None,
+            "word": None,
+            "index": None,
+            "field": None
+        }, url)
 
         return plreq
