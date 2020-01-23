@@ -14,7 +14,7 @@ class burpitem(BasePayload):
     author = ("Bendegúz Nagy (@PaperTsar)",)
     version = "0.1"
     description = (
-        "This payload loads request/response from items saved from Burpsuite."
+        "This payload loads request/response from items saved from Burpsuite.",
     )
     summary = "This payload loads request/response from items saved from Burpsuite."
     category = ["default"]
