@@ -52,7 +52,8 @@ setup(
     long_description=long_descr,
     author="Xavi Mendez (@x4vi_mendez)",
     author_email="xmendez@edge-security.com",
-    url="http://wfuzz.io",
+    url="http://wfuzz.org",
+    license="GPLv2",
     install_requires=install_requires,
     extras_require={
         'dev': dev_requires,
