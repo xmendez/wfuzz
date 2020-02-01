@@ -29,7 +29,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "send_discarded", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "mode"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -45,7 +45,6 @@ class FuzzSession(UserDict):
 
     def _defaults(self):
         return dict(
-            send_discarded=False,
             console_printer="",
             hs=None,
             hc=[],
@@ -64,7 +63,7 @@ class FuzzSession(UserDict):
             previous=False,
             verbose=False,
             interactive=False,
-            mode="http",
+            transport="http",
             recipe=[],
             save="",
             proxies=None,
@@ -103,6 +102,7 @@ class FuzzSession(UserDict):
             compiled_printer=None,
             compiled_seed=None,
             compiled_baseline=None,
+            exec_mode="api"
         )
 
     def update(self, options):
@@ -114,10 +114,10 @@ class FuzzSession(UserDict):
         if self.data['dictio'] and self.data['payloads']:
             raise FuzzExceptBadOptions("Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified.")
 
-        if self.data['rlevel'] > 0 and self.data['mode'] == 'dryrun':
+        if self.data['rlevel'] > 0 and self.data['transport'] == 'dryrun':
             error_list.append("Bad usage: Recursion cannot work without making any HTTP request.")
 
-        if self.data['script'] and self.data['mode'] == 'dryrun':
+        if self.data['script'] and self.data['transport'] == 'dryrun':
             error_list.append("Bad usage: Plugins cannot work without making any HTTP request.")
 
         if self.data['no_cache'] not in [True, False]:

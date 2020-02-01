@@ -10,6 +10,7 @@ from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExcept
 from .myqueues import FuzzRRQueue
 from .facade import Facade
 from .fuzzobjects import PluginResult, PluginItem
+from .ui.console.mvc import View
 
 
 class AllVarQ(FuzzQueue):
@@ -44,6 +45,9 @@ class AllVarQ(FuzzQueue):
 
             yield fuzzres
 
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.STARTSEED]
+
     def process(self, item):
         if item.item_type == FuzzType.STARTSEED:
             self.genReq.stats.pending_seeds.inc()
@@ -69,6 +73,9 @@ class SeedQ(FuzzQueue):
 
     def cancel(self):
         self.genReq.stop()
+
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.STARTSEED, FuzzType.SEED]
 
     def send_baseline(self):
         fuzz_baseline = self.options["compiled_baseline"]
@@ -134,6 +141,32 @@ class SaveQ(FuzzQueue):
         self.send(item)
 
 
+class CLIPrinterQ(FuzzQueue):
+    def __init__(self, options):
+        FuzzQueue.__init__(self, options)
+
+        if self.options["console_printer"]:
+            self.printer = Facade().printers.get_plugin(self.options["console_printer"])(None)
+        else:
+            self.printer = View(self.options)
+
+    def mystart(self):
+        self.printer.header(self.stats)
+
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.RESULT, FuzzType.DISCARDED]
+
+    def get_name(self):
+        return 'CLIPrinterQ'
+
+    def _cleanup(self):
+        self.printer.footer(self.stats)
+
+    def process(self, item):
+        self.printer.result(item)
+        self.send(item)
+
+
 class PrinterQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)
@@ -159,6 +192,9 @@ class RoutingQ(FuzzQueue):
 
     def get_name(self):
         return 'RoutingQ'
+
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.SEED, FuzzType.BACKFEED]
 
     def process(self, item):
         if item.item_type in self.routes:
@@ -358,6 +394,9 @@ class HttpQueue(FuzzQueue):
     def _cleanup(self):
         self.http_pool.deregister()
         self.exit_job = True
+
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.RESULT, FuzzType.BACKFEED]
 
     def process(self, obj):
         self.pause.wait()

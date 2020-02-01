@@ -15,13 +15,12 @@ from .fuzzobjects import FuzzResult
 def main():
     kb = None
     fz = None
-    printer = None
     session_options = None
 
     try:
         # parse command line
         session_options = CLParser(sys.argv).parse_cl().compile()
-        session_options["send_discarded"] = True
+        session_options["exec_mode"] = "cli"
 
         # Create fuzzer's engine
         fz = Fuzzer(session_options)
@@ -35,16 +34,6 @@ def main():
             else:
                 Controller(fz, kb)
                 kb.start()
-
-        printer = View(session_options)
-        if session_options["console_printer"]:
-            printer = Facade().printers.get_plugin(session_options["console_printer"])(None)
-        printer.header(fz.genReq.stats)
-
-        for res in fz:
-            printer.result(res)
-
-        printer.footer(fz.genReq.stats)
     except KeyboardInterrupt:
         print("\nFinishing pending requests...")
         if fz:

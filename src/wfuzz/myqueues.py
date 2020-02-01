@@ -60,6 +60,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def get_name(self):
         raise NotImplementedError
 
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.RESULT]
+
     # Override this method if needed. This will be called just before cancelling the job.
     def cancel(self):
         pass
@@ -90,7 +93,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def discard(self, item):
         if item.item_type == FuzzType.RESULT:
             item.item_type = FuzzType.DISCARDED
-            self.syncq.put(item)
+            self.send(item)
         else:
             raise FuzzExceptInternalError(FuzzException.FATAL, "Only results can be discarded")
 
@@ -138,7 +141,10 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     self.task_done()
                     continue
 
-                self.process(item)
+                if self.items_to_process(item):
+                    self.process(item)
+                else:
+                    self.send(item)
 
                 self.task_done()
             except Exception as e:
@@ -153,9 +159,6 @@ class LastFuzzQueue(FuzzQueue):
         FuzzQueue.__init__(self, options, queue_out, limit)
 
         self.items_to_send = [FuzzType.RESULT]
-
-        if options["send_discarded"]:
-            self.items_to_send.append(FuzzType.DISCARDED)
 
     def get_name(self):
         return "LastFuzzQueue"

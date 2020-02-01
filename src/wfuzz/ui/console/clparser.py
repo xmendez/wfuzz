@@ -499,7 +499,7 @@ class CLParser:
             options["recipe"] = optsd['--recipe'][0]
 
         if "--dry-run" in optsd:
-            options["mode"] = "dryrun"
+            options["transport"] = "dryrun"
 
         if "--interact" in optsd:
             options["interactive"] = True

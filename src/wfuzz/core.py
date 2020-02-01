@@ -2,7 +2,21 @@ from .fuzzfactory import reqfactory
 from .fuzzobjects import FuzzType, FuzzResult
 
 from .myqueues import MyPriorityQueue, QueueManager
-from .fuzzqueues import SeedQ, SaveQ, PrinterQ, RoutingQ, FilterQ, SliceQ, JobQ, RecursiveQ, DryRunQ, HttpQueue, HttpReceiver, AllVarQ
+from .fuzzqueues import (
+    SeedQ,
+    SaveQ,
+    PrinterQ,
+    RoutingQ,
+    FilterQ,
+    SliceQ,
+    JobQ,
+    RecursiveQ,
+    DryRunQ,
+    HttpQueue,
+    HttpReceiver,
+    AllVarQ,
+    CLIPrinterQ
+)
 
 from .fuzzobjects import FuzzStats
 from .facade import Facade
@@ -218,7 +232,7 @@ class Fuzzer(object):
             if prefilter.is_active():
                 self.qmanager.add("slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter))
 
-        if options.get("mode") == "dryrun":
+        if options.get("transport") == "dryrun":
             self.qmanager.add("http_queue", DryRunQ(options))
         else:
             # http_queue breaks process rules due to being asynchronous. Someone has to collects its sends, for proper fuzzqueue's count and sync purposes
@@ -248,6 +262,9 @@ class Fuzzer(object):
 
         if options.get('compiled_printer'):
             self.qmanager.add("printer_queue", PrinterQ(options))
+
+        if options.get('exec_mode') == "cli":
+            self.qmanager.add("printer_cli", CLIPrinterQ(options))
 
         self.qmanager.bind(self.results_queue)
 
