@@ -1,4 +1,5 @@
 from .factories.fuzzfactory import reqfactory
+from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzType, FuzzResult
 
 from .myqueues import MyPriorityQueue, QueueManager
@@ -17,91 +18,11 @@ from .fuzzqueues import (
     AllVarQ,
     CLIPrinterQ
 )
-
-from .facade import Facade
-from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
-
-from .filter import FuzzResFilterSlice
-
-# Python 2 and 3: zip_longest
-try:
-    from itertools import zip_longest
-except ImportError:
-    from itertools import izip_longest as zip_longest
+from .exception import FuzzExceptBadOptions
 
 
 # python 2 and 3: iterator
 from builtins import object
-
-
-class sliceit(object):
-    def __init__(self, payload, slicestr):
-        self.ffilter = FuzzResFilterSlice(filter_string=slicestr)
-        self.payload = payload
-
-    def __iter__(self):
-        return self
-
-    def count(self):
-        return -1
-
-    def __next__(self):
-        item = next(self.payload)
-        while not self.ffilter.is_visible(item):
-            item = next(self.payload)
-
-        return item
-
-
-class tupleit(object):
-    def __init__(self, parent):
-        self.parent = parent
-
-    def count(self):
-        return self.parent.count()
-
-    def __next__(self):
-        return (next(self.parent),)
-
-    def __iter__(self):
-        return self
-
-
-class dictionary(object):
-    def __init__(self, payload, encoders_list):
-        self.__payload = payload
-        self.__encoders = encoders_list
-        self.__generator = self._gen() if self.__encoders else None
-
-    def count(self):
-        return (self.__payload.count() * len(self.__encoders)) if self.__encoders else self.__payload.count()
-
-    def __iter__(self):
-        return self
-
-    def _gen(self):
-        while 1:
-            try:
-                payload_list = next(self.__payload)
-            except StopIteration:
-                return
-
-            for name in self.__encoders:
-                if name.find('@') > 0:
-                    string = payload_list
-                    for i in reversed(name.split("@")):
-                        string = Facade().encoders.get_plugin(i)().encode(string)
-                    yield string
-                else:
-                    plugin_list = Facade().encoders.get_plugins(name)
-                    if not plugin_list:
-                        raise FuzzExceptNoPluginError(name + " encoder does not exists (-e encodings for a list of available encoders)")
-
-                    for e in plugin_list:
-                        yield e().encode(payload_list)
-
-    def __next__(self):
-        return next(self.__generator) if self.__encoders else next(self.__payload)
 
 
 class requestGenerator(object):
@@ -162,51 +83,10 @@ class requestGenerator(object):
             payload.close()
 
     def get_dictio(self):
-        class wrapper(object):
-            def __init__(self, iterator):
-                self._it = iter(iterator)
-
-            def __iter__(self):
-                return self
-
-            def count(self):
-                return -1
-
-            def __next__(self):
-                return str(next(self._it))
-
-        selected_dic = []
-        self._payload_list = []
-
         if self.options["dictio"]:
-            for d in [wrapper(x) for x in self.options["dictio"]]:
-                selected_dic.append(d)
+            return dictionary_factory.create("dictio_from_iterable", self.options)
         else:
-            for payload in self.options["payloads"]:
-                try:
-                    name, params, slicestr = [x[0] for x in zip_longest(payload, (None, None, None))]
-                except ValueError:
-                    raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
-
-                if not params:
-                    raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
-
-                p = Facade().payloads.get_plugin(name)(params)
-                self._payload_list.append(p)
-                pp = dictionary(p, params["encoder"]) if "encoder" in params else p
-                selected_dic.append(sliceit(pp, slicestr) if slicestr else pp)
-
-        if not selected_dic:
-            raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
-
-        if len(selected_dic) == 1:
-            if self.options["iterator"]:
-                raise FuzzExceptBadOptions("Several dictionaries must be used when specifying an iterator")
-            return tupleit(selected_dic[0])
-        elif self.options["iterator"]:
-            return Facade().iterators.get_plugin(self.options["iterator"])(*selected_dic)
-        else:
-            return Facade().iterators.get_plugin("product")(*selected_dic)
+            return dictionary_factory.create("dictio_from_payload", self.options)
 
 
 class Fuzzer(object):
