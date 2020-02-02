@@ -1,4 +1,4 @@
-from .fuzzfactory import reqfactory
+from .factories.fuzzfactory import reqfactory
 from .fuzzobjects import FuzzType, FuzzResult
 
 from .myqueues import MyPriorityQueue, QueueManager

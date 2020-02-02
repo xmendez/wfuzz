@@ -1,10 +1,10 @@
 import copy
 import re
 
-from .fuzzrequest import FuzzRequest
-from .fuzzobjects import FPayloadManager, FuzzResult
-from .exception import FuzzExceptBadOptions
-from .utils import (
+from ..fuzzrequest import FuzzRequest
+from ..fuzzobjects import FPayloadManager, FuzzResult
+from ..exception import FuzzExceptBadOptions
+from ..utils import (
     rgetattr,
     rsetattr,
     ObjectFactory

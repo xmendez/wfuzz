@@ -1,7 +1,7 @@
 from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
 from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
-from .fuzzfactory import reqfactory
+from .factories.fuzzfactory import reqfactory
 from .fuzzobjects import FuzzStats, FuzzResult
 from .filter import FuzzResFilter
 from .core import requestGenerator
