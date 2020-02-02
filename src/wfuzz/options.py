@@ -297,15 +297,8 @@ class FuzzSession(UserDict):
             self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)
 
         try:
-            self.data['hc'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hc']]
-            self.data['hw'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hw']]
-            self.data['hl'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hl']]
-            self.data['hh'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['hh']]
-
-            self.data['sc'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sc']]
-            self.data['sw'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sw']]
-            self.data['sl'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sl']]
-            self.data['sh'] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data['sh']]
+            for filter_option in ['hc', 'hw', 'hl', 'hh', 'sc', 'sw', 'sl', 'sh']:
+                self.data[filter_option] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data[filter_option]]
         except ValueError:
             raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
 
