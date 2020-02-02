@@ -211,8 +211,6 @@ class requestGenerator(object):
 
 class Fuzzer(object):
     def __init__(self, options):
-        self.genReq = options.get("compiled_genreq")
-
         # Create queues
         # genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N
         # -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
@@ -285,7 +283,7 @@ class Fuzzer(object):
         return res
 
     def stats(self):
-        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["http_queue"].job_stats().items()) + list(self.genReq.stats.get_stats().items()))
+        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["http_queue"].job_stats().items()) + list(self.options.stats.get_stats().items()))
 
     def cancel_job(self):
         self.qmanager.cancel()
