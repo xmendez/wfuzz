@@ -69,12 +69,13 @@ class FuzzStats:
         self._cancelled = False
 
     @staticmethod
-    def from_requestGenerator(rg):
+    def from_options(options):
         tmp_stats = FuzzStats()
 
-        tmp_stats.url = rg.seed.history.redirect_url
-        tmp_stats.total_req = rg.count()
-        tmp_stats.seed = rg.seed
+        tmp_stats.url = options["compiled_seed"].history.redirect_url
+        # TO FIX
+        tmp_stats.total_req = -1
+        tmp_stats.seed = options["compiled_seed"]
 
         return tmp_stats
 

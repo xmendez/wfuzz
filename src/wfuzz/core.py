@@ -18,7 +18,6 @@ from .fuzzqueues import (
     CLIPrinterQ
 )
 
-from .fuzzobjects import FuzzStats
 from .facade import Facade
 from .exception import FuzzExceptBadOptions, FuzzExceptNoPluginError
 
@@ -113,10 +112,8 @@ class requestGenerator(object):
         self._payload_list = []
         self.dictio = self.get_dictio()
 
-        self.stats = FuzzStats.from_requestGenerator(self)
-
     def stop(self):
-        self.stats.cancelled = True
+        self.options["compiled_stats"].cancelled = True
         self.close()
 
     def restart(self, seed):
@@ -143,11 +140,11 @@ class requestGenerator(object):
         return self
 
     def __next__(self):
-        if self.stats.cancelled:
+        if self.options["compiled_stats"].cancelled:
             raise StopIteration
 
         dictio_item = next(self.dictio)
-        if self.stats.processed() == 0 or (self.baseline and self.stats.processed() == 1):
+        if self.options["compiled_stats"].processed() == 0 or (self.baseline and self.options["compiled_stats"].processed() == 1):
             self._check_dictio_len(dictio_item)
 
         if self.options["seed_payload"] and isinstance(dictio_item[0], FuzzResult):

@@ -18,7 +18,7 @@ class AllVarQ(FuzzQueue):
         FuzzQueue.__init__(self, options)
         self.delay = options.get("delay")
         self.genReq = options.get("compiled_genreq")
-        self.seed = options.get("compiled_genreq").seed
+        self.seed = options["compiled_seed"]
 
     def get_name(self):
         return 'AllVarQ'
@@ -50,13 +50,13 @@ class AllVarQ(FuzzQueue):
 
     def process(self, item):
         if item.item_type == FuzzType.STARTSEED:
-            self.genReq.stats.pending_seeds.inc()
+            self.stats.pending_seeds.inc()
         else:
             raise FuzzExceptInternalError("AllVarQ: Unknown item type in queue!")
 
         for payload in self.genReq.dictio:
             for fuzzres in self.from_all_fuzz_request(payload):
-                self.genReq.stats.pending_fuzz.inc()
+                self.stats.pending_fuzz.inc()
                 self.send(fuzzres)
 
         self.send_last(FuzzItem(FuzzType.ENDSEED))
@@ -80,17 +80,17 @@ class SeedQ(FuzzQueue):
     def send_baseline(self):
         fuzz_baseline = self.options["compiled_baseline"]
 
-        if fuzz_baseline is not None and self.genReq.stats.pending_seeds() == 1:
-            self.genReq.stats.pending_fuzz.inc()
+        if fuzz_baseline is not None and self.stats.pending_seeds() == 1:
+            self.stats.pending_fuzz.inc()
             self.send_first(fuzz_baseline)
 
             # wait for BBB to be completed before generating more items
-            while(self.genReq.stats.processed() == 0 and not self.genReq.stats.cancelled):
+            while(self.stats.processed() == 0 and not self.stats.cancelled):
                 time.sleep(0.0001)
 
     def process(self, item):
         if item.item_type == FuzzType.STARTSEED:
-            self.genReq.stats.pending_seeds.inc()
+            self.stats.pending_seeds.inc()
         elif item.item_type == FuzzType.SEED:
             self.genReq.restart(item)
         else:
@@ -109,7 +109,7 @@ class SeedQ(FuzzQueue):
         # Enqueue requests
         try:
             while fuzzres:
-                self.genReq.stats.pending_fuzz.inc()
+                self.stats.pending_fuzz.inc()
                 if self.delay:
                     time.sleep(self.delay)
                 self.send(fuzzres)

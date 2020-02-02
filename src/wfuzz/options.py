@@ -29,7 +29,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -102,6 +102,7 @@ class FuzzSession(UserDict):
             compiled_printer=None,
             compiled_seed=None,
             compiled_baseline=None,
+            compiled_stats=None,
             exec_mode="api"
         )
 
@@ -227,7 +228,7 @@ class FuzzSession(UserDict):
         finally:
             if fz:
                 fz.cancel_job()
-                self.stats.update(fz.genReq.stats)
+                self.stats.update(self.data["compiled_stats"])
 
             if self.http_pool:
                 self.http_pool.deregister()
@@ -315,6 +316,7 @@ class FuzzSession(UserDict):
 
         self.compile_seeds()
         self.data["compiled_genreq"] = requestGenerator(self)
+        self.data["compiled_stats"] = FuzzStats.from_options(self)
 
         # Check payload num
         fuzz_words = self.get_fuzz_words()

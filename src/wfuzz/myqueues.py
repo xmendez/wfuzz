@@ -45,7 +45,7 @@ class FuzzQueue(MyPriorityQueue, Thread):
         self.duplicated = False
         self.syncq = None
 
-        self.stats = options.get("compiled_genreq").stats
+        self.stats = options.get("compiled_stats")
         self.options = options
 
         Thread.__init__(self)
@@ -338,7 +338,7 @@ class QueueManager:
             if self._queues:
                 list(self._queues.values())[0].put_last(None)
                 self.join(remove=True)
-                self.options.get("compiled_genreq").stats.mark_end()
+                self.options.get("compiled_stats").mark_end()
                 self._lastq.put_last(None, wait=False)
 
                 self._queues = collections.OrderedDict()
