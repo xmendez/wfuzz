@@ -1,6 +1,4 @@
-from .factories.fuzzfactory import reqfactory
-from .factories.dictfactory import dictionary_factory
-from .fuzzobjects import FuzzType, FuzzResult
+from .fuzzobjects import FuzzType
 
 from .myqueues import MyPriorityQueue, QueueManager
 from .fuzzqueues import (
@@ -19,65 +17,10 @@ from .fuzzqueues import (
     CLIPrinterQ,
     ConsolePrinterQ
 )
-from .exception import FuzzExceptBadOptions
 
 
 # python 2 and 3: iterator
 from builtins import object
-
-
-class requestGenerator(object):
-    def __init__(self, options):
-        self.options = options
-        self.seed = options["compiled_seed"]
-        self.baseline = options["compiled_baseline"]
-        self._payload_list = []
-        self.dictio = self.get_dictio()
-
-    def stop(self):
-        self.options["compiled_stats"].cancelled = True
-        self.close()
-
-    def restart(self, seed):
-        self.options["compiled_seed"] = seed
-        self.options["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed.history)
-        self.seed = self.options["compiled_seed"]
-        self.dictio = self.get_dictio()
-
-    def _check_dictio_len(self, element):
-        if len(element) != len(self.options.get_fuzz_words()):
-            raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
-
-    def count(self):
-        v = self.dictio.count()
-        if self.seed.history.wf_allvars is not None:
-            v *= len(self.seed.history.wf_allvars_set)
-
-        if self.baseline:
-            v += 1
-
-        return v
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.options["compiled_stats"].cancelled:
-            raise StopIteration
-
-        dictio_item = next(self.dictio)
-        if self.options["compiled_stats"].processed() == 0 or (self.baseline and self.options["compiled_stats"].processed() == 1):
-            self._check_dictio_len(dictio_item)
-
-    def close(self):
-        for payload in self._payload_list:
-            payload.close()
-
-    def get_dictio(self):
-        if self.options["dictio"]:
-            return dictionary_factory.create("dictio_from_iterable", self.options)
-        else:
-            return dictionary_factory.create("dictio_from_payload", self.options)
 
 
 class Fuzzer(object):

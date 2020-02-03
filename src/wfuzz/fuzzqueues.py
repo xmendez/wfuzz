@@ -64,7 +64,6 @@ class SeedQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)
         self.delay = options.get("delay")
-        self.genReq = options.get("compiled_genreq")
 
     def get_name(self):
         return 'SeedQ'

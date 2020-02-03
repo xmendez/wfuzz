@@ -5,7 +5,6 @@ from .factories.fuzzfactory import reqfactory
 from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzStats, FuzzResult
 from .filter import FuzzResFilter
-from .core import requestGenerator
 from .utils import (
     json_minify,
     python2_3_convert_from_unicode,
@@ -30,7 +29,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_genreq", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_dictio", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -97,7 +96,6 @@ class FuzzSession(UserDict):
             seed_payload=False,
             filter="",
             prefilter=[],
-            compiled_genreq=None,
             compiled_filter=None,
             compiled_prefilter=[],
             compiled_printer=None,
@@ -211,11 +209,11 @@ class FuzzSession(UserDict):
         try:
             self.data.update(kwargs)
             self.compile_seeds()
-            self.data['compiled_genreq'] = requestGenerator(self)
-            for r in self.data['compiled_genreq'].get_dictio():
+            self.compile_dictio()
+            for r in self.data['compiled_dictio']:
                 yield r
         finally:
-            self.data['compiled_genreq'].close()
+            self.data['compiled_dictio'].cleanup()
 
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
@@ -316,7 +314,6 @@ class FuzzSession(UserDict):
             self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
 
         self.compile_seeds()
-        self.data["compiled_genreq"] = requestGenerator(self)
         self.compile_dictio()
 
         self.data["compiled_stats"] = FuzzStats.from_options(self)
