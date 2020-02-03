@@ -7,94 +7,15 @@ except ImportError:
 from ..utils import ObjectFactory
 from ..exception import (
     FuzzExceptBadOptions,
-    FuzzExceptNoPluginError
 )
 from ..facade import Facade
-from ..filter import FuzzResFilterSlice
-
-
-class Dictionary(object):
-    def __init__(self, payload, encoders_list):
-        self.__payload = payload
-        self.__encoders = encoders_list
-        self.__generator = self._gen() if self.__encoders else None
-
-    def count(self):
-        return (self.__payload.count() * len(self.__encoders)) if self.__encoders else self.__payload.count()
-
-    def __iter__(self):
-        return self
-
-    def _gen(self):
-        while 1:
-            try:
-                payload_list = next(self.__payload)
-            except StopIteration:
-                return
-
-            for name in self.__encoders:
-                if name.find('@') > 0:
-                    string = payload_list
-                    for i in reversed(name.split("@")):
-                        string = Facade().encoders.get_plugin(i)().encode(string)
-                    yield string
-                else:
-                    plugin_list = Facade().encoders.get_plugins(name)
-                    if not plugin_list:
-                        raise FuzzExceptNoPluginError(name + " encoder does not exists (-e encodings for a list of available encoders)")
-
-                    for e in plugin_list:
-                        yield e().encode(payload_list)
-
-    def __next__(self):
-        return next(self.__generator) if self.__encoders else next(self.__payload)
-
-
-class TupleIt(object):
-    def __init__(self, parent):
-        self.parent = parent
-
-    def count(self):
-        return self.parent.count()
-
-    def __next__(self):
-        return (next(self.parent),)
-
-    def __iter__(self):
-        return self
-
-
-class WrapperIt(object):
-    def __init__(self, iterator):
-        self._it = iter(iterator)
-
-    def __iter__(self):
-        return self
-
-    def count(self):
-        return -1
-
-    def __next__(self):
-        return str(next(self._it))
-
-
-class SliceIt(object):
-    def __init__(self, payload, slicestr):
-        self.ffilter = FuzzResFilterSlice(filter_string=slicestr)
-        self.payload = payload
-
-    def __iter__(self):
-        return self
-
-    def count(self):
-        return -1
-
-    def __next__(self):
-        item = next(self.payload)
-        while not self.ffilter.is_visible(item):
-            item = next(self.payload)
-
-        return item
+from ..dictionaries import (
+    TupleIt,
+    WrapperIt,
+    SliceIt,
+    EncodeIt,
+    AllVarDictio,
+)
 
 
 class DictionaryFactory(ObjectFactory):
@@ -102,6 +23,8 @@ class DictionaryFactory(ObjectFactory):
         ObjectFactory.__init__(self, {
             'dictio_from_iterable': DictioFromIterableBuilder(),
             'dictio_from_payload': DictioFromPayloadBuilder(),
+            'dictio_from_allvar': DictioFromAllVarBuilder(),
+            'dictio_from_options': DictioFromOptions(),
         })
 
 
@@ -140,7 +63,6 @@ class DictioFromIterableBuilder(BaseDictioBuilder):
 class DictioFromPayloadBuilder(BaseDictioBuilder):
     def __call__(self, options):
         selected_dic = []
-        self._payload_list = []
 
         for payload in options["payloads"]:
             try:
@@ -151,14 +73,42 @@ class DictioFromPayloadBuilder(BaseDictioBuilder):
             if not params:
                 raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
 
-            p = Facade().payloads.get_plugin(name)(params)
-            self._payload_list.append(p)
-            pp = Dictionary(p, params["encoder"]) if "encoder" in params else p
-            selected_dic.append(SliceIt(pp, slicestr) if slicestr else pp)
+            dictionary = Facade().payloads.get_plugin(name)(params)
+            if "encoder" in params and params["encoder"] is not None:
+                dictionary = EncodeIt(dictionary, params["encoder"])
+
+            selected_dic.append(SliceIt(dictionary, slicestr) if slicestr else dictionary)
 
         self.validate(options, selected_dic)
 
         return self.get_dictio(options, selected_dic)
+
+
+class DictioFromAllVarBuilder(BaseDictioBuilder):
+    @staticmethod
+    def from_all_fuzz_request_gen(options, dictio_list):
+        for payload in dictio_list:
+            if len(payload) > 1:
+                raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
+
+            for var_name in options["compiled_seed"].history.wf_allvars_set.keys():
+                yield (var_name, payload[0])
+
+    def __call__(self, options):
+        dictio_list = DictioFromOptions()(options)
+
+        return AllVarDictio(
+            self.from_all_fuzz_request_gen(options, dictio_list),
+            dictio_list.count() * len(options["compiled_seed"].history.wf_allvars_set)
+        )
+
+
+class DictioFromOptions(BaseDictioBuilder):
+    def __call__(self, options):
+        if options["dictio"]:
+            return DictioFromIterableBuilder()(options)
+        else:
+            return DictioFromPayloadBuilder()(options)
 
 
 dictionary_factory = DictionaryFactory()

@@ -73,8 +73,7 @@ class FuzzStats:
         tmp_stats = FuzzStats()
 
         tmp_stats.url = options["compiled_seed"].history.redirect_url
-        # TO FIX
-        tmp_stats.total_req = -1
+        tmp_stats.total_req = options["compiled_dictio"].count()
         tmp_stats.seed = options["compiled_seed"]
 
         return tmp_stats

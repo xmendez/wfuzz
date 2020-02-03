@@ -2,6 +2,7 @@ from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadF
 from .facade import Facade, ERROR_CODE, BASELINE_CODE
 
 from .factories.fuzzfactory import reqfactory
+from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzStats, FuzzResult
 from .filter import FuzzResFilter
 from .core import requestGenerator
@@ -103,6 +104,7 @@ class FuzzSession(UserDict):
             compiled_seed=None,
             compiled_baseline=None,
             compiled_stats=None,
+            compiled_dictio=None,
             exec_mode="api"
         )
 
@@ -309,6 +311,12 @@ class FuzzSession(UserDict):
 
         self.compile_seeds()
         self.data["compiled_genreq"] = requestGenerator(self)
+
+        if self.data["allvars"]:
+            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_allvar", self)
+        else:
+            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_options", self)
+
         self.data["compiled_stats"] = FuzzStats.from_options(self)
 
         # Check payload num

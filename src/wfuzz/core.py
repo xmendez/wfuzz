@@ -69,16 +69,6 @@ class requestGenerator(object):
         if self.options["compiled_stats"].processed() == 0 or (self.baseline and self.options["compiled_stats"].processed() == 1):
             self._check_dictio_len(dictio_item)
 
-        if self.options["seed_payload"] and isinstance(dictio_item[0], FuzzResult):
-            new_seed = dictio_item[0].from_soft_copy()
-            new_seed.history.update_from_options(self.options)
-            new_seed.update_from_options(self.options)
-            new_seed.payload_man = reqfactory.create("empty_payloadman", dictio_item)
-
-            return new_seed
-        else:
-            return reqfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
-
     def close(self):
         for payload in self._payload_list:
             payload.close()

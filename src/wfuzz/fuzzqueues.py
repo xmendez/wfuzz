@@ -4,6 +4,7 @@ import gzip
 from threading import Thread, Event
 from queue import Queue
 
+from .factories.fuzzfactory import reqfactory
 from .fuzzobjects import FuzzResult, FuzzType, FuzzItem, FPayloadManager
 from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
@@ -17,33 +18,27 @@ class AllVarQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)
         self.delay = options.get("delay")
-        self.genReq = options.get("compiled_genreq")
         self.seed = options["compiled_seed"]
 
     def get_name(self):
         return 'AllVarQ'
 
     def cancel(self):
-        self.genReq.stop()
+        self.options["compiled_stats"].cancelled = True
 
-    def from_all_fuzz_request(self, dictio_list):
-        if len(dictio_list) > 1:
-            raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
+    def from_all_fuzz_request(self, var_name, payload_content):
+        fuzzres = FuzzResult(self.seed.history.from_copy())
+        fuzzres.payload_man = FPayloadManager()
+        fuzzres.payload_man.add({
+            "full_marker": None,
+            "word": None,
+            "index": None,
+            "field": None
+        }, payload_content)
 
-        for var_name in self.seed.history.wf_allvars_set.keys():
-            payload_content = dictio_list[0]
-            fuzzres = FuzzResult(self.seed.history.from_copy())
-            fuzzres.payload_man = FPayloadManager()
-            fuzzres.payload_man.add({
-                "full_marker": None,
-                "word": None,
-                "index": None,
-                "field": None
-            }, payload_content)
+        fuzzres.history.wf_allvars_set = {var_name: payload_content}
 
-            fuzzres.history.wf_allvars_set = {var_name: payload_content}
-
-            yield fuzzres
+        return fuzzres
 
     def items_to_process(self, item):
         return item.item_type in [FuzzType.STARTSEED]
@@ -54,10 +49,13 @@ class AllVarQ(FuzzQueue):
         else:
             raise FuzzExceptInternalError("AllVarQ: Unknown item type in queue!")
 
-        for payload in self.genReq.dictio:
-            for fuzzres in self.from_all_fuzz_request(payload):
-                self.stats.pending_fuzz.inc()
-                self.send(fuzzres)
+        for var_name, payload in self.options["compiled_dictio"]:
+            if self.options["compiled_stats"].cancelled:
+                break
+            self.stats.pending_fuzz.inc()
+            if self.delay:
+                time.sleep(self.delay)
+            self.send(self.from_all_fuzz_request(var_name, payload))
 
         self.send_last(FuzzItem(FuzzType.ENDSEED))
 
@@ -72,7 +70,7 @@ class SeedQ(FuzzQueue):
         return 'SeedQ'
 
     def cancel(self):
-        self.genReq.stop()
+        self.options["compiled_stats"].cancelled = True
 
     def items_to_process(self, item):
         return item.item_type in [FuzzType.STARTSEED, FuzzType.SEED]
@@ -99,21 +97,34 @@ class SeedQ(FuzzQueue):
         self.send_baseline()
         self.send_dictionary()
 
+    def get_fuzz_res(self, dictio_item):
+        if self.options["seed_payload"] and isinstance(dictio_item[0], FuzzResult):
+            new_seed = dictio_item[0].from_soft_copy()
+            new_seed.history.update_from_options(self.options)
+            new_seed.update_from_options(self.options)
+            new_seed.payload_man = reqfactory.create("empty_payloadman", dictio_item)
+
+            return new_seed
+        else:
+            return reqfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
+
     def send_dictionary(self):
         # Empty dictionary?
         try:
-            fuzzres = next(self.genReq)
+            fuzzres = next(self.options["compiled_dictio"])
         except StopIteration:
             raise FuzzExceptBadOptions("Empty dictionary! Please check payload or filter.")
 
         # Enqueue requests
         try:
             while fuzzres:
+                if self.options["compiled_stats"].cancelled:
+                    break
                 self.stats.pending_fuzz.inc()
                 if self.delay:
                     time.sleep(self.delay)
-                self.send(fuzzres)
-                fuzzres = next(self.genReq)
+                self.send(self.get_fuzz_res(fuzzres))
+                fuzzres = next(self.options["compiled_dictio"])
         except StopIteration:
             pass
 
