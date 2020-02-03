@@ -141,14 +141,32 @@ class SaveQ(FuzzQueue):
         self.send(item)
 
 
+class ConsolePrinterQ(FuzzQueue):
+    def __init__(self, options):
+        FuzzQueue.__init__(self, options)
+        self.printer = Facade().printers.get_plugin(self.options["console_printer"])(None)
+
+    def mystart(self):
+        self.printer.header(self.stats)
+
+    def items_to_process(self, item):
+        return item.item_type in [FuzzType.RESULT]
+
+    def get_name(self):
+        return 'ConsolePrinterQ'
+
+    def _cleanup(self):
+        self.printer.footer(self.stats)
+
+    def process(self, item):
+        self.printer.result(item)
+        self.send(item)
+
+
 class CLIPrinterQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)
-
-        if self.options["console_printer"]:
-            self.printer = Facade().printers.get_plugin(self.options["console_printer"])(None)
-        else:
-            self.printer = View(self.options)
+        self.printer = View(self.options)
 
     def mystart(self):
         self.printer.header(self.stats)

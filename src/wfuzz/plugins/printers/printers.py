@@ -5,7 +5,6 @@ from xml.dom import minidom
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
-from wfuzz.fuzzobjects import FuzzType
 
 
 @moduleman_plugin
@@ -73,21 +72,20 @@ class magictree(BasePrinter):
         self.node_service = self.__create_xml_element(node_port, "service", "http")
 
     def result(self, fuzz_result):
-        if fuzz_result.item_type == FuzzType.RESULT:
-            node_url = self.__create_xml_element(self.node_service, "url", str(fuzz_result.url))
+        node_url = self.__create_xml_element(self.node_service, "url", str(fuzz_result.url))
 
-            if 'Server' in fuzz_result.history.headers.response:
-                self.__create_xml_element(node_url, "HTTPServer", fuzz_result.history.headers.response['Server'])
+        if 'Server' in fuzz_result.history.headers.response:
+            self.__create_xml_element(node_url, "HTTPServer", fuzz_result.history.headers.response['Server'])
 
-            location = ""
-            if 'Location' in fuzz_result.history.headers.response:
-                location = fuzz_result.history.headers.response['Location']
+        location = ""
+        if 'Location' in fuzz_result.history.headers.response:
+            location = fuzz_result.history.headers.response['Location']
 
-            if fuzz_result.code == 301 or fuzz_result.code == 302 and location:
-                self.__create_xml_element(node_url, "RedirectLocation", location)
+        if fuzz_result.code == 301 or fuzz_result.code == 302 and location:
+            self.__create_xml_element(node_url, "RedirectLocation", location)
 
-            self.__create_xml_element(node_url, "ResponseCode", str(fuzz_result.code))
-            self.__create_xml_element(node_url, "source", "WFuzz")
+        self.__create_xml_element(node_url, "ResponseCode", str(fuzz_result.code))
+        self.__create_xml_element(node_url, "source", "WFuzz")
 
     def footer(self, summary):
         self.f.write(self.node_mt.toxml())
@@ -111,24 +109,23 @@ class html(BasePrinter):
         self.f.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url))
 
     def result(self, fuzz_result):
-        if fuzz_result.item_type == FuzzType.RESULT:
-            htmlc = "<font>"
+        htmlc = "<font>"
 
-            if fuzz_result.code >= 400 and fuzz_result.code < 500:
-                htmlc = "<font color=#FF0000>"
-            elif fuzz_result.code >= 300 and fuzz_result.code < 400:
-                htmlc = "<font color=#8888FF>"
-            elif fuzz_result.code >= 200 and fuzz_result.code < 300:
-                htmlc = "<font color=#00aa00>"
+        if fuzz_result.code >= 400 and fuzz_result.code < 500:
+            htmlc = "<font color=#FF0000>"
+        elif fuzz_result.code >= 300 and fuzz_result.code < 400:
+            htmlc = "<font color=#8888FF>"
+        elif fuzz_result.code >= 200 and fuzz_result.code < 300:
+            htmlc = "<font color=#00aa00>"
 
-            if fuzz_result.history.method.lower() == "post":
-                inputs = ""
-                for n, v in list(fuzz_result.history.params.post.items()):
-                    inputs += "<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
+        if fuzz_result.history.method.lower() == "post":
+            inputs = ""
+            for n, v in list(fuzz_result.history.params.post.items()):
+                inputs += "<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
 
-                self.f.write("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
-            else:
-                self.f.write("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.url, fuzz_result.url))
+            self.f.write("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
+        else:
+            self.f.write("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.url, fuzz_result.url))
 
     def footer(self, summary):
         self.f.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
@@ -151,33 +148,32 @@ class json(BasePrinter):
         pass
 
     def result(self, res):
-        if res.item_type == FuzzType.RESULT:
-            server = ""
-            if 'Server' in res.history.headers.response:
-                server = res.history.headers.response['Server']
-            location = ""
-            if 'Location' in res.history.headers.response:
-                location = res.history.headers.response['Location']
-            elif res.history.url != res.history.redirect_url:
-                location = "(*) %s" % res.history.url
-            post_data = []
-            if res.history.method.lower() == "post":
-                for n, v in list(res.history.params.post.items()):
-                    post_data.append({"parameter": n, "value": v})
+        server = ""
+        if 'Server' in res.history.headers.response:
+            server = res.history.headers.response['Server']
+        location = ""
+        if 'Location' in res.history.headers.response:
+            location = res.history.headers.response['Location']
+        elif res.history.url != res.history.redirect_url:
+            location = "(*) %s" % res.history.url
+        post_data = []
+        if res.history.method.lower() == "post":
+            for n, v in list(res.history.params.post.items()):
+                post_data.append({"parameter": n, "value": v})
 
-            res_entry = {
-                "chars": res.chars,
-                "code": res.code,
-                "payload": res.description,
-                "lines": res.lines,
-                "location": location,
-                "method": res.history.method,
-                "post_data": post_data,
-                "server": server,
-                "url": res.url,
-                "words": res.words
-            }
-            self.json_res.append(res_entry)
+        res_entry = {
+            "chars": res.chars,
+            "code": res.code,
+            "payload": res.description,
+            "lines": res.lines,
+            "location": location,
+            "method": res.history.method,
+            "post_data": post_data,
+            "server": server,
+            "url": res.url,
+            "words": res.words
+        }
+        self.json_res.append(res_entry)
 
     def footer(self, summary):
         self.f.write(jjson.dumps(self.json_res))
@@ -248,11 +244,10 @@ class raw(BasePrinter):
             self.f.write("  |_ %s\n" % i.issue)
 
     def result(self, res):
-        if res.item_type == FuzzType.RESULT:
-            if self.verbose:
-                self._print_verbose(res)
-            else:
-                self._print(res)
+        if self.verbose:
+            self._print_verbose(res)
+        else:
+            self._print(res)
 
     def footer(self, summary):
         self.f.write("\n")
@@ -287,15 +282,14 @@ class csv(BasePrinter):
         self._print_csv(["id", "response", "lines", "word", "chars", "request", "success"])
 
     def result(self, res):
-        if res.item_type == FuzzType.RESULT:
-            line = [res.nres,
-                    res.code,
-                    res.lines,
-                    res.words,
-                    res.chars,
-                    res.description,
-                    0 if res.exception else 1]
-            self._print_csv(line)
+        line = [res.nres,
+                res.code,
+                res.lines,
+                res.words,
+                res.chars,
+                res.description,
+                0 if res.exception else 1]
+        self._print_csv(line)
 
     def noresult(self, res):
         pass

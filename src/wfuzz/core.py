@@ -16,7 +16,8 @@ from .fuzzqueues import (
     HttpQueue,
     HttpReceiver,
     AllVarQ,
-    CLIPrinterQ
+    CLIPrinterQ,
+    ConsolePrinterQ
 )
 from .exception import FuzzExceptBadOptions
 
@@ -139,7 +140,10 @@ class Fuzzer(object):
             self.qmanager.add("printer_queue", PrinterQ(options))
 
         if options.get('exec_mode') == "cli":
-            self.qmanager.add("printer_cli", CLIPrinterQ(options))
+            if options["console_printer"]:
+                self.qmanager.add("printer_cli", ConsolePrinterQ(options))
+            else:
+                self.qmanager.add("printer_cli", CLIPrinterQ(options))
 
         self.qmanager.bind(self.results_queue)
 
