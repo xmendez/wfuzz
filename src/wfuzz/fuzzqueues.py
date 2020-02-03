@@ -86,11 +86,16 @@ class SeedQ(FuzzQueue):
             while(self.stats.processed() == 0 and not self.stats.cancelled):
                 time.sleep(0.0001)
 
+    def restart(self, seed):
+        self.options["compiled_seed"] = seed
+        self.options["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed.history)
+        self.options.compile_dictio()
+
     def process(self, item):
         if item.item_type == FuzzType.STARTSEED:
             self.stats.pending_seeds.inc()
         elif item.item_type == FuzzType.SEED:
-            self.genReq.restart(item)
+            self.restart(item)
         else:
             raise FuzzExceptInternalError("SeedQ: Unknown item type in queue!")
 

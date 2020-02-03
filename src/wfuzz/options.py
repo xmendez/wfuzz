@@ -263,6 +263,12 @@ class FuzzSession(UserDict):
 
         return set(fuzz_words)
 
+    def compile_dictio(self):
+        if self.data["allvars"]:
+            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_allvar", self)
+        else:
+            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_options", self)
+
     def compile_seeds(self):
         seed_parser = reqfactory.create("request_from_options", self)
         seed = reqfactory.create("request_removing_baseline_markers", seed_parser)
@@ -311,11 +317,7 @@ class FuzzSession(UserDict):
 
         self.compile_seeds()
         self.data["compiled_genreq"] = requestGenerator(self)
-
-        if self.data["allvars"]:
-            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_allvar", self)
-        else:
-            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_options", self)
+        self.compile_dictio()
 
         self.data["compiled_stats"] = FuzzStats.from_options(self)
 
