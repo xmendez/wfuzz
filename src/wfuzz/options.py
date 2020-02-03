@@ -325,7 +325,7 @@ class FuzzSession(UserDict):
         if self.data['allvars'] is None and len(fuzz_words) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
 
-        if self.data["compiled_genreq"].baseline is None and (BASELINE_CODE in self.data['hc'] or
+        if self.data["compiled_baseline"] is None and (BASELINE_CODE in self.data['hc'] or
            BASELINE_CODE in self.data['hl'] or BASELINE_CODE in self.data['hw'] or
            BASELINE_CODE in self.data['hh']):
             raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
