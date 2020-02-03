@@ -5,6 +5,21 @@ from .facade import Facade
 from .filter import FuzzResFilterSlice
 
 
+class BaseIterator:
+    def count(self):
+        raise NotImplementedError
+
+    def width(self):
+        raise NotImplementedError
+
+    def payloads(self):
+        raise NotImplementedError
+
+    def cleanup(self):
+        for payload in self.payloads():
+            payload.close()
+
+
 class BaseDictionary:
     def count(self):
         raise NotImplementedError
@@ -17,6 +32,9 @@ class BaseDictionary:
 
     def __iter__(self):
         return self
+
+    def close(self):
+        pass
 
 
 class EncodeIt(BaseDictionary):
@@ -63,7 +81,7 @@ class EncodeIt(BaseDictionary):
         return next(self.__generator)
 
 
-class TupleIt(BaseDictionary):
+class TupleIt(BaseDictionary, BaseIterator):
     def __init__(self, parent):
         self.parent = parent
 
@@ -72,6 +90,9 @@ class TupleIt(BaseDictionary):
 
     def width(self):
         return 1
+
+    def payloads(self):
+        return [self.parent]
 
     def next_word(self):
         return (next(self.parent),)
@@ -104,7 +125,7 @@ class SliceIt(BaseDictionary):
         return item
 
 
-class AllVarDictio(BaseDictionary):
+class AllVarDictio(BaseDictionary, BaseIterator):
     def __init__(self, iterator, allvar_len):
         self._it = iter(iterator)
         self._count = allvar_len
@@ -114,6 +135,9 @@ class AllVarDictio(BaseDictionary):
 
     def width(self):
         return 0
+
+    def payloads(self):
+        return []
 
     def next_word(self):
         return next(self._it)

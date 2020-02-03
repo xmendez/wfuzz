@@ -349,6 +349,9 @@ class FuzzSession(UserDict):
         return self
 
     def close(self):
+        if self.data["compiled_dictio"]:
+            self.data["compiled_dictio"].cleanup()
+
         if self.http_pool:
             self.http_pool.deregister()
             self.http_pool = None
