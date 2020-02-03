@@ -19,11 +19,15 @@ class zip(object):
     priority = 99
 
     def __init__(self, *i):
+        self.__width = len(i)
         self.__count = min([x.count() for x in i])
         self.it = builtinzip(*i)
 
     def count(self):
         return self.__count
+
+    def width(self):
+        return self.__width
 
     def __next__(self):
         return next(self.it)
@@ -42,11 +46,15 @@ class product(object):
     priority = 99
 
     def __init__(self, *i):
+        self.__width = len(i)
         self.__count = reduce(lambda x, y: x * y.count(), i[1:], i[0].count())
         self.it = itertools.product(*i)
 
     def count(self):
         return self.__count
+
+    def width(self):
+        return self.__width
 
     def __next__(self):
         return next(self.it)
@@ -66,6 +74,9 @@ class chain(object):
 
     def count(self):
         return self.__count
+
+    def width(self):
+        return 1
 
     def __init__(self, *i):
         self.__count = sum([x.count() for x in i])

@@ -322,6 +322,9 @@ class FuzzSession(UserDict):
         # Check payload num
         fuzz_words = self.get_fuzz_words()
 
+        if self.data["compiled_dictio"].width() != len(fuzz_words):
+            raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
+
         if self.data['allvars'] is None and len(fuzz_words) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
 

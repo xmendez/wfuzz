@@ -112,5 +112,8 @@ class AllVarDictio(BaseDictionary):
     def count(self):
         return self._count
 
+    def width(self):
+        return 0
+
     def next_word(self):
         return next(self._it)
