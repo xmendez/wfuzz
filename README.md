@@ -1,11 +1,12 @@
-![Wfuzz](https://github.com/xmendez/wfuzz/blob/master/logo/wfuzz_letters.svg)
+<img src="https://github.com/xmendez/wfuzz/blob/master/logo/wfuzz_letters.svg" width="500">
 
-# Wfuzz - The Web Fuzzer
 
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/v/wfuzz.svg"></a>
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/pyversions/wfuzz.svg"></a>
 [![Build Status](https://travis-ci.org/xmendez/wfuzz.svg?branch=master)](https://travis-ci.org/xmendez/wfuzz)
 <a href="https://codecov.io/github/xmendez/wfuzz"><img src="https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master"></a>
+
+# Wfuzz - The Web Fuzzer
 
 Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 
