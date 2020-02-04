@@ -1,3 +1,5 @@
+![Wfuzz](https://github.com/xmendez/wfuzz/blob/master/logo/wfuzz_letters.svg)
+
 # Wfuzz - The Web Fuzzer
 
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/v/wfuzz.svg"></a>
