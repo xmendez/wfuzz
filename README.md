@@ -1,8 +1,9 @@
 <img src="https://github.com/xmendez/wfuzz/blob/master/docs/_static/logo/wfuzz_letters.svg" width="500">
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/v/wfuzz.svg"></a>
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/pyversions/wfuzz.svg"></a>
-[![Build Status](https://travis-ci.org/xmendez/wfuzz.svg?branch=master)](https://travis-ci.org/xmendez/wfuzz)
 <a href="https://codecov.io/github/xmendez/wfuzz"><img src="https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master"></a>
+
+[![Build Status](https://travis-ci.org/xmendez/wfuzz.svg?branch=master)](https://travis-ci.org/xmendez/wfuzz)
 
 # Wfuzz - The Web Fuzzer
 
