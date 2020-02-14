@@ -15,7 +15,8 @@ from .fuzzqueues import (
     HttpReceiver,
     AllVarQ,
     CLIPrinterQ,
-    ConsolePrinterQ
+    ConsolePrinterQ,
+    PassPayloadQ
 )
 
 
@@ -42,10 +43,12 @@ class Fuzzer(object):
                 self.qmanager.add("slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter))
 
         if options.get("transport") == "dryrun":
-            self.qmanager.add("http_queue", DryRunQ(options))
+            self.qmanager.add("transport_queue", DryRunQ(options))
+        elif options.get("transport") == "payload":
+            self.qmanager.add("transport_queue", PassPayloadQ(options))
         else:
             # http_queue breaks process rules due to being asynchronous. Someone has to collects its sends, for proper fuzzqueue's count and sync purposes
-            self.qmanager.add("http_queue", HttpQueue(options))
+            self.qmanager.add("transport_queue", HttpQueue(options))
             self.qmanager.add("http_receiver", HttpReceiver(options))
 
         if options.get("script"):
@@ -57,7 +60,7 @@ class Fuzzer(object):
                 options,
                 {
                     FuzzType.SEED: self.qmanager["seed_queue"],
-                    FuzzType.BACKFEED: self.qmanager["http_queue"]
+                    FuzzType.BACKFEED: self.qmanager["transport_queue"]
                 }
             )
 
@@ -100,13 +103,13 @@ class Fuzzer(object):
         return res
 
     def stats(self):
-        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["http_queue"].job_stats().items()) + list(self.options.stats.get_stats().items()))
+        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["transport_queue"].job_stats().items()) + list(self.options.stats.get_stats().items()))
 
     def cancel_job(self):
         self.qmanager.cancel()
 
     def pause_job(self):
-        self.qmanager["http_queue"].pause.clear()
+        self.qmanager["transport_queue"].pause.clear()
 
     def resume_job(self):
-        self.qmanager["http_queue"].pause.set()
+        self.qmanager["transport_queue"].pause.set()

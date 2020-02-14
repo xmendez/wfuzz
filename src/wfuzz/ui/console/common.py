@@ -33,6 +33,9 @@ help_banner2 = '''********************************************************
 * Xavier Mendez (xmendez@edge-security.com)            *
 ********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
 
+header_usage_wfpayload = '''Usage:\twfpayload [options] -z payload --zD params\r\n
+'''
+
 header_usage = '''Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload.
 \tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
@@ -142,6 +145,41 @@ verbose_usage = '''%s\n\nOptions:
 \t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
 \t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
 ''' % (header_usage)
+
+
+wfpayload_usage = '''%s\n\nOptions:
+\t-h/--help                 : This help
+\t--help                    : Advanced help
+\t--version                 : Wfuzz version details
+\t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
+\t
+\t--recipe <filename>       : Reads options from a recipe. Repeat for various recipes.
+\t--dump-recipe <filename>  : Prints current options as a recipe
+\t--oF <filename>           : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
+\t
+\t-c                        : Output with colors
+\t-v                        : Verbose information.
+\t-f filename,printer       : Store results in the output file using the specified printer (raw printer if omitted).
+\t-o printer                : Show results using the specified printer.
+\t--efield <expr>           : Show the specified language expression together with the current payload
+\t--field <expr>            : Do not show the payload but only the specified language expression
+\t
+\t-z payload                : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
+\t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
+\t                            Encoders category can be used. ie. url
+\t                            Use help as a payload to show payload plugin's details (you can filter using --slice)
+\t--zP <params>             : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--zD <default>            : Default parameter for the specified payload (it must be preceded by -z or -w).
+\t--zE <encoder>            : Encoder for the specified payload (it must be preceded by -z or -w).
+\t--slice <filter>          : Filter payload\'s elements using the specified expression. It must be preceded by -z.
+\t-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).
+\t
+\t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--ss/hs regex             : Show/hide responses with the specified regex within the content
+\t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
+\t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
+''' % (header_usage_wfpayload)
 
 
 class Term:

@@ -21,20 +21,35 @@ REPEATABLE_OPTS = ["--prefilter", "--recipe", "-z", "--zP", "--zD", "--slice", "
 
 
 class CLParser:
-    def __init__(self, argv):
+    def __init__(
+        self,
+        argv,
+        short_opts=short_opts,
+        long_opts=long_opts,
+        help_banner=help_banner,
+        brief_usage=brief_usage,
+        verbose_usage=verbose_usage,
+        usage=usage
+    ):
         self.argv = argv
+        self.short_opts = short_opts
+        self.long_opts = long_opts
+        self.help_banner = help_banner
+        self.brief_usage = brief_usage
+        self.verbose_usage = verbose_usage
+        self.usage = usage
 
     def show_brief_usage(self):
-        print(help_banner)
-        print(brief_usage)
+        print(self.help_banner)
+        print(self.brief_usage)
 
     def show_verbose_usage(self):
-        print(help_banner)
-        print(verbose_usage)
+        print(self.help_banner)
+        print(self.verbose_usage)
 
     def show_usage(self):
-        print(help_banner)
-        print(usage)
+        print(self.help_banner)
+        print(self.usage)
 
     def show_plugins_help(self, registrant, cols=3, category="$all$"):
         print("\nAvailable %s:\n" % registrant)
@@ -63,7 +78,7 @@ class CLParser:
     def parse_cl(self):
         # Usage and command line help
         try:
-            opts, args = getopt.getopt(self.argv[1:], short_opts, long_opts)
+            opts, args = getopt.getopt(self.argv[1:], self.short_opts, self.long_opts)
             optsd = defaultdict(list)
 
             payload_cache = {}
@@ -192,8 +207,8 @@ class CLParser:
             elif "registrants" in optsd["--ee"]:
                 print('\n'.join(Facade().get_registrants()))
             elif "options" in optsd["--ee"]:
-                print("\n".join(["-{}".format(opt) for opt in short_opts.replace(":", "")]))
-                print("\n".join(["--{}".format(opt.replace("=", "")) for opt in long_opts]))
+                print("\n".join(["-{}".format(opt) for opt in self.short_opts.replace(":", "")]))
+                print("\n".join(["--{}".format(opt.replace("=", "")) for opt in self.long_opts]))
             else:
                 raise FuzzExceptBadOptions("Unknown category. Valid values are: payloads, encoders, iterators, printers or scripts.")
             sys.exit(0)

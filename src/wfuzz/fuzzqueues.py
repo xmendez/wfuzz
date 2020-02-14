@@ -389,6 +389,22 @@ class RecursiveQ(FuzzQueue):
         self.send(res.to_new_seed())
 
 
+class PassPayloadQ(FuzzQueue):
+    def __init__(self, options):
+        FuzzQueue.__init__(self, options)
+        self.pause = Event()
+
+    def get_name(self):
+        return 'PassPayloadQ'
+
+    def process(self, item):
+        if item.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
+            item = item.payload_man.get_payload_content(1)
+            item.update_from_options(self.options)
+
+        self.send(item)
+
+
 class DryRunQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)

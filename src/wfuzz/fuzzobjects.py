@@ -217,8 +217,14 @@ class FPayloadManager():
     def get_fuzz_words(self):
         return [payload.word for payload in self.get_payloads()]
 
+    def get_payload(self, index):
+        return self.payloads[index]
+
+    def get_payload_type(self, index):
+        return self.get_payload(index)[0].type
+
     def get_payload_content(self, index):
-        return self.payloads[index][0].content
+        return self.get_payload(index)[0].content
 
     def get_payloads(self):
         for index, elem_list in sorted(self.payloads.items()):
