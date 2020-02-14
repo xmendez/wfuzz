@@ -2,7 +2,12 @@ import copy
 import re
 
 from ..fuzzrequest import FuzzRequest
-from ..fuzzobjects import FPayloadManager, FuzzResult
+from ..fuzzobjects import (
+    FPayloadManager,
+    FuzzResult,
+    FuzzWord,
+    FuzzWordType
+)
 from ..exception import FuzzExceptBadOptions
 from ..utils import (
     rgetattr,
@@ -118,7 +123,7 @@ class BaselinePayloadBuilder(SeedBaseBuilder):
         fpm = FPayloadManager()
 
         for pdict in [pdict for pdict in self.get_marker_dict(freq) if pdict["bl_value"] is not None]:
-            fpm.add(pdict, pdict["bl_value"], True)
+            fpm.add(pdict, FuzzWord(pdict["bl_value"], FuzzWordType.WORD), True)
 
         return fpm
 

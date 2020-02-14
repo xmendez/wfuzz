@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.payloadtools import ShodanIter
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -33,16 +34,16 @@ class shodanp(BasePayload):
 
         self._it = ShodanIter(search, page, limit)
 
-    def __iter__(self):
-        return self
-
     def count(self):
         return -1
 
     def close(self):
         self._it._stop()
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         match = next(self._it)
 
         port = match['port']

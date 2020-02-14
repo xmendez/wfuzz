@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.exception import FuzzExceptPluginBadParams
+from wfuzz.fuzzobjects import FuzzWordType
 
 import random
 
@@ -38,7 +39,10 @@ class hexrand(BasePayload):
     def count(self):
         return self.__count
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         self.current = random.SystemRandom().randint(self.minimum, self.maximum)
 
         lgth = len(hex(self.maximum).replace("0x", ""))

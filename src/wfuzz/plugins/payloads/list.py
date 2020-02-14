@@ -1,5 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -36,13 +37,13 @@ class list(BasePayload):
         self.__count = len(self.value_list)
         self.current = 0
 
-    def __iter__(self):
-        return self
-
     def count(self):
         return self.__count
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         if self.current >= self.__count:
             raise StopIteration
         else:

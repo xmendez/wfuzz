@@ -1,4 +1,4 @@
-from wfuzz.fuzzobjects import PluginResult, PluginRequest
+from wfuzz.fuzzobjects import PluginResult, PluginRequest, FuzzWord
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions, FuzzExceptPluginError
 from wfuzz.facade import Facade
 
@@ -112,14 +112,20 @@ class BasePayload(object):
             if name not in self.params:
                 self.params[name] = default_value
 
+    def get_type(self):
+        raise FuzzExceptPluginError("Method get_type not implemented")
+
+    def get_next(self):
+        raise FuzzExceptPluginError("Method get_next not implemented")
+
     def __next__(self):
-        raise FuzzExceptPluginError("Method next not implemented")
+        return FuzzWord(self.get_next(), self.get_type())
 
     def count(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
     def __iter__(self):
-        raise FuzzExceptPluginError("Method iter not implemented")
+        return self
 
     def close(self):
         pass

@@ -10,7 +10,7 @@ from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
 from .myqueues import FuzzRRQueue
 from .facade import Facade
-from .fuzzobjects import PluginResult, PluginItem
+from .fuzzobjects import PluginResult, PluginItem, FuzzWordType
 from .ui.console.mvc import View
 
 
@@ -36,7 +36,7 @@ class AllVarQ(FuzzQueue):
             "field": None
         }, payload_content)
 
-        fuzzres.history.wf_allvars_set = {var_name: payload_content}
+        fuzzres.history.wf_allvars_set = {var_name: payload_content.content}
 
         return fuzzres
 
@@ -55,7 +55,7 @@ class AllVarQ(FuzzQueue):
             self.stats.pending_fuzz.inc()
             if self.delay:
                 time.sleep(self.delay)
-            self.send(self.from_all_fuzz_request(var_name, payload))
+            self.send(self.from_all_fuzz_request(var_name.content, payload))
 
         self.send_last(FuzzItem(FuzzType.ENDSEED))
 
@@ -102,8 +102,8 @@ class SeedQ(FuzzQueue):
         self.send_dictionary()
 
     def get_fuzz_res(self, dictio_item):
-        if self.options["seed_payload"] and isinstance(dictio_item[0], FuzzResult):
-            new_seed = dictio_item[0].from_soft_copy()
+        if self.options["seed_payload"] and dictio_item[0].type == FuzzWordType.FUZZRES:
+            new_seed = dictio_item[0].content.from_soft_copy()
             new_seed.history.update_from_options(self.options)
             new_seed.update_from_options(self.options)
             new_seed.payload_man = reqfactory.create("empty_payloadman", dictio_item)

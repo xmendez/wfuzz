@@ -2,13 +2,14 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.utils import FileDetOpener
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
 class file(BasePayload):
     name = "file"
     author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
-    version = "0.1"
+    version = "0.2"
     description = (
         "Returns the contents of a dictionary file line by line.",
     )
@@ -35,7 +36,10 @@ class file(BasePayload):
 
         self.__count = None
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         line = next(self.f)
         if not line:
             self.f.close()
@@ -51,6 +55,3 @@ class file(BasePayload):
             self.f.reset()
 
         return self.__count
-
-    def __iter__(self):
-        return self

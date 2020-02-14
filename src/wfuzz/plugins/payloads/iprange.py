@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptPluginBadParams, FuzzExceptBadInstall
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -37,11 +38,11 @@ class iprange(BasePayload):
         except IndexError:
             raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         return str(next(self.f))
 
     def count(self):
         return self.__count
-
-    def __iter__(self):
-        return self

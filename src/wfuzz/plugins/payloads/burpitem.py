@@ -1,6 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
-from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.utils import rgetattr
@@ -34,16 +34,16 @@ class burpitem(BasePayload):
         self.attr = self.params["attr"]
         self._it = self._gen_burpitem(self.params["fn"])
 
-    def __iter__(self):
-        return self
-
     def count(self):
         return self.__max
 
-    def __next__(self):
+    def get_next(self):
         next_item = next(self._it)
 
         return next_item if not self.attr else rgetattr(next_item, self.attr)
+
+    def get_type(self):
+        return FuzzWordType.FUZZRES if not self.attr else FuzzWordType.WORD
 
     def _gen_burpitem(self, output_fn):
         try:

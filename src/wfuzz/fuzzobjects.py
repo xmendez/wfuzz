@@ -5,15 +5,27 @@ import itertools
 from enum import Enum
 
 from threading import Lock
-from collections import defaultdict
+from collections import (
+    defaultdict,
+    namedtuple
+)
 
 from .filter import FuzzResFilter
 from .exception import FuzzExceptInternalError
 from .facade import ERROR_CODE
 
-from .utils import python2_3_convert_to_unicode
-from .utils import MyCounter
-from .utils import rgetattr
+from .utils import (
+    python2_3_convert_to_unicode,
+    MyCounter,
+    rgetattr
+)
+
+
+FuzzWord = namedtuple('FuzzWord', ['content', 'type'])
+
+
+class FuzzWordType(Enum):
+    WORD, FUZZRES = range(2)
 
 
 class FuzzType(Enum):
@@ -145,6 +157,7 @@ class FuzzPayload():
         self.field = None
         self.content = None
         self.is_baseline = False
+        self.type = None
 
     @property
     def value(self):
@@ -167,20 +180,21 @@ class FuzzPayload():
         return self.value
 
     def __str__(self):
-        return "index: {} marker: {} content: {} field: {} value: {}".format(self.index, self.marker, self.content.__class__, self.field, self.value)
+        return "type: {} index: {} marker: {} content: {} field: {} value: {}".format(self.type, self.index, self.marker, self.content.__class__, self.field, self.value)
 
 
 class FPayloadManager():
     def __init__(self):
         self.payloads = defaultdict(list)
 
-    def add(self, payload_dict, content=None, is_baseline=False):
+    def add(self, payload_dict, fuzzword=None, is_baseline=False):
         fp = FuzzPayload()
         fp.marker = payload_dict["full_marker"]
         fp.word = payload_dict["word"]
         fp.index = int(payload_dict["index"]) if payload_dict["index"] is not None else 1
         fp.field = payload_dict["field"]
-        fp.content = content
+        fp.content = fuzzword.content if fuzzword else None
+        fp.type = fuzzword.type if fuzzword else None
         fp.is_baseline = is_baseline
 
         self.payloads[fp.index].append(fp)
@@ -189,7 +203,8 @@ class FPayloadManager():
         for index, dictio_payload in enumerate(dictio_item, 1):
             if index in self.payloads:
                 for fuzz_payload in self.payloads[index]:
-                    fuzz_payload.content = dictio_payload
+                    fuzz_payload.content = dictio_payload.content
+                    fuzz_payload.type = dictio_payload.type
             else:
                 # payload generated not used in seed but in filters
                 self.add({
@@ -402,6 +417,6 @@ class PluginRequest(PluginItem):
             "word": None,
             "index": None,
             "field": None
-        }, url)
+        }, FuzzWord(url, FuzzWordType.WORD))
 
         return plreq

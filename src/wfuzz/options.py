@@ -211,7 +211,7 @@ class FuzzSession(UserDict):
             self.compile_seeds()
             self.compile_dictio()
             for r in self.data['compiled_dictio']:
-                yield r
+                yield tuple((fuzz_word.content for fuzz_word in r))
         finally:
             self.data['compiled_dictio'].cleanup()
 

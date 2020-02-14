@@ -1,5 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 import os
 
@@ -42,11 +43,11 @@ class dirwalk(BasePayload):
                 relative_path = os.path.relpath(os.path.join(root, f), directory)
                 yield quote(relative_path)
 
-    def __next__(self):
+    def get_next(self):
         return next(self.g)
+
+    def get_type(self):
+        return FuzzWordType.WORD
 
     def count(self):
         return -1
-
-    def __iter__(self):
-        return self

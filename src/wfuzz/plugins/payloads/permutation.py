@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.exception import FuzzExceptBadOptions
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -41,13 +42,13 @@ class permutation(BasePayload):
 
         self.__count = len(self.lista)
 
-    def __iter__(self):
-        return self
-
     def count(self):
         return self.__count
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         if self.lista != []:
             payl = self.lista.pop()
             return payl

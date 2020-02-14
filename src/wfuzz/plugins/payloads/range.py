@@ -1,6 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptPluginBadParams
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -32,7 +33,10 @@ class range(BasePayload):
         except ValueError:
             raise FuzzExceptPluginBadParams("Bad range format (eg. \"23-56\")")
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         if self.current > self.maximum:
             raise StopIteration
         else:

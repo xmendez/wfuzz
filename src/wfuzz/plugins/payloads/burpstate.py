@@ -4,6 +4,7 @@ from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.utils import rgetattr
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 import datetime
@@ -71,7 +72,10 @@ class burpstate(BasePayload):
     def count(self):
         return self.__max
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.FUZZRES if not self.attr else FuzzWordType.WORD
+
+    def get_next(self):
         next_item = next(self._it)
 
         return next_item if not self.attr else rgetattr(next_item, self.attr)

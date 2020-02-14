@@ -3,6 +3,7 @@ from .exception import (
 )
 from .facade import Facade
 from .filter import FuzzResFilterSlice
+from .fuzzobjects import FuzzWord, FuzzWordType
 
 
 class BaseIterator:
@@ -47,10 +48,11 @@ class EncodeIt(BaseDictionary):
         return self.parent.count() * len(self.encoders)
 
     def concatenate(self, encoder_name, payload_word):
-        string = payload_word
+        string = payload_word.content
         for plugin_name in reversed(encoder_name.split("@")):
             string = Facade().encoders.get_plugin(plugin_name)().encode(string)
-        return string
+
+        return FuzzWord(string, FuzzWordType.WORD)
 
     def encode(self, encoder_name, payload_word):
         plugin_list = Facade().encoders.get_plugins(encoder_name)
@@ -58,7 +60,7 @@ class EncodeIt(BaseDictionary):
             raise FuzzExceptNoPluginError(encoder_name + " encoder does not exists (-e encodings for a list of available encoders)")
 
         for plugin_class in plugin_list:
-            yield plugin_class().encode(payload_word)
+            yield FuzzWord(plugin_class().encode(payload_word.content), FuzzWordType.WORD)
 
     def next_word(self):
         return next(self.__generator)
@@ -106,7 +108,7 @@ class WrapperIt(BaseDictionary):
         return -1
 
     def next_word(self):
-        return str(next(self._it))
+        return FuzzWord(str(next(self._it)), FuzzWordType.WORD)
 
 
 class SliceIt(BaseDictionary):
@@ -119,7 +121,7 @@ class SliceIt(BaseDictionary):
 
     def next_word(self):
         item = next(self.payload)
-        while not self.ffilter.is_visible(item):
+        while not self.ffilter.is_visible(item.content):
             item = next(self.payload)
 
         return item
@@ -140,4 +142,5 @@ class AllVarDictio(BaseDictionary, BaseIterator):
         return []
 
     def next_word(self):
-        return next(self._it)
+        var_name, fuzz_word = next(self._it)
+        return (FuzzWord(var_name, FuzzWordType.WORD), fuzz_word)

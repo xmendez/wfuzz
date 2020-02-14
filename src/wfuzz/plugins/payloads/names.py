@@ -1,5 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
@@ -77,10 +78,10 @@ class names(BasePayload):
     def count(self):
         return self.__count
 
-    def __iter__(self):
-        return self
+    def get_type(self):
+        return FuzzWordType.WORD
 
-    def __next__(self):
+    def get_next(self):
         if self.creatednames:
             payl = self.creatednames.pop()
             return payl
