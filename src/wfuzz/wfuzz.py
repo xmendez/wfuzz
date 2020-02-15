@@ -83,12 +83,14 @@ def main_filter():
         session_options.compile_dictio()
         payload_type = session_options['compiled_dictio'].payloads()[0].get_type()
 
-        if payload_type == FuzzWordType.FUZZRES:
+        if payload_type == FuzzWordType.FUZZRES and session_options['show_field'] is not True:
             session_options['exec_mode'] = "cli"
 
         for res in fuzz(**session_options):
             if payload_type == FuzzWordType.WORD:
                 print(res.description)
+            elif payload_type == FuzzWordType.FUZZRES and session_options['show_field']:
+                print(res.eval(session_options['description']))
 
     except KeyboardInterrupt:
         pass
