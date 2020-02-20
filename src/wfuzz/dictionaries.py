@@ -2,7 +2,7 @@ from .exception import (
     FuzzExceptNoPluginError
 )
 from .facade import Facade
-from .filter import FuzzResFilterSlice
+from .filters.ppfilter import FuzzResFilterSlice
 from .fuzzobjects import FuzzWord, FuzzWordType
 
 

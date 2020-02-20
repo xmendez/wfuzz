@@ -4,7 +4,7 @@ import unittest
 
 from wfuzz.fuzzobjects import FuzzResult
 from wfuzz.fuzzrequest import FuzzRequest
-from wfuzz.filter import FuzzResFilter
+from wfuzz.filters.ppfilter import FuzzResFilter
 
 
 raw_req = """GET / HTTP/1.1

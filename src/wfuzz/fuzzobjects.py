@@ -10,7 +10,7 @@ from collections import (
     namedtuple
 )
 
-from .filter import FuzzResFilter
+from .filters.ppfilter import FuzzResFilter
 from .exception import FuzzExceptInternalError
 from .facade import ERROR_CODE
 
@@ -22,6 +22,7 @@ from .utils import (
 
 
 FuzzWord = namedtuple('FuzzWord', ['content', 'type'])
+fuzzresult_shared_filter = FuzzResFilter()
 
 
 class FuzzWordType(Enum):

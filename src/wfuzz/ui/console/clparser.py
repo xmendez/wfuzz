@@ -4,7 +4,7 @@ import getopt
 from collections import defaultdict
 
 from wfuzz.utils import allowed_fields, get_path
-from wfuzz.filter import PYPARSING
+from wfuzz.filters.ppfilter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
 from wfuzz.exception import FuzzException, FuzzExceptBadOptions, FuzzExceptBadInstall

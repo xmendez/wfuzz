@@ -12,10 +12,8 @@ from .facade import (
 from .factories.fuzzfactory import reqfactory
 from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzStats, FuzzResult
-from .filter import (
-    FuzzResFilter,
-    FuzzResSimpleFilter
-)
+from .filters.ppfilter import FuzzResFilter
+from .filters.simplefilter import FuzzResSimpleFilter
 from .utils import (
     json_minify,
     python2_3_convert_from_unicode,
