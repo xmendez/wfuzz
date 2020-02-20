@@ -1,4 +1,4 @@
-from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions, FuzzExceptInternalError, FuzzException
+from .exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions
 from .utils import rgetattr, rsetattr, value_in_any_list_item
 
 import re
@@ -22,78 +22,30 @@ except ImportError:
     PYPARSING = False
 
 
-class FuzzResFilter:
-    FUZZ_MARKER_REGEX = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+class FuzzResSimpleFilter:
+    def __init__(self, ffilter=None):
+        self.hideparams = dict(
+            regex_show=None,
+            codes_show=None,
+            codes=[],
+            words=[],
+            lines=[],
+            chars=[],
+            regex=None,
+        )
 
-    def __init__(self, ffilter=None, filter_string=None):
-        if PYPARSING:
-            quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
-            int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
-            error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
-            bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
-            field_value = Word(alphas + "." + "_" + "-")
-            reserverd_words = oneOf("BBB XXX")
-
-            basic_primitives = int_values | quoted_str_value
-
-            operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
-
-            fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0])]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
-            operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
-
-            fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
-            fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
-            fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
-
-            res_value_op = (~reserverd_words + Word("0123456789" + alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
-            basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
-
-            fuzz_statement = basic_primitives_op ^ fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op
-
-            operator = oneOf("and or")
-            not_operator = Optional(oneOf("not"), "notpresent")
-
-            symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ basic_primitives ^ fuzz_statement)).setParseAction(self.__compute_expr)
-
-            definition = symbol_expr ^ fuzz_statement
-            definition_not = not_operator + definition
-            definition_expr = definition_not + ZeroOrMore(operator + definition_not)
-
-            nested_definition = Group(Suppress("(") + definition_expr + Suppress(")"))
-            nested_definition_not = not_operator + nested_definition
-
-            self.finalformula = (nested_definition_not ^ definition_expr) + ZeroOrMore(operator + (nested_definition_not ^ definition_expr))
-
-            definition_not.setParseAction(self.__compute_not_operator)
-            nested_definition_not.setParseAction(self.__compute_not_operator)
-            nested_definition.setParseAction(self.__compute_formula)
-            self.finalformula.setParseAction(self.__myreduce)
-
-        if ffilter is not None and filter_string is not None:
-            raise FuzzExceptInternalError(FuzzException.FATAL, "A filter must be initilized with a filter string or an object, not both")
-
-        self.res = None
-        if ffilter:
+        if ffilter is not None:
             self.hideparams = ffilter
-        else:
-            self.hideparams = dict(
-                regex_show=None,
-                codes_show=None,
-                codes=[],
-                words=[],
-                lines=[],
-                chars=[],
-                regex=None,
-                filter_string=""
-            )
 
-        if filter_string:
-            self.hideparams['filter_string'] = filter_string
-
-        self.baseline = None
         self.stack = []
 
         self._cache = collections.defaultdict(set)
+
+    def is_active(self):
+        return any([
+            self.hideparams['regex_show'] is not None,
+            self.hideparams['codes_show'] is not None,
+        ])
 
     def set_baseline(self, res):
         if BASELINE_CODE in self.hideparams['lines']:
@@ -105,6 +57,111 @@ class FuzzResFilter:
         if BASELINE_CODE in self.hideparams['chars']:
             self.hideparams['chars'].append(res.chars)
 
+    def is_visible(self, res):
+        if self.hideparams['codes_show'] is None:
+            cond1 = True
+        else:
+            cond1 = not self.hideparams['codes_show']
+
+        if self.hideparams['regex_show'] is None:
+            cond2 = True
+        else:
+            cond2 = not self.hideparams['regex_show']
+
+        if res.code in self.hideparams['codes'] or res.lines in self.hideparams['lines'] or res.words in self.hideparams['words'] or res.chars in self.hideparams['chars']:
+            cond1 = self.hideparams['codes_show']
+
+        if self.hideparams['regex']:
+            if self.hideparams['regex'].search(res.history.content):
+                cond2 = self.hideparams['regex_show']
+
+        return (cond1 and cond2)
+
+    @staticmethod
+    def from_options(filter_options):
+        ffilter = FuzzResSimpleFilter()
+
+        try:
+            if filter_options["ss"] is not None:
+                ffilter.hideparams['regex_show'] = True
+                ffilter.hideparams['regex'] = re.compile(filter_options['ss'], re.MULTILINE | re.DOTALL)
+
+            elif filter_options["hs"] is not None:
+                ffilter.hideparams['regex_show'] = False
+                ffilter.hideparams['regex'] = re.compile(filter_options['hs'], re.MULTILINE | re.DOTALL)
+        except Exception as e:
+            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
+
+        if [x for x in ["sc", "sw", "sh", "sl"] if len(filter_options[x]) > 0]:
+            ffilter.hideparams['codes_show'] = True
+            ffilter.hideparams['codes'] = filter_options["sc"]
+            ffilter.hideparams['words'] = filter_options["sw"]
+            ffilter.hideparams['lines'] = filter_options["sl"]
+            ffilter.hideparams['chars'] = filter_options["sh"]
+        elif [x for x in ["hc", "hw", "hh", "hl"] if len(filter_options[x]) > 0]:
+            ffilter.hideparams['codes_show'] = False
+            ffilter.hideparams['codes'] = filter_options["hc"]
+            ffilter.hideparams['words'] = filter_options["hw"]
+            ffilter.hideparams['lines'] = filter_options["hl"]
+            ffilter.hideparams['chars'] = filter_options["hh"]
+
+        return ffilter
+
+
+class FuzzResFilter:
+    FUZZ_MARKER_REGEX = re.compile(r"FUZ\d*Z", re.MULTILINE | re.DOTALL)
+
+    def __init__(self, filter_string=None):
+        self.filter_string = filter_string
+        self.baseline = None
+
+        quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
+        int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
+        error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
+        bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
+        field_value = Word(alphas + "." + "_" + "-")
+        reserverd_words = oneOf("BBB XXX")
+
+        basic_primitives = int_values | quoted_str_value
+
+        operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
+
+        fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0])]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
+        operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
+
+        fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
+        fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
+        fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
+
+        res_value_op = (~reserverd_words + Word("0123456789" + alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+        basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
+
+        fuzz_statement = basic_primitives_op ^ fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op
+
+        operator = oneOf("and or")
+        not_operator = Optional(oneOf("not"), "notpresent")
+
+        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ basic_primitives ^ fuzz_statement)).setParseAction(self.__compute_expr)
+
+        definition = symbol_expr ^ fuzz_statement
+        definition_not = not_operator + definition
+        definition_expr = definition_not + ZeroOrMore(operator + definition_not)
+
+        nested_definition = Group(Suppress("(") + definition_expr + Suppress(")"))
+        nested_definition_not = not_operator + nested_definition
+
+        self.finalformula = (nested_definition_not ^ definition_expr) + ZeroOrMore(operator + (nested_definition_not ^ definition_expr))
+
+        definition_not.setParseAction(self.__compute_not_operator)
+        nested_definition_not.setParseAction(self.__compute_not_operator)
+        nested_definition.setParseAction(self.__compute_formula)
+        self.finalformula.setParseAction(self.__myreduce)
+
+        self.res = None
+        self.stack = []
+        self._cache = collections.defaultdict(set)
+
+    def set_baseline(self, res):
         self.baseline = res
 
     def __compute_res_value(self, tokens):
@@ -152,7 +209,7 @@ class FuzzResFilter:
         elif element == 'index' or element == 'i':
             ret = self.baseline.nres
 
-        return str(ret)
+        return ret
 
     def __compute_perl_value(self, tokens):
         leftvalue, exp = tokens
@@ -275,77 +332,21 @@ class FuzzResFilter:
         return self.__myreduce(tokens[0])
 
     def is_active(self):
-        return any([
-            self.hideparams['regex_show'] is not None,
-            self.hideparams['codes_show'] is not None,
-            self.hideparams['filter_string'] != "",
-        ])
+        return self.filter_string
 
-    def is_visible(self, res):
-        filter_string = self.hideparams['filter_string']
-        if filter_string and PYPARSING:
-            self.res = res
-            try:
-                return self.finalformula.parseString(filter_string, parseAll=True)[0]
-            except ParseException as e:
-                raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation. {}".format(str(e)))
-            except AttributeError as e:
-                raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
-        else:
-            if self.hideparams['codes_show'] is None:
-                cond1 = True
-            else:
-                cond1 = not self.hideparams['codes_show']
-
-            if self.hideparams['regex_show'] is None:
-                cond2 = True
-            else:
-                cond2 = not self.hideparams['regex_show']
-
-            if res.code in self.hideparams['codes'] or res.lines in self.hideparams['lines'] \
-               or res.words in self.hideparams['words'] or res.chars in self.hideparams['chars']:
-                cond1 = self.hideparams['codes_show']
-
-            if self.hideparams['regex']:
-                if self.hideparams['regex'].search(res.history.content):
-                    cond2 = self.hideparams['regex_show']
-
-            return (cond1 and cond2)
-
-    @staticmethod
-    def from_options(filter_options):
-        ffilter = FuzzResFilter()
-
-        ffilter.hideparams["filter_string"] = filter_options["filter"]
-
+    def is_visible(self, res, filter_string=None):
+        if filter_string is None:
+            filter_string = self.filter_string
+        self.res = res
         try:
-            if filter_options["ss"] is not None:
-                ffilter.hideparams['regex_show'] = True
-                ffilter.hideparams['regex'] = re.compile(filter_options['ss'], re.MULTILINE | re.DOTALL)
-
-            elif filter_options["hs"] is not None:
-                ffilter.hideparams['regex_show'] = False
-                ffilter.hideparams['regex'] = re.compile(filter_options['hs'], re.MULTILINE | re.DOTALL)
-        except Exception as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in filter: %s" % str(e))
-
-        if [x for x in ["sc", "sw", "sh", "sl"] if len(filter_options[x]) > 0]:
-            ffilter.hideparams['codes_show'] = True
-            ffilter.hideparams['codes'] = filter_options["sc"]
-            ffilter.hideparams['words'] = filter_options["sw"]
-            ffilter.hideparams['lines'] = filter_options["sl"]
-            ffilter.hideparams['chars'] = filter_options["sh"]
-        elif [x for x in ["hc", "hw", "hh", "hl"] if len(filter_options[x]) > 0]:
-            ffilter.hideparams['codes_show'] = False
-            ffilter.hideparams['codes'] = filter_options["hc"]
-            ffilter.hideparams['words'] = filter_options["hw"]
-            ffilter.hideparams['lines'] = filter_options["hl"]
-            ffilter.hideparams['chars'] = filter_options["hh"]
-
-        return ffilter
+            return self.finalformula.parseString(filter_string, parseAll=True)[0]
+        except ParseException as e:
+            raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation. {}".format(str(e)))
+        except AttributeError as e:
+            raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
 
     def get_fuzz_words(self):
-        fuzz_words = self.FUZZ_MARKER_REGEX.findall(self.hideparams["filter_string"])
+        fuzz_words = self.FUZZ_MARKER_REGEX.findall(self.filter_string)
 
         return fuzz_words
 

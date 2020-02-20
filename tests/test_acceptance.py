@@ -208,6 +208,7 @@ basic_tests = [
     # complex filter
     ("test_filter_clh", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="c!=404 and l!=4 and h!=300 and w!=6"), [(200, '/dir/b')], None),
     ("test_filter_hw", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="h=28 or w=6"), [(200, '/dir/a')], None),
+    ("test_combined_filter", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="h=28", sw=[6]), [(200, '/dir/a')], None),
     ("test_filter_intext", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content~'one'"), [(200, '/dir/a'), (200, '/dir/b')], None),
     ("test_filter_intext2", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(filter="content!~'one'"), [(200, '/dir/c')], None),
     ("test_dict_filter_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="r.params.get~'value1'"), [(200, '/echo')], None),
@@ -215,6 +216,7 @@ basic_tests = [
     # baseline
     ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
     ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
+    ("test_baseline_filter", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(filter="c!=BBB"), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
     ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
     # XXX("test_scheme_baseline_fuzz", "FUZZ{HTTP}://localhost:8000/dir/a", [["https"]], dict(), [(200, '/dir/a')], None),
 

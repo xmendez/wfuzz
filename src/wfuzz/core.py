@@ -67,7 +67,10 @@ class Fuzzer(object):
             self.qmanager.add("routing_queue", rq)
 
         if options.get('compiled_filter').is_active():
-            self.qmanager.add("filter_queue", FilterQ(options))
+            self.qmanager.add("filter_queue", FilterQ(options, options["compiled_filter"]))
+
+        if options.get('compiled_simple_filter').is_active():
+            self.qmanager.add("simple_filter_queue", FilterQ(options, options["compiled_simple_filter"]))
 
         if options.get('save'):
             self.qmanager.add("save_queue", SaveQ(options))

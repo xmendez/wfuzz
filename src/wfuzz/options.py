@@ -1,10 +1,21 @@
-from .exception import FuzzExceptBadRecipe, FuzzExceptBadOptions, FuzzExceptBadFile
-from .facade import Facade, ERROR_CODE, BASELINE_CODE
+from .exception import (
+    FuzzExceptBadRecipe,
+    FuzzExceptBadOptions,
+    FuzzExceptBadFile,
+)
+from .facade import (
+    Facade,
+    ERROR_CODE,
+    BASELINE_CODE,
+)
 
 from .factories.fuzzfactory import reqfactory
 from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzStats, FuzzResult
-from .filter import FuzzResFilter
+from .filter import (
+    FuzzResFilter,
+    FuzzResSimpleFilter
+)
 from .utils import (
     json_minify,
     python2_3_convert_from_unicode,
@@ -29,7 +40,7 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_dictio", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
+        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_dictio", "compiled_simple_filter", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -143,18 +154,6 @@ class FuzzSession(UserDict):
             for ip, port, ttype in self.data['proxies']:
                 if ttype not in ("SOCKS5", "SOCKS4", "HTTP"):
                     raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
-
-        try:
-            if [x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] and \
-               [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]:
-                raise FuzzExceptBadOptions("Bad usage: Hide and show filters flags are mutually exclusive. Only one group could be specified.")
-
-            if ([x for x in ["sc", "sw", "sh", "sl"] if len(self.data[x]) > 0] or
-               [x for x in ["hc", "hw", "hh", "hl"] if len(self.data[x]) > 0]) and \
-               self.data['filter']:
-                raise FuzzExceptBadOptions("Bad usage: Advanced and filter flags are mutually exclusive. Only one could be specified.")
-        except TypeError:
-            raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int].")
 
         return error_list
 
@@ -308,13 +307,14 @@ class FuzzSession(UserDict):
         except ValueError:
             raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
 
-        # filter options
-        self.data["compiled_filter"] = FuzzResFilter.from_options(self)
-        for prefilter in self.data['prefilter']:
-            self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
-
         self.compile_seeds()
         self.compile_dictio()
+
+        # filter options
+        self.data["compiled_simple_filter"] = FuzzResSimpleFilter.from_options(self)
+        self.data["compiled_filter"] = FuzzResFilter(self.data["filter"])
+        for prefilter in self.data['prefilter']:
+            self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
 
         self.data["compiled_stats"] = FuzzStats.from_options(self)
 

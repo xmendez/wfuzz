@@ -237,10 +237,10 @@ class RoutingQ(FuzzQueue):
 
 
 class FilterQ(FuzzQueue):
-    def __init__(self, options):
+    def __init__(self, options, ffilter):
         FuzzQueue.__init__(self, options)
 
-        self.ffilter = options.get("compiled_filter")
+        self.ffilter = ffilter
 
     def get_name(self):
         return 'filter_thread'
