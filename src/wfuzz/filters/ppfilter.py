@@ -97,7 +97,8 @@ class FuzzResFilter:
     def __compute_fuzz_value(self, tokens):
         fuzz_val, field = tokens
 
-        self.stack.append(field)
+        if field:
+            self.stack.append(field)
 
         try:
             return rgetattr(fuzz_val, field) if field else fuzz_val
@@ -107,7 +108,7 @@ class FuzzResFilter:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
     def __compute_bbb_value(self, tokens):
-        element = self.stack[0] if self.stack else None
+        element = self.stack.pop() if self.stack else None
 
         if self.baseline is None:
             raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
@@ -122,6 +123,8 @@ class FuzzResFilter:
             return self.baseline.chars
         elif element == 'index' or element == 'i':
             ret = self.baseline.nres
+        else:
+            ret = self.baseline.payload_man.get_payload_content(1)
 
         return ret
 
@@ -177,7 +180,7 @@ class FuzzResFilter:
     def __compute_expr(self, tokens):
         leftvalue, exp_operator, rightvalue = tokens[0]
 
-        field_to_set = self.stack[0] if self.stack else None
+        field_to_set = self.stack.pop() if self.stack else None
 
         try:
             if exp_operator in ["=", '==']:
