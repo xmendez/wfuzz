@@ -248,7 +248,11 @@ class FuzzSession(UserDict):
         self.close()
 
     def get_fuzz_words(self):
-        fuzz_words = self.data["compiled_filter"].get_fuzz_words() + self.data["compiled_seed"].payload_man.get_fuzz_words()
+        fuzz_words = self.data["compiled_filter"].get_fuzz_words()
+
+        for comp_obj in ["compiled_seed", "compiled_baseline"]:
+            if self.data[comp_obj]:
+                fuzz_words += self.data[comp_obj].payload_man.get_fuzz_words()
 
         for prefilter in self.data["compiled_prefilter"]:
             fuzz_words += prefilter.get_fuzz_words()
