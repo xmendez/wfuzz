@@ -18,7 +18,7 @@ from collections import defaultdict
 
 # python 2 and 3
 try:
-    from collections import UserDict
+    from collections.abc import UserDict
 except ImportError:
     from UserDict import UserDict
 
