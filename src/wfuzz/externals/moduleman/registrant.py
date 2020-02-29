@@ -1,5 +1,6 @@
 from .modulefilter import Filter
-from collections import defaultdict, MutableMapping
+from collections import defaultdict
+from collections.abc import MutableMapping
 from threading import Lock
 
 
