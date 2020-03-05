@@ -214,6 +214,7 @@ basic_tests = [
     ("test_dict_filter_strquery_fuzz", "%s:8000/echo?var=FUZZ" % LOCAL_DOMAIN, [["value1"]], dict(filter="r.params.get~'value1'"), [(200, '/echo')], None),
 
     # baseline
+    ("test_baseline_header", "%s" % ECHO_URL, [["twovalue"]], dict(headers=[("FUZZ{onevalue}", "admin")], filter="(content~'onevalue:' or content~'twovalue:') and content~'admin'"), [(200, '/echo'), (200, '/echo')], None),
     ("test_baseline_header_content", "%s" % ECHO_URL, [["twovalue"]], dict(headers=[("myheader", "FUZZ{onevalue}")], filter="content~'Myheader:' and (content~FUZZ or content~BBB)"), [(200, '/echo'), (200, '/echo')], None),
     ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
     ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),

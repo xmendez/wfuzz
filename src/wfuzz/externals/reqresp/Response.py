@@ -1,7 +1,6 @@
 import re
 import cgi
 
-import string
 from io import BytesIO
 import gzip
 import zlib
@@ -63,8 +62,7 @@ class Response:
         self.charlen = ""         # Cantidad de caracteres de la respuesta
 
     def addHeader(self, key, value):
-        k = string.capwords(key, "-")
-        self._headers += [(k, value)]
+        self._headers += [(key, value)]
 
     def delHeader(self, key):
         for i in self._headers:

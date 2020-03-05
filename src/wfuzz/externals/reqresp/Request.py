@@ -11,7 +11,6 @@ else:
     from urlparse import urlparse
     from urlparse import urlunparse
 
-import string
 import re
 import pycurl
 
@@ -19,7 +18,10 @@ from .Variables import VariablesSet
 from .exceptions import ReqRespException
 from .Response import Response
 
-from wfuzz.utils import python2_3_convert_to_unicode
+from wfuzz.utils import (
+    python2_3_convert_to_unicode,
+    CaseInsensitiveDict
+)
 
 from .TextParser import TextParser
 
@@ -54,10 +56,10 @@ class Request:
         self._non_parsed_post = None
 
         # diccionario, por ejemplo headers["Cookie"]
-        self._headers = {
+        self._headers = CaseInsensitiveDict({
             'Content-Type': 'application/x-www-form-urlencoded',
             "User-Agent": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1)"
-        }
+        })
 
         self.response = None              # Apunta a la response que produce dicha request
 
@@ -245,18 +247,15 @@ class Request:
 ############################################################################
 
     def addHeader(self, key, value):
-        k = string.capwords(key, "-")
-        self._headers[k] = value
+        self._headers[key] = value
 
     def delHeader(self, key):
-        k = string.capwords(key, "-")
-        if k in self._headers:
-            del self._headers[k]
+        if key in self._headers:
+            del self._headers[key]
 
     def __getitem__(self, key):
-        k = string.capwords(key, "-")
-        if k in self._headers:
-            return self._headers[k]
+        if key in self._headers:
+            return self._headers[key]
         else:
             return ""
 
