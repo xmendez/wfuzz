@@ -309,14 +309,15 @@ class FuzzResult(FuzzItem):
 
     @property
     def description(self):
+        res_description = self.payload_man.description() if self.payload_man else self.url
         ret_str = ""
 
         if self._show_field is True:
             ret_str = self.eval(self._description)
         elif self._show_field is False and self._description is not None:
-            ret_str = "{} | {}".format(self.payload_man.description(), self.eval(self._description))
+            ret_str = "{} | {}".format(res_description, self.eval(self._description))
         else:
-            ret_str = self.payload_man.description()
+            ret_str = res_description
 
         if not ret_str:
             ret_str = self.url
