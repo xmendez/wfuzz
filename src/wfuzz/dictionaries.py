@@ -107,6 +107,9 @@ class WrapperIt(BaseDictionary):
     def count(self):
         return -1
 
+    def get_type(self):
+        return FuzzWordType.WORD
+
     def next_word(self):
         return FuzzWord(str(next(self._it)), FuzzWordType.WORD)
 
@@ -118,6 +121,9 @@ class SliceIt(BaseDictionary):
 
     def count(self):
         return -1
+
+    def get_type(self):
+        return self.payload.get_type()
 
     def next_word(self):
         item = next(self.payload)
