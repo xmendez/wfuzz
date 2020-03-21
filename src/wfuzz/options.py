@@ -9,9 +9,9 @@ from .facade import (
     BASELINE_CODE,
 )
 
-from .factories.fuzzfactory import reqfactory
+from .factories.fuzzresfactory import resfactory
 from .factories.dictfactory import dictionary_factory
-from .fuzzobjects import FuzzStats, FuzzResult
+from .fuzzobjects import FuzzStats
 from .filters.ppfilter import FuzzResFilter
 from .filters.simplefilter import FuzzResSimpleFilter
 from .utils import (
@@ -269,20 +269,8 @@ class FuzzSession(UserDict):
             self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_options", self)
 
     def compile_seeds(self):
-        seed_parser = reqfactory.create("request_from_options", self)
-        seed = reqfactory.create("request_removing_baseline_markers", seed_parser)
-
-        self.data["compiled_seed"] = FuzzResult(seed)
-        self.data["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed)
-
-        baseline_payloadman = reqfactory.create("baseline_payloadman_from_request", seed_parser)
-        if baseline_payloadman.payloads:
-            self.data["compiled_baseline"] = reqfactory.create("fuzzres_from_pm_and_request", baseline_payloadman, seed_parser)
-            self.data["compiled_baseline"].is_baseline = True
-            self.data["compiled_baseline"]._description = self.data['description']
-            self.data["compiled_baseline"]._show_field = self.data['show_field']
-        else:
-            self.data["compiled_baseline"] = None
+        self.data["compiled_seed"] = resfactory.create("seed_from_options", self)
+        self.data["compiled_baseline"] = resfactory.create("baseline_from_options", self)
 
     def compile(self):
         # Validate options

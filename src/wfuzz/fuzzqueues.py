@@ -5,6 +5,7 @@ from threading import Thread, Event
 from queue import Queue
 
 from .factories.fuzzfactory import reqfactory
+from .factories.fuzzresfactory import resfactory
 from .fuzzobjects import FuzzResult, FuzzType, FuzzItem, FPayloadManager
 from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
@@ -110,7 +111,7 @@ class SeedQ(FuzzQueue):
 
             return new_seed
         else:
-            return reqfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
+            return resfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
 
     def send_dictionary(self):
         # Empty dictionary?

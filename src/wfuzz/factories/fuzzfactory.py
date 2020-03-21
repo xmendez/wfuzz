@@ -24,8 +24,6 @@ class FuzzRequestFactory(ObjectFactory):
             'baseline_payloadman_from_request': BaselinePayloadBuilder(),
             'seed_payloadman_from_request': SeedPayloadBuilder(),
             'empty_payloadman': OnePayloadBuilder(),
-            'fuzzres_from_pm_and_request': FuzzResultBuilder(),
-            'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
         })
 
 
