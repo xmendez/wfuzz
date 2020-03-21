@@ -45,10 +45,7 @@ class AllVarQ(FuzzQueue):
         return item.item_type in [FuzzType.STARTSEED]
 
     def process(self, item):
-        if item.item_type == FuzzType.STARTSEED:
-            self.stats.pending_seeds.inc()
-        else:
-            raise FuzzExceptInternalError("AllVarQ: Unknown item type in queue!")
+        self.stats.pending_seeds.inc()
 
         for var_name, payload in self.options["compiled_dictio"]:
             if self.options["compiled_stats"].cancelled:
