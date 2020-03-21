@@ -27,20 +27,6 @@ class AllVarQ(FuzzQueue):
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
 
-    def from_all_fuzz_request(self, var_name, payload_content):
-        fuzzres = FuzzResult(self.seed.history.from_copy())
-        fuzzres.payload_man = FPayloadManager()
-        fuzzres.payload_man.add({
-            "full_marker": None,
-            "word": None,
-            "index": None,
-            "field": None
-        }, payload_content)
-
-        fuzzres.history.wf_allvars_set = {var_name: payload_content.content}
-
-        return fuzzres
-
     def items_to_process(self, item):
         return item.item_type in [FuzzType.STARTSEED]
 
@@ -53,7 +39,9 @@ class AllVarQ(FuzzQueue):
             self.stats.pending_fuzz.inc()
             if self.delay:
                 time.sleep(self.delay)
-            self.send(self.from_all_fuzz_request(var_name.content, payload))
+            self.send(
+                resfactory.create("fuzzres_from_allvar", self.options, var_name.content, payload)
+            )
 
         self.send_last(FuzzItem(FuzzType.ENDSEED))
 

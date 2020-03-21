@@ -15,6 +15,7 @@ class FuzzResultFactory(ObjectFactory):
         ObjectFactory.__init__(self, {
             'fuzzres_from_pm_and_request': FuzzResultBuilder(),
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
+            'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
             'seed_from_options': SeedResultBuilder(),
             'baseline_from_options': BaselineResultBuilder()
         })
@@ -100,6 +101,15 @@ class BaselineResultBuilder(FuzzResultBuilder):
             return res
         else:
             return None
+
+
+class FuzzResultAllVarBuilder(FuzzResultBuilder):
+    def __call__(self, options, var_name, payload):
+        fuzzres = FuzzResult(options["compiled_seed"].history.from_copy())
+        fuzzres.payload_man = reqfactory.create("empty_payloadman", [payload])
+        fuzzres.history.wf_allvars_set = {var_name: payload.content}
+
+        return fuzzres
 
 
 resfactory = FuzzResultFactory()
