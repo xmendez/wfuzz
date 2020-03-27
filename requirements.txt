@@ -10,3 +10,4 @@ future==0.17.1
 pycurl==7.43.0.2
 pyparsing==2.3.0
 six==1.11.0
+colorama==0.4.3
