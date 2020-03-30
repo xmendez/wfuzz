@@ -93,8 +93,8 @@ Wfuzz is more than a web content scanner:
 Installation Guide
 ==================
 
-.. toctree::
-   :maxdepth: 2
+.. toctree::	
+   :maxdepth: 2	
 
    user/installation
    user/breaking
@@ -109,10 +109,10 @@ User Guide
    user/basicusage
    user/advanced
 
-Library Guide
-==================
+Library Guide	
+==================	
 
-.. toctree::
-   :maxdepth: 2
+.. toctree::	
+   :maxdepth: 2	
 
    library/guide

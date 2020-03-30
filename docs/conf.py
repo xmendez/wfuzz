@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Wfuzz'
-copyright = '2017, Xavi Mendez'
+copyright = '2011-2020, Xavi Mendez'
 author = 'Xavi Mendez'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -109,8 +109,7 @@ htmlhelp_basename = 'Wfuzzdoc'
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    'index':       ['sidebarlogo.html'],
-    '**':       ['sidebarlogo.html', 'localtoc.html']
+    '**':       ['sidebarlogo.html', 'globaltoc.html']
 }
 
 # -- Options for LaTeX output ---------------------------------------------

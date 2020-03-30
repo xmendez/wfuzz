@@ -75,6 +75,14 @@ This is due to the fact that, MacOS might need some tweaks before pycurl is inst
 
 #. Finally, if we re-install or execute wfuzz again it should work correctly.
 
+If you get errors such as::
+
+    Fatal exception: dlopen(xxx/lib/python3.7/site-packages/pycurl.cpython-37m-darwin.so, 2): Library not loaded:      /usr/local/opt/openssl/lib/libssl.1.0.0.dylib
+    Referenced from: /usr/local/opt/curl-openssl/lib/libcurl.4.dylib
+    Reason: image not found. Wfuzz needs pycurl to run. Pycurl could be installed using the following command:
+    
+Run brew update && brew upgrade
+
 Pycurl on Windows
 -----------------
 
