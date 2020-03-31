@@ -1,4 +1,7 @@
-import collections
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 
 
 def moduleman_plugin(*args):
@@ -12,7 +15,7 @@ def moduleman_plugin(*args):
 
         return cls
 
-    if not isinstance(args[0], collections.Callable):
+    if not isinstance(args[0], Callable):
         method_args += args
         return inner_decorator
 
