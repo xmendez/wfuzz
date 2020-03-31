@@ -17,6 +17,7 @@ class FuzzResultFactory(ObjectFactory):
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
             'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
             'seed_from_options': SeedResultBuilder(),
+            'seed_from_options_and_dict': FuzzResultDictSeedBuilder(),
             'baseline_from_options': BaselineResultBuilder()
         })
 
@@ -74,8 +75,8 @@ class FuzzResultDictioBuilder(FuzzResultBuilder):
 class SeedResultBuilder(FuzzResultBuilder):
     def __call__(self, options):
         seed = reqfactory.create(
-                "request_removing_baseline_markers",
-                reqfactory.create("request_from_options", options)
+            "request_removing_baseline_markers",
+            reqfactory.create("request_from_options", options)
         )
 
         res = FuzzResult(seed)
@@ -88,8 +89,8 @@ class BaselineResultBuilder(FuzzResultBuilder):
     def __call__(self, options):
         raw_seed = reqfactory.create("request_from_options", options)
         baseline_payloadman = reqfactory.create(
-                "baseline_payloadman_from_request",
-                raw_seed
+            "baseline_payloadman_from_request",
+            raw_seed
         )
 
         if baseline_payloadman.payloads:
@@ -108,6 +109,16 @@ class FuzzResultAllVarBuilder(FuzzResultBuilder):
         fuzzres = FuzzResult(options["compiled_seed"].history.from_copy())
         fuzzres.payload_man = reqfactory.create("empty_payloadman", [payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
+
+        return fuzzres
+
+
+class FuzzResultDictSeedBuilder(FuzzResultBuilder):
+    def __call__(self, options, dictio):
+        fuzzres = dictio[0].content.from_soft_copy()
+        fuzzres.history.update_from_options(options)
+        fuzzres.update_from_options(options)
+        fuzzres.payload_man = reqfactory.create("empty_payloadman", dictio)
 
         return fuzzres
 

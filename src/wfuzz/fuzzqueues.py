@@ -6,7 +6,7 @@ from queue import Queue
 
 from .factories.fuzzfactory import reqfactory
 from .factories.fuzzresfactory import resfactory
-from .fuzzobjects import FuzzResult, FuzzType, FuzzItem, FPayloadManager
+from .fuzzobjects import FuzzType, FuzzItem
 from .myqueues import FuzzQueue
 from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
 from .myqueues import FuzzRRQueue
@@ -89,12 +89,7 @@ class SeedQ(FuzzQueue):
 
     def get_fuzz_res(self, dictio_item):
         if self.options["seed_payload"] and dictio_item[0].type == FuzzWordType.FUZZRES:
-            new_seed = dictio_item[0].content.from_soft_copy()
-            new_seed.history.update_from_options(self.options)
-            new_seed.update_from_options(self.options)
-            new_seed.payload_man = reqfactory.create("empty_payloadman", dictio_item)
-
-            return new_seed
+            return resfactory.create("seed_from_options_and_dict", self.options, dictio_item)
         else:
             return resfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
 
