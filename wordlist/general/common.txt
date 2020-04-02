@@ -190,6 +190,7 @@ composer
 compressed
 comunicator
 con
+confluence
 config
 configs
 configuration
@@ -451,6 +452,7 @@ jdbc
 job
 join
 jrun
+jira
 js
 jsp
 jsps
