@@ -37,13 +37,10 @@ class FuzzRequestUrlMixing(object):
 
     @property
     def is_path(self):
-        if self.code == 200 and self.url[-1] == '/':
+        if self.code in [200, 401] and self.url[-1] == '/':
             return True
-        elif self.code >= 300 and self.code < 400:
+        elif self.code >= 300 and self.code < 308:
             if "Location" in self.headers.response and self.headers.response["Location"][-1] == '/':
-                return True
-        elif self.code == 401:
-            if self.url[-1] == '/':
                 return True
 
         return False
