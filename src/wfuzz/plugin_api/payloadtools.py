@@ -1,6 +1,6 @@
 from wfuzz.exception import FuzzExceptMissingAPIKey, FuzzExceptResourceParseError
 from wfuzz.facade import Facade
-from wfuzz.utils import MyCounter
+from wfuzz.helpers.utils import MyCounter
 
 
 # Python 2 and 3: alternative 4

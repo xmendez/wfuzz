@@ -1,7 +1,7 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.plugin_api.base import BasePayload
-from wfuzz.utils import FileDetOpener
+from wfuzz.helpers.file_func import FileDetOpener
 from wfuzz.fuzzobjects import FuzzWordType
 
 

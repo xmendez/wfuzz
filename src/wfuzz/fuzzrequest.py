@@ -14,8 +14,8 @@ from .exception import FuzzExceptBadAPI, FuzzExceptBadOptions
 from .facade import Facade
 from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 
-from .utils import python2_3_convert_from_unicode
-from .utils import DotDict
+from .helpers.str_func import python2_3_convert_from_unicode
+from .helpers.obj_dic import DotDict
 
 auth_header = namedtuple("auth_header", "method credentials")
 

@@ -4,7 +4,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
-from ..utils import ObjectFactory
+from ..helpers.obj_factory import ObjectFactory
 from ..exception import (
     FuzzExceptBadOptions,
 )

@@ -1,5 +1,9 @@
 from ..exception import FuzzExceptIncorrectFilter, FuzzExceptBadOptions
-from ..utils import rgetattr, rsetattr, value_in_any_list_item
+from ..helpers.obj_dyn import (
+    rgetattr,
+    rsetattr,
+)
+from ..helpers.str_func import value_in_any_list_item
 
 import re
 import collections

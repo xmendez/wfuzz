@@ -7,7 +7,7 @@ import zlib
 
 from .TextParser import TextParser
 
-from wfuzz.utils import python2_3_convert_from_unicode
+from wfuzz.helpers.str_func import python2_3_convert_from_unicode
 
 
 def get_encoding_from_headers(headers):

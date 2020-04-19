@@ -2,7 +2,7 @@ from wfuzz.fuzzobjects import PluginResult, PluginRequest, FuzzWord
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions, FuzzExceptPluginError
 from wfuzz.facade import Facade
 
-from wfuzz.utils import find_file_in_paths
+from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
 import os

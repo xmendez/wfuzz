@@ -14,11 +14,9 @@ from .filters.ppfilter import FuzzResFilter
 from .exception import FuzzExceptInternalError
 from .facade import ERROR_CODE
 
-from .utils import (
-    python2_3_convert_to_unicode,
-    MyCounter,
-    rgetattr
-)
+from .helpers.str_func import python2_3_convert_to_unicode
+from .helpers.obj_dyn import rgetattr
+from .helpers.utils import MyCounter
 
 
 FuzzWord = namedtuple('FuzzWord', ['content', 'type'])

@@ -3,7 +3,8 @@ import sys
 import getopt
 from collections import defaultdict
 
-from wfuzz.utils import allowed_fields, get_path
+from wfuzz.helpers.file_func import get_path
+from wfuzz.helpers.obj_dyn import allowed_fields
 from wfuzz.filters.ppfilter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession

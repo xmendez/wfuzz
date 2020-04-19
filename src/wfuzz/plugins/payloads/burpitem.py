@@ -3,7 +3,7 @@ from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
-from wfuzz.utils import rgetattr
+from wfuzz.helpers.obj_dyn import rgetattr
 import xml.etree.cElementTree as ET
 from base64 import b64decode
 

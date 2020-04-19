@@ -6,7 +6,7 @@ from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
-from wfuzz.utils import rgetattr
+from wfuzz.helpers.obj_dyn import rgetattr
 
 
 @moduleman_plugin

@@ -5,9 +5,7 @@ from .fuzzfactory import reqfactory
 from ..fuzzobjects import (
     FuzzResult,
 )
-from ..utils import (
-    ObjectFactory
-)
+from ..helpers.obj_factory import ObjectFactory
 
 
 class FuzzResultFactory(ObjectFactory):

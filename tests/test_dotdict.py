@@ -1,6 +1,6 @@
 import unittest
 
-from wfuzz.utils import DotDict
+from wfuzz.helpers.obj_dic import DotDict
 
 
 class FilterDotDict(unittest.TestCase):

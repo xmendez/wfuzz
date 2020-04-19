@@ -9,11 +9,12 @@ from ..fuzzobjects import (
     FuzzWordType
 )
 from ..exception import FuzzExceptBadOptions
-from ..utils import (
+from ..helpers.obj_dyn import (
     rgetattr,
     rsetattr,
-    ObjectFactory
 )
+
+from ..helpers.obj_factory import ObjectFactory
 
 
 class FuzzRequestFactory(ObjectFactory):

@@ -1,6 +1,6 @@
 import unittest
 
-from wfuzz.utils import CaseInsensitiveDict
+from wfuzz.helpers.obj_dic import CaseInsensitiveDict
 
 
 class CaseInsensitiveDictTest(unittest.TestCase):

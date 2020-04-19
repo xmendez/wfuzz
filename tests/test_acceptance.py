@@ -42,6 +42,7 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
+    ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
 ]
 
 savedsession_tests = [

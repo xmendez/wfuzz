@@ -1,4 +1,8 @@
-from . import utils
+from .helpers.file_func import (
+    get_home,
+    get_path
+)
+from .helpers.obj_factory import Singleton
 from . import __version__ as version
 from .externals.moduleman.registrant import MulRegistrant
 from .externals.moduleman.loader import DirLoader
@@ -16,7 +20,7 @@ BASELINE_CODE = -2
 
 class Settings(SettingsBase):
     def get_config_file(self):
-        return os.path.join(utils.get_home(check=True), "wfuzz.ini")
+        return os.path.join(get_home(check=True), "wfuzz.ini")
 
     def set_defaults(self):
         return dict(
@@ -51,7 +55,7 @@ class MyRegistrant(MulRegistrant):
 
 
 # python2 and 3: class Facade(metaclass=utils.Singleton):
-class Facade(with_metaclass(utils.Singleton, object)):
+class Facade(with_metaclass(Singleton, object)):
     def __init__(self):
 
         self.__plugins = dict(
@@ -71,8 +75,8 @@ class Facade(with_metaclass(utils.Singleton, object)):
 
             if not self.__plugins[cat]:
                 loader_list = []
-                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": utils.get_path("plugins")}))
-                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": utils.get_home()}))
+                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": get_path("../plugins")}))
+                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": get_home()}))
                 self.__plugins[cat] = MyRegistrant(loader_list)
 
             return self.__plugins[cat]

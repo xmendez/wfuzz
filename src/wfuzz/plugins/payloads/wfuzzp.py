@@ -5,7 +5,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
 from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.plugin_api.base import BasePayload
-from wfuzz.utils import rgetattr
+from wfuzz.helpers.obj_dyn import rgetattr
 
 
 @moduleman_plugin

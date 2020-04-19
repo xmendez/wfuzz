@@ -14,7 +14,7 @@ from .factories.dictfactory import dictionary_factory
 from .fuzzobjects import FuzzStats
 from .filters.ppfilter import FuzzResFilter
 from .filters.simplefilter import FuzzResSimpleFilter
-from .utils import (
+from .helpers.str_func import (
     json_minify,
     python2_3_convert_from_unicode,
 )
