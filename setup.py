@@ -20,7 +20,7 @@ dev_requires = [
 ]
 
 install_requires = [
-    'pycurl<=7.43.0.3',
+    'pycurl<7.43.1',
     'pyparsing',
     'future',
     'six',
