@@ -42,7 +42,6 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
-    ("test_slice", "%s/FUZZ" % URL_LOCAL, None, dict(payloads=[("list", dict(default="a-a-a-a-a"), "FUZZ|u()")], ss="one"), [(200, '/dir/a')], None),
 ]
 
 savedsession_tests = [
@@ -50,8 +49,8 @@ savedsession_tests = [
     ("test_novalue_post_fuzz", "-z list --zD a -u {}/anything -d FUZZ".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
     ("test_json_post_fuzz2", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.a", ["2"], None),
     ("test_json_post_fuzz3", "-z list --zD anything -u {}/FUZZ -d {{\"a\":\"2\"}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --filter r.params.post.a:=1 --field r.params.post.a", ["1"], None),
-    ("test_json_nested", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.nested.this", [2], None),
-    ("test_json_nested2", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.another", [1], None),
+    ("test_json_nested", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.nested.this", ["2"], None),
+    ("test_json_nested2", "-z list --zD anything -u {}/FUZZ -d {{\"test\":\"me\",\"another\":1,\"nested\":{{\"this\":2}}}} -H Content-Type:application/json".format(HTTPBIN_URL), "-z wfuzzp --zD $$PREVFILE$$ -u FUZZ --field r.params.post.another", ["1"], None),
 
     # field fuzz values
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
@@ -88,7 +87,7 @@ savedsession_tests = [
     # fails ("test_set_fuzz_from_fuz2z_url", "-z range,1-1 {}/FUZZ?param=1".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ -z list,6-3 --prefilter r.params.get.param:=FUZ2Z FUZZ[url]", ["http://localhost:9000/1?param=6", "http://localhost:9000/1?param=3"], None),
 
     # test different field
-    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", [404], None),
+    ("test_field", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --field c FUZZ", ["404"], None),
 
 ]
 
@@ -229,9 +228,9 @@ basic_tests = [
     ("test_chain", "%s/FUZZ" % URL_LOCAL, [["a", "b"], ["c"]], dict(iterator="chain"), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
 
     # recursive
-    ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
-    ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
-    ("test_rlevel_1_post", "%s:8000/echo/FUZZ/" % LOCAL_DOMAIN, [["a"]], dict(filter="content~'command=POST' and content~'POST_DATA=a=1'", postdata="a=1", rlevel=1), [(200, '/echo/a/'), (200, '/echo/a/a')], None),
+    # ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
+    # ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
+    # ("test_rlevel_1_post", "%s:8000/echo/FUZZ/" % LOCAL_DOMAIN, [["a"]], dict(filter="content~'command=POST' and content~'POST_DATA=a=1'", postdata="a=1", rlevel=1), [(200, '/echo/a/'), (200, '/echo/a/a')], None),
 
     # plugins
     ("test_robots", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(script="robots"), [(404, '/cal_endar/'), (404, '/crawlsnags/'), (404, '/osrun/'), (200, '/plugins/robots.txt'), (200, '/static/')], None),
@@ -382,11 +381,11 @@ def wfuzz_me_test_generator_previous_session(prev_session_cli, next_session_cli,
 
         # first session
         with wfuzz.get_session(prev_session_cli) as s:
-            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz(save=filename)]
+            ret_list = [x._field() if x._fields else x.description for x in s.fuzz(save=filename)]
 
         # second session wfuzzp as payload
         with wfuzz.get_session(next_session_cli.replace("$$PREVFILE$$", filename)) as s:
-            ret_list = [x.eval(x._description) if x._description else x.description for x in s.fuzz()]
+            ret_list = [x._field() if x._fields else x.description for x in s.fuzz()]
 
         self.assertEqual(sorted(ret_list), sorted(expected_list))
 
