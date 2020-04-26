@@ -94,7 +94,7 @@ class BaselineResultBuilder(FuzzResultBuilder):
         if baseline_payloadman.payloads:
             res = FuzzResultBuilder()(baseline_payloadman, raw_seed)
             res.is_baseline = True
-            res._description = options['description']
+            res._fields = options['fields']
             res._show_field = options['show_field']
 
             return res

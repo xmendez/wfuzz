@@ -26,6 +26,7 @@ install_requires = [
     'six',
     'configparser;python_version<"3.5"',
     'chardet',
+    'pytest',
 ]
 
 if sys.platform.startswith("win"):

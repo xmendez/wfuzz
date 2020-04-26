@@ -94,7 +94,7 @@ class FuzzSession(UserDict):
             script="",
             script_args={},
             connect_to_ip=None,
-            description=None,
+            fields=[],
             no_cache=False,
             show_field=None,
 

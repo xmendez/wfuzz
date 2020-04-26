@@ -18,7 +18,7 @@ from .output import table_print
 
 short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
 long_opts = ['efield=', 'no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
-REPEATABLE_OPTS = ["--prefilter", "--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"]
+REPEATABLE_OPTS = ["--efield", "--field", "--prefilter", "--recipe", "-z", "--zP", "--zD", "--slice", "payload", "-w", "-b", "-H", "-p"]
 
 
 class CLParser:
@@ -401,10 +401,13 @@ class CLParser:
             options['follow'] = True
 
         if "--field" in optsd:
-            options['description'] = optsd["--field"][0]
+            for field in optsd["--field"]:
+                options['fields'].append(field)
             options["show_field"] = True
         elif "--efield" in optsd:
-            options['description'] = optsd["--efield"][0]
+            for field in optsd["--efield"]:
+                options['fields'].append(field)
+
             options["show_field"] = False
         else:
             options["show_field"] = None

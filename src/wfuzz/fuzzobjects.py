@@ -270,7 +270,7 @@ class FuzzResult(FuzzItem):
 
         self.payload_man = None
 
-        self._description = None
+        self._fields = None
         self._show_field = False
 
     @property
@@ -311,9 +311,9 @@ class FuzzResult(FuzzItem):
         ret_str = ""
 
         if self._show_field is True:
-            ret_str = self.eval(self._description)
-        elif self._show_field is False and self._description is not None:
-            ret_str = "{} | {}".format(res_description, self.eval(self._description))
+            ret_str = self._field()
+        elif self._show_field is False and self._fields is not None:
+            ret_str = "{} | {}".format(res_description, self._field())
         else:
             ret_str = res_description
 
@@ -327,6 +327,9 @@ class FuzzResult(FuzzItem):
 
     def eval(self, expr):
         return FuzzResFilter(filter_string=expr).is_visible(self)
+
+    def _field(self):
+        return " | ".join([str(self.eval(field)) for field in self._fields])
 
     # parameters in common with fuzzrequest
     @property
@@ -372,13 +375,13 @@ class FuzzResult(FuzzItem):
         fr.item_type = self.item_type
         fr.rlevel = self.rlevel
         fr.payload_man = self.payload_man
-        fr._description = self._description
+        fr._fields = self._fields
         fr._show_field = self._show_field
 
         return fr
 
     def update_from_options(self, options):
-        self._description = options['description']
+        self._fields = options['fields']
         self._show_field = options['show_field']
 
     def to_new_url(self, url):

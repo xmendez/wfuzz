@@ -98,8 +98,8 @@ verbose_usage = '''%s\n\nOptions:
 \t--interact                : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run                 : Print the results of applying the requests without actually making any HTTP request.
 \t--prev                    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
-\t--efield <expr>           : Show the specified language expression together with the current payload
-\t--field <expr>            : Do not show the payload but only the specified language expression
+\t--efield <expr>           : Show the specified language expression together with the current payload. Repeat for various fields.
+\t--field <expr>            : Do not show the payload but only the specified language expression. Repeat for various fields.
 \t
 \t-p addr                   : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
@@ -161,8 +161,8 @@ wfpayload_usage = '''%s\n\nOptions:
 \t-v                        : Verbose information.
 \t-f filename,printer       : Store results in the output file using the specified printer (raw printer if omitted).
 \t-o printer                : Show results using the specified printer.
-\t--efield <expr>           : Show the specified language expression together with the current payload
-\t--field <expr>            : Do not show the payload but only the specified language expression
+\t--efield <expr>           : Show the specified language expression together with the current payload. Repeat option for various fields.
+\t--field <expr>            : Do not show the payload but only the specified language expression. Repeat option for various fields.
 \t
 \t-z payload                : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
