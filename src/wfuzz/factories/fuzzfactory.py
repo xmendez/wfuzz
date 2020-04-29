@@ -1,4 +1,3 @@
-import copy
 import re
 
 from ..fuzzrequest import FuzzRequest
@@ -164,17 +163,6 @@ class FuzzResultBuilder:
         seed.url = rawUrl
         if auth_method != 'None':
             seed.auth = (auth_method, userpass)
-
-
-class FuzzResultDictioBuilder(FuzzResultBuilder):
-    def __call__(self, options, dictio_item):
-        payload_man = copy.deepcopy(options["compiled_seed"].payload_man)
-        payload_man.update_from_dictio(dictio_item)
-
-        res = self.create_fuzz_result(payload_man, options["compiled_seed"].history)
-        res.update_from_options(options)
-
-        return res
 
 
 reqfactory = FuzzRequestFactory()
