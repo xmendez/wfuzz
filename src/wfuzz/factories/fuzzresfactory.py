@@ -15,7 +15,7 @@ from ..helpers.obj_factory import (
 class FuzzResultFactory(ObjectFactory):
     def __init__(self):
         ObjectFactory.__init__(self, {
-            'fuzzres_from_pm_and_request': FuzzResultBuilder(),
+            'fuzzres_replace_markers': FuzzResultReplaceBuilder(),
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
             'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
             'seed_from_options': SeedResultBuilder(),
@@ -24,7 +24,7 @@ class FuzzResultFactory(ObjectFactory):
         })
 
 
-class FuzzResultBuilder:
+class FuzzResultReplaceBuilder:
     def __call__(self, fpm, freq):
         my_req = freq.from_copy()
         SeedBuilderHelper.replace_markers(my_req, fpm)
@@ -40,7 +40,7 @@ class FuzzResultDictioBuilder:
         payload_man = copy.deepcopy(options["compiled_seed"].payload_man)
         payload_man.update_from_dictio(dictio_item)
 
-        res = resfactory.create("fuzzres_from_pm_and_request", payload_man, options["compiled_seed"].history)
+        res = resfactory.create("fuzzres_replace_markers", payload_man, options["compiled_seed"].history)
         res.update_from_options(options)
 
         return res
@@ -64,7 +64,7 @@ class BaselineResultBuilder:
         )
 
         if baseline_payloadman.payloads:
-            res = resfactory.create("fuzzres_from_pm_and_request", baseline_payloadman, raw_seed)
+            res = resfactory.create("fuzzres_replace_markers", baseline_payloadman, raw_seed)
             res.is_baseline = True
             res._fields = options['fields']
             res._show_field = options['show_field']
