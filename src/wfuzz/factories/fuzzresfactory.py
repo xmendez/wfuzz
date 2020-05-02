@@ -48,11 +48,7 @@ class FuzzResultDictioBuilder:
 
 class SeedResultBuilder:
     def __call__(self, options):
-        seed = reqfactory.create(
-            "request_removing_baseline_markers",
-            reqfactory.create("request_from_options", options)
-        )
-
+        seed = reqfactory.create("seed_from_options", options)
         res = FuzzResult(seed)
         res.payload_man = payman_factory.create("seed_payloadman_from_request", seed)
 

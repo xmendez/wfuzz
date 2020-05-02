@@ -10,7 +10,7 @@ class FuzzRequestFactory(ObjectFactory):
     def __init__(self):
         ObjectFactory.__init__(self, {
             'request_from_options': RequestBuilder(),
-            'request_removing_baseline_markers': SeedBuilder(),
+            'seed_from_options': SeedBuilder(),
         })
 
 
@@ -26,13 +26,12 @@ class RequestBuilder:
 
 
 class SeedBuilder:
-    def __call__(self, freq):
-        my_req = freq.from_copy()
+    def __call__(self, options):
+        seed = reqfactory.create("request_from_options", options)
+        marker_dict = SeedBuilderHelper.get_marker_dict(seed)
+        SeedBuilderHelper.remove_baseline_markers(seed, marker_dict)
 
-        marker_dict = SeedBuilderHelper.get_marker_dict(my_req)
-        SeedBuilderHelper.remove_baseline_markers(my_req, marker_dict)
-
-        return my_req
+        return seed
 
 
 reqfactory = FuzzRequestFactory()
