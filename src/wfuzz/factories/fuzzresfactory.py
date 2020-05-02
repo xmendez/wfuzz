@@ -1,6 +1,7 @@
 import copy
 
 from .fuzzfactory import reqfactory
+from .payman import payman_factory
 
 from ..fuzzobjects import (
     FuzzResult,
@@ -78,7 +79,7 @@ class SeedResultBuilder(FuzzResultBuilder):
         )
 
         res = FuzzResult(seed)
-        res.payload_man = reqfactory.create("seed_payloadman_from_request", seed)
+        res.payload_man = payman_factory.create("seed_payloadman_from_request", seed)
 
         return res
 
@@ -86,7 +87,7 @@ class SeedResultBuilder(FuzzResultBuilder):
 class BaselineResultBuilder(FuzzResultBuilder):
     def __call__(self, options):
         raw_seed = reqfactory.create("request_from_options", options)
-        baseline_payloadman = reqfactory.create(
+        baseline_payloadman = payman_factory.create(
             "baseline_payloadman_from_request",
             raw_seed
         )
@@ -105,7 +106,7 @@ class BaselineResultBuilder(FuzzResultBuilder):
 class FuzzResultAllVarBuilder(FuzzResultBuilder):
     def __call__(self, options, var_name, payload):
         fuzzres = FuzzResult(options["compiled_seed"].history.from_copy())
-        fuzzres.payload_man = reqfactory.create("empty_payloadman", [payload])
+        fuzzres.payload_man = payman_factory.create("empty_payloadman", [payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
 
         return fuzzres
@@ -116,7 +117,7 @@ class FuzzResultDictSeedBuilder(FuzzResultBuilder):
         fuzzres = dictio[0].content.from_soft_copy()
         fuzzres.history.update_from_options(options)
         fuzzres.update_from_options(options)
-        fuzzres.payload_man = reqfactory.create("empty_payloadman", dictio)
+        fuzzres.payload_man = payman_factory.create("empty_payloadman", dictio)
 
         return fuzzres
 

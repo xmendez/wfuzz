@@ -4,7 +4,7 @@ import gzip
 from threading import Thread, Event
 from queue import Queue
 
-from .factories.fuzzfactory import reqfactory
+from .factories.payman import payman_factory
 from .factories.fuzzresfactory import resfactory
 from .fuzzobjects import FuzzType, FuzzItem
 from .myqueues import FuzzQueue
@@ -73,7 +73,7 @@ class SeedQ(FuzzQueue):
 
     def restart(self, seed):
         self.options["compiled_seed"] = seed
-        self.options["compiled_seed"].payload_man = reqfactory.create("seed_payloadman_from_request", seed.history)
+        self.options["compiled_seed"].payload_man = payman_factory.create("seed_payloadman_from_request", seed.history)
         self.options.compile_dictio()
 
     def process(self, item):
