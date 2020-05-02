@@ -6,7 +6,10 @@ from .payman import payman_factory
 from ..fuzzobjects import (
     FuzzResult,
 )
-from ..helpers.obj_factory import ObjectFactory
+from ..helpers.obj_factory import (
+    ObjectFactory,
+    SeedBuilderHelper
+)
 
 
 class FuzzResultFactory(ObjectFactory):
@@ -27,37 +30,12 @@ class FuzzResultBuilder:
 
     def create_fuzz_result(self, fpm, freq):
         my_req = freq.from_copy()
-        self.replace_markers(my_req, fpm)
+        SeedBuilderHelper.replace_markers(my_req, fpm)
 
         fr = FuzzResult(my_req)
         fr.payload_man = fpm
 
         return fr
-
-    # Not working due to reqresp internals
-    # def replace_markers(self, seed, fpm):
-    #     for payload in fpm.get_payloads():
-    #         for field in self.REQ_ATTR:
-    #             old_value = rgetattr(seed, field)
-    #             new_value = old_value.replace(payload.marker, payload.value)
-    #             rsetattr(seed, field, new_value , None)
-
-    def replace_markers(self, seed, fpm):
-        rawReq = str(seed)
-        rawUrl = seed.redirect_url
-        scheme = seed.scheme
-        auth_method, userpass = seed.auth
-
-        for payload in [payload for payload in fpm.get_payloads() if payload.marker is not None]:
-            userpass = userpass.replace(payload.marker, payload.value)
-            rawUrl = rawUrl.replace(payload.marker, payload.value)
-            rawReq = rawReq.replace(payload.marker, payload.value)
-            scheme = scheme.replace(payload.marker, payload.value)
-
-        seed.update_from_raw_http(rawReq, scheme)
-        seed.url = rawUrl
-        if auth_method != 'None':
-            seed.auth = (auth_method, userpass)
 
 
 class FuzzResultDictioBuilder(FuzzResultBuilder):
