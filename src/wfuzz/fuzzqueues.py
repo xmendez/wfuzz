@@ -73,7 +73,7 @@ class SeedQ(FuzzQueue):
 
     def restart(self, seed):
         self.options["compiled_seed"] = seed
-        self.options["compiled_seed"].payload_man = payman_factory.create("seed_payloadman_from_request", seed.history)
+        self.options["compiled_seed"].payload_man = payman_factory.create("payloadman_from_request", seed.history)
         self.options.compile_dictio()
 
     def process(self, item):

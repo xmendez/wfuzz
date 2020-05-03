@@ -50,7 +50,7 @@ class SeedResultBuilder:
     def __call__(self, options):
         seed = reqfactory.create("seed_from_options", options)
         res = FuzzResult(seed)
-        res.payload_man = payman_factory.create("seed_payloadman_from_request", seed)
+        res.payload_man = payman_factory.create("payloadman_from_request", seed)
 
         return res
 
@@ -59,7 +59,7 @@ class BaselineResultBuilder:
     def __call__(self, options):
         raw_seed = reqfactory.create("request_from_options", options)
         baseline_payloadman = payman_factory.create(
-            "baseline_payloadman_from_request",
+            "payloadman_from_baseline",
             raw_seed
         )
 

@@ -13,13 +13,13 @@ from ..helpers.obj_factory import (
 class PayManFactory(ObjectFactory):
     def __init__(self):
         ObjectFactory.__init__(self, {
-            'baseline_payloadman_from_request': BaselinePayloadManBuilder(),
-            'seed_payloadman_from_request': SeedPayloadManBuilder(),
+            'payloadman_from_baseline': BaselinePayloadManBuilder(),
+            'payloadman_from_request': FuzzReqPayloadManBuilder(),
             'empty_payloadman': OnePayloadManBuilder(),
         })
 
 
-class SeedPayloadManBuilder:
+class FuzzReqPayloadManBuilder:
     def __call__(self, freq):
         fpm = FPayloadManager()
 
