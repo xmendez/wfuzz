@@ -200,12 +200,13 @@ class FPayloadManager():
 
     def update_from_dictio(self, dictio_item):
         for index, dictio_payload in enumerate(dictio_item, 1):
-            if index in self.payloads:
-                for fuzz_payload in self.payloads[index]:
-                    fuzz_payload.content = dictio_payload.content
-                    fuzz_payload.type = dictio_payload.type
-            else:
-                # payload generated not used in seed but in filters
+            fuzz_payload = None
+            for fuzz_payload in self.payloads[index]:
+                fuzz_payload.content = dictio_payload.content
+                fuzz_payload.type = dictio_payload.type
+
+            # payload generated not used in seed but in filters
+            if fuzz_payload is None:
                 self.add({
                     "full_marker": None,
                     "word": None,
