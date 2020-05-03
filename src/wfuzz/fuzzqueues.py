@@ -4,7 +4,6 @@ import gzip
 from threading import Thread, Event
 from queue import Queue
 
-from .factories.payman import payman_factory
 from .factories.fuzzresfactory import resfactory
 from .fuzzobjects import FuzzType, FuzzItem
 from .myqueues import FuzzQueue
@@ -73,7 +72,6 @@ class SeedQ(FuzzQueue):
 
     def restart(self, seed):
         self.options["compiled_seed"] = seed
-        self.options["compiled_seed"].payload_man = payman_factory.create("payloadman_from_request", seed.history)
         self.options.compile_dictio()
 
     def process(self, item):
@@ -353,21 +351,11 @@ class RecursiveQ(FuzzQueue):
         # check if recursion is needed
         if self.max_rlevel >= fuzz_res.rlevel and fuzz_res.history.is_path:
             if self.cache.update_cache(fuzz_res.history, "recursion"):
-                self.send_new_seed(fuzz_res)
+                self.stats.pending_seeds.inc()
+                self.send(resfactory.create("seed_from_recursion", fuzz_res))
 
         # send new result
         self.send(fuzz_res)
-
-    def send_new_seed(self, res):
-        # Little hack to output that the result generates a new recursion seed
-        plres = PluginResult()
-        plres.source = "Recursion"
-        plres.issue = "Enqueued response for recursion (level=%d)" % (res.rlevel)
-        res.plugins_res.append(plres)
-
-        # send new seed
-        self.stats.pending_seeds.inc()
-        self.send(res.to_new_seed())
 
 
 class PassPayloadQ(FuzzQueue):

@@ -228,9 +228,9 @@ basic_tests = [
     ("test_chain", "%s/FUZZ" % URL_LOCAL, [["a", "b"], ["c"]], dict(iterator="chain"), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
 
     # recursive
-    # ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
-    # ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
-    # ("test_rlevel_1_post", "%s:8000/echo/FUZZ/" % LOCAL_DOMAIN, [["a"]], dict(filter="content~'command=POST' and content~'POST_DATA=a=1'", postdata="a=1", rlevel=1), [(200, '/echo/a/'), (200, '/echo/a/a')], None),
+    ("test_rlevel_1", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=1), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b')], None),
+    ("test_rlevel_2", "%s:8000/recursive_dir/FUZZ" % LOCAL_DOMAIN, [["a", "b", "c"]], dict(sc=[301], rlevel=2), [(301, '/recursive_dir/a'), (301, '/recursive_dir/a/b'), (301, '/recursive_dir/a/b/c')], None),
+    ("test_rlevel_1_post", "%s:8000/echo/FUZZ/" % LOCAL_DOMAIN, [["a"]], dict(filter="content~'command=POST' and content~'POST_DATA=a=1'", postdata="a=1", rlevel=1), [(200, '/echo/a/'), (200, '/echo/a/a')], None),
 
     # plugins
     ("test_robots", "%s:8000/plugins/FUZZ" % LOCAL_DOMAIN, [["robots.txt"]], dict(script="robots"), [(404, '/cal_endar/'), (404, '/crawlsnags/'), (404, '/osrun/'), (200, '/plugins/robots.txt'), (200, '/static/')], None),

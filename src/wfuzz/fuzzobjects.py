@@ -11,7 +11,6 @@ from collections import (
 )
 
 from .filters.ppfilter import FuzzResFilter
-from .exception import FuzzExceptInternalError
 from .facade import ERROR_CODE
 
 from .helpers.str_func import python2_3_convert_to_unicode
@@ -257,6 +256,7 @@ class FuzzResult(FuzzItem):
         self.exception = exception
         self.is_baseline = False
         self.rlevel = 1
+        self.rlevel_desc = ""
         self.nres = next(FuzzResult.newid) if track_id else 0
 
         self.chars = 0
@@ -324,6 +324,9 @@ class FuzzResult(FuzzItem):
         if self.exception:
             return ret_str + "! " + str(self.exception)
 
+        if self.rlevel > 1:
+            return self.rlevel_desc + ret_str
+
         return ret_str
 
     def eval(self, expr):
@@ -356,18 +359,6 @@ class FuzzResult(FuzzItem):
 
     # factory methods
 
-    def to_new_seed(self):
-        seed = self.from_soft_copy(False)
-
-        if seed.item_type == FuzzType.ERROR:
-            raise FuzzExceptInternalError("A new seed cannot be created with a Fuzz item representing an error.")
-
-        seed.history.url = self.history.recursive_url
-        seed.rlevel += 1
-        seed.item_type = FuzzType.SEED
-
-        return seed
-
     def from_soft_copy(self, track_id=True):
         fr = FuzzResult(self.history.from_copy(), track_id=track_id)
 
@@ -375,6 +366,7 @@ class FuzzResult(FuzzItem):
         fr.is_baseline = self.is_baseline
         fr.item_type = self.item_type
         fr.rlevel = self.rlevel
+        fr.rlevel_desc = self.rlevel_desc
         fr.payload_man = self.payload_man
         fr._fields = self._fields
         fr._show_field = self._show_field

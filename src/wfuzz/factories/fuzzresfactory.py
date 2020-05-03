@@ -5,6 +5,8 @@ from .payman import payman_factory
 
 from ..fuzzobjects import (
     FuzzResult,
+    FuzzType,
+    PluginResult,
 )
 from ..helpers.obj_factory import (
     ObjectFactory,
@@ -18,6 +20,7 @@ class FuzzResultFactory(ObjectFactory):
             'fuzzres_replace_markers': FuzzResultReplaceBuilder(),
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
             'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
+            'seed_from_recursion': SeedRecursiveBuilder(),
             'seed_from_options': SeedResultBuilder(),
             'seed_from_options_and_dict': FuzzResultDictSeedBuilder(),
             'baseline_from_options': BaselineResultBuilder()
@@ -42,6 +45,8 @@ class FuzzResultDictioBuilder:
 
         res = resfactory.create("fuzzres_replace_markers", payload_man, options["compiled_seed"].history)
         res.update_from_options(options)
+        res.rlevel = options["compiled_seed"].rlevel
+        res.rlevel_desc = options["compiled_seed"].rlevel_desc
 
         return res
 
@@ -90,6 +95,23 @@ class FuzzResultDictSeedBuilder:
         fuzzres.payload_man = payman_factory.create("empty_payloadman", dictio)
 
         return fuzzres
+
+
+class SeedRecursiveBuilder:
+    def __call__(self, seed):
+        new_seed = seed.from_soft_copy()
+        new_seed.history.url = seed.history.recursive_url + "FUZZ"
+        new_seed.rlevel += 1
+        new_seed.rlevel_desc += seed.payload_man.description()
+        new_seed.item_type = FuzzType.SEED
+        new_seed.payload_man = payman_factory.create("payloadman_from_request", new_seed.history)
+
+        plres = PluginResult()
+        plres.source = "Recursion"
+        plres.issue = "Enqueued response for recursion (level=%d)" % (seed.rlevel)
+        seed.plugins_res.append(plres)
+
+        return new_seed
 
 
 resfactory = FuzzResultFactory()
