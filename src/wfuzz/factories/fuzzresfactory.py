@@ -65,9 +65,8 @@ class BaselineResultBuilder:
 
         if baseline_payloadman.payloads:
             res = resfactory.create("fuzzres_replace_markers", baseline_payloadman, raw_seed)
+            res.update_from_options(options)
             res.is_baseline = True
-            res._fields = options['fields']
-            res._show_field = options['show_field']
 
             return res
         else:
