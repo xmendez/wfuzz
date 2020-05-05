@@ -17,7 +17,6 @@ from ..helpers.obj_factory import (
 class FuzzResultFactory(ObjectFactory):
     def __init__(self):
         ObjectFactory.__init__(self, {
-            'fuzzres_replace_markers': FuzzResultReplaceBuilder(),
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
             'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
             'seed_from_recursion': SeedRecursiveBuilder(),
@@ -27,26 +26,14 @@ class FuzzResultFactory(ObjectFactory):
         })
 
 
-class FuzzResultReplaceBuilder:
-    def __call__(self, fpm, freq):
-        my_req = freq.from_copy()
-        SeedBuilderHelper.replace_markers(my_req, fpm)
-
-        fr = FuzzResult(my_req)
-        fr.payload_man = fpm
-
-        return fr
-
-
 class FuzzResultDictioBuilder:
     def __call__(self, options, dictio_item):
-        payload_man = copy.deepcopy(options["compiled_seed"].payload_man)
-        payload_man.update_from_dictio(dictio_item)
-
-        res = resfactory.create("fuzzres_replace_markers", payload_man, options["compiled_seed"].history)
+        res = copy.deepcopy(options["compiled_seed"])
+        res.item_type = FuzzType.RESULT
+        res.payload_man.update_from_dictio(dictio_item)
         res.update_from_options(options)
-        res.rlevel = options["compiled_seed"].rlevel
-        res.rlevel_desc = options["compiled_seed"].rlevel_desc
+
+        SeedBuilderHelper.replace_markers(res.history, res.payload_man)
 
         return res
 
@@ -69,9 +56,12 @@ class BaselineResultBuilder:
         )
 
         if baseline_payloadman.payloads:
-            res = resfactory.create("fuzzres_replace_markers", baseline_payloadman, raw_seed)
+            res = FuzzResult(raw_seed)
+            res.payload_man = baseline_payloadman
             res.update_from_options(options)
             res.is_baseline = True
+
+            SeedBuilderHelper.replace_markers(raw_seed, baseline_payloadman)
 
             return res
         else:
@@ -80,7 +70,8 @@ class BaselineResultBuilder:
 
 class FuzzResultAllVarBuilder:
     def __call__(self, options, var_name, payload):
-        fuzzres = FuzzResult(options["compiled_seed"].history.from_copy())
+        fuzzres = copy.deepcopy(options["compiled_seed"])
+        fuzzres.item_type = FuzzType.RESULT
         fuzzres.payload_man = payman_factory.create("empty_payloadman", [payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
 
@@ -89,7 +80,7 @@ class FuzzResultAllVarBuilder:
 
 class FuzzResultDictSeedBuilder:
     def __call__(self, options, dictio):
-        fuzzres = dictio[0].content.from_soft_copy()
+        fuzzres = copy.deepcopy(dictio[0].content)
         fuzzres.history.update_from_options(options)
         fuzzres.update_from_options(options)
         fuzzres.payload_man = payman_factory.create("empty_payloadman", dictio)
@@ -99,7 +90,7 @@ class FuzzResultDictSeedBuilder:
 
 class SeedRecursiveBuilder:
     def __call__(self, seed):
-        new_seed = seed.from_soft_copy()
+        new_seed = copy.deepcopy(seed)
         new_seed.history.url = seed.history.recursive_url + "FUZZ"
         new_seed.rlevel += 1
         new_seed.rlevel_desc += seed.payload_man.description()
