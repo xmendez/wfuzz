@@ -383,23 +383,3 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
         if options['allvars']:
             self.wf_allvars = options['allvars']
-
-    def from_copy(self):
-        newreq = FuzzRequest()
-
-        newreq.wf_proxy = self.wf_proxy
-        newreq.wf_allvars = self.wf_allvars
-        newreq.wf_fuzz_methods = self.wf_fuzz_methods
-        newreq.wf_ip = self.wf_ip
-
-        newreq.headers.request = self.headers.request
-        newreq.params.post = self.params.raw_post
-
-        newreq.follow = self.follow
-        newreq.auth = self.auth
-        newreq.url = self.url
-        newreq.reqtime = self.reqtime
-        newreq.scheme = self.scheme
-        newreq.method = self.wf_fuzz_methods if self.wf_fuzz_methods else self.method
-
-        return newreq

@@ -359,32 +359,9 @@ class FuzzResult(FuzzItem):
 
     # factory methods
 
-    def from_soft_copy(self, track_id=True):
-        fr = FuzzResult(self.history.from_copy(), track_id=track_id)
-
-        fr.exception = self.exception
-        fr.is_baseline = self.is_baseline
-        fr.item_type = self.item_type
-        fr.rlevel = self.rlevel
-        fr.rlevel_desc = self.rlevel_desc
-        fr.payload_man = self.payload_man
-        fr._fields = self._fields
-        fr._show_field = self._show_field
-
-        return fr
-
     def update_from_options(self, options):
         self._fields = options['fields']
         self._show_field = options['show_field']
-
-    def to_new_url(self, url):
-        fr = self.from_soft_copy()
-        fr.history.url = str(url)
-        fr.rlevel = self.rlevel + 1
-        fr.item_type = FuzzType.BACKFEED
-        fr.is_baseline = False
-
-        return fr
 
 
 class PluginItem:
@@ -407,18 +384,3 @@ class PluginRequest(PluginItem):
         PluginItem.__init__(self, PluginItem.backfeed)
 
         self.fuzzitem = None
-
-    @staticmethod
-    def from_fuzzRes(res, url, source):
-        plreq = PluginRequest()
-        plreq.source = source
-        plreq.fuzzitem = res.to_new_url(url)
-        plreq.fuzzitem.payload_man = FPayloadManager()
-        plreq.fuzzitem.payload_man.add({
-            "full_marker": None,
-            "word": None,
-            "index": None,
-            "field": None
-        }, FuzzWord(url, FuzzWordType.WORD))
-
-        return plreq

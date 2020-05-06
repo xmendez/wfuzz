@@ -7,6 +7,8 @@ from ..fuzzobjects import (
     FuzzResult,
     FuzzType,
     PluginResult,
+    FuzzWord,
+    FuzzWordType
 )
 from ..helpers.obj_factory import (
     ObjectFactory,
@@ -19,6 +21,7 @@ class FuzzResultFactory(ObjectFactory):
         ObjectFactory.__init__(self, {
             'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
             'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
+            'fuzzres_from_recursion': FuzzResRecursiveBuilder(),
             'seed_from_recursion': SeedRecursiveBuilder(),
             'seed_from_options': SeedResultBuilder(),
             'seed_from_options_and_dict': FuzzResultDictSeedBuilder(),
@@ -105,6 +108,19 @@ class SeedRecursiveBuilder:
         seed.plugins_res.append(plres)
 
         return new_seed
+
+
+class FuzzResRecursiveBuilder:
+    def __call__(self, seed, url):
+        fr = copy.deepcopy(seed)
+        fr.history.url = str(url)
+        fr.rlevel = seed.rlevel + 1
+        fr.item_type = FuzzType.BACKFEED
+        fr.is_baseline = False
+
+        fr.payload_man = payman_factory.create("empty_payloadman", FuzzWord(url, FuzzWordType.WORD))
+
+        return fr
 
 
 resfactory = FuzzResultFactory()

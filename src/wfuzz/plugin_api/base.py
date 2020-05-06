@@ -1,6 +1,7 @@
-from wfuzz.fuzzobjects import PluginResult, PluginRequest, FuzzWord
+from wfuzz.fuzzobjects import PluginResult, FuzzWord
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions, FuzzExceptPluginError
 from wfuzz.facade import Facade
+from wfuzz.factories.plugin_factory import plugin_factory
 
 from wfuzz.helpers.file_func import find_file_in_paths
 
@@ -63,7 +64,9 @@ class BasePlugin():
         self.results_queue.put(plres)
 
     def queue_url(self, url):
-        self.results_queue.put(PluginRequest.from_fuzzRes(self.base_fuzz_res, url, self.name))
+        self.results_queue.put(
+            plugin_factory.create("pluginreq_from_fuzzres", self.base_fuzz_res, url, self.name)
+        )
 
 
 class BasePrinter:
