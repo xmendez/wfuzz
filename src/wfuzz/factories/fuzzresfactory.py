@@ -72,7 +72,8 @@ class FuzzResultAllVarBuilder:
     def __call__(self, options, var_name, payload):
         fuzzres = copy.deepcopy(options["compiled_seed"])
         fuzzres.item_type = FuzzType.RESULT
-        fuzzres.payload_man = payman_factory.create("empty_payloadman", [payload])
+        fuzzres.payload_man = payman_factory.create("empty_payloadman", payload)
+        fuzzres.payload_man.update_from_dictio([payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
 
         return fuzzres
@@ -83,7 +84,8 @@ class FuzzResultDictSeedBuilder:
         fuzzres = copy.deepcopy(dictio[0].content)
         fuzzres.history.update_from_options(options)
         fuzzres.update_from_options(options)
-        fuzzres.payload_man = payman_factory.create("empty_payloadman", dictio)
+        fuzzres.payload_man = payman_factory.create("empty_payloadman", dictio[0])
+        fuzzres.payload_man.update_from_dictio(dictio)
 
         return fuzzres
 

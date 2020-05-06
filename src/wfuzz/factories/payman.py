@@ -30,16 +30,14 @@ class FuzzReqPayloadManBuilder:
 
 
 class OnePayloadManBuilder:
-    def __call__(self, dictio_item):
+    def __call__(self, content):
         fpm = FPayloadManager()
         fpm.add({
             "full_marker": None,
             "word": None,
             "index": None,
             "field": None
-        }, dictio_item[0])
-
-        fpm.update_from_dictio(dictio_item)
+        }, content)
 
         return fpm
 
