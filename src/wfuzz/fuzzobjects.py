@@ -27,7 +27,7 @@ class FuzzWordType(Enum):
 
 
 class FuzzType(Enum):
-    SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, DISCARDED = range(8)
+    SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, DISCARDED, PLUGIN = range(9)
 
 
 class FuzzItem(object):
@@ -267,7 +267,6 @@ class FuzzResult(FuzzItem):
         self.update()
 
         self.plugins_res = []
-        self.plugins_backfeed = []
 
         self.payload_man = None
 
@@ -301,8 +300,8 @@ class FuzzResult(FuzzItem):
 
     def __str__(self):
         res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
-        for i in self.plugins_res:
-            res += "\n  |_ %s" % i.issue
+        for plugin in self.plugins_res:
+            res += "\n  |_ %s" % plugin.issue
 
         return res
 
@@ -364,23 +363,10 @@ class FuzzResult(FuzzItem):
         self._show_field = options['show_field']
 
 
-class PluginItem:
-    undefined, result, backfeed = list(range(3))
-
-    def __init__(self, ptype):
+class FuzzPlugin(FuzzItem):
+    def __init__(self):
+        FuzzItem.__init__(self, FuzzType.PLUGIN)
         self.source = ""
-        self.plugintype = ptype
-
-
-class PluginResult(PluginItem):
-    def __init__(self):
-        PluginItem.__init__(self, PluginItem.result)
-
         self.issue = ""
-
-
-class PluginRequest(PluginItem):
-    def __init__(self):
-        PluginItem.__init__(self, PluginItem.backfeed)
-
-        self.fuzzitem = None
+        self._exception = None
+        self._seed = None

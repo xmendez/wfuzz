@@ -3,14 +3,16 @@ import pickle as pickle
 import gzip
 from threading import Thread, Event
 from queue import Queue
+from collections import defaultdict
 
 from .factories.fuzzresfactory import resfactory
+from .factories.plugin_factory import plugin_factory
 from .fuzzobjects import FuzzType, FuzzItem
 from .myqueues import FuzzQueue
-from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError, FuzzExceptPluginError
+from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError
 from .myqueues import FuzzRRQueue
 from .facade import Facade
-from .fuzzobjects import PluginResult, PluginItem, FuzzWordType
+from .fuzzobjects import FuzzWordType
 from .ui.console.mvc import View
 
 
@@ -300,18 +302,31 @@ class JobMan(FuzzQueue):
 
                 self.__walking_threads.join()
 
+                enq_item = defaultdict(int)
+
                 while not plugins_res_queue.empty():
                     item = plugins_res_queue.get()
 
-                    if item.plugintype == PluginItem.result:
-                        if Facade().sett.get("general", "cancel_on_plugin_except") == "1" and item.source == "$$exception$$":
-                            self._throw(FuzzExceptPluginError(item.issue))
+                    if item._exception is not None:
+                        if Facade().sett.get("general", "cancel_on_plugin_except") == "1":
+                            self._throw(item._exception)
                         res.plugins_res.append(item)
-                    elif item.plugintype == PluginItem.backfeed:
-                        if self.options['no_cache'] or self.cache.update_cache(item.fuzzitem.history, "backfeed"):
-                            res.plugins_backfeed.append(item)
+                    elif item._seed is not None:
+                        if self.options['no_cache'] or self.cache.update_cache(item._seed.history, "backfeed"):
+                            self.stats.backfeed.inc()
+                            self.stats.pending_fuzz.inc()
+                            self.send(item._seed)
+                            enq_item[item.source] += 1
                     else:
-                        raise FuzzExceptInternalError("Jobman: Unknown pluginitem type in queue!")
+                        res.plugins_res.append(item)
+
+                for plugin_name, enq_num in enq_item.items():
+                    res.plugins_res.append(
+                        plugin_factory.create(
+                            "plugin_from_finding",
+                            "Backfeed",
+                            "Plugin %s enqueued %d more requests (rlevel=%d)" % (plugin_name, enq_num, res.rlevel))
+                    )
 
         # add result to results queue
         self.send(res)
@@ -328,31 +343,19 @@ class RecursiveQ(FuzzQueue):
         return 'RecursiveQ'
 
     def process(self, fuzz_res):
-        # Getting results from plugins or directly from http if not activated
-        enq_item = 0
-        plugin_name = ""
-
-        # Check for plugins new enqueued requests
-        while fuzz_res.plugins_backfeed:
-            plg_backfeed = fuzz_res.plugins_backfeed.pop()
-            plugin_name = plg_backfeed.source
-
-            self.stats.backfeed.inc()
-            self.stats.pending_fuzz.inc()
-            self.send(plg_backfeed.fuzzitem)
-            enq_item += 1
-
-        if enq_item > 0:
-            plres = PluginResult()
-            plres.source = "Backfeed"
-            fuzz_res.plugins_res.append(plres)
-            plres.issue = "Plugin %s enqueued %d more requests (rlevel=%d)" % (plugin_name, enq_item, fuzz_res.rlevel)
-
         # check if recursion is needed
         if self.max_rlevel >= fuzz_res.rlevel and fuzz_res.history.is_path:
             if self.cache.update_cache(fuzz_res.history, "recursion"):
                 self.stats.pending_seeds.inc()
-                self.send(resfactory.create("seed_from_recursion", fuzz_res))
+                seed = resfactory.create("seed_from_recursion", fuzz_res)
+                seed.plugins_res.append(
+                    plugin_factory.create(
+                        "plugin_from_finding",
+                        "Recursion",
+                        "Enqueued response for recursion (level=%d)" % (seed.rlevel)
+                    )
+                )
+                self.send(seed)
 
         # send new result
         self.send(fuzz_res)

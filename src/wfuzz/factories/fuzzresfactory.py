@@ -6,7 +6,6 @@ from .payman import payman_factory
 from ..fuzzobjects import (
     FuzzResult,
     FuzzType,
-    PluginResult,
     FuzzWord,
     FuzzWordType
 )
@@ -101,11 +100,6 @@ class SeedRecursiveBuilder:
         new_seed.rlevel_desc += seed.payload_man.description()
         new_seed.item_type = FuzzType.SEED
         new_seed.payload_man = payman_factory.create("payloadman_from_request", new_seed.history)
-
-        plres = PluginResult()
-        plres.source = "Recursion"
-        plres.issue = "Enqueued response for recursion (level=%d)" % (seed.rlevel)
-        seed.plugins_res.append(plres)
 
         return new_seed
 

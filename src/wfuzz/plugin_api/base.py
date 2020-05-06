@@ -1,8 +1,7 @@
-from wfuzz.fuzzobjects import PluginResult, FuzzWord
+from wfuzz.fuzzobjects import FuzzWord
 from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions, FuzzExceptPluginError
 from wfuzz.facade import Facade
 from wfuzz.factories.plugin_factory import plugin_factory
-
 from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
@@ -34,10 +33,9 @@ class BasePlugin():
             self.base_fuzz_res = fuzzresult
             self.process(fuzzresult)
         except Exception as e:
-            plres = PluginResult()
-            plres.source = "$$exception$$"
-            plres.issue = "Exception within plugin %s: %s" % (self.name, str(e))
-            results_queue.put(plres)
+            results_queue.put(
+                plugin_factory.create("plugin_from_error", self.name, e)
+            )
         finally:
             control_queue.get()
             control_queue.task_done()
@@ -57,15 +55,13 @@ class BasePlugin():
         raise FuzzExceptPluginError("Method count not implemented")
 
     def add_result(self, issue):
-        plres = PluginResult()
-        plres.source = self.name
-        plres.issue = issue
-
-        self.results_queue.put(plres)
+        self.results_queue.put(
+            plugin_factory.create("plugin_from_finding", self.name, issue)
+        )
 
     def queue_url(self, url):
         self.results_queue.put(
-            plugin_factory.create("pluginreq_from_fuzzres", self.base_fuzz_res, url, self.name)
+            plugin_factory.create("plugin_from_recursion", self.name, self.base_fuzz_res, url)
         )
 
 
