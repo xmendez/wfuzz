@@ -20,8 +20,9 @@ class HttpPool:
         self.mutex_reg = Lock()
 
         self.m = None
-        self.freelist = Queue()
+        self.curlh_freelist = Queue()
         self.retrylist = Queue()
+        self._request_list = Queue()
         self.handles = []
 
         self.ths = None
@@ -40,7 +41,7 @@ class HttpPool:
         for i in range(self.options.get("concurrent")):
             curl_h = pycurl.Curl()
             self.handles.append(curl_h)
-            self.freelist.put(curl_h)
+            self.curlh_freelist.put(curl_h)
 
         # create threads
         self.ths = []
@@ -55,7 +56,7 @@ class HttpPool:
         with self.mutex_stats:
             dic = {
                 "http_Processed": self.processed,
-                "http_Idle Workers": self.freelist.qsize()
+                "http_Idle Workers": self.curlh_freelist.qsize()
             }
         return dic
 
@@ -80,16 +81,21 @@ class HttpPool:
 
         return poolid
 
-    def enqueue(self, fuzzres, poolid):
-        c = fuzzres.history.to_http_object(self.freelist.get())
-        c = self._set_extra_options(c, fuzzres, poolid)
+    def _prepare_curl_h(self, curl_h, fuzzres, poolid):
+        new_curl_h = fuzzres.history.to_http_object(curl_h)
+        new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
+        new_curl_h.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
+        new_curl_h.setopt(pycurl.WRITEFUNCTION, new_curl_h.response_queue[0].write)
+        new_curl_h.setopt(pycurl.HEADERFUNCTION, new_curl_h.response_queue[1].write)
+
+        return new_curl_h
+
+    def enqueue(self, fuzzres, poolid):
         if self.exit_job:
             return
 
-        c.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
-        c.setopt(pycurl.WRITEFUNCTION, c.response_queue[0].write)
-        c.setopt(pycurl.HEADERFUNCTION, c.response_queue[1].write)
+        c = self._prepare_curl_h(self.curlh_freelist.get(), fuzzres, poolid)
 
         with self.mutex_multi:
             self.m.add_handle(c)
@@ -208,7 +214,7 @@ class HttpPool:
             self.processed += 1
 
     def _read_multi_stack(self):
-        # Check for curl objects which have terminated, and add them to the freelist
+        # Check for curl objects which have terminated, and add them to the curlh_freelist
         while not self.exit_job:
             with self.mutex_multi:
                 while not self.exit_job:
@@ -220,7 +226,7 @@ class HttpPool:
             for curl_h in ok_list:
                 self._process_curl_handle(curl_h)
                 self.m.remove_handle(curl_h)
-                self.freelist.put(curl_h)
+                self.curlh_freelist.put(curl_h)
 
             for curl_h, errno, errmsg in err_list:
                 buff_body, buff_header, res, poolid = curl_h.response_queue
@@ -229,7 +235,7 @@ class HttpPool:
                     self._process_curl_handle_error(res, errno, errmsg, poolid)
 
                 self.m.remove_handle(curl_h)
-                self.freelist.put(curl_h)
+                self.curlh_freelist.put(curl_h)
 
         self._stop_to_pools()
         self.retrylist.put((None, None))
@@ -237,5 +243,5 @@ class HttpPool:
         # cleanup multi stack
         for c in self.handles:
             c.close()
-            self.freelist.put(c)
+            self.curlh_freelist.put(c)
         self.m.close()
