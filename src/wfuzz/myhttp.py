@@ -55,8 +55,8 @@ class HttpPool:
     def job_stats(self):
         with self.mutex_stats:
             dic = {
-                "http_Processed": self.processed,
-                "http_Idle Workers": len(self.curlh_freelist)
+                "http_processed": self.processed,
+                "http_registered": len(self._registered)
             }
         return dic
 
@@ -107,7 +107,7 @@ class HttpPool:
             th.join()
 
     def register(self):
-        with self.mutex_reg:
+        with self.mutex_stats:
             self._registered += 1
 
         if not self.pool_map:
@@ -116,11 +116,11 @@ class HttpPool:
         return self._new_pool()
 
     def deregister(self):
-        with self.mutex_reg:
+        with self.mutex_stats:
             self._registered -= 1
 
-        if self._registered <= 0:
-            self.cleanup()
+            if self._registered <= 0:
+                self.cleanup()
 
     def _get_next_proxy(self, proxy_list):
         i = 0
