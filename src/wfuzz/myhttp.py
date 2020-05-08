@@ -16,7 +16,6 @@ class HttpPool:
         self.processed = 0
 
         self.exit_job = False
-        self.mutex_multi = Lock()
         self.mutex_stats = Lock()
 
         self.m = None
@@ -203,11 +202,10 @@ class HttpPool:
     def _read_multi_stack(self):
         # Check for curl objects which have terminated, and add them to the curlh_freelist
         while not self.exit_job:
-            with self.mutex_multi:
-                while not self.exit_job:
-                    ret, num_handles = self.m.perform()
-                    if ret != pycurl.E_CALL_MULTI_PERFORM:
-                        break
+            while not self.exit_job:
+                ret, num_handles = self.m.perform()
+                if ret != pycurl.E_CALL_MULTI_PERFORM:
+                    break
 
             num_q, ok_list, err_list = self.m.info_read()
             for curl_h in ok_list:
@@ -228,10 +226,9 @@ class HttpPool:
                 curl_h = self.curlh_freelist.pop()
                 fuzzres, poolid = self._request_list.popleft()
 
-                with self.mutex_multi:
-                    self.m.add_handle(
-                        self._prepare_curl_h(curl_h, fuzzres, poolid)
-                    )
+                self.m.add_handle(
+                    self._prepare_curl_h(curl_h, fuzzres, poolid)
+                )
 
         self._stop_to_pools()
 
