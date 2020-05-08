@@ -110,10 +110,10 @@ class HttpPool:
         with self.mutex_reg:
             self._registered += 1
 
-            if not self.pool_map:
-                self._initialize()
+        if not self.pool_map:
+            self._initialize()
 
-            return self._new_pool()
+        return self._new_pool()
 
     def deregister(self):
         with self.mutex_reg:
