@@ -18,7 +18,6 @@ class HttpPool:
         self.exit_job = False
         self.mutex_multi = Lock()
         self.mutex_stats = Lock()
-        self.mutex_reg = Lock()
 
         self.m = None
         self.curlh_freelist = []
