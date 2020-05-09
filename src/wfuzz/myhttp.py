@@ -131,7 +131,7 @@ class HttpPool:
         if self.pool_map[poolid]["proxy"]:
             ip, port, ptype = next(self.pool_map[poolid]["proxy"])
 
-            # fuzzres.history.wf_proxy = (("%s:%s" % (ip, port)), ptype)
+            fuzzres.history.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
             c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             if ptype == "SOCKS5":
