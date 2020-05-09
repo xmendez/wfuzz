@@ -42,9 +42,6 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
-    ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
-    ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
-    ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
 ]
 
 savedsession_tests = [
@@ -473,7 +470,7 @@ def create_tests():
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
         duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
-        # duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
+        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
         basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
