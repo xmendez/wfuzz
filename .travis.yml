@@ -3,7 +3,11 @@ language: python
 services:
   - docker
 python:
-  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:

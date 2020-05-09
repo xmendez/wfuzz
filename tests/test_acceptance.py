@@ -469,7 +469,7 @@ def create_tests():
     if testing_tests:
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
-        # duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
+        duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
         duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
