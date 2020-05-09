@@ -81,7 +81,7 @@ class HttpPool:
 
     def _prepare_curl_h(self, curl_h, fuzzres, poolid):
         new_curl_h = fuzzres.history.to_http_object(curl_h)
-        # new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
+        new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
         new_curl_h.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
         new_curl_h.setopt(pycurl.WRITEFUNCTION, new_curl_h.response_queue[0].write)
@@ -127,14 +127,13 @@ class HttpPool:
             i += 1
             i = i % len(proxy_list)
 
-    def _set_extra_options(self, c, freq, poolid):
+    def _set_extra_options(self, c, fuzzres, poolid):
         if self.pool_map[poolid]["proxy"]:
             ip, port, ptype = next(self.pool_map[poolid]["proxy"])
 
-            freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
+            fuzzres.history.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
             c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
-            print("-------------------------> %s:%s" % (ip,port))
             if ptype == "SOCKS5":
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
             elif ptype == "SOCKS4":
