@@ -143,7 +143,7 @@ basic_tests = [
     ("test_static_ntlm_auth_set", "%s:8000/FUZZ" % LOCAL_DOMAIN, [["echo"]], dict(auth=("ntlm", "user:pass"), filter="content~'Authorization: NTLM TlRMTVNTUAABAAAABoIIAAAAAAAAAAAAAAAAAAAAAAA='"), [(200, '/echo')], None),
 
     # fuzzing HTTP values
-    # ("test_basic_path_fuzz", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
+    ("test_basic_path_fuzz", "%s/FUZZ" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')], None),
     ("test_multi_path_fuzz", "%s/FUZZ/FUZ2Z/FUZ3Z" % ECHO_URL, [["a"], ["b"], ["c"]], dict(filter="content~'path=/echo/a/b/c'"), [(200, '/echo/a/b/c')], None),
     ("test_basic_method_fuzz", "%s" % URL_LOCAL, [["OPTIONS", "HEAD"]], dict(method="FUZZ", filter="content~'Unsupported method' and content~FUZZ"), [(501, '/dir')], None),
     ("test_basic_postdata_fuzz", "%s" % ECHO_URL, [["onevalue", "twovalue"]], dict(postdata="a=FUZZ", filter="content~FUZZ and content~'POST_DATA=a='"), [(200, '/echo'), (200, '/echo')], None),
@@ -469,8 +469,8 @@ def create_tests():
     if testing_tests:
         create_tests_from_list(testing_tests)
         duplicate_tests(testing_tests, "recipe", wfuzz_me_test_generator_recipe)
-        duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
-        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("mitmproxy", 8080, "HTTP")]), None)
+        # duplicate_tests(testing_tests, "saveres", wfuzz_me_test_generator_saveres)
+        duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
         basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
