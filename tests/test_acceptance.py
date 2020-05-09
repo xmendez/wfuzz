@@ -473,7 +473,7 @@ def create_tests():
         duplicate_tests_diff_params(testing_tests, "_proxy_", dict(proxies=[("localhost", 8080, "HTTP")]), None)
     else:
         # this are the basics
-        basic_functioning_tests = [error_tests, scanmode_tests, basic_tests]
+        basic_functioning_tests = [scanmode_tests, basic_tests]
 
         for t in basic_functioning_tests:
             create_tests_from_list(t)
