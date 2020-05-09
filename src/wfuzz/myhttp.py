@@ -81,7 +81,7 @@ class HttpPool:
 
     def _prepare_curl_h(self, curl_h, fuzzres, poolid):
         new_curl_h = fuzzres.history.to_http_object(curl_h)
-        new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
+        # new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
         new_curl_h.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
         new_curl_h.setopt(pycurl.WRITEFUNCTION, new_curl_h.response_queue[0].write)
