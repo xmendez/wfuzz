@@ -42,7 +42,9 @@ testing_savedsession_tests = [
 ]
 
 testing_tests = [
+    ("test_baseline", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c'), (404, "/dir/notthere")], None),
     ("test_baseline2", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c", "d", "e", "f"]], dict(hc=["BBB"]), [(200, '/dir/a'), (200, '/dir/b'), (200, '/dir/c')] + [(404, '/dir/notthere')], None),
+    ("test_baseline3", "%s/FUZZ{notthere}" % URL_LOCAL, [["a", "b", "c"]], dict(hc=[200]), [(404, "/dir/notthere")], None),
 ]
 
 savedsession_tests = [
