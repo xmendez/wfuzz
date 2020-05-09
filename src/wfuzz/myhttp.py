@@ -133,15 +133,14 @@ class HttpPool:
 
             fuzzres.history.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
-            # c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
-            # if ptype == "SOCKS5":
-            #     c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
-            # elif ptype == "SOCKS4":
-            #     c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
-            # elif ptype == "HTTP":
-            #     pass
-            # else:
-            #     raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
+            if ptype == "SOCKS5":
+                c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
+            elif ptype == "SOCKS4":
+                c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
+            elif ptype == "HTTP":
+                c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
+            else:
+                raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
         else:
             c.setopt(pycurl.PROXY, "")
 
