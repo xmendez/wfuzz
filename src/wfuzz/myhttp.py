@@ -134,6 +134,7 @@ class HttpPool:
             freq.wf_proxy = (("%s:%s" % (ip, port)), ptype)
 
             c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
+            print("-------------------------> %s:%s" % (ip,port))
             if ptype == "SOCKS5":
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
             elif ptype == "SOCKS4":
