@@ -348,16 +348,16 @@ class Request:
 
         c.setopt(pycurl.FOLLOWLOCATION, 1 if req.followLocation else 0)
 
-        proxy = req.getProxy()
-        if proxy is not None:
-            c.setopt(pycurl.PROXY, python2_3_convert_to_unicode(proxy))
-            if req.proxytype == "SOCKS5":
-                c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
-            elif req.proxytype == "SOCKS4":
-                c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
-            req.delHeader("Proxy-Connection")
-        else:
-            c.setopt(pycurl.PROXY, "")
+        # proxy = req.getProxy()
+        # if proxy is not None:
+        #     c.setopt(pycurl.PROXY, python2_3_convert_to_unicode(proxy))
+        #     if req.proxytype == "SOCKS5":
+        #         c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
+        #     elif req.proxytype == "SOCKS4":
+        #         c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
+        #     req.delHeader("Proxy-Connection")
+        # else:
+        #     c.setopt(pycurl.PROXY, "")
 
         return c
 

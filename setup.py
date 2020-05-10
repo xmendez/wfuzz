@@ -20,8 +20,9 @@ dev_requires = [
 ]
 
 install_requires = [
-    'pycurl<=7.43.0.3',
-    'pyparsing',
+    'pycurl',
+    'pyparsing<3;python_version<="3.4"',
+    'pyparsing>3*;python_version>="3.5"',
     'future',
     'six',
     'configparser;python_version<"3.5"',
@@ -31,6 +32,7 @@ install_requires = [
 
 if sys.platform.startswith("win"):
     install_requires += ["colorama"]
+
 
 setup(
     name="wfuzz",
