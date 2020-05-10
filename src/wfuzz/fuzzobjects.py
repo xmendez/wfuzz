@@ -19,7 +19,6 @@ from .helpers.utils import MyCounter
 
 
 FuzzWord = namedtuple('FuzzWord', ['content', 'type'])
-fuzzresult_shared_filter = FuzzResFilter()
 
 
 class FuzzWordType(Enum):
@@ -248,6 +247,7 @@ class FuzzError(FuzzItem):
 
 class FuzzResult(FuzzItem):
     newid = itertools.count(0)
+    FUZZRESULT_SHARED_FILTER = FuzzResFilter()
 
     def __init__(self, history=None, exception=None, track_id=True):
         FuzzItem.__init__(self, FuzzType.RESULT)
@@ -329,7 +329,7 @@ class FuzzResult(FuzzItem):
         return ret_str
 
     def eval(self, expr):
-        return FuzzResFilter(filter_string=expr).is_visible(self)
+        return self.FUZZRESULT_SHARED_FILTER.is_visible(self, expr)
 
     def _field(self):
         return " | ".join([str(self.eval(field)) for field in self._fields])
