@@ -1,4 +1,5 @@
 from threading import Lock
+import sys
 
 
 class MyCounter:
@@ -20,3 +21,7 @@ class MyCounter:
     def __call__(self):
         with self._mutex:
             return self._count
+
+
+def eprint(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
