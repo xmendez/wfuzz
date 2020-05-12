@@ -70,13 +70,13 @@ class APITests(unittest.TestCase):
         self.assertEqual(data.get('url'), 'http://127.0.0.1/FUZZ')
         self.assertEqual(data.get('payloads'), [('range', {'default': '0-4', 'encoder': None}, None)])
 
-    def t__TO_FIX__est_payload_description(self):
+    def test_payload_description(self):
         class mock_saved_session(object):
-            def __init__(self, description, show_field):
+            def __init__(self, fields, show_field):
                 fr = FuzzRequest()
                 fr.url = "http://www.wfuzz.org/path?param=1&param2=2"
                 fuzz_res = FuzzResult(history=fr)
-                fuzz_res._description = description
+                fuzz_res._fields = fields
                 fuzz_res._show_field = show_field
 
                 self.outfile = BytesIO()
@@ -103,27 +103,27 @@ class APITests(unittest.TestCase):
         Facade().payloads
 
         m = mock.MagicMock(name='open', spec=open)
-        m.return_value = mock_saved_session("r.params.all", True)
+        m.return_value = mock_saved_session(["r.params.all"], True)
 
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'description': 'r', 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual([res[0].description for res in payload_list], [{'param': '1', 'param2': '2'}])
+            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
+            self.assertEqual([res[0].description for res in payload_list], ['param=1\nparam2=2'])
 
         m = mock.MagicMock(name='open', spec=open)
-        m.return_value = mock_saved_session("url", None)
+        m.return_value = mock_saved_session(["url"], None)
 
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'description': 'r', 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
+            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
             self.assertEqual([res[0].description for res in payload_list], ['http://www.wfuzz.org/path?param=1&param2=2'])
 
         m = mock.MagicMock(name='open', spec=open)
-        m.return_value = mock_saved_session("r.scheme", False)
+        m.return_value = mock_saved_session(["r.scheme"], False)
 
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'description': 'r', 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
+            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
             self.assertEqual([res[0].description for res in payload_list], ['http://www.wfuzz.org/path?param=1&param2=2 | http'])
 
     def test_payload(self):
