@@ -6,7 +6,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
-from wfuzz.fuzzobjects import FuzzResult, FuzzType
+from wfuzz.fuzzobjects import FuzzWordType, FuzzType
 
 from .common import exec_banner, Term
 from .getch import _Getch
@@ -268,12 +268,13 @@ class View:
             self._print(res)
 
         if res.item_type == FuzzType.RESULT:
-            if self.previous and len(res.payload) > 0 and isinstance(res.payload[0].content, FuzzResult):
+            if self.previous and res.payload_man and res.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
+                prev_res = res.payload_man.get_payload_content(1)
                 sys.stdout.write("\n\r")
                 if self.verbose:
-                    self._print_verbose(res.payload[0].content, print_nres=False)
+                    self._print_verbose(prev_res, print_nres=False)
                 else:
-                    self._print(res.payload[0].content, print_nres=False)
+                    self._print(prev_res, print_nres=False)
 
             if res.plugins_res:
                 sys.stdout.write("\n\r")
