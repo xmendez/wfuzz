@@ -304,11 +304,11 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         return self._proxy
 
     @wf_proxy.setter
-    def wf_proxy(self, l):
-        if l:
-            prox, ptype = l
+    def wf_proxy(self, proxy_tuple):
+        if proxy_tuple:
+            prox, ptype = proxy_tuple
             self._request.setProxy("%s" % prox, ptype if ptype else "HTML")
-        self._proxy = l
+        self._proxy = proxy_tuple
 
     # methods wfuzz needs to perform HTTP requests (this might change in the future).
 

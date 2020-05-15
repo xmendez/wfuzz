@@ -62,17 +62,17 @@ class CLParser:
         print("\n".join(Facade().proxy(registrant).get_plugins_names("$all$")))
 
     def show_plugin_ext_help(self, registrant, category="$all$"):
-        for p in Facade().proxy(registrant).get_plugins(category):
-            print("Name: %s %s" % (p.name, p.version))
-            print("Categories: %s" % ','.join(p.category))
-            print("Summary: %s" % p.summary)
-            print("Author: %s" % ','.join(p.author))
+        for plugin in Facade().proxy(registrant).get_plugins(category):
+            print("Name: %s %s" % (plugin.name, plugin.version))
+            print("Categories: %s" % ','.join(plugin.category))
+            print("Summary: %s" % plugin.summary)
+            print("Author: %s" % ','.join(plugin.author))
             print("Description:")
-            for l in p.description:
-                print("   %s" % l)
+            for desc_lines in plugin.description:
+                print("   %s" % desc_lines)
             print("Parameters:")
-            for l in p.parameters:
-                print("   %s %s%s: %s" % ("+" if l[2] else "-", l[0], " (= %s)" % str(l[1]) if l[1] else "", l[3]))
+            for param in plugin.parameters:
+                print("   %s %s%s: %s" % ("+" if param[2] else "-", param[0], " (= %s)" % str(param[1]) if param[1] else "", param[3]))
             print("\n")
 
         sys.exit(0)

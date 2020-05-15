@@ -150,5 +150,5 @@ class BRegistrant(IRegistrant):
 
 class MulRegistrant(BRegistrant):
     def load(self):
-        for l in self.loader:
-            l.load(self)
+        for loader in self.loader:
+            loader.load(self)
