@@ -71,7 +71,7 @@ savedsession_tests = [
     # fuzz value exceptions
     ("test_fuzz_symbol_code", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ1Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Unknown field"),
     ("test_fuzz_symbol_code2", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZ2Z[c]=404 FUZZ", ["http://localhost:9000/1"], "Non existent FUZZ payload"),
-    ("test_desc_assign_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url|replace('1','2')] FUZZ[url]", ["http://localhost:9000/2"], None),
+    ("test_desc_assign_fuzz_symbol_op", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url]|replace('1','2') FUZZ[url]", ["http://localhost:9000/2"], None),
     ("test_fuzz_param_int", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.params.get:=2 FUZZ", ["http://localhost:9000/2"], "Non existent FUZZ payload"),
 
     # filter based on various payloads

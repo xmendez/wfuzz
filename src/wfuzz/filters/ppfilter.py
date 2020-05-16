@@ -20,8 +20,18 @@ from ..facade import Facade, ERROR_CODE
 
 PYPARSING = True
 try:
-    from pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, QuotedString
-    from pyparsing import ParseException
+    from pyparsing import (
+        Word,
+        Group,
+        oneOf,
+        Optional,
+        Suppress,
+        ZeroOrMore,
+        Literal,
+        QuotedString,
+        ParseException,
+        Regex
+    )
 except ImportError:
     PYPARSING = False
 
@@ -37,29 +47,22 @@ class FuzzResFilter:
         int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
         error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
         bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
-        field_value = Word(alphas + "." + "_" + "-")
-        reserverd_words = oneOf("BBB XXX")
 
-        basic_primitives = int_values | quoted_str_value
+        operator_call = Regex(
+            r"\|(?P<operator>(m|d|e|un|u|r|l|sw|gre|gregex|unique|startswith|decode|encode|unquote|replace|lower|upper))"
+            r"\((?:(?P<param1>('.*?'|\d+))(?:,(?P<param2>('.*?'|\d+)))?)?\)",
+            asMatch=True
+        )
 
-        operator_names = oneOf("m d e un u r l sw gre gregex unique startswith decode encode unquote replace lower upper").setParseAction(lambda s, l, t: [(l, t[0])])
+        fuzz_symbol = Regex(r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self._compute_fuzz_symbol)
+        res_symbol = Regex(r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)").setParseAction(self._compute_res_symbol)
 
-        fuzz_symbol = (Suppress("FUZ") + Optional(Word("23456789"), 1).setParseAction(lambda s, l, t: [int(t[0])]) + Suppress("Z")).setParseAction(self._compute_fuzz_symbol)
-        operator_call = Group(Suppress("|") + operator_names + Suppress("(") + Optional(basic_primitives, None) + Optional(Suppress(",") + basic_primitives, None) + Suppress(")"))
-
-        fuzz_value = (fuzz_symbol + Optional(Suppress("[") + field_value + Suppress("]"), None)).setParseAction(self.__compute_fuzz_value)
-        fuzz_value_op = ((fuzz_symbol + Suppress("[") + Optional(field_value)).setParseAction(self.__compute_fuzz_value) + operator_call + Suppress("]")).setParseAction(self.__compute_perl_value)
-        fuzz_value_op2 = ((fuzz_symbol + operator_call).setParseAction(self.__compute_perl_value))
-
-        res_value_op = (~reserverd_words + Word("0123456789" + alphas + "." + "_" + "-").setParseAction(self.__compute_res_value) + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
-        basic_primitives_op = (basic_primitives + Optional(operator_call, None)).setParseAction(self.__compute_perl_value)
-
-        fuzz_statement = basic_primitives_op ^ fuzz_value ^ fuzz_value_op ^ fuzz_value_op2 ^ res_value_op
+        fuzz_statement = Group((fuzz_symbol | res_symbol | int_values | quoted_str_value) + Optional(operator_call, None)).setParseAction(self.__compute_res_value)
 
         operator = oneOf("and or")
         not_operator = Optional(oneOf("not"), "notpresent")
 
-        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value ^ error_value ^ basic_primitives ^ fuzz_statement)).setParseAction(self.__compute_expr)
+        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value | error_value | fuzz_statement)).setParseAction(self.__compute_expr)
 
         definition = symbol_expr ^ fuzz_statement
         definition_not = not_operator + definition
@@ -68,7 +71,7 @@ class FuzzResFilter:
         nested_definition = Group(Suppress("(") + definition_expr + Suppress(")"))
         nested_definition_not = not_operator + nested_definition
 
-        self.finalformula = (nested_definition_not ^ definition_expr) + ZeroOrMore(operator + (nested_definition_not ^ definition_expr))
+        self.finalformula = (nested_definition_not | definition_expr) + ZeroOrMore(operator + (nested_definition_not | definition_expr))
 
         definition_not.setParseAction(self.__compute_not_operator)
         nested_definition_not.setParseAction(self.__compute_not_operator)
@@ -82,30 +85,43 @@ class FuzzResFilter:
     def set_baseline(self, res):
         self.baseline = res
 
-    def __compute_res_value(self, tokens):
-        self.stack.append(tokens[0])
-
-        try:
-            return rgetattr(self.res, tokens[0])
-        except AttributeError:
-            raise FuzzExceptIncorrectFilter("Non-existing introspection field or HTTP parameter \"{}\"!".format(tokens[0]))
+    def _compute_res_symbol(self, tokens):
+        return self._get_field_value(self.res, tokens[0])
 
     def _compute_fuzz_symbol(self, tokens):
-        p_index = tokens[0]
+        match_dict = tokens[0].groupdict()
+        p_index = int(match_dict["index"]) if match_dict["index"] is not None else 1
+        fuzz_val = None
 
+        try:
+            fuzz_val = self.res.payload_man.get_payload_content(p_index)
+        except IndexError:
+            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+
+        if match_dict["field"]:
+            fuzz_val = self._get_field_value(fuzz_val, match_dict["field"])
+
+        return fuzz_val
+
+    def __compute_res_value(self, tokens):
+        fuzz_val, operator_match = tokens[0]
+
+        if operator_match and operator_match.groupdict()["operator"]:
+            fuzz_val = self._get_operator_value(fuzz_val, operator_match.groupdict())
+
+        return fuzz_val
+
+    def _get_payload_value(self, p_index):
         try:
             return self.res.payload_man.get_payload_content(p_index)
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
-    def __compute_fuzz_value(self, tokens):
-        fuzz_val, field = tokens
-
-        if field:
-            self.stack.append(field)
+    def _get_field_value(self, fuzz_val, field):
+        self.stack.append(field)
 
         try:
-            return rgetattr(fuzz_val, field) if field else fuzz_val
+            return rgetattr(fuzz_val, field)
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError as e:
@@ -132,33 +148,34 @@ class FuzzResFilter:
 
         return ret
 
-    def __compute_perl_value(self, tokens):
-        leftvalue, exp = tokens
-        # import pdb; pdb.set_trace()
+    def _get_operator_value(self, fuzz_val, match_dict):
+        op = match_dict["operator"]
+        param1 = match_dict["param1"]
+        param2 = match_dict["param2"]
+        loc = 0
 
-        if exp:
-            loc_op, middlevalue, rightvalue = exp
-            loc, op = loc_op
-        else:
-            return leftvalue
+        if param1:
+            param1 = param1.strip("'")
+        if param2:
+            param2 = param2.strip("'")
 
-        if (op == "un" or op == "unquote") and middlevalue is None and rightvalue is None:
-            ret = unquote(leftvalue)
-        elif (op == "e" or op == "encode") and middlevalue is not None and rightvalue is None:
-            ret = Facade().encoders.get_plugin(middlevalue)().encode(leftvalue)
-        elif (op == "d" or op == "decode") and middlevalue is not None and rightvalue is None:
-            ret = Facade().encoders.get_plugin(middlevalue)().decode(leftvalue)
+        if (op == "un" or op == "unquote") and param1 is None and param2 is None:
+            ret = unquote(fuzz_val)
+        elif (op == "e" or op == "encode") and param1 is not None and param2 is None:
+            ret = Facade().encoders.get_plugin(param1)().encode(fuzz_val)
+        elif (op == "d" or op == "decode") and param1 is not None and param2 is None:
+            ret = Facade().encoders.get_plugin(param1)().decode(fuzz_val)
         elif op == "r" or op == "replace":
-            return leftvalue.replace(middlevalue, rightvalue)
+            return fuzz_val.replace(param1, param2)
         elif op == "upper":
-            return leftvalue.upper()
+            return fuzz_val.upper()
         elif op == "lower" or op == "l":
-            return leftvalue.lower()
+            return fuzz_val.lower()
         elif op == 'gregex' or op == "gre":
             search_res = None
             try:
-                regex = re.compile(middlevalue)
-                search_res = regex.search(leftvalue)
+                regex = re.compile(param1)
+                search_res = regex.search(fuzz_val)
             except re.error as e:
                 raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
 
@@ -166,10 +183,10 @@ class FuzzResFilter:
                 return ''
             return search_res.group(1)
         elif op == 'startswith' or op == "sw":
-            return leftvalue.strip().startswith(middlevalue)
+            return fuzz_val.strip().startswith(param1)
         elif op == 'unique' or op == "u":
-            if leftvalue not in self._cache[loc]:
-                self._cache[loc].add(leftvalue)
+            if fuzz_val not in self._cache[loc]:
+                self._cache[loc].add(fuzz_val)
                 return True
             else:
                 return False
@@ -275,9 +292,16 @@ class FuzzResFilter:
 class FuzzResFilterSlice(FuzzResFilter):
     # When using slice we don't have previous payload context but directly a word from the dictionary
     def _compute_fuzz_symbol(self, tokens):
-        i = tokens[0]
+        match_dict = tokens[0].groupdict()
 
-        if i != 1:
+        p_index = match_dict["index"] if match_dict["index"] is not None else 1
+
+        if p_index != 1:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
 
-        return self.res
+        fuzz_val = self.res
+
+        if match_dict["field"]:
+            fuzz_val = self._get_field_value(self.res, match_dict["field"])
+
+        return fuzz_val
