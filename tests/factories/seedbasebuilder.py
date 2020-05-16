@@ -1,25 +1,19 @@
 import pytest
 
-from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.factories.fuzzfactory import SeedBuilderHelper
-
-
-@pytest.fixture
-def full_fuzzreq(request):
-    fr = FuzzRequest()
-    fr.update_from_raw_http(request.param, 'http', None, None)
-
-    return fr
 
 
 @pytest.mark.parametrize(
     "full_fuzzreq, expected_result",
     [
         (
-            "GET /FUZZ HTTP/1.1\n"
-            "Host: www.wfuzz.org\n"
-            "Content-Type: application/x-www-form-urlencoded\n"
-            "User-Agent: Wfuzz/2.1\n",
+            (
+                "GET /FUZZ HTTP/1.1\n"
+                "Host: www.wfuzz.org\n"
+                "Content-Type: application/x-www-form-urlencoded\n"
+                "User-Agent: Wfuzz/2.1\n",
+                None
+            ),
             [{
                 'bl_value': None,
                 'field': None,
@@ -31,10 +25,13 @@ def full_fuzzreq(request):
             }]
         ),
         (
-            "GET /FUZZ{a_bl_value} HTTP/1.1\n"
-            "Host: www.wfuzz.org\n"
-            "Content-Type: application/x-www-form-urlencoded\n"
-            "User-Agent: Wfuzz/2.1\n",
+            (
+                "GET /FUZZ{a_bl_value} HTTP/1.1\n"
+                "Host: www.wfuzz.org\n"
+                "Content-Type: application/x-www-form-urlencoded\n"
+                "User-Agent: Wfuzz/2.1\n",
+                None
+            ),
             [{
                 'bl_value': 'a_bl_value',
                 'field': None,
@@ -46,10 +43,13 @@ def full_fuzzreq(request):
             }]
         ),
         (
-            "GET /FUZZ[url] HTTP/1.1\n"
-            "Host: www.wfuzz.org\n"
-            "Content-Type: application/x-www-form-urlencoded\n"
-            "User-Agent: Wfuzz/2.1\n",
+            (
+                "GET /FUZZ[url] HTTP/1.1\n"
+                "Host: www.wfuzz.org\n"
+                "Content-Type: application/x-www-form-urlencoded\n"
+                "User-Agent: Wfuzz/2.1\n",
+                None
+            ),
             [{
                 'bl_value': None,
                 'field': 'url',
@@ -61,10 +61,13 @@ def full_fuzzreq(request):
             }]
         ),
         (
-            "GET /FUZZ/FUZ2Z[url] HTTP/1.1\n"
-            "Host: www.wfuzz.org\n"
-            "Content-Type: application/x-www-form-urlencoded\n"
-            "User-Agent: Wfuzz/2.1\n",
+            (
+                "GET /FUZZ/FUZ2Z[url] HTTP/1.1\n"
+                "Host: www.wfuzz.org\n"
+                "Content-Type: application/x-www-form-urlencoded\n"
+                "User-Agent: Wfuzz/2.1\n",
+                None
+            ),
             [
                 {
                     'bl_value': None,
