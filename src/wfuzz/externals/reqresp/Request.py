@@ -424,7 +424,7 @@ class Request:
 
         tp.readLine()
         try:
-            tp.search(r"^(\w+) (.*) (HTTP\S*)$")
+            tp.search(r"^(\S+) (.*) (HTTP\S*)$")
             self.method = tp[0][0]
             self.protocol = tp[0][2]
         except Exception as a:
