@@ -46,7 +46,6 @@ class FuzzResFilter:
         quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
         int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
         error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
-        bbb_value = Literal("BBB").setParseAction(self.__compute_bbb_value)
 
         operator_call = Regex(
             r"\|(?P<operator>(m|d|e|un|u|r|l|sw|gre|gregex|unique|startswith|decode|encode|unquote|replace|lower|upper))"
@@ -56,13 +55,14 @@ class FuzzResFilter:
 
         fuzz_symbol = Regex(r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self._compute_fuzz_symbol)
         res_symbol = Regex(r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)").setParseAction(self._compute_res_symbol)
+        bbb_symbol = Regex(r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self.__compute_bbb_symbol)
 
-        fuzz_statement = Group((fuzz_symbol | res_symbol | int_values | quoted_str_value) + Optional(operator_call, None)).setParseAction(self.__compute_res_value)
+        fuzz_statement = Group((fuzz_symbol | res_symbol | bbb_symbol | int_values | quoted_str_value) + Optional(operator_call, None)).setParseAction(self.__compute_res_value)
 
         operator = oneOf("and or")
         not_operator = Optional(oneOf("not"), "notpresent")
 
-        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (bbb_value | error_value | fuzz_statement)).setParseAction(self.__compute_expr)
+        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (error_value | fuzz_statement)).setParseAction(self.__compute_expr)
 
         definition = symbol_expr ^ fuzz_statement
         definition_not = not_operator + definition
@@ -130,24 +130,31 @@ class FuzzResFilter:
         except AttributeError as e:
             raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
 
-    def __compute_bbb_value(self, tokens):
-        element = self.stack.pop() if self.stack else None
-
+    def __compute_bbb_symbol(self, tokens):
         if self.baseline is None:
             raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
 
-        if element == 'l' or element == 'lines':
-            ret = self.baseline.lines
-        elif element == 'c' or element == 'code':
-            ret = self.baseline.code
-        elif element == 'w' or element == 'words':
-            ret = self.baseline.words
-        elif element == 'h' or element == 'chars':
-            return self.baseline.chars
-        elif element == 'index' or element == 'i':
-            ret = self.baseline.nres
+        match_dict = tokens[0].groupdict()
+
+        ret = None
+
+        if match_dict["field"]:
+            ret = self._get_field_value(self.baseline, match_dict["field"])
         else:
-            ret = self.baseline.payload_man.get_payload_content(1)
+            element = self.stack.pop() if self.stack else None
+
+            if element == 'l' or element == 'lines':
+                ret = self.baseline.lines
+            elif element == 'c' or element == 'code':
+                ret = self.baseline.code
+            elif element == 'w' or element == 'words':
+                ret = self.baseline.words
+            elif element == 'h' or element == 'chars':
+                return self.baseline.chars
+            elif element == 'index' or element == 'i':
+                ret = self.baseline.nres
+            else:
+                ret = self.baseline.payload_man.get_payload_content(1)
 
         return ret
 
