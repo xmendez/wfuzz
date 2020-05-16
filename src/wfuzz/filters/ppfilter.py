@@ -52,7 +52,7 @@ class FuzzResFilter:
             r"\|(?P<operator>(m|d|e|un|u|r|l|sw|gre|gregex|unique|startswith|decode|encode|unquote|replace|lower|upper))"
             r"\((?:(?P<param1>('.*?'|\d+))(?:,(?P<param2>('.*?'|\d+)))?)?\)",
             asMatch=True
-        )
+        ).setParseAction(lambda s, l, t: [(l, t[0])])
 
         fuzz_symbol = Regex(r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self._compute_fuzz_symbol)
         res_symbol = Regex(r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)").setParseAction(self._compute_res_symbol)
@@ -104,10 +104,13 @@ class FuzzResFilter:
         return fuzz_val
 
     def __compute_res_value(self, tokens):
-        fuzz_val, operator_match = tokens[0]
+        fuzz_val, token_tuple = tokens[0]
 
-        if operator_match and operator_match.groupdict()["operator"]:
-            fuzz_val = self._get_operator_value(fuzz_val, operator_match.groupdict())
+        if token_tuple:
+            location, operator_match = token_tuple
+
+            if operator_match and operator_match.groupdict()["operator"]:
+                fuzz_val = self._get_operator_value(location, fuzz_val, operator_match.groupdict())
 
         return fuzz_val
 
@@ -148,11 +151,10 @@ class FuzzResFilter:
 
         return ret
 
-    def _get_operator_value(self, fuzz_val, match_dict):
+    def _get_operator_value(self, location, fuzz_val, match_dict):
         op = match_dict["operator"]
         param1 = match_dict["param1"]
         param2 = match_dict["param2"]
-        loc = 0
 
         if param1:
             param1 = param1.strip("'")
@@ -185,8 +187,8 @@ class FuzzResFilter:
         elif op == 'startswith' or op == "sw":
             return fuzz_val.strip().startswith(param1)
         elif op == 'unique' or op == "u":
-            if fuzz_val not in self._cache[loc]:
-                self._cache[loc].add(fuzz_val)
+            if fuzz_val not in self._cache[location]:
+                self._cache[location].add(fuzz_val)
                 return True
             else:
                 return False
