@@ -246,7 +246,10 @@ class FuzzResFilter:
             elif exp_operator == "=+":
                 rsetattr(self.res, field_to_set, rightvalue, operator.add)
             elif exp_operator == "=-":
-                rsetattr(self.res, field_to_set, rightvalue, lambda x, y: y + x)
+                if isinstance(rightvalue, str):
+                    rsetattr(self.res, field_to_set, rightvalue, lambda x, y: y + x)
+                else:
+                    rsetattr(self.res, field_to_set, rightvalue, operator.sub)
         except re.error as e:
             raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
         except TypeError as e:
