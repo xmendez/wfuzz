@@ -128,7 +128,7 @@ class CLParser:
             # parse options from recipe first
             if "--recipe" in optsd:
                 for recipe in optsd["--recipe"]:
-                    options.import_from_file(recipe)
+                    options.import_from_file("cors_trigger.txt")
 
             # command line has priority over recipe
             self._parse_options(optsd, options)
@@ -516,7 +516,7 @@ class CLParser:
             options["console_printer"] = optsd['-o'][0]
 
         if "--recipe" in optsd:
-            options["recipe"] = optsd['--recipe'][0]
+            options["recipe"] = optsd['--recipe']
 
         if "--dry-run" in optsd:
             options["transport"] = "dryrun"
