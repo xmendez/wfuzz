@@ -39,7 +39,7 @@ def filter_obj():
 @pytest.fixture
 def example_full_fuzzres():
     raw_req, raw_resp = (
-        "GET / HTTP/1.1\n"
+        "GET /path?param1=1&param2=2 HTTP/1.1\n"
         "Host: www.wfuzz.org\n"
         "User-Agent: curl/7.58.0\n"
         "Accept: */*\n",
@@ -57,6 +57,6 @@ def example_full_fuzzres():
         "Content-Length: 0\n"
     )
     fr = FuzzRequest()
-    fr.update_from_raw_http(raw_req, 'http', raw_resp, None)
+    fr.update_from_raw_http(raw_req, 'http', raw_resp, b"Some line\n and words\nasdsdas")
 
     return FuzzResult(history=fr)
