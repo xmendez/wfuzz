@@ -15,6 +15,15 @@ def full_fuzzres(request):
 
 
 @pytest.fixture
+def full_fuzzreq(request):
+    raw_req, raw_resp = request.param
+    fr = FuzzRequest()
+    fr.update_from_raw_http(raw_req, 'http', raw_resp, None)
+
+    return fr
+
+
+@pytest.fixture
 def fuzzres_from_url(request):
     fr = FuzzRequest()
     fr.url = request.param
