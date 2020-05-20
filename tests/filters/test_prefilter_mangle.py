@@ -68,6 +68,21 @@ def test_params_set_no_value(filter_obj, fuzzres_from_url, filter_string, expect
             "r.params.all:='2'",
             {'param': "2", 'param2': "2"},
         ),
+        (
+            "http://www.wfuzz.org/path?param=1&param2=2",
+            "r.params.get.notthere=-'2'",
+            {'param': "1", 'param2': "2"},
+        ),
+        (
+            "http://www.wfuzz.org/path?param=1&param2=2",
+            "r.params.get.notthere=+'2'",
+            {'param': "1", 'param2': "2"},
+        ),
+        (
+            "http://www.wfuzz.org/path?param=1&param2=2",
+            "r.params.get.notthere:='2'",
+            {'notthere': '2', 'param': "1", 'param2': "2"},
+        ),
     ],
     indirect=["fuzzres_from_url"]
 )

@@ -60,3 +60,13 @@ def example_full_fuzzres():
     fr.update_from_raw_http(raw_req, 'http', raw_resp, b"Some line\n and words\nasdsdas")
 
     return FuzzResult(history=fr)
+
+
+@pytest.fixture
+def example_full_fuzzres_no_response():
+    raw_req = "GET /path?param1=1&param2=2 HTTP/1.1\nHost: www.wfuzz.org\nUser-Agent: curl/7.58.0\nAccept: */*\n"
+
+    fr = FuzzRequest()
+    fr.update_from_raw_http(raw_req, 'http', None, None)
+
+    return FuzzResult(history=fr)

@@ -30,7 +30,7 @@ class headers(object):
 
     @property
     def response(self):
-        return headers.header(self._req.response.getHeaders()) if self._req.response else {}
+        return headers.header(self._req.response.getHeaders()) if self._req.response else headers.header()
 
     @property
     def request(self):

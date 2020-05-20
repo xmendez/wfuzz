@@ -5,8 +5,9 @@ class DotDict(dict):
     __delattr__ = dict.__delitem__
 
     def __getattr__(*args):
+        # Return {} if non-existent attr
         if args[1] not in args[0]:
-            raise KeyError("DotDict: Non-existing field {}".format(args[1]))
+            return DotDict()
 
         # python 3 val = dict.get(*args, None)
         val = dict.get(*args)
@@ -25,6 +26,12 @@ class DotDict(dict):
     def __radd__(self, other):
         if isinstance(other, str):
             return DotDict({k: other + v for k, v in self.items() if v})
+
+    def __getitem__(self, key):
+        try:
+            return super(DotDict, self).__getitem__(key)
+        except KeyError:
+            return DotDict()
 
 
 class CaseInsensitiveDict(dict):
