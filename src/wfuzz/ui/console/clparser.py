@@ -128,7 +128,7 @@ class CLParser:
             # parse options from recipe first
             if "--recipe" in optsd:
                 for recipe in optsd["--recipe"]:
-                    options.import_from_file("cors_trigger.txt")
+                    options.import_from_file(recipe)
 
             # command line has priority over recipe
             self._parse_options(optsd, options)
