@@ -128,7 +128,7 @@ class FuzzResFilter:
         except IndexError:
             raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
         except AttributeError as e:
-            raise FuzzExceptIncorrectFilter("A field expression must be used with a fuzzresult payload not a string. %s" % str(e))
+            raise FuzzExceptIncorrectFilter("Attribute {} not found in fuzzresult or using a string payload. {}".format(field, str(e)))
 
     def __compute_bbb_symbol(self, tokens):
         if self.baseline is None:
