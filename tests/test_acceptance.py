@@ -56,7 +56,7 @@ savedsession_tests = [
     ("test_desc_fuzz", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ", ["http://localhost:9000/1"], None),
     ("test_desc_attr", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]", ["http://localhost:9000/1"], None),
     ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 404"], None),
-    ("test_desc_url_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ FUZZ[c]", ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
+    ("test_desc_url_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ http://localhost:FUZZ[c]/", ["http://localhost:9000/1 - 404"], "Pycurl error 7:"),
 
     # set values
     ("test_desc_concat_number", "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL), "-z wfuzzp,$$PREVFILE$$ --slice r.c:=302 FUZZ[url]FUZZ[c]", ["http://localhost:9000/1 - 302"], None),
