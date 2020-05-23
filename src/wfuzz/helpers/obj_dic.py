@@ -4,13 +4,13 @@ class DotDict(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-    def __getattr__(*args):
+    def __getattr__(obj, name):
         # Return {} if non-existent attr
-        if args[1] not in args[0]:
+        if name not in obj:
             return DotDict()
 
         # python 3 val = dict.get(*args, None)
-        val = dict.get(*args)
+        val = obj.get(name)
         return DotDict(val) if type(val) is dict else val
         # return DotDict(val) if type(val) is dict else DotDict({args[1]: val})
 
