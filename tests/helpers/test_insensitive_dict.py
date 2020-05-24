@@ -1,30 +1,46 @@
-import unittest
+import pytest
 
 from wfuzz.helpers.obj_dic import CaseInsensitiveDict
 
 
-class CaseInsensitiveDictTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(CaseInsensitiveDictTest, self).__init__(*args, **kwargs)
+@pytest.fixture
+def case_dict():
+    return CaseInsensitiveDict({"OnE": 1})
 
-    def test_ins_key(self):
-        dd = CaseInsensitiveDict({"OnE": 1})
 
-        self.assertEqual(dd['one'], 1)
-        self.assertEqual(dd['oNe'], 1)
+@pytest.mark.parametrize(
+    "key, expected_result",
+    [
+        ("one", 1),
+        ("oNe", 1),
 
-    def test_ins_update(self):
-        dd = CaseInsensitiveDict({})
+    ]
+)
+def test_key_get_item(case_dict, key, expected_result):
+    assert case_dict[key] == expected_result
+    assert case_dict.get(key) == expected_result
 
-        dd.update({"OnE": 1})
-        self.assertEqual(dd['one'], 1)
-        self.assertEqual(dd['oNe'], 1)
 
-    def test_ins_key_in(self):
-        dd = CaseInsensitiveDict({"OnE": 1})
+@pytest.mark.parametrize(
+    "key, expected_result",
+    [
+        ("One", True),
+        ("OnE", True),
+        ("one", True),
+        ("onetwo", False),
+    ]
+)
+def test_key_in_item(case_dict, key, expected_result):
+    assert (key in case_dict) == expected_result
 
-        self.assertEqual(list(dd.keys()), ['OnE'])
-        self.assertEqual('OnE' in list(dd.keys()), True)
-        self.assertEqual('one' in list(dd.keys()), False)
-        self.assertEqual('one' in dd, True)
-        self.assertEqual('One' in dd, True)
+
+def test_update():
+    dd = CaseInsensitiveDict({})
+    dd.update({"OnE": 1})
+
+    assert dd['one'] == 1
+    assert dd['oNe'] == 1
+
+
+def test_key_in(case_dict):
+    assert list(case_dict.keys()) == ['OnE']
