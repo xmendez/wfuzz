@@ -99,12 +99,6 @@ class APITests(unittest.TestCase):
             self.assertEqual([res[0].description for res in payload_list], ['http://www.wfuzz.org/path?param=1&param2=2 | http'])
 
     def test_payload(self):
-        payload_list = list(wfuzz.payload(**{'payloads': [('range', {'default': '0-4', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('0',), ('1',), ('2',), ('3',), ('4',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('buffer_overflow', {'default': '10', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('AAAAAAAAAA',)])
-
         with mock.patch('os.walk') as mocked_oswalk:
             mocked_oswalk.return_value = [
                 ('foo', ('bar',), ('baz',)),
@@ -135,24 +129,3 @@ class APITests(unittest.TestCase):
         with mock.patch(mocked_fun, m):
             payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': 'mockedfile', 'encoder': None}, None)]}))
             self.assertEqual(sorted(payload_list), sorted([('one',), ('two',)]))
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('hexrange', {'default': '09-10', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('09',), ('0a',), ('0b',), ('0c',), ('0d',), ('0e',), ('0f',), ('10',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('hexrange', {'default': '009-00B', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('009',), ('00a',), ('00b',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('ipnet', {'default': '192.168.0.1/30', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('192.168.0.1',), ('192.168.0.2',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('iprange', {'default': '192.168.0.1-192.168.0.2', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('192.168.0.1',), ('192.168.0.2',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('list', {'default': 'a-b', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('a',), ('b',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('list', {'default': 'a\\-b-b', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('a-b',), ('b',)])
-
-        payload_list = list(wfuzz.payload(**{'payloads': [('range', {'default': '1-2', 'encoder': None}, None)]}))
-        self.assertEqual(payload_list, [('1',), ('2',)])
