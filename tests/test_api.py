@@ -24,12 +24,6 @@ ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
 
 
 class APITests(unittest.TestCase):
-    def test_get_session(self):
-        data = wfuzz.get_session('-z range,0-4 http://127.0.0.1/FUZZ').data
-
-        self.assertEqual(data.get('url'), 'http://127.0.0.1/FUZZ')
-        self.assertEqual(data.get('payloads'), [('range', {'default': '0-4', 'encoder': None}, None)])
-
     def test_payload_description(self):
         class mock_saved_session(object):
             def __init__(self, fields, show_field):
