@@ -156,13 +156,3 @@ class APITests(unittest.TestCase):
 
         payload_list = list(wfuzz.payload(**{'payloads': [('range', {'default': '1-2', 'encoder': None}, None)]}))
         self.assertEqual(payload_list, [('1',), ('2',)])
-
-    def test_iterator(self):
-        payload_list = list(wfuzz.payload(**{'iterator': 'zip', 'payloads': [('range', {'default': '0-2', 'encoder': None}, None), ('range', {'default': '0-2', 'encoder': None}, None)]}))
-        self.assertEqual(sorted(payload_list), sorted([('0', '0'), ('1', '1'), ('2', '2')]))
-
-        payload_list = list(wfuzz.payload(**{'iterator': 'chain', 'payloads': [('range', {'default': '0-2', 'encoder': None}, None), ('range', {'default': '0-2', 'encoder': None}, None)]}))
-        self.assertEqual(sorted(payload_list), sorted([('0',), ('0',), ('1',), ('1',), ('2',), ('2',)]))
-
-        payload_list = list(wfuzz.payload(**{'iterator': 'product', 'payloads': [('range', {'default': '0-2', 'encoder': None}, None), ('range', {'default': '0-2', 'encoder': None}, None)]}))
-        self.assertEqual(sorted(payload_list), sorted([('0', '0'), ('0', '1'), ('0', '2'), ('1', '0'), ('1', '1'), ('1', '2'), ('2', '0'), ('2', '1'), ('2', '2')]))
