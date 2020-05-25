@@ -16,12 +16,6 @@ except ImportError:
     # Python < 3.3
     import mock
 
-LOCAL_DOMAIN = "http://localhost"
-URL_LOCAL = "%s:8000/dir" % (LOCAL_DOMAIN)
-HTTPD_PORT = 8000
-
-ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
-
 
 class APITests(unittest.TestCase):
     def test_payload_description(self):
