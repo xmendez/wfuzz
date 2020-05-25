@@ -24,18 +24,6 @@ ECHO_URL = "%s:8000/echo" % (LOCAL_DOMAIN)
 
 
 class APITests(unittest.TestCase):
-    def test_get_payload(self):
-        payload_list = wfuzz.get_payload(list(range(4))).data.get('dictio')[0]
-        self.assertEqual(sorted(payload_list), sorted([0, 1, 2, 3]))
-
-    def test_get_payloads(self):
-        payload_list = wfuzz.get_payload([list(range(2)), list(range(2))]).data.get('dictio')[0]
-        self.assertEqual(sorted(payload_list), sorted([[0, 1], [0, 1]]))
-
-    def test_decode(self):
-        payload_list = wfuzz.get_payload([list(range(2)), list(range(2))]).data.get('dictio')[0]
-        self.assertEqual(sorted(payload_list), sorted([[0, 1], [0, 1]]))
-
     def test_get_session(self):
         data = wfuzz.get_session('-z range,0-4 http://127.0.0.1/FUZZ').data
 

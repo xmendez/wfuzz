@@ -80,8 +80,19 @@ import wfuzz
         (
             {'payloads': [('range', {'default': '1-2', 'encoder': None}, None)]},
             [('1',), ('2',)]
-        )
+        ),
     ]
 )
 def test_payload_iterator(params, expected_result):
     assert sorted(list(wfuzz.payload(**params))) == sorted(expected_result)
+
+
+@pytest.mark.parametrize(
+    "payload, expected_result",
+    [
+        (range(4), [0, 1, 2, 3]),
+        ([list(range(2)), list(range(2))], [[0, 1], [0, 1]]),
+    ]
+)
+def test_get_payload(payload, expected_result):
+    assert sorted(wfuzz.get_payload(payload).data.get('dictio')[0]) == sorted(expected_result)
