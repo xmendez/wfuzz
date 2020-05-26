@@ -94,7 +94,7 @@ Installation Guide
 ==================
 
 .. toctree::	
-   :maxdepth: 2	
+   :maxdepth: 4
 
    user/installation
    user/breaking
@@ -103,7 +103,7 @@ User Guide
 ==================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    user/getting
    user/basicusage
@@ -113,6 +113,6 @@ Library Guide
 ==================	
 
 .. toctree::	
-   :maxdepth: 2	
+   :maxdepth: 4
 
    library/guide
