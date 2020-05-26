@@ -4,6 +4,7 @@ from ..helpers.obj_dyn import (
     rsetattr,
 )
 from ..helpers.str_func import value_in_any_list_item
+from ..helpers.obj_dic import DotDict
 
 import re
 import collections
@@ -235,7 +236,7 @@ class FuzzResFilter:
                     ret = rightvalue.lower() in leftvalue.lower()
                 elif isinstance(leftvalue, list):
                     ret = value_in_any_list_item(rightvalue, leftvalue)
-                elif isinstance(leftvalue, dict):
+                elif isinstance(leftvalue, dict) or isinstance(leftvalue, DotDict):
                     return len({k: v for (k, v) in leftvalue.items() if rightvalue.lower() in k.lower() or value_in_any_list_item(rightvalue, v)}) > 0
                 else:
                     raise FuzzExceptBadOptions("Invalid operand type {}".format(rightvalue))

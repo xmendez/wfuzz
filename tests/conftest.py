@@ -42,7 +42,8 @@ def example_full_fuzzres():
         "GET /path?param1=1&param2=2 HTTP/1.1\n"
         "Host: www.wfuzz.org\n"
         "User-Agent: curl/7.58.0\n"
-        "Accept: */*\n",
+        "Accept: */*\n"
+        "Cookie: cookie1=1\n",
 
         "HTTP/1.1 302 Found\n"
         "Content-Type: text/html; charset=utf-8\n"
@@ -55,6 +56,7 @@ def example_full_fuzzres():
         "X-Deity: web01\n"
         "Date: Wed, 23 Jan 2019 21:43:59 GMT\n"
         "Content-Length: 0\n"
+        "Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT\n"
     )
     fr = FuzzRequest()
     fr.update_from_raw_http(raw_req, 'http', raw_resp, b"Some line\n and words\nasdsdas")

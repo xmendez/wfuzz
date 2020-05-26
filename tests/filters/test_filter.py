@@ -11,7 +11,17 @@ import pytest
         ("r.params.get.notthere", {}),
         ("r.cookies.response.notthere", {}),
         ("r.cookies.response.notthere='something'", False),
-        ("r.cookies.response.notthere~'something'", False)
+        ("r.cookies.response.notthere~'something'", False),
+        ("r.headers.request.Host", "www.wfuzz.org"),
+        ("r.headers.request.host", "www.wfuzz.org"),
+        ("r.headers.response.SeRVEr", "nginx/1.14.0 (Ubuntu)"),
+        ("r.headers.response.server", "nginx/1.14.0 (Ubuntu)"),
+        ("r.cookies.request.cookie1", "1"),
+        ("r.cookies.request.cOOkiE1", "1"),
+        ("r.cookies.response.name", "Nicholas"),
+        ("r.cookies.response.nAMe", "Nicholas"),
+        ("r.params.get.param1", "1"),
+        ("r.params.get.pAraM1", "1"),
     ],
 )
 def test_filter_ret_values(filter_obj, example_full_fuzzres, filter_string, expected_result):

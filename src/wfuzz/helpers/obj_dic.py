@@ -1,13 +1,46 @@
+from collections.abc import MutableMapping
 
 
-class DotDict(dict):
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
+class CaseInsensitiveDict(MutableMapping):
+    def __init__(self, *args, **kwargs):
+        self.store = dict()
+        self.proxy = dict()
 
+        self.update(dict(*args, **kwargs))  # use the free update to set keys
+
+    def __contains__(self, k):
+        return k.lower() in self.proxy
+
+    def __delitem__(self, k):
+        key = self.proxy[k.lower()]
+
+        del self.store[key]
+        del self.proxy[k.lower()]
+
+    def __getitem__(self, k):
+        key = self.proxy[k.lower()]
+        return self.store[key]
+
+    def get(self, k, default=None):
+        key = self.proxy[k.lower()]
+        return self.store[key] if key in self.store else default
+
+    def __setitem__(self, k, v):
+        self.store[k] = v
+        self.proxy[k.lower()] = k
+
+    def __iter__(self):
+        return iter(self.store)
+
+    def __len__(self):
+        return len(self.store)
+
+
+class DotDict(CaseInsensitiveDict):
     def __getattr__(obj, name):
         # Return {} if non-existent attr
         if name not in obj:
-            return DotDict()
+            return DotDict({})
 
         # python 3 val = dict.get(*args, None)
         val = obj.get(name)
@@ -31,37 +64,4 @@ class DotDict(dict):
         try:
             return super(DotDict, self).__getitem__(key)
         except KeyError:
-            return DotDict()
-
-
-class CaseInsensitiveDict(dict):
-    proxy = {}
-
-    def __init__(self, data):
-        self.proxy = dict((k.lower(), k) for k in data)
-        for k in data:
-            self[k] = data[k]
-
-    def __contains__(self, k):
-        return k.lower() in self.proxy
-
-    def __delitem__(self, k):
-        key = self.proxy[k.lower()]
-        super(CaseInsensitiveDict, self).__delitem__(key)
-        del self.proxy[k.lower()]
-
-    def __getitem__(self, k):
-        key = self.proxy[k.lower()]
-        return super(CaseInsensitiveDict, self).__getitem__(key)
-
-    def get(self, k, default=None):
-        key = self.proxy[k.lower()]
-        return self[key] if key in self else default
-
-    def __setitem__(self, k, v):
-        super(CaseInsensitiveDict, self).__setitem__(k, v)
-        self.proxy[k.lower()] = k
-
-    def update(self, other):
-        for k, v in other.items():
-            self[k] = v
+            return DotDict({})

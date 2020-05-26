@@ -34,7 +34,7 @@ class headers(object):
 
     @property
     def request(self):
-        return headers.header([x.split(": ", 1) for x in self._req.getHeaders()])
+        return headers.header({**self._req._headers})
 
     @request.setter
     def request(self, values_dict):
@@ -60,7 +60,7 @@ class cookies(object):
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return cookies.cookie({x[0]: x[2] for x in [x.partition("=") for x in c]})
 
         return cookies.cookie({})
 
@@ -69,7 +69,7 @@ class cookies(object):
         if 'Cookie' in self._req._headers:
             c = self._req._headers['Cookie'].split("; ")
             if c[0]:
-                return cookies.cookie([[x[0], x[2]] for x in [x.partition("=") for x in c]])
+                return cookies.cookie({x[0]: x[2] for x in [x.partition("=") for x in c]})
 
         return cookies.cookie({})
 
@@ -92,11 +92,11 @@ class params(object):
 
     @property
     def get(self):
-        return params.param([(x.name, x.value) for x in self._req.getGETVars()])
+        return params.param({x.name: x.value for x in self._req.getGETVars()})
 
     @get.setter
     def get(self, values):
-        if isinstance(values, dict):
+        if isinstance(values, dict) or isinstance(values, DotDict):
             for key, value in values.items():
                 self._req.setVariableGET(key, str(value))
         else:
@@ -104,11 +104,11 @@ class params(object):
 
     @property
     def post(self):
-        return params.param([(x.name, x.value) for x in self._req.getPOSTVars()])
+        return params.param({x.name: x.value for x in self._req.getPOSTVars()})
 
     @post.setter
     def post(self, pp):
-        if isinstance(pp, dict):
+        if isinstance(pp, dict) or isinstance(pp, DotDict):
             for key, value in pp.items():
                 self._req.setVariablePOST(key, str(value) if value is not None else value)
 

@@ -3,6 +3,9 @@ import sys
 import six
 
 
+from .obj_dic import DotDict
+
+
 def json_minify(string, strip_space=True):
     '''
     Created on 20/01/2011
@@ -75,7 +78,7 @@ def python2_3_convert_to_unicode(text):
 
 
 def convert_to_unicode(text):
-    if isinstance(text, dict):
+    if isinstance(text, dict) or isinstance(text, DotDict):
         return {convert_to_unicode(key): convert_to_unicode(value) for key, value in list(text.items())}
     elif isinstance(text, list):
         return [convert_to_unicode(element) for element in text]
