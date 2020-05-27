@@ -1,11 +1,11 @@
 import re
 import sys
 import getopt
+import warnings
 from collections import defaultdict
 
 from wfuzz.helpers.file_func import get_path
 from wfuzz.helpers.obj_dyn import allowed_fields
-from wfuzz.helpers.utils import eprint
 from wfuzz.filters.ppfilter import PYPARSING
 from wfuzz.facade import Facade
 from wfuzz.options import FuzzSession
@@ -142,7 +142,7 @@ class CLParser:
                 print(exec_banner)
 
                 for error_msg in options.validate():
-                    eprint("WARNING: {}".format(error_msg))
+                    warnings.warn("Recipe parsing error: {}".format(error_msg))
 
                 print("")
 
@@ -254,7 +254,7 @@ class CLParser:
             raise FuzzExceptBadOptions("Bad usage: --scripts and -A, --AA, --AAA are incompatible options.")
 
         if "-s" in list(optsd.keys()) and "-t" in list(optsd.keys()):
-            eprint("WARNING: When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored.")
+            warnings.warn("When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored.")
 
     def _parse_filters(self, optsd, filter_params):
         '''

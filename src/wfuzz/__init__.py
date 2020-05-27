@@ -8,7 +8,7 @@ __copyright__ = 'Copyright 2011-2018 Xavier Mendez'
 import logging
 import sys
 
-from .helpers.utils import eprint
+import warnings
 
 
 # define a logging Handler
@@ -19,20 +19,29 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
 
+# define warnings format
+def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
+    return ' %s:%s: %s:%s\n' % (filename, lineno, category.__name__, message)
+
+
+warnings.formatwarning = warning_on_one_line
+
+
 try:
     import pycurl
 
     if "openssl".lower() not in pycurl.version.lower():
-        eprint("\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.\n")
+        warnings.warn("Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.")
 
     if not hasattr(pycurl, "CONNECT_TO"):
-        eprint("\nWarning: Pycurl and/or libcurl version is old. CONNECT_TO option is missing. Wfuzz --ip option will not be available.\n")
+        warnings.warn("Pycurl and/or libcurl version is old. CONNECT_TO option is missing. Wfuzz --ip option will not be available.")
 
     if not hasattr(pycurl, "PATH_AS_IS"):
-        eprint("\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n")
+        warnings.warn("Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.")
 
-except ImportError as e:
-    eprint("\nFatal exception: {}. Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl".format(str(e)))
+except ImportError:
+    warnings.warn("fuzz needs pycurl to run. Pycurl could be installed using the following command: $ pip install pycurl")
+
     sys.exit(1)
 
 from .options import FuzzSession

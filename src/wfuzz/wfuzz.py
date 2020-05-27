@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import sys
+import warnings
 
 from .core import Fuzzer
 from .facade import Facade
 from .exception import FuzzException, FuzzExceptBadInstall
-from .helpers.utils import eprint
 from .ui.console.mvc import Controller, KeyPress
 from .ui.console.common import (
     help_banner2,
@@ -41,15 +41,15 @@ def main():
         for res in fz:
             pass
     except FuzzException as e:
-        eprint("\nFatal exception: {}".format(str(e)))
+        warnings.warn("Fatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
-        eprint("\nFinishing pending requests...")
+        warnings.warn("Finishing pending requests...")
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
-        eprint("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e)))
+        warnings.warn("Fatal exception: Error importing wfuzz extensions: {}".format(str(e)))
     except Exception as e:
-        eprint("\nUnhandled exception: {}".format(str(e)))
+        warnings.warn("Unhandled exception: {}".format(str(e)))
     finally:
         if session_options:
             session_options.close()
@@ -95,9 +95,9 @@ def main_filter():
     except KeyboardInterrupt:
         pass
     except FuzzException as e:
-        eprint(("\nFatal exception: %s" % str(e)))
+        warnings.warn(("Fatal exception: %s" % str(e)))
     except Exception as e:
-        eprint(("\nUnhandled exception: %s" % str(e)))
+        warnings.warn(("Unhandled exception: %s" % str(e)))
 
 
 def main_encoder():
@@ -115,7 +115,7 @@ def main_encoder():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
     except getopt.GetoptError as err:
-        eprint(str(err))
+        warnings.warn(str(err))
         usage()
         sys.exit(2)
 
@@ -134,12 +134,12 @@ def main_encoder():
                 sys.exit()
     except IndexError as e:
         usage()
-        eprint("\nFatal exception: Specify a string to encode or decode.{}\n".format(str(e)))
+        warnings.warn("\nFatal exception: Specify a string to encode or decode.{}\n".format(str(e)))
         sys.exit()
     except AttributeError as e:
-        eprint("\nEncoder plugin missing encode or decode functionality. {}".format(str(e)))
+        warnings.warn("\nEncoder plugin missing encode or decode functionality. {}".format(str(e)))
     except FuzzException as e:
-        eprint(("\nFatal exception: %s" % str(e)))
+        warnings.warn(("\nFatal exception: %s" % str(e)))
 
 
 def main_gui():
