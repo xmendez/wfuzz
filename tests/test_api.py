@@ -56,7 +56,7 @@ class APITests(unittest.TestCase):
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, m):
             payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual([res[0].description for res in payload_list], ['param=1\nparam2=2'])
+            self.assertEqual(sorted([res[0].description for res in payload_list]), sorted(['param=1\nparam2=2']))
 
         m = mock.MagicMock(name='open', spec=open)
         m.return_value = mock_saved_session(["url"], None)
@@ -81,7 +81,7 @@ class APITests(unittest.TestCase):
                 ('foo/bar', (), ('spam', 'eggs')),
             ]
             payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'foo', 'encoder': None}, None)]}))
-            self.assertEqual(payload_list, [('baz',), ('bar/spam',), ('bar/eggs',)])
+            self.assertEqual(sorted(payload_list), sorted([('baz',), ('bar/spam',), ('bar/eggs',)]))
 
         class mock_file(object):
             def __init__(self):
