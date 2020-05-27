@@ -34,7 +34,7 @@ class headers(object):
 
     @property
     def request(self):
-        return headers.header({**self._req._headers})
+        return headers.header(self._req._headers)
 
     @request.setter
     def request(self, values_dict):
