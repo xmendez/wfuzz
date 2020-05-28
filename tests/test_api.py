@@ -56,7 +56,7 @@ class APITests(unittest.TestCase):
         mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
         with mock.patch(mocked_fun, m):
             payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual(sorted([res[0].description for res in payload_list]), sorted(['param=1\nparam2=2']))
+            self.assertEqual(sorted('-'.join([res[0].description for res in payload_list]).split("\n")), sorted(['param=1', 'param2=2']))
 
         m = mock.MagicMock(name='open', spec=open)
         m.return_value = mock_saved_session(["url"], None)
