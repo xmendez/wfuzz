@@ -16,9 +16,11 @@ install:
   - pip install netaddr
   - pip install flake8
   - pip install codecov
+  - pip install black
   - python setup.py install
 script:
-  - flake8 --ignore=E501,E402,F401,W504 src tests
+  - black --check src tests
+  - flake8 src tests
   - coverage run --append -m unittest discover -v -s tests/
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
 deploy:
