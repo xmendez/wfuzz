@@ -4,6 +4,8 @@ test:
 	tox --recreate
 flake8:
 	pip install flake8
+	pip install black
+	black --check src tests
 	flake8 src tests
 publish:
 	pip install 'twine>=1.5.0'
@@ -21,7 +23,7 @@ docs:
 	cd docs && make html
 
 coverage:
-	coverage report --skip-covered --include "*python3.5/site-packages/wfuzz*" -m
+	coverage report --skip-covered --include "*python3.8/site-packages/wfuzz*" -m
 
 install:
 	pip install -r requirements.txt
