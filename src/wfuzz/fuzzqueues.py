@@ -332,41 +332,41 @@ class JobMan(FuzzQueue):
 
                 self.__walking_threads.join()
 
-                enq_item = defaultdict(int)
-
-                while not plugins_res_queue.empty():
-                    item = plugins_res_queue.get()
-
-                    if item._exception is not None:
-                        if (
-                            Facade().sett.get("general", "cancel_on_plugin_except")
-                            == "1"
-                        ):
-                            self._throw(item._exception)
-                        res.plugins_res.append(item)
-                    elif item._seed is not None:
-                        if self.options["no_cache"] or self.cache.update_cache(
-                            item._seed.history, "backfeed"
-                        ):
-                            self.stats.backfeed.inc()
-                            self.stats.pending_fuzz.inc()
-                            self.send(item._seed)
-                            enq_item[item.source] += 1
-                    else:
-                        res.plugins_res.append(item)
-
-                for plugin_name, enq_num in enq_item.items():
-                    res.plugins_res.append(
-                        plugin_factory.create(
-                            "plugin_from_finding",
-                            "Backfeed",
-                            "Plugin %s enqueued %d more requests (rlevel=%d)"
-                            % (plugin_name, enq_num, res.rlevel),
-                        )
-                    )
+                self.process_results(res, plugins_res_queue)
 
         # add result to results queue
         self.send(res)
+
+    def process_results(self, res, plugins_res_queue):
+        enq_item = defaultdict(int)
+
+        while not plugins_res_queue.empty():
+            item = plugins_res_queue.get()
+
+            if item._exception is not None:
+                if Facade().sett.get("general", "cancel_on_plugin_except") == "1":
+                    self._throw(item._exception)
+                res.plugins_res.append(item)
+            elif item._seed is not None:
+                if self.options["no_cache"] or self.cache.update_cache(
+                    item._seed.history, "backfeed"
+                ):
+                    self.stats.backfeed.inc()
+                    self.stats.pending_fuzz.inc()
+                    self.send(item._seed)
+                    enq_item[item.source] += 1
+            else:
+                res.plugins_res.append(item)
+
+        for plugin_name, enq_num in enq_item.items():
+            res.plugins_res.append(
+                plugin_factory.create(
+                    "plugin_from_finding",
+                    "Backfeed",
+                    "Plugin %s enqueued %d more requests (rlevel=%d)"
+                    % (plugin_name, enq_num, res.rlevel),
+                )
+            )
 
 
 class RecursiveQ(FuzzQueue):
