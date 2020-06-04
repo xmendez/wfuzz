@@ -19,8 +19,7 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
     category = ["default", "active", "discovery"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -29,10 +28,10 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
         return fuzzresult.url.find(".svn/entries") > 0 and fuzzresult.code == 200
 
     def readsvn(self, content):
-        '''
+        """
         Function shamesly copied (and adapted) from https://github.com/anantshri/svn-extractor/
         Credit (C) Anant Shrivastava http://anantshri.info
-        '''
+        """
         old_line = ""
         file_list = []
         dir_list = []
@@ -40,13 +39,13 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
 
         for a in content.splitlines():
             # below functionality will find all usernames from svn entries file
-            if (a == "has-props"):
+            if a == "has-props":
                 if old_line not in author_list:
                     author_list.append(old_line)
-            if (a == "file"):
+            if a == "file":
                 if old_line not in file_list:
                     file_list.append(old_line)
-            if (a == "dir"):
+            if a == "dir":
                 if old_line != "":
                     dir_list.append(old_line)
             old_line = a
@@ -58,11 +57,13 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
         file_list, dir_list, author_list = self.readsvn(fuzzresult.history.content)
 
         if author_list:
-            self.add_result("SVN authors: %s" % ', '.join(author_list))
+            self.add_result("SVN authors: %s" % ", ".join(author_list))
 
         for f in file_list:
             u = urljoin(base_url.replace("/.svn/", "/"), f)
             self.queue_url(u)
 
         for d in dir_list:
-            self.queue_url(urljoin(base_url.replace("/.svn/", "/"), d) + "/.svn/entries")
+            self.queue_url(
+                urljoin(base_url.replace("/.svn/", "/"), d) + "/.svn/entries"
+            )

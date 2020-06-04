@@ -17,24 +17,24 @@ def get_encoding_from_headers(headers):
     :rtype: str
     """
 
-    content_type = headers.get('Content-Type')
+    content_type = headers.get("Content-Type")
 
     if not content_type:
         return None
 
     content_type, params = cgi.parse_header(content_type)
 
-    if 'charset' in params:
-        return params['charset'].strip("'\"")
+    if "charset" in params:
+        return params["charset"].strip("'\"")
 
-    if 'text' in content_type:
-        return 'ISO-8859-1'
+    if "text" in content_type:
+        return "ISO-8859-1"
 
-    if 'image' in content_type:
-        return 'utf-8'
+    if "image" in content_type:
+        return "utf-8"
 
-    if 'application/json' in content_type:
-        return 'utf-8'
+    if "application/json" in content_type:
+        return "utf-8"
 
 
 def get_encodings_from_content(content):
@@ -46,20 +46,24 @@ def get_encodings_from_content(content):
     pragma_re = re.compile(r'<meta.*?content=["\']*;?charset=(.+?)["\'>]', flags=re.I)
     xml_re = re.compile(r'^<\?xml.*?encoding=["\']*(.+?)["\'>]')
 
-    return (charset_re.findall(content) +
-            pragma_re.findall(content) +
-            xml_re.findall(content))
+    return (
+        charset_re.findall(content)
+        + pragma_re.findall(content)
+        + xml_re.findall(content)
+    )
 
 
 class Response:
     def __init__(self, protocol="", code="", message=""):
-        self.protocol = protocol         # HTTP/1.1
-        self.code = code                  # 200
-        self.message = message            # OK
-        self._headers = []                # bueno pues las cabeceras igual que en la request
-        self.__content = ""               # contenido de la response (si i solo si Content-Length existe)
-        self.md5 = ""             # hash de los contenidos del resultado
-        self.charlen = ""         # Cantidad de caracteres de la respuesta
+        self.protocol = protocol  # HTTP/1.1
+        self.code = code  # 200
+        self.message = message  # OK
+        self._headers = []  # bueno pues las cabeceras igual que en la request
+        self.__content = (
+            ""  # contenido de la response (si i solo si Content-Length existe)
+        )
+        self.md5 = ""  # hash de los contenidos del resultado
+        self.charlen = ""  # Cantidad de caracteres de la respuesta
 
     def addHeader(self, key, value):
         self._headers += [(key, value)]
@@ -110,7 +114,9 @@ class Response:
         return self.__content
 
     def getTextHeaders(self):
-        string = str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
+        string = (
+            str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
+        )
         for i, j in self._headers:
             string += i + ": " + j + "\r\n"
 
@@ -126,7 +132,9 @@ class Response:
         self.parseResponse(b)
 
     def getAll_wpost(self):
-        string = str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
+        string = (
+            str(self.protocol) + " " + str(self.code) + " " + str(self.message) + "\r\n"
+        )
         for i, j in self._headers:
             string += i + ": " + j + "\r\n"
         return string
@@ -160,7 +168,7 @@ class Response:
 
             while True:
                 tp.readLine()
-                if (tp.search("^([^:]+): ?(.*)$")):
+                if tp.search("^([^:]+): ?(.*)$"):
                     self.addHeader(tp[0][0], tp[0][1])
                 else:
                     break
@@ -174,7 +182,7 @@ class Response:
                 self._headers = []
 
         # ignore CRLFs until request line
-        while tp.lastline == '' and tp.readLine():
+        while tp.lastline == "" and tp.readLine():
             pass
 
         # TODO: this should be added to rawbody not directly to __content
@@ -184,7 +192,7 @@ class Response:
         while tp.skip(1):
             self.addContent(tp.lastFull_line)
 
-        if type == 'curl':
+        if type == "curl":
             self.delHeader("Transfer-Encoding")
 
         if self.header_equal("Transfer-Encoding", "chunked"):
@@ -218,7 +226,7 @@ class Response:
                     deflated_data = deflater.decompress(rawbody)
                     deflated_data += deflater.flush()
                 except zlib.error:
-                    deflated_data = ''
+                    deflated_data = ""
             rawbody = deflated_data
             self.delHeader("Content-Encoding")
 
@@ -230,4 +238,6 @@ class Response:
             if content_encoding is None:
                 content_encoding = "utf-8"
 
-            self.__content = python2_3_convert_from_unicode(rawbody.decode(content_encoding, errors='replace'))
+            self.__content = python2_3_convert_from_unicode(
+                rawbody.decode(content_encoding, errors="replace")
+            )

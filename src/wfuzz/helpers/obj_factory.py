@@ -7,10 +7,10 @@ from ..exception import FuzzExceptBadOptions
 
 
 class Singleton(type):
-    ''' Singleton metaclass. Use by defining the metaclass of a class Singleton,
+    """ Singleton metaclass. Use by defining the metaclass of a class Singleton,
         e.g.: class ThereCanBeOnlyOne:
                   __metaclass__ = Singleton
-    '''
+    """
 
     def __call__(class_, *args, **kwargs):
         if not class_.hasInstance():
@@ -18,14 +18,14 @@ class Singleton(type):
         return class_.instance
 
     def deleteInstance(class_):
-        ''' Delete the (only) instance. This method is mainly for unittests so
-            they can start with a clean slate. '''
+        """ Delete the (only) instance. This method is mainly for unittests so
+            they can start with a clean slate. """
         if class_.hasInstance():
             del class_.instance
 
     def hasInstance(class_):
-        ''' Has the (only) instance been created already? '''
-        return hasattr(class_, 'instance')
+        """ Has the (only) instance been created already? """
+        return hasattr(class_, "instance")
 
 
 class ObjectFactory:
@@ -40,7 +40,9 @@ class ObjectFactory:
 
 
 class SeedBuilderHelper:
-    FUZZ_MARKERS_REGEX = re.compile(r"(?P<full_marker>(?P<word>FUZ(?P<index>\d)*Z)(?P<nonfuzz_marker>(?:\[(?P<field>.*?)\])?(?P<full_bl>\{(?P<bl_value>.*?)\})?))")
+    FUZZ_MARKERS_REGEX = re.compile(
+        r"(?P<full_marker>(?P<word>FUZ(?P<index>\d)*Z)(?P<nonfuzz_marker>(?:\[(?P<field>.*?)\])?(?P<full_bl>\{(?P<bl_value>.*?)\})?))"
+    )
     REQ_ATTR = [
         "raw_request",
         "scheme",
@@ -50,7 +52,9 @@ class SeedBuilderHelper:
 
     @staticmethod
     def _get_markers(text):
-        return [m.groupdict() for m in SeedBuilderHelper.FUZZ_MARKERS_REGEX.finditer(text)]
+        return [
+            m.groupdict() for m in SeedBuilderHelper.FUZZ_MARKERS_REGEX.finditer(text)
+        ]
 
     @staticmethod
     def get_marker_dict(freq):
@@ -60,18 +64,22 @@ class SeedBuilderHelper:
             marker_dict_list += SeedBuilderHelper._get_markers(text)
 
         # validate
-        if len({bd['bl_value'] is None for bd in marker_dict_list}) > 1:
-            raise FuzzExceptBadOptions("You must supply a baseline value per FUZZ word.")
+        if len({bd["bl_value"] is None for bd in marker_dict_list}) > 1:
+            raise FuzzExceptBadOptions(
+                "You must supply a baseline value per FUZZ word."
+            )
 
         return marker_dict_list
 
     @staticmethod
     def _remove_markers(freq, markers, mark_name):
         scheme = freq.scheme
-        for mark in [mark[mark_name] for mark in markers if mark[mark_name] is not None]:
+        for mark in [
+            mark[mark_name] for mark in markers if mark[mark_name] is not None
+        ]:
             for field in SeedBuilderHelper.REQ_ATTR:
                 old_value = rgetattr(freq, field)
-                new_value = old_value.replace(mark, '')
+                new_value = old_value.replace(mark, "")
 
                 if field == "raw_request":
                     freq.update_from_raw_http(new_value, scheme)
@@ -103,7 +111,9 @@ class SeedBuilderHelper:
         scheme = freq.scheme
         auth_method, userpass = freq.auth
 
-        for payload in [payload for payload in fpm.get_payloads() if payload.marker is not None]:
+        for payload in [
+            payload for payload in fpm.get_payloads() if payload.marker is not None
+        ]:
             userpass = userpass.replace(payload.marker, payload.value)
             rawUrl = rawUrl.replace(payload.marker, payload.value)
             rawReq = rawReq.replace(payload.marker, payload.value)
@@ -111,7 +121,7 @@ class SeedBuilderHelper:
 
         freq.update_from_raw_http(rawReq, scheme)
         freq.url = rawUrl
-        if auth_method != 'None':
+        if auth_method != "None":
             freq.auth = (auth_method, userpass)
 
         return freq

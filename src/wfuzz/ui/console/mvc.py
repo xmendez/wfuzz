@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 import threading
+
 try:
     from itertools import zip_longest
 except ImportError:
@@ -12,14 +13,14 @@ from .common import exec_banner, Term
 from .getch import _Getch
 from .output import getTerminalSize, wrap_always
 
-usage = '''\r\n
+usage = """\r\n
 Interactive keyboard commands:\r\n
 ?: Show this help
 
 p: Pause
 s: Show stats
 q: Cancel
-'''
+"""
 
 
 class SimpleEventDispatcher:
@@ -31,13 +32,13 @@ class SimpleEventDispatcher:
 
     def subscribe(self, func, msg, dynamic=False):
         if msg not in self.publisher and not dynamic:
-            raise KeyError('subscribe. No such event: %s' % (msg))
+            raise KeyError("subscribe. No such event: %s" % (msg))
         else:
             self.publisher[msg].append(func)
 
     def notify(self, msg, **event):
         if msg not in self.publisher:
-            raise KeyError('notify. Event not subscribed: %s' % (msg,))
+            raise KeyError("notify. Event not subscribed: %s" % (msg,))
         else:
             for functor in self.publisher[msg]:
                 functor(**event)
@@ -65,13 +66,13 @@ class KeyPress(threading.Thread):
             k = self.inkey()
             if k and ord(k) == 3:
                 self.dispatcher.notify("q", key="q")
-            elif k == 'p':
+            elif k == "p":
                 self.dispatcher.notify("p", key="p")
-            elif k == 's':
+            elif k == "s":
                 self.dispatcher.notify("s", key="s")
-            elif k == '?':
+            elif k == "?":
                 self.dispatcher.notify("?", key="?")
-            elif k == 'q':
+            elif k == "q":
                 self.dispatcher.notify("q", key="q")
 
 
@@ -118,18 +119,30 @@ class Controller:
                 print("%s: %s" % (k, v))
             print("\n=========================================")
         else:
-            pending = self.fuzzer.genReq.stats.total_req - self.fuzzer.genReq.stats.processed()
+            pending = (
+                self.fuzzer.genReq.stats.total_req
+                - self.fuzzer.genReq.stats.processed()
+            )
             summary = self.fuzzer.genReq.stats
             summary.mark_end()
             print("\nTotal requests: %s\r" % str(summary.total_req))
             print("Pending requests: %s\r" % str(pending))
 
             if summary.backfeed() > 0:
-                print("Processed Requests: %s (%d + %d)\r" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed()))
+                print(
+                    "Processed Requests: %s (%d + %d)\r"
+                    % (
+                        str(summary.processed())[:8],
+                        (summary.processed() - summary.backfeed()),
+                        summary.backfeed(),
+                    )
+                )
             else:
                 print("Processed Requests: %s\r" % (str(summary.processed())[:8]))
             print("Filtered Requests: %s\r" % (str(summary.filtered())[:8]))
-            req_sec = summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
+            req_sec = (
+                summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
+            )
             print("Total time: %s\r" % str(summary.totaltime)[:8])
             if req_sec > 0:
                 print("Requests/sec.: %s\r" % str(req_sec)[:8])
@@ -152,30 +165,35 @@ class View:
         self.printed_lines = 1
 
     def _print_verbose(self, res, print_nres=True):
-        txt_colour = Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
+        txt_colour = (
+            Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
+        )
         if self.previous and self.colour and not print_nres:
             txt_colour = Term.fgCyan
 
         location = ""
-        if 'Location' in res.history.headers.response:
-            location = res.history.headers.response['Location']
+        if "Location" in res.history.headers.response:
+            location = res.history.headers.response["Location"]
         elif res.history.url != res.history.redirect_url:
             location = "(*) %s" % res.history.url
 
         server = ""
-        if 'Server' in res.history.headers.response:
-            server = res.history.headers.response['Server']
+        if "Server" in res.history.headers.response:
+            server = res.history.headers.response["Server"]
 
         rows = [
             ("%09d:" % res.nres if print_nres else " |_", txt_colour),
             ("%.3fs" % res.timer, txt_colour),
-            ("%s" % "XXX" if res.exception else str(res.code), self.term.get_colour(res.code) if self.colour else txt_colour),
+            (
+                "%s" % "XXX" if res.exception else str(res.code),
+                self.term.get_colour(res.code) if self.colour else txt_colour,
+            ),
             ("%d L" % res.lines, txt_colour),
             ("%d W" % res.words, txt_colour),
             ("%d Ch" % res.chars, txt_colour),
             (server, txt_colour),
             (location, txt_colour),
-            ("\"%s\"" % res.description, txt_colour),
+            ('"%s"' % res.description, txt_colour),
         ]
 
         self.term.set_colour(txt_colour)
@@ -190,33 +208,59 @@ class View:
 
     def _print_line(self, rows, maxWidths):
         def wrap_row(rows, maxWidths):
-            newRows = [wrap_always(item[0], width).split('\n') for item, width in zip(rows, maxWidths)]
-            return [[substr or '' for substr in item] for item in zip_longest(*newRows)]
+            newRows = [
+                wrap_always(item[0], width).split("\n")
+                for item, width in zip(rows, maxWidths)
+            ]
+            return [[substr or "" for substr in item] for item in zip_longest(*newRows)]
 
         new_rows = wrap_row(rows, maxWidths)
 
         for row in new_rows[:-1]:
-            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
+            sys.stdout.write(
+                "   ".join(
+                    [
+                        colour + str.ljust(str(item), width) + Term.reset
+                        for (item, width, colour) in zip(
+                            row, maxWidths, [colour[1] for colour in rows]
+                        )
+                    ]
+                )
+            )
             sys.stdout.write("\n\r")
 
         for row in new_rows[-1:]:
-            sys.stdout.write("   ".join([colour + str.ljust(str(item), width) + Term.reset for (item, width, colour) in zip(row, maxWidths, [colour[1] for colour in rows])]))
+            sys.stdout.write(
+                "   ".join(
+                    [
+                        colour + str.ljust(str(item), width) + Term.reset
+                        for (item, width, colour) in zip(
+                            row, maxWidths, [colour[1] for colour in rows]
+                        )
+                    ]
+                )
+            )
 
         sys.stdout.flush()
         return len(new_rows)
 
     def _print(self, res, print_nres=True):
-        txt_colour = Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
+        txt_colour = (
+            Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
+        )
         if self.previous and self.colour and not print_nres:
             txt_colour = Term.fgCyan
 
         rows = [
             ("%09d:" % res.nres if print_nres else " |_", txt_colour),
-            ("%s" % "XXX" if res.exception else str(res.code), self.term.get_colour(res.code) if self.colour else txt_colour),
+            (
+                "%s" % "XXX" if res.exception else str(res.code),
+                self.term.get_colour(res.code) if self.colour else txt_colour,
+            ),
             ("%d L" % res.lines, txt_colour),
             ("%d W" % res.words, txt_colour),
             ("%d Ch" % res.chars, txt_colour),
-            ("\"%s\"" % res.description, txt_colour),
+            ('"%s"' % res.description, txt_colour),
         ]
 
         self.term.set_colour(txt_colour)
@@ -268,7 +312,11 @@ class View:
             self._print(res)
 
         if res.item_type == FuzzType.RESULT:
-            if self.previous and res.payload_man and res.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
+            if (
+                self.previous
+                and res.payload_man
+                and res.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES
+            ):
                 prev_res = res.payload_man.get_payload_content(1)
                 sys.stdout.write("\n\r")
                 if self.verbose:

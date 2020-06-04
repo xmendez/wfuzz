@@ -9,7 +9,7 @@ from wfuzz.filters.ppfilter import FuzzResFilter
 def full_fuzzres(request):
     raw_req, raw_resp = request.param
     fr = FuzzRequest()
-    fr.update_from_raw_http(raw_req, 'http', raw_resp, None)
+    fr.update_from_raw_http(raw_req, "http", raw_resp, None)
 
     return FuzzResult(history=fr)
 
@@ -18,7 +18,7 @@ def full_fuzzres(request):
 def full_fuzzreq(request):
     raw_req, raw_resp = request.param
     fr = FuzzRequest()
-    fr.update_from_raw_http(raw_req, 'http', raw_resp, None)
+    fr.update_from_raw_http(raw_req, "http", raw_resp, None)
 
     return fr
 
@@ -44,7 +44,6 @@ def example_full_fuzzres():
         "User-Agent: curl/7.58.0\n"
         "Accept: */*\n"
         "Cookie: cookie1=1\n",
-
         "HTTP/1.1 302 Found\n"
         "Content-Type: text/html; charset=utf-8\n"
         "Content-Language: en\n"
@@ -56,10 +55,12 @@ def example_full_fuzzres():
         "X-Deity: web01\n"
         "Date: Wed, 23 Jan 2019 21:43:59 GMT\n"
         "Content-Length: 0\n"
-        "Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT\n"
+        "Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT\n",
     )
     fr = FuzzRequest()
-    fr.update_from_raw_http(raw_req, 'http', raw_resp, b"Some line\n and words\nasdsdas")
+    fr.update_from_raw_http(
+        raw_req, "http", raw_resp, b"Some line\n and words\nasdsdas"
+    )
 
     return FuzzResult(history=fr)
 
@@ -69,6 +70,6 @@ def example_full_fuzzres_no_response():
     raw_req = "GET /path?param1=1&param2=2 HTTP/1.1\nHost: www.wfuzz.org\nUser-Agent: curl/7.58.0\nAccept: */*\n"
 
     fr = FuzzRequest()
-    fr.update_from_raw_http(raw_req, 'http', None, None)
+    fr.update_from_raw_http(raw_req, "http", None, None)
 
     return FuzzResult(history=fr)

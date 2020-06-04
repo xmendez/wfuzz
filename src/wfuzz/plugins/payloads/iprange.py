@@ -9,7 +9,10 @@ class iprange(BasePayload):
     name = "iprange"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = ("ie. 192.168.1.0-192.168.1.12", "Requires: netaddr module",)
+    description = (
+        "ie. 192.168.1.0-192.168.1.12",
+        "Requires: netaddr module",
+    )
     summary = "Returns list of IP addresses of a given IP range."
     category = ["default"]
     priority = 99
@@ -32,11 +35,17 @@ class iprange(BasePayload):
             self.f = iter(net)
             self.__count = net.size
         except ImportError:
-            raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
+            raise FuzzExceptBadInstall(
+                "ipnet plugin requires netaddr module. Please install it using pip."
+            )
         except AddrFormatError:
-            raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
+            raise FuzzExceptPluginBadParams(
+                "The specified network range has an incorrect format."
+            )
         except IndexError:
-            raise FuzzExceptPluginBadParams("The specified network range has an incorrect format.")
+            raise FuzzExceptPluginBadParams(
+                "The specified network range has an incorrect format."
+            )
 
     def get_type(self):
         return FuzzWordType.WORD

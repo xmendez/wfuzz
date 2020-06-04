@@ -3,29 +3,24 @@ import copy
 from .fuzzfactory import reqfactory
 from .payman import payman_factory
 
-from ..fuzzobjects import (
-    FuzzResult,
-    FuzzType,
-    FuzzWord,
-    FuzzWordType
-)
-from ..helpers.obj_factory import (
-    ObjectFactory,
-    SeedBuilderHelper
-)
+from ..fuzzobjects import FuzzResult, FuzzType, FuzzWord, FuzzWordType
+from ..helpers.obj_factory import ObjectFactory, SeedBuilderHelper
 
 
 class FuzzResultFactory(ObjectFactory):
     def __init__(self):
-        ObjectFactory.__init__(self, {
-            'fuzzres_from_options_and_dict': FuzzResultDictioBuilder(),
-            'fuzzres_from_allvar': FuzzResultAllVarBuilder(),
-            'fuzzres_from_recursion': FuzzResRecursiveBuilder(),
-            'seed_from_recursion': SeedRecursiveBuilder(),
-            'seed_from_options': SeedResultBuilder(),
-            'seed_from_options_and_dict': FuzzResultDictSeedBuilder(),
-            'baseline_from_options': BaselineResultBuilder()
-        })
+        ObjectFactory.__init__(
+            self,
+            {
+                "fuzzres_from_options_and_dict": FuzzResultDictioBuilder(),
+                "fuzzres_from_allvar": FuzzResultAllVarBuilder(),
+                "fuzzres_from_recursion": FuzzResRecursiveBuilder(),
+                "seed_from_recursion": SeedRecursiveBuilder(),
+                "seed_from_options": SeedResultBuilder(),
+                "seed_from_options_and_dict": FuzzResultDictSeedBuilder(),
+                "baseline_from_options": BaselineResultBuilder(),
+            },
+        )
 
 
 class FuzzResultDictioBuilder:
@@ -53,8 +48,7 @@ class BaselineResultBuilder:
     def __call__(self, options):
         raw_seed = reqfactory.create("request_from_options", options)
         baseline_payloadman = payman_factory.create(
-            "payloadman_from_baseline",
-            raw_seed
+            "payloadman_from_baseline", raw_seed
         )
 
         if baseline_payloadman.payloads:
@@ -99,7 +93,9 @@ class SeedRecursiveBuilder:
         new_seed.rlevel += 1
         new_seed.rlevel_desc += seed.payload_man.description()
         new_seed.item_type = FuzzType.SEED
-        new_seed.payload_man = payman_factory.create("payloadman_from_request", new_seed.history)
+        new_seed.payload_man = payman_factory.create(
+            "payloadman_from_request", new_seed.history
+        )
 
         return new_seed
 
@@ -112,7 +108,9 @@ class FuzzResRecursiveBuilder:
         fr.item_type = FuzzType.BACKFEED
         fr.is_baseline = False
 
-        fr.payload_man = payman_factory.create("empty_payloadman", FuzzWord(url, FuzzWordType.WORD))
+        fr.payload_man = payman_factory.create(
+            "empty_payloadman", FuzzWord(url, FuzzWordType.WORD)
+        )
 
         return fr
 

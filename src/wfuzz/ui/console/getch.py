@@ -9,6 +9,7 @@
 
 class _Getch:
     """Gets a single character from standard input.  Does not echo to the screen."""
+
     def __init__(self):
         try:
             self.impl = _GetchWindows()
@@ -57,15 +58,18 @@ class _GetchMacCarbon:
     page http://www.mactech.com/macintosh-c/chap02-1.html was
     very helpful in figuring out how to do this.
     """
+
     def __init__(self):
         import Carbon
+
         # see if it has this (in Unix, it doesn't)
         Carbon.Evt
 
     def __call__(self):
         import Carbon
+
         if Carbon.Evt.EventAvail(0x0008)[0] == 0:  # 0x0008 is the keyDownMask
-            return ''
+            return ""
         else:
             #
             # The event contains the following info:
@@ -80,13 +84,14 @@ class _GetchMacCarbon:
             return chr(msg & 0x000000FF)
 
 
-if __name__ == '__main__':
-    print('Press a key')
+if __name__ == "__main__":
+    print("Press a key")
     inkey = _Getch()
 
     import sys
+
     for i in range(sys.maxsize):
         k = inkey()
-        if k != '':
+        if k != "":
             break
-    print('you pressed ', k)
+    print("you pressed ", k)

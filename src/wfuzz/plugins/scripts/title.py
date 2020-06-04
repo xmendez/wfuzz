@@ -12,8 +12,7 @@ class title(BasePlugin):
     category = ["verbose", "passive"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -25,6 +24,10 @@ class title(BasePlugin):
         soup = fuzzresult.history.get_soup()
         title = soup.title.string if soup.title else ""
 
-        if title != "" and "title" not in self.kbase or title not in self.kbase["title"]:
+        if (
+            title != ""
+            and "title" not in self.kbase
+            or title not in self.kbase["title"]
+        ):
             self.kbase["title"] = title
             self.add_result("Page title: %s" % title)

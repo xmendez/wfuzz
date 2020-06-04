@@ -25,7 +25,12 @@ class wfuzzp(BasePayload):
 
     parameters = (
         ("fn", "", True, "Filename of a valid wfuzz result file."),
-        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+        (
+            "attr",
+            None,
+            False,
+            "Attribute of fuzzresult to return. If not specified the whole object is returned.",
+        ),
     )
 
     default_parameter = "fn"
@@ -50,11 +55,13 @@ class wfuzzp(BasePayload):
 
     def _gen_wfuzz(self, output_fn):
         try:
-            with gzip.open(self.find_file(output_fn), 'r+b') as output:
+            with gzip.open(self.find_file(output_fn), "r+b") as output:
                 while 1:
                     item = pickle.load(output)
                     if not isinstance(item, FuzzResult):
-                        raise FuzzExceptBadFile("Wrong wfuzz payload format, the object read is not a valid fuzz result.")
+                        raise FuzzExceptBadFile(
+                            "Wrong wfuzz payload format, the object read is not a valid fuzz result."
+                        )
 
                     yield item
         except IOError as e:

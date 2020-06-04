@@ -7,7 +7,7 @@ from .obj_dic import DotDict
 
 
 def json_minify(string, strip_space=True):
-    '''
+    """
     Created on 20/01/2011
     v0.2 (C) Gerald Storer
     MIT License
@@ -15,10 +15,10 @@ def json_minify(string, strip_space=True):
     https://github.com/getify/JSON.minify
     Contributers:
     - Pradyun S. Gedam (conditions and variable names changed)
-    '''
+    """
 
     tokenizer = re.compile(r'"|(/\*)|(\*/)|(//)|\n|\r')
-    end_slashes_re = re.compile(r'(\\)*$')
+    end_slashes_re = re.compile(r"(\\)*$")
 
     in_string = False
     in_multi = False
@@ -30,10 +30,10 @@ def json_minify(string, strip_space=True):
     for match in re.finditer(tokenizer, string):
 
         if not (in_multi or in_single):
-            tmp = string[index:match.start()]
+            tmp = string[index : match.start()]
             if not in_string and strip_space:
                 # replace white space as defined in standard
-                tmp = re.sub('[ \t\n\r]+', '', tmp)
+                tmp = re.sub("[ \t\n\r]+", "", tmp)
             new_str.append(tmp)
 
         index = match.end()
@@ -48,19 +48,19 @@ def json_minify(string, strip_space=True):
             # include " character in next catch
             index -= 1
         elif not (in_string or in_multi or in_single):
-            if val == '/*':
+            if val == "/*":
                 in_multi = True
-            elif val == '//':
+            elif val == "//":
                 in_single = True
-        elif val == '*/' and in_multi and not (in_string or in_single):
+        elif val == "*/" and in_multi and not (in_string or in_single):
             in_multi = False
-        elif val in '\r\n' and not (in_multi or in_string) and in_single:
+        elif val in "\r\n" and not (in_multi or in_string) and in_single:
             in_single = False
-        elif not ((in_multi or in_single) or (val in ' \r\n\t' and strip_space)):
+        elif not ((in_multi or in_single) or (val in " \r\n\t" and strip_space)):
             new_str.append(val)
 
     new_str.append(string[index:])
-    return ''.join(new_str)
+    return "".join(new_str)
 
 
 def python2_3_convert_from_unicode(text):
@@ -79,11 +79,14 @@ def python2_3_convert_to_unicode(text):
 
 def convert_to_unicode(text):
     if isinstance(text, dict) or isinstance(text, DotDict):
-        return {convert_to_unicode(key): convert_to_unicode(value) for key, value in list(text.items())}
+        return {
+            convert_to_unicode(key): convert_to_unicode(value)
+            for key, value in list(text.items())
+        }
     elif isinstance(text, list):
         return [convert_to_unicode(element) for element in text]
     elif isinstance(text, six.string_types):
-        return text.encode("utf-8", errors='ignore')
+        return text.encode("utf-8", errors="ignore")
     else:
         return text
 

@@ -21,7 +21,12 @@ class autorize(BasePayload):
 
     parameters = (
         ("fn", "", True, "Filename of a valid autorize state file."),
-        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+        (
+            "attr",
+            None,
+            False,
+            "Attribute of fuzzresult to return. If not specified the whole object is returned.",
+        ),
     )
 
     default_parameter = "fn"
@@ -47,8 +52,26 @@ class autorize(BasePayload):
     def _gen_wfuzz(self, output_fn):
         try:
 
-            with open(self.find_file(output_fn), 'r') as f:
-                for url1, port1, schema1, req1, resp1, url2, port2, schema2, req2, resp2, url3, port3, schema3, req3, resp3, res1, res2 in [re.split(r'\t+', x) for x in f.readlines()]:
+            with open(self.find_file(output_fn), "r") as f:
+                for (
+                    url1,
+                    port1,
+                    schema1,
+                    req1,
+                    resp1,
+                    url2,
+                    port2,
+                    schema2,
+                    req2,
+                    resp2,
+                    url3,
+                    port3,
+                    schema3,
+                    req3,
+                    resp3,
+                    res1,
+                    res2,
+                ) in [re.split(r"\t+", x) for x in f.readlines()]:
                     raw_req1 = base64.decodestring(req2)
                     # raw_res1 = base64.decodestring(res2)
 

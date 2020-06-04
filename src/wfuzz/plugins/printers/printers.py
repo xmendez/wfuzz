@@ -72,14 +72,18 @@ class magictree(BasePrinter):
         self.node_service = self.__create_xml_element(node_port, "service", "http")
 
     def result(self, fuzz_result):
-        node_url = self.__create_xml_element(self.node_service, "url", str(fuzz_result.url))
+        node_url = self.__create_xml_element(
+            self.node_service, "url", str(fuzz_result.url)
+        )
 
-        if 'Server' in fuzz_result.history.headers.response:
-            self.__create_xml_element(node_url, "HTTPServer", fuzz_result.history.headers.response['Server'])
+        if "Server" in fuzz_result.history.headers.response:
+            self.__create_xml_element(
+                node_url, "HTTPServer", fuzz_result.history.headers.response["Server"]
+            )
 
         location = ""
-        if 'Location' in fuzz_result.history.headers.response:
-            location = fuzz_result.history.headers.response['Location']
+        if "Location" in fuzz_result.history.headers.response:
+            location = fuzz_result.history.headers.response["Location"]
 
         if fuzz_result.code == 301 or fuzz_result.code == 302 and location:
             self.__create_xml_element(node_url, "RedirectLocation", location)
@@ -94,7 +98,11 @@ class magictree(BasePrinter):
 @moduleman_plugin
 class html(BasePrinter):
     name = "html"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Prints results in html format"
     category = ["default"]
@@ -106,7 +114,10 @@ class html(BasePrinter):
     def header(self, summary):
         url = summary.url
 
-        self.f.write("<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border=\"1\">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n" % (url))
+        self.f.write(
+            '<html><head></head><body bgcolor=#000000 text=#FFFFFF><h1>Fuzzing %s</h1>\r\n<table border="1">\r\n<tr><td>#request</td><td>Code</td><td>#lines</td><td>#words</td><td>Url</td></tr>\r\n'
+            % (url)
+        )
 
     def result(self, fuzz_result):
         htmlc = "<font>"
@@ -121,11 +132,34 @@ class html(BasePrinter):
         if fuzz_result.history.method.lower() == "post":
             inputs = ""
             for n, v in list(fuzz_result.history.params.post.items()):
-                inputs += "<input type=\"hidden\" name=\"%s\" value=\"%s\">" % (n, v)
+                inputs += '<input type="hidden" name="%s" value="%s">' % (n, v)
 
-            self.f.write("\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method=\"post\" action=\"%s\">%s<input type=submit name=b value=\"send POST\"></form></td></tr></table></td>\r\n</tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.description, fuzz_result.url, inputs))
+            self.f.write(
+                '\r\n<tr><td>%05d</td>\r\n<td>%s%d</font></td>\r\n<td>%4dL</td>\r\n<td>%5dW</td>\r\n<td><table><tr><td>%s</td><td><form method="post" action="%s">%s<input type=submit name=b value="send POST"></form></td></tr></table></td>\r\n</tr>\r\n'
+                % (
+                    fuzz_result.nres,
+                    htmlc,
+                    fuzz_result.code,
+                    fuzz_result.lines,
+                    fuzz_result.words,
+                    fuzz_result.description,
+                    fuzz_result.url,
+                    inputs,
+                )
+            )
         else:
-            self.f.write("\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n" % (fuzz_result.nres, htmlc, fuzz_result.code, fuzz_result.lines, fuzz_result.words, fuzz_result.url, fuzz_result.url))
+            self.f.write(
+                "\r\n<tr><td>%05d</td><td>%s%d</font></td><td>%4dL</td><td>%5dW</td><td><a href=%s>%s</a></td></tr>\r\n"
+                % (
+                    fuzz_result.nres,
+                    htmlc,
+                    fuzz_result.code,
+                    fuzz_result.lines,
+                    fuzz_result.words,
+                    fuzz_result.url,
+                    fuzz_result.url,
+                )
+            )
 
     def footer(self, summary):
         self.f.write("</table></body></html><h5>Wfuzz by EdgeSecurity<h5>\r\n")
@@ -149,11 +183,11 @@ class json(BasePrinter):
 
     def result(self, res):
         server = ""
-        if 'Server' in res.history.headers.response:
-            server = res.history.headers.response['Server']
+        if "Server" in res.history.headers.response:
+            server = res.history.headers.response["Server"]
         location = ""
-        if 'Location' in res.history.headers.response:
-            location = res.history.headers.response['Location']
+        if "Location" in res.history.headers.response:
+            location = res.history.headers.response["Location"]
         elif res.history.url != res.history.redirect_url:
             location = "(*) %s" % res.history.url
         post_data = []
@@ -171,7 +205,7 @@ class json(BasePrinter):
             "post_data": post_data,
             "server": server,
             "url": res.url,
-            "words": res.words
+            "words": res.words,
         }
         self.json_res.append(res_entry)
 
@@ -200,34 +234,56 @@ class raw(BasePrinter):
             self.f.write("Total requests: <<unknown>>\n")
 
         if self.verbose:
-            self.f.write("==============================================================================================================================================\n")
-            self.f.write("ID    C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \n")
-            self.f.write("==============================================================================================================================================\n")
+            self.f.write(
+                "==============================================================================================================================================\n"
+            )
+            self.f.write(
+                "ID    C.Time   Response   Lines      Word         Chars                  Server                                             Redirect   Payload    \n"
+            )
+            self.f.write(
+                "==============================================================================================================================================\n"
+            )
         else:
-            self.f.write("==================================================================\n")
-            self.f.write("ID    Response   Lines      Word         Chars          Request    \n")
-            self.f.write("==================================================================\n")
+            self.f.write(
+                "==================================================================\n"
+            )
+            self.f.write(
+                "ID    Response   Lines      Word         Chars          Request    \n"
+            )
+            self.f.write(
+                "==================================================================\n"
+            )
 
     def _print_verbose(self, res):
         self.f.write("%05d:  " % res.nres)
         self.f.write("%.3fs   C=" % res.timer)
 
         location = ""
-        if 'Location' in res.history.headers.response:
-            location = res.history.headers.response['Location']
+        if "Location" in res.history.headers.response:
+            location = res.history.headers.response["Location"]
         elif res.history.url != res.history.redirect_url:
             location = "(*) %s" % res.history.url
 
         server = ""
-        if 'Server' in res.history.headers.response:
-            server = res.history.headers.response['Server']
+        if "Server" in res.history.headers.response:
+            server = res.history.headers.response["Server"]
 
         if res.exception:
             self.f.write("XXX")
         else:
             self.f.write("%05d:  C=%03d" % (res.nres, res.code))
 
-        self.f.write("   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   \"%s\"\n" % (res.lines, res.words, res.chars, server[:17], location[:48], res.description))
+        self.f.write(
+            '   %4d L\t   %5d W\t  %5d Ch  %20.20s  %51.51s   "%s"\n'
+            % (
+                res.lines,
+                res.words,
+                res.chars,
+                server[:17],
+                location[:48],
+                res.description,
+            )
+        )
 
         for i in res.plugins_res:
             self.f.write("  |_ %s\n" % i.issue)
@@ -238,7 +294,10 @@ class raw(BasePrinter):
         else:
             self.f.write("%05d:  C=%03d" % (res.nres, res.code))
 
-        self.f.write("   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"\n" % (res.lines, res.words, res.chars, res.description))
+        self.f.write(
+            '   %4d L\t   %5d W\t  %5d Ch\t  "%s"\n'
+            % (res.lines, res.words, res.chars, res.description)
+        )
 
         for i in res.plugins_res:
             self.f.write("  |_ %s\n" % i.issue)
@@ -254,17 +313,32 @@ class raw(BasePrinter):
         self.f.write("Total time: %s\n" % str(summary.totaltime)[:8])
 
         if summary.backfeed() > 0:
-            self.f.write("Processed Requests: %s (%d + %d)\n" % (str(summary.processed())[:8], (summary.processed() - summary.backfeed()), summary.backfeed()))
+            self.f.write(
+                "Processed Requests: %s (%d + %d)\n"
+                % (
+                    str(summary.processed())[:8],
+                    (summary.processed() - summary.backfeed()),
+                    summary.backfeed(),
+                )
+            )
         else:
             self.f.write("Processed Requests: %s\n" % (str(summary.processed())[:8]))
         self.f.write("Filtered Requests: %s\n" % (str(summary.filtered())[:8]))
-        self.f.write("Requests/sec.: %s\n" % str(summary.processed() / summary.totaltime if summary.totaltime > 0 else 0)[:8])
+        self.f.write(
+            "Requests/sec.: %s\n"
+            % str(
+                summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
+            )[:8]
+        )
 
 
 @moduleman_plugin
 class csv(BasePrinter):
     name = "csv"
-    author = ("@Yoginski initial version", "Adapted by @egilas to work in newer version of wfuzz")
+    author = (
+        "@Yoginski initial version",
+        "Adapted by @egilas to work in newer version of wfuzz",
+    )
     summary = "CSV printer ftw"
     version = "1.0"
     category = ["default"]
@@ -279,16 +353,20 @@ class csv(BasePrinter):
         self.csv_writer = csvmod.writer(self)
 
     def header(self, summary):
-        self._print_csv(["id", "response", "lines", "word", "chars", "request", "success"])
+        self._print_csv(
+            ["id", "response", "lines", "word", "chars", "request", "success"]
+        )
 
     def result(self, res):
-        line = [res.nres,
-                res.code,
-                res.lines,
-                res.words,
-                res.chars,
-                res.description,
-                0 if res.exception else 1]
+        line = [
+            res.nres,
+            res.code,
+            res.lines,
+            res.words,
+            res.chars,
+            res.description,
+            0 if res.exception else 1,
+        ]
         self._print_csv(line)
 
     def noresult(self, res):

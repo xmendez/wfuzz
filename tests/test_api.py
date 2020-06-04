@@ -50,38 +50,95 @@ class APITests(unittest.TestCase):
         # load plugins before mocking file object
         Facade().payloads
 
-        m = mock.MagicMock(name='open', spec=open)
+        m = mock.MagicMock(name="open", spec=open)
         m.return_value = mock_saved_session(["r.params.all"], True)
 
-        mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        mocked_fun = (
+            "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        )
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual(sorted('-'.join([res[0].description for res in payload_list]).split("\n")), sorted(['param=1', 'param2=2']))
+            payload_list = list(
+                wfuzz.payload(
+                    **{
+                        "show_field": True,
+                        "fields": ["r"],
+                        "payloads": [
+                            ("wfuzzp", {"default": "mockedfile", "encoder": None}, None)
+                        ],
+                    }
+                )
+            )
+            self.assertEqual(
+                sorted(
+                    "-".join([res[0].description for res in payload_list]).split("\n")
+                ),
+                sorted(["param=1", "param2=2"]),
+            )
 
-        m = mock.MagicMock(name='open', spec=open)
+        m = mock.MagicMock(name="open", spec=open)
         m.return_value = mock_saved_session(["url"], None)
 
-        mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        mocked_fun = (
+            "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        )
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual([res[0].description for res in payload_list], ['http://www.wfuzz.org/path?param=1&param2=2'])
+            payload_list = list(
+                wfuzz.payload(
+                    **{
+                        "show_field": True,
+                        "fields": ["r"],
+                        "payloads": [
+                            ("wfuzzp", {"default": "mockedfile", "encoder": None}, None)
+                        ],
+                    }
+                )
+            )
+            self.assertEqual(
+                [res[0].description for res in payload_list],
+                ["http://www.wfuzz.org/path?param=1&param2=2"],
+            )
 
-        m = mock.MagicMock(name='open', spec=open)
+        m = mock.MagicMock(name="open", spec=open)
         m.return_value = mock_saved_session(["r.scheme"], False)
 
-        mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        mocked_fun = (
+            "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        )
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'show_field': True, 'fields': ['r'], 'payloads': [('wfuzzp', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual([res[0].description for res in payload_list], ['http://www.wfuzz.org/path?param=1&param2=2 | http'])
+            payload_list = list(
+                wfuzz.payload(
+                    **{
+                        "show_field": True,
+                        "fields": ["r"],
+                        "payloads": [
+                            ("wfuzzp", {"default": "mockedfile", "encoder": None}, None)
+                        ],
+                    }
+                )
+            )
+            self.assertEqual(
+                [res[0].description for res in payload_list],
+                ["http://www.wfuzz.org/path?param=1&param2=2 | http"],
+            )
 
     def test_payload(self):
-        with mock.patch('os.walk') as mocked_oswalk:
+        with mock.patch("os.walk") as mocked_oswalk:
             mocked_oswalk.return_value = [
-                ('foo', ('bar',), ('baz',)),
-                ('foo/bar', (), ('spam', 'eggs')),
+                ("foo", ("bar",), ("baz",)),
+                ("foo/bar", (), ("spam", "eggs")),
             ]
-            payload_list = list(wfuzz.payload(**{'payloads': [('dirwalk', {'default': 'foo', 'encoder': None}, None)]}))
-            self.assertEqual(sorted(payload_list), sorted([('baz',), ('bar/spam',), ('bar/eggs',)]))
+            payload_list = list(
+                wfuzz.payload(
+                    **{
+                        "payloads": [
+                            ("dirwalk", {"default": "foo", "encoder": None}, None)
+                        ]
+                    }
+                )
+            )
+            self.assertEqual(
+                sorted(payload_list), sorted([("baz",), ("bar/spam",), ("bar/eggs",)])
+            )
 
         class mock_file(object):
             def __init__(self):
@@ -98,10 +155,20 @@ class APITests(unittest.TestCase):
 
             next = __next__  # for Python 2
 
-        m = mock.MagicMock(name='open', spec=open)
+        m = mock.MagicMock(name="open", spec=open)
         m.return_value = mock_file()
 
-        mocked_fun = "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        mocked_fun = (
+            "builtins.open" if sys.version_info >= (3, 0) else "__builtin__.open"
+        )
         with mock.patch(mocked_fun, m):
-            payload_list = list(wfuzz.payload(**{'payloads': [('file', {'default': 'mockedfile', 'encoder': None}, None)]}))
-            self.assertEqual(sorted(payload_list), sorted([('one',), ('two',)]))
+            payload_list = list(
+                wfuzz.payload(
+                    **{
+                        "payloads": [
+                            ("file", {"default": "mockedfile", "encoder": None}, None)
+                        ]
+                    }
+                )
+            )
+            self.assertEqual(sorted(payload_list), sorted([("one",), ("two",)]))

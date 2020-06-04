@@ -1,4 +1,3 @@
-
 class ReqRespException(Exception):
     FATAL, RESOLVE_PROXY, RESOLVE_HOST, CONNECT_HOST, SSL, TIMEOUT = list(range(6))
 

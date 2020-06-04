@@ -15,8 +15,7 @@ class stdin(BasePayload):
     category = ["default"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     default_parameter = ""
 

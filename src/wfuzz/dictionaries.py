@@ -1,6 +1,4 @@
-from .exception import (
-    FuzzExceptNoPluginError
-)
+from .exception import FuzzExceptNoPluginError
 from .facade import Facade
 from .filters.ppfilter import FuzzResFilterSlice
 from .fuzzobjects import FuzzWord, FuzzWordType
@@ -57,10 +55,15 @@ class EncodeIt(BaseDictionary):
     def encode(self, encoder_name, payload_word):
         plugin_list = Facade().encoders.get_plugins(encoder_name)
         if not plugin_list:
-            raise FuzzExceptNoPluginError(encoder_name + " encoder does not exists (-e encodings for a list of available encoders)")
+            raise FuzzExceptNoPluginError(
+                encoder_name
+                + " encoder does not exists (-e encodings for a list of available encoders)"
+            )
 
         for plugin_class in plugin_list:
-            yield FuzzWord(plugin_class().encode(payload_word.content), FuzzWordType.WORD)
+            yield FuzzWord(
+                plugin_class().encode(payload_word.content), FuzzWordType.WORD
+            )
 
     def next_word(self):
         return next(self.__generator)
@@ -73,7 +76,7 @@ class EncodeIt(BaseDictionary):
                 return
 
             for encoder_name in self.encoders:
-                if encoder_name.find('@') > 0:
+                if encoder_name.find("@") > 0:
                     yield self.concatenate(encoder_name, payload_word)
                 else:
                     for string in self.encode(encoder_name, payload_word):

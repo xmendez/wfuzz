@@ -31,7 +31,7 @@ try:
         Literal,
         QuotedString,
         ParseException,
-        Regex
+        Regex,
     )
 except ImportError:
     PYPARSING = False
@@ -44,26 +44,39 @@ class FuzzResFilter:
         self.filter_string = filter_string
         self.baseline = None
 
-        quoted_str_value = QuotedString('\'', unquoteResults=True, escChar='\\')
+        quoted_str_value = QuotedString("'", unquoteResults=True, escChar="\\")
         int_values = Word("0123456789").setParseAction(lambda s, l, t: [int(t[0])])
         error_value = Literal("XXX").setParseAction(self.__compute_xxx_value)
 
         operator_call = Regex(
             r"\|(?P<operator>(m|d|e|un|u|r|l|sw|gre|gregex|unique|startswith|decode|encode|unquote|replace|lower|upper))"
             r"\((?:(?P<param1>('.*?'|\d+))(?:,(?P<param2>('.*?'|\d+)))?)?\)",
-            asMatch=True
+            asMatch=True,
         ).setParseAction(lambda s, l, t: [(l, t[0])])
 
-        fuzz_symbol = Regex(r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self._compute_fuzz_symbol)
-        res_symbol = Regex(r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)").setParseAction(self._compute_res_symbol)
-        bbb_symbol = Regex(r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True).setParseAction(self.__compute_bbb_symbol)
+        fuzz_symbol = Regex(
+            r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
+        ).setParseAction(self._compute_fuzz_symbol)
+        res_symbol = Regex(
+            r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)"
+        ).setParseAction(self._compute_res_symbol)
+        bbb_symbol = Regex(
+            r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
+        ).setParseAction(self.__compute_bbb_symbol)
 
-        fuzz_statement = Group((fuzz_symbol | res_symbol | bbb_symbol | int_values | quoted_str_value) + Optional(operator_call, None)).setParseAction(self.__compute_res_value)
+        fuzz_statement = Group(
+            (fuzz_symbol | res_symbol | bbb_symbol | int_values | quoted_str_value)
+            + Optional(operator_call, None)
+        ).setParseAction(self.__compute_res_value)
 
         operator = oneOf("and or")
         not_operator = Optional(oneOf("not"), "notpresent")
 
-        symbol_expr = Group(fuzz_statement + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-") + (error_value | fuzz_statement)).setParseAction(self.__compute_expr)
+        symbol_expr = Group(
+            fuzz_statement
+            + oneOf("= == != < > >= <= =~ !~ ~ := =+ =-")
+            + (error_value | fuzz_statement)
+        ).setParseAction(self.__compute_expr)
 
         definition = symbol_expr ^ fuzz_statement
         definition_not = not_operator + definition
@@ -72,7 +85,9 @@ class FuzzResFilter:
         nested_definition = Group(Suppress("(") + definition_expr + Suppress(")"))
         nested_definition_not = not_operator + nested_definition
 
-        self.finalformula = (nested_definition_not | definition_expr) + ZeroOrMore(operator + (nested_definition_not | definition_expr))
+        self.finalformula = (nested_definition_not | definition_expr) + ZeroOrMore(
+            operator + (nested_definition_not | definition_expr)
+        )
 
         definition_not.setParseAction(self.__compute_not_operator)
         nested_definition_not.setParseAction(self.__compute_not_operator)
@@ -97,7 +112,9 @@ class FuzzResFilter:
         try:
             fuzz_val = self.res.payload_man.get_payload_content(p_index)
         except IndexError:
-            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+            raise FuzzExceptIncorrectFilter(
+                "Non existent FUZZ payload! Use a correct index."
+            )
 
         if match_dict["field"]:
             fuzz_val = self._get_field_value(fuzz_val, match_dict["field"])
@@ -111,7 +128,9 @@ class FuzzResFilter:
             location, operator_match = token_tuple
 
             if operator_match and operator_match.groupdict()["operator"]:
-                fuzz_val = self._get_operator_value(location, fuzz_val, operator_match.groupdict())
+                fuzz_val = self._get_operator_value(
+                    location, fuzz_val, operator_match.groupdict()
+                )
 
         return fuzz_val
 
@@ -119,7 +138,9 @@ class FuzzResFilter:
         try:
             return self.res.payload_man.get_payload_content(p_index)
         except IndexError:
-            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+            raise FuzzExceptIncorrectFilter(
+                "Non existent FUZZ payload! Use a correct index."
+            )
 
     def _get_field_value(self, fuzz_val, field):
         self.stack.append(field)
@@ -127,13 +148,21 @@ class FuzzResFilter:
         try:
             return rgetattr(fuzz_val, field)
         except IndexError:
-            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+            raise FuzzExceptIncorrectFilter(
+                "Non existent FUZZ payload! Use a correct index."
+            )
         except AttributeError as e:
-            raise FuzzExceptIncorrectFilter("Attribute {} not found in fuzzresult or using a string payload. {}".format(field, str(e)))
+            raise FuzzExceptIncorrectFilter(
+                "Attribute {} not found in fuzzresult or using a string payload. {}".format(
+                    field, str(e)
+                )
+            )
 
     def __compute_bbb_symbol(self, tokens):
         if self.baseline is None:
-            raise FuzzExceptBadOptions("FilterQ: specify a baseline value when using BBB")
+            raise FuzzExceptBadOptions(
+                "FilterQ: specify a baseline value when using BBB"
+            )
 
         match_dict = tokens[0].groupdict()
 
@@ -144,15 +173,15 @@ class FuzzResFilter:
         else:
             element = self.stack.pop() if self.stack else None
 
-            if element == 'l' or element == 'lines':
+            if element == "l" or element == "lines":
                 ret = self.baseline.lines
-            elif element == 'c' or element == 'code':
+            elif element == "c" or element == "code":
                 ret = self.baseline.code
-            elif element == 'w' or element == 'words':
+            elif element == "w" or element == "words":
                 ret = self.baseline.words
-            elif element == 'h' or element == 'chars':
+            elif element == "h" or element == "chars":
                 return self.baseline.chars
-            elif element == 'index' or element == 'i':
+            elif element == "index" or element == "i":
                 ret = self.baseline.nres
             else:
                 ret = self.baseline.payload_man.get_payload_content(1)
@@ -181,27 +210,31 @@ class FuzzResFilter:
             return fuzz_val.upper()
         elif op == "lower" or op == "l":
             return fuzz_val.lower()
-        elif op == 'gregex' or op == "gre":
+        elif op == "gregex" or op == "gre":
             search_res = None
             try:
                 regex = re.compile(param1)
                 search_res = regex.search(fuzz_val)
             except re.error as e:
-                raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
+                raise FuzzExceptBadOptions(
+                    "Invalid regex expression used in expression: %s" % str(e)
+                )
 
             if search_res is None:
-                return ''
+                return ""
             return search_res.group(1)
-        elif op == 'startswith' or op == "sw":
+        elif op == "startswith" or op == "sw":
             return fuzz_val.strip().startswith(param1)
-        elif op == 'unique' or op == "u":
+        elif op == "unique" or op == "u":
             if fuzz_val not in self._cache[location]:
                 self._cache[location].add(fuzz_val)
                 return True
             else:
                 return False
         else:
-            raise FuzzExceptBadOptions("Bad format, expression should be m,d,e,r,s(value,value)")
+            raise FuzzExceptBadOptions(
+                "Bad format, expression should be m,d,e,r,s(value,value)"
+            )
 
         return ret
 
@@ -214,7 +247,7 @@ class FuzzResFilter:
         field_to_set = self.stack.pop() if self.stack else None
 
         try:
-            if exp_operator in ["=", '==']:
+            if exp_operator in ["=", "=="]:
                 return str(leftvalue) == str(rightvalue)
             elif exp_operator == "<=":
                 return leftvalue <= rightvalue
@@ -237,9 +270,21 @@ class FuzzResFilter:
                 elif isinstance(leftvalue, list):
                     ret = value_in_any_list_item(rightvalue, leftvalue)
                 elif isinstance(leftvalue, dict) or isinstance(leftvalue, DotDict):
-                    return len({k: v for (k, v) in leftvalue.items() if rightvalue.lower() in k.lower() or value_in_any_list_item(rightvalue, v)}) > 0
+                    return (
+                        len(
+                            {
+                                k: v
+                                for (k, v) in leftvalue.items()
+                                if rightvalue.lower() in k.lower()
+                                or value_in_any_list_item(rightvalue, v)
+                            }
+                        )
+                        > 0
+                    )
                 else:
-                    raise FuzzExceptBadOptions("Invalid operand type {}".format(rightvalue))
+                    raise FuzzExceptBadOptions(
+                        "Invalid operand type {}".format(rightvalue)
+                    )
 
                 return ret if exp_operator == "~" else not ret
             elif exp_operator == ":=":
@@ -252,9 +297,13 @@ class FuzzResFilter:
                 else:
                     rsetattr(self.res, field_to_set, rightvalue, operator.sub)
         except re.error as e:
-            raise FuzzExceptBadOptions("Invalid regex expression used in expression: %s" % str(e))
+            raise FuzzExceptBadOptions(
+                "Invalid regex expression used in expression: %s" % str(e)
+            )
         except TypeError as e:
-            raise FuzzExceptBadOptions("Invalid operand types used in expression: %s" % str(e))
+            raise FuzzExceptBadOptions(
+                "Invalid operand types used in expression: %s" % str(e)
+            )
         except ParseException as e:
             raise FuzzExceptBadOptions("Invalid filter: %s" % str(e))
 
@@ -264,9 +313,9 @@ class FuzzResFilter:
         first = elements[0]
         for i in range(1, len(elements), 2):
             if elements[i] == "and":
-                first = (first and elements[i + 1])
+                first = first and elements[i + 1]
             elif elements[i] == "or":
-                first = (first or elements[i + 1])
+                first = first or elements[i + 1]
 
         self.stack = []
         return first
@@ -292,9 +341,14 @@ class FuzzResFilter:
         try:
             return self.finalformula.parseString(filter_string, parseAll=True)[0]
         except ParseException as e:
-            raise FuzzExceptIncorrectFilter("Incorrect filter expression, check documentation. {}".format(str(e)))
+            raise FuzzExceptIncorrectFilter(
+                "Incorrect filter expression, check documentation. {}".format(str(e))
+            )
         except AttributeError as e:
-            raise FuzzExceptIncorrectFilter("It is only possible to use advanced filters when using a non-string payload. %s" % str(e))
+            raise FuzzExceptIncorrectFilter(
+                "It is only possible to use advanced filters when using a non-string payload. %s"
+                % str(e)
+            )
 
     def get_fuzz_words(self):
         fuzz_words = self.FUZZ_MARKER_REGEX.findall(self.filter_string)
@@ -310,7 +364,9 @@ class FuzzResFilterSlice(FuzzResFilter):
         p_index = match_dict["index"] if match_dict["index"] is not None else 1
 
         if p_index != 1:
-            raise FuzzExceptIncorrectFilter("Non existent FUZZ payload! Use a correct index.")
+            raise FuzzExceptIncorrectFilter(
+                "Non existent FUZZ payload! Use a correct index."
+            )
 
         fuzz_val = self.res
 

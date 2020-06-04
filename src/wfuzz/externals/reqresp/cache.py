@@ -6,7 +6,7 @@ class HttpCache:
         # cache control
         self.__cache_map = defaultdict(list)
 
-    def update_cache(self, req, category='default'):
+    def update_cache(self, req, category="default"):
         key = req.to_cache_key()
 
         # first hit
@@ -19,7 +19,7 @@ class HttpCache:
 
         return False
 
-    def msg_in_cache(self, req, category='default'):
+    def msg_in_cache(self, req, category="default"):
         key = req.to_cache_key()
 
         return key in self.__cache_map and category in self.__cache_map[key]

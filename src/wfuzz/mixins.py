@@ -3,6 +3,7 @@ from .exception import FuzzExceptBadInstall
 
 # python 2 and 3
 import sys
+
 if sys.version_info >= (3, 0):
     from urllib.parse import urljoin, urlparse
 else:
@@ -16,7 +17,7 @@ class FuzzRequestSoupMixing(object):
         except ImportError:
             raise FuzzExceptBadInstall("You need to install beautifulsoup4 first!")
 
-        soup = BeautifulSoup(self.content, 'html.parser')
+        soup = BeautifulSoup(self.content, "html.parser")
 
         return soup
 
@@ -37,7 +38,7 @@ class FuzzRequestUrlMixing(object):
 
     @property
     def is_path(self):
-        if self.recursive_url and self.recursive_url[-1] == '/':
+        if self.recursive_url and self.recursive_url[-1] == "/":
             return True
 
         return False
@@ -50,7 +51,7 @@ class FuzzRequestUrlMixing(object):
 
             if not location_parsed_url.scheme and not location_parsed_url.netloc:
                 return urljoin(self.url, location_url)
-        elif self.code in [200, 401] and self.url[-1] == '/':
+        elif self.code in [200, 401] and self.url[-1] == "/":
             return self.url
 
         return None

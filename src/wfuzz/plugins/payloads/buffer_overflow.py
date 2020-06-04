@@ -13,16 +13,14 @@ class buffer_overflow(BasePayload):
     category = ["default"]
     priority = 99
 
-    parameters = (
-        ("size", "", True, "Size of the overflow string."),
-    )
+    parameters = (("size", "", True, "Size of the overflow string."),)
 
     default_parameter = "size"
 
     def __init__(self, params):
         BasePayload.__init__(self, params)
 
-        self.bov_list = ['A' * int(self.params["size"])]
+        self.bov_list = ["A" * int(self.params["size"])]
         self.current = 0
 
     def count(self):

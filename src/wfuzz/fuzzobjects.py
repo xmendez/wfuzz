@@ -5,10 +5,7 @@ import itertools
 from enum import Enum
 
 from threading import Lock
-from collections import (
-    defaultdict,
-    namedtuple
-)
+from collections import defaultdict, namedtuple
 
 from .filters.ppfilter import FuzzResFilter
 from .facade import ERROR_CODE
@@ -18,7 +15,7 @@ from .helpers.obj_dyn import rgetattr
 from .helpers.utils import MyCounter
 
 
-FuzzWord = namedtuple('FuzzWord', ['content', 'type'])
+FuzzWord = namedtuple("FuzzWord", ["content", "type"])
 
 
 class FuzzWordType(Enum):
@@ -26,7 +23,17 @@ class FuzzWordType(Enum):
 
 
 class FuzzType(Enum):
-    SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, DISCARDED, PLUGIN = range(9)
+    (
+        SEED,
+        BACKFEED,
+        RESULT,
+        ERROR,
+        STARTSEED,
+        ENDSEED,
+        CANCEL,
+        DISCARDED,
+        PLUGIN,
+    ) = range(9)
 
 
 class FuzzItem(object):
@@ -91,14 +98,11 @@ class FuzzStats:
         return {
             "url": self.url,
             "total": self.total_req,
-
             "backfed": self.backfeed(),
             "Processed": self.processed(),
             "Pending": self.pending_fuzz(),
             "filtered": self.filtered(),
-
             "Pending_seeds": self.pending_seeds(),
-
             "totaltime": self._totaltime,
         }
 
@@ -126,11 +130,18 @@ class FuzzStats:
         string += "Total time: %s\n" % str(self.totaltime)[:8]
 
         if self.backfeed() > 0:
-            string += "Processed Requests: %s (%d + %d)\n" % (str(self.processed())[:8], (self.processed() - self.backfeed()), self.backfeed())
+            string += "Processed Requests: %s (%d + %d)\n" % (
+                str(self.processed())[:8],
+                (self.processed() - self.backfeed()),
+                self.backfeed(),
+            )
         else:
             string += "Processed Requests: %s\n" % (str(self.processed())[:8])
         string += "Filtered Requests: %s\n" % (str(self.filtered())[:8])
-        string += "Requests/sec.: %s\n" % str(self.processed() / self.totaltime if self.totaltime > 0 else 0)[:8]
+        string += (
+            "Requests/sec.: %s\n"
+            % str(self.processed() / self.totaltime if self.totaltime > 0 else 0)[:8]
+        )
 
         return string
 
@@ -146,7 +157,7 @@ class FuzzStats:
         self.pending_seeds._operation(fuzzstats2.pending_seeds())
 
 
-class FuzzPayload():
+class FuzzPayload:
     def __init__(self):
         self.marker = None
         self.word = None
@@ -160,7 +171,11 @@ class FuzzPayload():
     def value(self):
         if self.content is None:
             return None
-        return self.content if self.field is None else str(rgetattr(self.content, self.field))
+        return (
+            self.content
+            if self.field is None
+            else str(rgetattr(self.content, self.field))
+        )
 
     def description(self, default):
         if self.is_baseline:
@@ -177,10 +192,17 @@ class FuzzPayload():
         return self.value
 
     def __str__(self):
-        return "type: {} index: {} marker: {} content: {} field: {} value: {}".format(self.type, self.index, self.marker, self.content.__class__, self.field, self.value)
+        return "type: {} index: {} marker: {} content: {} field: {} value: {}".format(
+            self.type,
+            self.index,
+            self.marker,
+            self.content.__class__,
+            self.field,
+            self.value,
+        )
 
 
-class FPayloadManager():
+class FPayloadManager:
     def __init__(self):
         self.payloads = defaultdict(list)
 
@@ -188,7 +210,9 @@ class FPayloadManager():
         fp = FuzzPayload()
         fp.marker = payload_dict["full_marker"]
         fp.word = payload_dict["word"]
-        fp.index = int(payload_dict["index"]) if payload_dict["index"] is not None else 1
+        fp.index = (
+            int(payload_dict["index"]) if payload_dict["index"] is not None else 1
+        )
         fp.field = payload_dict["field"]
         fp.content = fuzzword.content if fuzzword else None
         fp.type = fuzzword.type if fuzzword else None
@@ -205,12 +229,10 @@ class FPayloadManager():
 
             # payload generated not used in seed but in filters
             if fuzz_payload is None:
-                self.add({
-                    "full_marker": None,
-                    "word": None,
-                    "index": index,
-                    "field": None
-                }, dictio_item[index - 1])
+                self.add(
+                    {"full_marker": None, "word": None, "index": index, "field": None},
+                    dictio_item[index - 1],
+                )
 
     def get_fuzz_words(self):
         return [payload.word for payload in self.get_payloads()]
@@ -230,13 +252,15 @@ class FPayloadManager():
                 yield elem
 
     def description(self):
-        payl_descriptions = [payload.description("url") for payload in self.get_payloads()]
-        ret_str = ' - '.join([p_des for p_des in payl_descriptions if p_des])
+        payl_descriptions = [
+            payload.description("url") for payload in self.get_payloads()
+        ]
+        ret_str = " - ".join([p_des for p_des in payl_descriptions if p_des])
 
         return ret_str
 
     def __str__(self):
-        return '\n'.join([str(payload) for payload in self.get_payloads()])
+        return "\n".join([str(payload) for payload in self.get_payloads()])
 
 
 class FuzzError(FuzzItem):
@@ -299,7 +323,14 @@ class FuzzResult(FuzzItem):
         return self
 
     def __str__(self):
-        res = "%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  \"%s\"" % (self.nres, self.code, self.lines, self.words, self.chars, self.description)
+        res = '%05d:  C=%03d   %4d L\t   %5d W\t  %5d Ch\t  "%s"' % (
+            self.nres,
+            self.code,
+            self.lines,
+            self.words,
+            self.chars,
+            self.description,
+        )
         for plugin in self.plugins_res:
             res += "\n  |_ %s" % plugin.issue
 
@@ -307,7 +338,9 @@ class FuzzResult(FuzzItem):
 
     @property
     def description(self):
-        res_description = self.payload_man.description() if self.payload_man else self.url
+        res_description = (
+            self.payload_man.description() if self.payload_man else self.url
+        )
         ret_str = ""
 
         if self._show_field is True:
@@ -348,7 +381,7 @@ class FuzzResult(FuzzItem):
         if self.history and self.history.code >= 0 and not self.exception:
             return int(self.history.code)
         # elif not self.history.code:
-            # return 0
+        # return 0
         else:
             return ERROR_CODE
 
@@ -359,8 +392,8 @@ class FuzzResult(FuzzItem):
     # factory methods
 
     def update_from_options(self, options):
-        self._fields = options['fields']
-        self._show_field = options['show_field']
+        self._fields = options["fields"]
+        self._show_field = options["show_field"]
 
 
 class FuzzPlugin(FuzzItem):

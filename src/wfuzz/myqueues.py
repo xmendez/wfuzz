@@ -95,7 +95,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
             item.item_type = FuzzType.DISCARDED
             self.send(item)
         else:
-            raise FuzzExceptInternalError(FuzzException.FATAL, "Only results can be discarded")
+            raise FuzzExceptInternalError(
+                FuzzException.FATAL, "Only results can be discarded"
+            )
 
     def join(self):
         MyPriorityQueue.join(self)
@@ -322,7 +324,7 @@ class QueueManager:
             for k, q in list(self._queues.items()):
                 q.join()
                 if remove:
-                    del(self._queues[k])
+                    del self._queues[k]
 
     def start(self):
         with self._mutex:
