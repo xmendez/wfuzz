@@ -20,8 +20,7 @@ class screenshot(BasePlugin):
     category = ["tools", "active"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -35,5 +34,11 @@ class screenshot(BasePlugin):
 
         filename = os.path.join(defult_tmp_dir, temp_name + ".png")
 
-        subprocess.call(['cutycapt', '--url=%s' % pipes.quote(fuzzresult.url), '--out=%s' % filename])
+        subprocess.call(
+            [
+                "cutycapt",
+                "--url=%s" % pipes.quote(fuzzresult.url),
+                "--out=%s" % filename,
+            ]
+        )
         self.add_result("Screnshot taken, output at %s" % filename)

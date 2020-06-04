@@ -40,7 +40,7 @@ import pytest
             True,
         ),
     ],
-    indirect=["fuzzres_from_url"]
+    indirect=["fuzzres_from_url"],
 )
 def test_urlp(filter_obj, fuzzres_from_url, filter_string, expected_result):
     assert filter_obj.is_visible(fuzzres_from_url, filter_string) == expected_result
@@ -48,14 +48,8 @@ def test_urlp(filter_obj, fuzzres_from_url, filter_string, expected_result):
 
 @pytest.mark.parametrize(
     "fuzzres_from_url, filter_string, expected_result",
-    [
-        (
-            "http://www.wfuzz.org/path?param=1&param2=2",
-            "r.is_path",
-            False,
-        ),
-    ],
-    indirect=["fuzzres_from_url"]
+    [("http://www.wfuzz.org/path?param=1&param2=2", "r.is_path", False)],
+    indirect=["fuzzres_from_url"],
 )
 def test_ispath(filter_obj, fuzzres_from_url, filter_string, expected_result):
     assert filter_obj.is_visible(fuzzres_from_url, filter_string) == expected_result
@@ -67,10 +61,10 @@ def test_ispath(filter_obj, fuzzres_from_url, filter_string, expected_result):
         (
             "http://www.wfuzz.org/path?param=1&param2=2",
             "r.pstrip",
-            "http://www.wfuzz.org/path-gparam-gparam2"
+            "http://www.wfuzz.org/path-gparam-gparam2",
         ),
     ],
-    indirect=["fuzzres_from_url"]
+    indirect=["fuzzres_from_url"],
 )
 def test_pstrip(filter_obj, fuzzres_from_url, filter_string, expected_result):
     assert filter_obj.is_visible(fuzzres_from_url, filter_string) == expected_result

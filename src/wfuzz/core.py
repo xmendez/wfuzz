@@ -16,7 +16,7 @@ from .fuzzqueues import (
     AllVarQ,
     CLIPrinterQ,
     ConsolePrinterQ,
-    PassPayloadQ
+    PassPayloadQ,
 )
 
 
@@ -38,9 +38,11 @@ class Fuzzer(object):
         else:
             self.qmanager.add("seed_queue", SeedQ(options))
 
-        for prefilter_idx, prefilter in enumerate(options.get('compiled_prefilter')):
+        for prefilter_idx, prefilter in enumerate(options.get("compiled_prefilter")):
             if prefilter.is_active():
-                self.qmanager.add("slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter))
+                self.qmanager.add(
+                    "slice_queue_{}".format(prefilter_idx), SliceQ(options, prefilter)
+                )
 
         if options.get("transport") == "dryrun":
             self.qmanager.add("transport_queue", DryRunQ(options))
@@ -60,25 +62,30 @@ class Fuzzer(object):
                 options,
                 {
                     FuzzType.SEED: self.qmanager["seed_queue"],
-                    FuzzType.BACKFEED: self.qmanager["transport_queue"]
-                }
+                    FuzzType.BACKFEED: self.qmanager["transport_queue"],
+                },
             )
 
             self.qmanager.add("routing_queue", rq)
 
-        if options.get('compiled_filter').is_active():
-            self.qmanager.add("filter_queue", FilterQ(options, options["compiled_filter"]))
+        if options.get("compiled_filter").is_active():
+            self.qmanager.add(
+                "filter_queue", FilterQ(options, options["compiled_filter"])
+            )
 
-        if options.get('compiled_simple_filter').is_active():
-            self.qmanager.add("simple_filter_queue", FilterQ(options, options["compiled_simple_filter"]))
+        if options.get("compiled_simple_filter").is_active():
+            self.qmanager.add(
+                "simple_filter_queue",
+                FilterQ(options, options["compiled_simple_filter"]),
+            )
 
-        if options.get('save'):
+        if options.get("save"):
             self.qmanager.add("save_queue", SaveQ(options))
 
-        if options.get('compiled_printer'):
+        if options.get("compiled_printer"):
             self.qmanager.add("printer_queue", PrinterQ(options))
 
-        if options.get('exec_mode') == "cli":
+        if options.get("exec_mode") == "cli":
             if options["console_printer"]:
                 self.qmanager.add("printer_cli", ConsolePrinterQ(options))
             else:
@@ -106,7 +113,11 @@ class Fuzzer(object):
         return res
 
     def stats(self):
-        return dict(list(self.qmanager.get_stats().items()) + list(self.qmanager["transport_queue"].job_stats().items()) + list(self.options.stats.get_stats().items()))
+        return dict(
+            list(self.qmanager.get_stats().items())
+            + list(self.qmanager["transport_queue"].job_stats().items())
+            + list(self.options.stats.get_stats().items())
+        )
 
     def cancel_job(self):
         self.qmanager.cancel()

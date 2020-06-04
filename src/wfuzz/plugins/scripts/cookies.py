@@ -8,12 +8,11 @@ class cookies(BasePlugin):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     summary = "Looks for new cookies"
-    description = ("Looks for new cookies", )
+    description = ("Looks for new cookies",)
     category = ["verbose", "passive"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -27,6 +26,10 @@ class cookies(BasePlugin):
         if len(new_cookies) > 0:
             for name, value in new_cookies:
 
-                if name != "" and "cookie" not in self.kbase or name not in self.kbase["cookie"]:
+                if (
+                    name != ""
+                    and "cookie" not in self.kbase
+                    or name not in self.kbase["cookie"]
+                ):
                     self.kbase["cookie"] = name
                     self.add_result("Cookie first set - %s=%s" % (name, value))

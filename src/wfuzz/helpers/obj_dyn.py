@@ -16,22 +16,18 @@ allowed_fields = [
     "c",
     "history",
     "plugins",
-
     "url",
     "content",
-
     "history.url",
     "history.method",
     "history.scheme",
     "history.host",
     "history.content",
-    "history.raw_content"
-    "history.is_path",
+    "history.raw_content" "history.is_path",
     "history.pstrip",
     "history.cookies",
     "history.headers",
     "history.params",
-
     "r",
     "r.reqtime",
     "r.url",
@@ -39,8 +35,7 @@ allowed_fields = [
     "r.scheme",
     "r.host",
     "r.content",
-    "r.raw_content"
-    "r.is_path",
+    "r.raw_content" "r.is_path",
     "r.pstrip",
     "r.cookies.",
     "r.headers.",
@@ -56,11 +51,11 @@ def _check_allowed_field(attr):
 
 def _get_alias(attr):
     attr_alias = {
-        'l': 'lines',
-        'h': 'chars',
-        'w': 'words',
-        'c': 'code',
-        'r': 'history',
+        "l": "lines",
+        "h": "chars",
+        "w": "words",
+        "c": "code",
+        "r": "history",
     }
 
     if attr in attr_alias:
@@ -73,12 +68,12 @@ def rsetattr(obj, attr, new_val, operation):
     # if not _check_allowed_field(attr):
     #    raise AttributeError("Unknown field {}".format(attr))
 
-    pre, _, post = attr.rpartition('.')
+    pre, _, post = attr.rpartition(".")
 
     pre_post = None
-    if len(attr.split('.')) > 3:
+    if len(attr.split(".")) > 3:
         pre_post = post
-        pre, _, post = pre.rpartition('.')
+        pre, _, post = pre.rpartition(".")
 
     post = _get_alias(post)
 
@@ -98,7 +93,11 @@ def rsetattr(obj, attr, new_val, operation):
 
         return setattr(obj_to_set, post, val)
     except AttributeError:
-        raise AttributeError("rsetattr: Can't set '{}' attribute of {}.".format(post, obj_to_set.__class__))
+        raise AttributeError(
+            "rsetattr: Can't set '{}' attribute of {}.".format(
+                post, obj_to_set.__class__
+            )
+        )
 
 
 def rgetattr(obj, attr, *args):
@@ -107,9 +106,13 @@ def rgetattr(obj, attr, *args):
         try:
             return getattr(obj, attr, *args)
         except AttributeError:
-            raise AttributeError("rgetattr: Can't get '{}' attribute from '{}'.".format(attr, obj.__class__))
+            raise AttributeError(
+                "rgetattr: Can't get '{}' attribute from '{}'.".format(
+                    attr, obj.__class__
+                )
+            )
 
     # if not _check_allowed_field(attr):
-        # raise AttributeError("Unknown field {}".format(attr))
+    # raise AttributeError("Unknown field {}".format(attr))
 
-    return functools.reduce(_getattr, [obj] + attr.split('.'))
+    return functools.reduce(_getattr, [obj] + attr.split("."))

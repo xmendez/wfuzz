@@ -1,5 +1,6 @@
 from .modulefilter import Filter
 from collections import defaultdict
+
 try:
     from collections.abc import MutableMapping
 except ImportError:
@@ -7,7 +8,7 @@ except ImportError:
 from threading import Lock
 
 
-class IRegistrant():
+class IRegistrant:
     def __init__(self, loader, plg_filter):
         self.plg_filter = plg_filter
         self.loader = loader
@@ -119,14 +120,21 @@ class BRegistrant(IRegistrant):
         if identifier in self.__plugins:
             return self.__plugins[identifier]
         else:
-            plugin_list = [plg for plg_id, plg in self.__get_plugins("$all$", True) if identifier in plg_id]
+            plugin_list = [
+                plg
+                for plg_id, plg in self.__get_plugins("$all$", True)
+                if identifier in plg_id
+            ]
 
             if not plugin_list:
                 raise KeyError("No plugins found!")
             elif len(plugin_list) == 1:
                 return plugin_list[0]
             else:
-                raise KeyError("Multiple plugins found: %s" % ','.join([plg.name for plg in plugin_list]))
+                raise KeyError(
+                    "Multiple plugins found: %s"
+                    % ",".join([plg.name for plg in plugin_list])
+                )
 
         raise KeyError("No plugins found!")
 
@@ -134,10 +142,18 @@ class BRegistrant(IRegistrant):
         return [plg for plg_id, plg in self.__get_plugins(category, sorting)]
 
     def get_plugins_ext(self, category="$all$", sorting="true"):
-        plugin_list = [['Id', 'Priority', 'Category', 'Name', 'Summary']]
+        plugin_list = [["Id", "Priority", "Category", "Name", "Summary"]]
 
         for plg_id, plg in self.__get_plugins(category, sorting):
-            plugin_list.append([plg_id, str(plg.priority), ', '.join(plg.category), str(plg.name), str(plg.summary)])
+            plugin_list.append(
+                [
+                    plg_id,
+                    str(plg.priority),
+                    ", ".join(plg.category),
+                    str(plg.name),
+                    str(plg.summary),
+                ]
+            )
 
         return plugin_list
 

@@ -33,7 +33,10 @@ def main():
             try:
                 kb = KeyPress()
             except ImportError as e:
-                raise FuzzExceptBadInstall("Error importing necessary modules for interactive mode: %s" % str(e))
+                raise FuzzExceptBadInstall(
+                    "Error importing necessary modules for interactive mode: %s"
+                    % str(e)
+                )
             else:
                 Controller(fz, kb)
                 kb.start()
@@ -47,7 +50,9 @@ def main():
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
-        warnings.warn("Fatal exception: Error importing wfuzz extensions: {}".format(str(e)))
+        warnings.warn(
+            "Fatal exception: Error importing wfuzz extensions: {}".format(str(e))
+        )
     except Exception as e:
         warnings.warn("Unhandled exception: {}".format(str(e)))
     finally:
@@ -67,7 +72,32 @@ def main_filter():
 
     try:
         short_opts = "hvce:z:f:w:o:"
-        long_opts = ['efield=', 'ee=', 'zE=', 'zD=', 'field=', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'prefilter=', 'filter=', 'help', 'version']
+        long_opts = [
+            "efield=",
+            "ee=",
+            "zE=",
+            "zD=",
+            "field=",
+            "slice=",
+            "zP=",
+            "oF=",
+            "recipe=",
+            "dump-recipe=",
+            "sc=",
+            "sh=",
+            "sl=",
+            "sw=",
+            "ss=",
+            "hc=",
+            "hh=",
+            "hl=",
+            "hw=",
+            "hs=",
+            "prefilter=",
+            "filter=",
+            "help",
+            "version",
+        ]
         session_options = CLParser(
             sys.argv,
             short_opts,
@@ -75,21 +105,24 @@ def main_filter():
             help_banner2,
             wfpayload_usage,
             wfpayload_usage,
-            wfpayload_usage
+            wfpayload_usage,
         ).parse_cl()
-        session_options['transport'] = 'payload'
-        session_options['url'] = 'FUZZ'
+        session_options["transport"] = "payload"
+        session_options["url"] = "FUZZ"
 
         session_options.compile_dictio()
-        payload_type = session_options['compiled_dictio'].payloads()[0].get_type()
+        payload_type = session_options["compiled_dictio"].payloads()[0].get_type()
 
-        if payload_type == FuzzWordType.FUZZRES and session_options['show_field'] is not True:
-            session_options['exec_mode'] = "cli"
+        if (
+            payload_type == FuzzWordType.FUZZRES
+            and session_options["show_field"] is not True
+        ):
+            session_options["exec_mode"] = "cli"
 
         for res in fuzz(**session_options):
             if payload_type == FuzzWordType.WORD:
                 print(res.description)
-            elif payload_type == FuzzWordType.FUZZRES and session_options['show_field']:
+            elif payload_type == FuzzWordType.FUZZRES and session_options["show_field"]:
                 print(res._field())
 
     except KeyboardInterrupt:
@@ -134,10 +167,16 @@ def main_encoder():
                 sys.exit()
     except IndexError as e:
         usage()
-        warnings.warn("\nFatal exception: Specify a string to encode or decode.{}\n".format(str(e)))
+        warnings.warn(
+            "\nFatal exception: Specify a string to encode or decode.{}\n".format(
+                str(e)
+            )
+        )
         sys.exit()
     except AttributeError as e:
-        warnings.warn("\nEncoder plugin missing encode or decode functionality. {}".format(str(e)))
+        warnings.warn(
+            "\nEncoder plugin missing encode or decode functionality. {}".format(str(e))
+        )
     except FuzzException as e:
         warnings.warn(("\nFatal exception: %s" % str(e)))
 

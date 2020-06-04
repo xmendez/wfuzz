@@ -22,8 +22,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
     category = ["active", "discovery"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -54,13 +53,17 @@ class links(BasePlugin, DiscoveryPluginMixin):
             for i in r.findall(fuzzresult.history.content):
                 parsed_link = parse_url(i)
 
-                if (not parsed_link.scheme or parsed_link.scheme == "http" or parsed_link.scheme == "https") and (not parsed_link.netloc and parsed_link.path):
+                if (
+                    not parsed_link.scheme
+                    or parsed_link.scheme == "http"
+                    or parsed_link.scheme == "https"
+                ) and (not parsed_link.netloc and parsed_link.path):
                     if i not in list_links:
                         list_links.append(i)
 
                         # dir path
                         split_path = parsed_link.path.split("/")
-                        newpath = '/'.join(split_path[:-1]) + "/"
+                        newpath = "/".join(split_path[:-1]) + "/"
                         self.queue_url(urljoin(fuzzresult.url, newpath))
 
                         # file path

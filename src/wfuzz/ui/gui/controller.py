@@ -29,6 +29,7 @@ class WfuzzInterpreter:
 
     def do_wfilter(self, cmd):
         from wfuzz.core import dictionary
+
         try:
             session_options = CLParser(cmd).parse_cl()
         except SystemExit:
@@ -62,7 +63,9 @@ class WfuzzInterpreter:
     def do_tab(self, cmd):
         data = Facade().data[cmd[1]] = []
         model = GUIModel(data)
-        pub.sendMessage("create_tab", name=cmd[1], model=model, interp=WfuzzInterpreter(model))
+        pub.sendMessage(
+            "create_tab", name=cmd[1], model=model, interp=WfuzzInterpreter(model)
+        )
 
 
 class GUIController:

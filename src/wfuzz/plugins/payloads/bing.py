@@ -10,9 +10,9 @@ class bing(BasePayload):
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.2"
     description = (
-        "intitle:\"JBoss JMX Management Console\"",
+        'intitle:"JBoss JMX Management Console"',
         "Some examples of bing hacking:",
-        "http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html"
+        "http://www.elladodelmal.com/2010/02/un-poco-de-bing-hacking-i-de-iii.html",
     )
 
     summary = "Returns URL results of a given bing API search (needs api key)."

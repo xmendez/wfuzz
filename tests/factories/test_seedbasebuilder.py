@@ -12,17 +12,19 @@ from wfuzz.factories.fuzzfactory import SeedBuilderHelper
                 "Host: www.wfuzz.org\n"
                 "Content-Type: application/x-www-form-urlencoded\n"
                 "User-Agent: Wfuzz/2.1\n",
-                None
+                None,
             ),
-            [{
-                'bl_value': None,
-                'field': None,
-                'full_bl': None,
-                'full_marker': 'FUZZ',
-                'index': None,
-                'nonfuzz_marker': '',
-                'word': 'FUZZ'
-            }]
+            [
+                {
+                    "bl_value": None,
+                    "field": None,
+                    "full_bl": None,
+                    "full_marker": "FUZZ",
+                    "index": None,
+                    "nonfuzz_marker": "",
+                    "word": "FUZZ",
+                }
+            ],
         ),
         (
             (
@@ -30,17 +32,19 @@ from wfuzz.factories.fuzzfactory import SeedBuilderHelper
                 "Host: www.wfuzz.org\n"
                 "Content-Type: application/x-www-form-urlencoded\n"
                 "User-Agent: Wfuzz/2.1\n",
-                None
+                None,
             ),
-            [{
-                'bl_value': 'a_bl_value',
-                'field': None,
-                'full_bl': '{a_bl_value}',
-                'full_marker': 'FUZZ{a_bl_value}',
-                'index': None,
-                'nonfuzz_marker': '{a_bl_value}',
-                'word': 'FUZZ'
-            }]
+            [
+                {
+                    "bl_value": "a_bl_value",
+                    "field": None,
+                    "full_bl": "{a_bl_value}",
+                    "full_marker": "FUZZ{a_bl_value}",
+                    "index": None,
+                    "nonfuzz_marker": "{a_bl_value}",
+                    "word": "FUZZ",
+                }
+            ],
         ),
         (
             (
@@ -48,17 +52,19 @@ from wfuzz.factories.fuzzfactory import SeedBuilderHelper
                 "Host: www.wfuzz.org\n"
                 "Content-Type: application/x-www-form-urlencoded\n"
                 "User-Agent: Wfuzz/2.1\n",
-                None
+                None,
             ),
-            [{
-                'bl_value': None,
-                'field': 'url',
-                'full_bl': None,
-                'full_marker': 'FUZZ[url]',
-                'index': None,
-                'nonfuzz_marker': '[url]',
-                'word': 'FUZZ'
-            }]
+            [
+                {
+                    "bl_value": None,
+                    "field": "url",
+                    "full_bl": None,
+                    "full_marker": "FUZZ[url]",
+                    "index": None,
+                    "nonfuzz_marker": "[url]",
+                    "word": "FUZZ",
+                }
+            ],
         ),
         (
             (
@@ -66,31 +72,31 @@ from wfuzz.factories.fuzzfactory import SeedBuilderHelper
                 "Host: www.wfuzz.org\n"
                 "Content-Type: application/x-www-form-urlencoded\n"
                 "User-Agent: Wfuzz/2.1\n",
-                None
+                None,
             ),
             [
                 {
-                    'bl_value': None,
-                    'field': None,
-                    'full_bl': None,
-                    'full_marker': 'FUZZ',
-                    'index': None,
-                    'nonfuzz_marker': '',
-                    'word': 'FUZZ'
+                    "bl_value": None,
+                    "field": None,
+                    "full_bl": None,
+                    "full_marker": "FUZZ",
+                    "index": None,
+                    "nonfuzz_marker": "",
+                    "word": "FUZZ",
                 },
                 {
-                    'bl_value': None,
-                    'field': 'url',
-                    'full_bl': None,
-                    'full_marker': 'FUZ2Z[url]',
-                    'index': '2',
-                    'nonfuzz_marker': '[url]',
-                    'word': 'FUZ2Z'
-                }
-            ]
+                    "bl_value": None,
+                    "field": "url",
+                    "full_bl": None,
+                    "full_marker": "FUZ2Z[url]",
+                    "index": "2",
+                    "nonfuzz_marker": "[url]",
+                    "word": "FUZ2Z",
+                },
+            ],
         ),
     ],
-    indirect=["full_fuzzreq"]
+    indirect=["full_fuzzreq"],
 )
 def test_get_marker_dict(full_fuzzreq, expected_result):
     assert SeedBuilderHelper().get_marker_dict(full_fuzzreq) == expected_result

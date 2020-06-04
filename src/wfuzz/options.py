@@ -38,7 +38,20 @@ import json
 class FuzzSession(UserDict):
     def __init__(self, **kwargs):
         self.data = self._defaults()
-        self.keys_not_to_dump = ["interactive", "recipe", "seed_payload", "compiled_stats", "compiled_dictio", "compiled_simple_filter", "compiled_filter", "compiled_prefilter", "compiled_printer", "description", "show_field", "transport"]
+        self.keys_not_to_dump = [
+            "interactive",
+            "recipe",
+            "seed_payload",
+            "compiled_stats",
+            "compiled_dictio",
+            "compiled_simple_filter",
+            "compiled_filter",
+            "compiled_prefilter",
+            "compiled_printer",
+            "description",
+            "show_field",
+            "transport",
+        ]
 
         # recipe must be superseded by options
         if "recipe" in kwargs and kwargs["recipe"]:
@@ -76,13 +89,13 @@ class FuzzSession(UserDict):
             recipe=[],
             save="",
             proxies=None,
-            conn_delay=int(Facade().sett.get('connection', 'conn_delay')),
-            req_delay=int(Facade().sett.get('connection', 'req_delay')),
-            retries=int(Facade().sett.get('connection', 'retries')),
+            conn_delay=int(Facade().sett.get("connection", "conn_delay")),
+            req_delay=int(Facade().sett.get("connection", "req_delay")),
+            retries=int(Facade().sett.get("connection", "retries")),
             rlevel=0,
             scanmode=False,
             delay=None,
-            concurrent=int(Facade().sett.get('connection', 'concurrent')),
+            concurrent=int(Facade().sett.get("connection", "concurrent")),
             url="",
             method=None,
             auth=(None, None),
@@ -97,10 +110,8 @@ class FuzzSession(UserDict):
             fields=[],
             no_cache=False,
             show_field=None,
-
             # this is equivalent to payloads but in a different format
             dictio=None,
-
             # these will be compiled
             seed_payload=False,
             filter="",
@@ -112,7 +123,7 @@ class FuzzSession(UserDict):
             compiled_baseline=None,
             compiled_stats=None,
             compiled_dictio=None,
-            exec_mode="api"
+            exec_mode="api",
         )
 
     def update(self, options):
@@ -121,62 +132,78 @@ class FuzzSession(UserDict):
     def validate(self):
         error_list = []
 
-        if self.data['dictio'] and self.data['payloads']:
-            raise FuzzExceptBadOptions("Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified.")
+        if self.data["dictio"] and self.data["payloads"]:
+            raise FuzzExceptBadOptions(
+                "Bad usage: Dictio and payloads options are mutually exclusive. Only one could be specified."
+            )
 
-        if self.data['rlevel'] > 0 and self.data['transport'] == 'dryrun':
-            error_list.append("Bad usage: Recursion cannot work without making any HTTP request.")
+        if self.data["rlevel"] > 0 and self.data["transport"] == "dryrun":
+            error_list.append(
+                "Bad usage: Recursion cannot work without making any HTTP request."
+            )
 
-        if self.data['script'] and self.data['transport'] == 'dryrun':
-            error_list.append("Bad usage: Plugins cannot work without making any HTTP request.")
+        if self.data["script"] and self.data["transport"] == "dryrun":
+            error_list.append(
+                "Bad usage: Plugins cannot work without making any HTTP request."
+            )
 
-        if self.data['no_cache'] not in [True, False]:
+        if self.data["no_cache"] not in [True, False]:
             raise FuzzExceptBadOptions("Bad usage: No-cache is a boolean value")
 
-        if not self.data['url']:
+        if not self.data["url"]:
             error_list.append("Bad usage: You must specify an URL.")
 
-        if not self.data['payloads'] and not self.data["dictio"]:
+        if not self.data["payloads"] and not self.data["dictio"]:
             error_list.append("Bad usage: You must specify a payload.")
 
         if self.data["hs"] and self.data["ss"]:
-            raise FuzzExceptBadOptions("Bad usage: Hide and show regex filters flags are mutually exclusive. Only one could be specified.")
+            raise FuzzExceptBadOptions(
+                "Bad usage: Hide and show regex filters flags are mutually exclusive. Only one could be specified."
+            )
 
         if self.data["rlevel"] < 0:
-            raise FuzzExceptBadOptions("Bad usage: Recursion level must be a positive int.")
+            raise FuzzExceptBadOptions(
+                "Bad usage: Recursion level must be a positive int."
+            )
 
-        if self.data['allvars'] not in [None, 'allvars', 'allpost', 'allheaders']:
-            raise FuzzExceptBadOptions("Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders.")
+        if self.data["allvars"] not in [None, "allvars", "allpost", "allheaders"]:
+            raise FuzzExceptBadOptions(
+                "Bad options: Incorrect all parameters brute forcing type specified, correct values are allvars,allpost or allheaders."
+            )
 
-        if self.data['proxies']:
-            for ip, port, ttype in self.data['proxies']:
+        if self.data["proxies"]:
+            for ip, port, ttype in self.data["proxies"]:
                 if ttype not in ("SOCKS5", "SOCKS4", "HTTP"):
-                    raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
+                    raise FuzzExceptBadOptions(
+                        "Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5."
+                    )
 
         return error_list
 
     def export_to_file(self, filename):
         try:
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 f.write(self.export_json())
         except IOError:
             raise FuzzExceptBadFile("Error writing recipe file.")
 
     def import_from_file(self, filename):
         try:
-            with open(filename, 'r') as f:
+            with open(filename, "r") as f:
                 self.import_json(f.read())
         except IOError:
             raise FuzzExceptBadFile("Error loading recipe file {}.".format(filename))
         except json.decoder.JSONDecodeError as e:
-            raise FuzzExceptBadRecipe("Incorrect JSON recipe {} format: {}".format(filename, str(e)))
+            raise FuzzExceptBadRecipe(
+                "Incorrect JSON recipe {} format: {}".format(filename, str(e))
+            )
 
     def import_json(self, data):
         js = json.loads(json_minify(data))
 
         try:
-            if js['version'] == "0.2" and 'wfuzz_recipe' in js:
-                for k, v in js['wfuzz_recipe'].items():
+            if js["version"] == "0.2" and "wfuzz_recipe" in js:
+                for k, v in js["wfuzz_recipe"].items():
                     if k not in self.keys_not_to_dump:
                         # python 2 and 3 hack
                         if k in self.data and isinstance(self.data[k], list):
@@ -189,28 +216,25 @@ class FuzzSession(UserDict):
             raise FuzzExceptBadRecipe("Incorrect recipe format.")
 
     def export_json(self):
-        tmp = dict(
-            version="0.2",
-            wfuzz_recipe=defaultdict(dict)
-        )
+        tmp = dict(version="0.2", wfuzz_recipe=defaultdict(dict))
         defaults = self._defaults()
 
         # Only dump the non-default options
         for k, v in self.data.items():
             if v != defaults[k] and k not in self.keys_not_to_dump:
-                tmp['wfuzz_recipe'][k] = self.data[k]
+                tmp["wfuzz_recipe"][k] = self.data[k]
 
-        return json.dumps(tmp, sort_keys=True, indent=4, separators=(',', ': '))
+        return json.dumps(tmp, sort_keys=True, indent=4, separators=(",", ": "))
 
     def payload(self, **kwargs):
         try:
             self.data.update(kwargs)
             self.compile_seeds()
             self.compile_dictio()
-            for r in self.data['compiled_dictio']:
+            for r in self.data["compiled_dictio"]:
                 yield tuple((fuzz_word.content for fuzz_word in r))
         finally:
-            self.data['compiled_dictio'].cleanup()
+            self.data["compiled_dictio"].cleanup()
 
     def fuzz(self, **kwargs):
         self.data.update(kwargs)
@@ -264,13 +288,19 @@ class FuzzSession(UserDict):
 
     def compile_dictio(self):
         if self.data["allvars"]:
-            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_allvar", self)
+            self.data["compiled_dictio"] = dictionary_factory.create(
+                "dictio_from_allvar", self
+            )
         else:
-            self.data["compiled_dictio"] = dictionary_factory.create("dictio_from_options", self)
+            self.data["compiled_dictio"] = dictionary_factory.create(
+                "dictio_from_options", self
+            )
 
     def compile_seeds(self):
         self.data["compiled_seed"] = resfactory.create("seed_from_options", self)
-        self.data["compiled_baseline"] = resfactory.create("baseline_from_options", self)
+        self.data["compiled_baseline"] = resfactory.create(
+            "baseline_from_options", self
+        )
 
     def compile(self):
         # Validate options
@@ -284,18 +314,31 @@ class FuzzSession(UserDict):
         try:
             filename, printer = self.data["printer"]
         except ValueError:
-            raise FuzzExceptBadOptions("Bad options: Printer must be specified in the form of ('filename', 'printer')")
+            raise FuzzExceptBadOptions(
+                "Bad options: Printer must be specified in the form of ('filename', 'printer')"
+            )
 
         if filename:
             if printer == "default" or not printer:
-                printer = Facade().sett.get('general', 'default_printer')
-            self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(filename)
+                printer = Facade().sett.get("general", "default_printer")
+            self.data["compiled_printer"] = Facade().printers.get_plugin(printer)(
+                filename
+            )
 
         try:
-            for filter_option in ['hc', 'hw', 'hl', 'hh', 'sc', 'sw', 'sl', 'sh']:
-                self.data[filter_option] = [BASELINE_CODE if i == "BBB" else ERROR_CODE if i == "XXX" else int(i) for i in self.data[filter_option]]
+            for filter_option in ["hc", "hw", "hl", "hh", "sc", "sw", "sl", "sh"]:
+                self.data[filter_option] = [
+                    BASELINE_CODE
+                    if i == "BBB"
+                    else ERROR_CODE
+                    if i == "XXX"
+                    else int(i)
+                    for i in self.data[filter_option]
+                ]
         except ValueError:
-            raise FuzzExceptBadOptions("Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX].")
+            raise FuzzExceptBadOptions(
+                "Bad options: Filter must be specified in the form of [int, ... , int, BBB, XXX]."
+            )
 
         self.compile_seeds()
         self.compile_dictio()
@@ -303,8 +346,10 @@ class FuzzSession(UserDict):
         # filter options
         self.data["compiled_simple_filter"] = FuzzResSimpleFilter.from_options(self)
         self.data["compiled_filter"] = FuzzResFilter(self.data["filter"])
-        for prefilter in self.data['prefilter']:
-            self.data["compiled_prefilter"].append(FuzzResFilter(filter_string=prefilter))
+        for prefilter in self.data["prefilter"]:
+            self.data["compiled_prefilter"].append(
+                FuzzResFilter(filter_string=prefilter)
+            )
 
         self.data["compiled_stats"] = FuzzStats.from_options(self)
 
@@ -312,15 +357,22 @@ class FuzzSession(UserDict):
         fuzz_words = self.get_fuzz_words()
 
         if self.data["compiled_dictio"].width() != len(fuzz_words):
-            raise FuzzExceptBadOptions("FUZZ words and number of payloads do not match!")
+            raise FuzzExceptBadOptions(
+                "FUZZ words and number of payloads do not match!"
+            )
 
-        if self.data['allvars'] is None and len(fuzz_words) == 0:
+        if self.data["allvars"] is None and len(fuzz_words) == 0:
             raise FuzzExceptBadOptions("You must specify at least a FUZZ word!")
 
-        if self.data["compiled_baseline"] is None and (BASELINE_CODE in self.data['hc'] or
-           BASELINE_CODE in self.data['hl'] or BASELINE_CODE in self.data['hw'] or
-           BASELINE_CODE in self.data['hh']):
-            raise FuzzExceptBadOptions("Bad options: specify a baseline value when using BBB")
+        if self.data["compiled_baseline"] is None and (
+            BASELINE_CODE in self.data["hc"]
+            or BASELINE_CODE in self.data["hl"]
+            or BASELINE_CODE in self.data["hw"]
+            or BASELINE_CODE in self.data["hh"]
+        ):
+            raise FuzzExceptBadOptions(
+                "Bad options: specify a baseline value when using BBB"
+            )
 
         if self.data["script"]:
             Facade().scripts.kbase.update(self.data["script_args"])

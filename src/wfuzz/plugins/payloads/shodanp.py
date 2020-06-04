@@ -9,9 +9,7 @@ class shodanp(BasePayload):
     name = "shodanp"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    description = (
-        "Queries the Shodan API",
-    )
+    description = ("Queries the Shodan API",)
 
     summary = "Returns URLs of a given Shodan API search (needs api key)."
     category = ["default"]
@@ -20,7 +18,12 @@ class shodanp(BasePayload):
     parameters = (
         ("search", "", True, "Shodan search string."),
         ("page", "0", False, "Offset page, starting at zero."),
-        ("limit", "0", False, "Number of pages (1 query credit = 100 results). Zero for all."),
+        (
+            "limit",
+            "0",
+            False,
+            "Number of pages (1 query credit = 100 results). Zero for all.",
+        ),
     )
 
     default_parameter = "search"
@@ -46,11 +49,11 @@ class shodanp(BasePayload):
     def get_next(self):
         match = next(self._it)
 
-        port = match['port']
-        scheme = 'https' if 'ssl' in match or port == 443 else 'http'
+        port = match["port"]
+        scheme = "https" if "ssl" in match or port == 443 else "http"
 
-        if match['hostnames']:
-            for hostname in match['hostnames']:
+        if match["hostnames"]:
+            for hostname in match["hostnames"]:
                 return "{}://{}:{}".format(scheme, hostname, port)
         else:
-            return "{}://{}:{}".format(scheme, match['ip_str'], port)
+            return "{}://{}:{}".format(scheme, match["ip_str"], port)

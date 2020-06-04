@@ -9,7 +9,12 @@ from .factories.fuzzresfactory import resfactory
 from .factories.plugin_factory import plugin_factory
 from .fuzzobjects import FuzzType, FuzzItem
 from .myqueues import FuzzQueue
-from .exception import FuzzExceptInternalError, FuzzExceptBadOptions, FuzzExceptBadFile, FuzzExceptPluginLoadError
+from .exception import (
+    FuzzExceptInternalError,
+    FuzzExceptBadOptions,
+    FuzzExceptBadFile,
+    FuzzExceptPluginLoadError,
+)
 from .myqueues import FuzzRRQueue
 from .facade import Facade
 from .fuzzobjects import FuzzWordType
@@ -23,7 +28,7 @@ class AllVarQ(FuzzQueue):
         self.seed = options["compiled_seed"]
 
     def get_name(self):
-        return 'AllVarQ'
+        return "AllVarQ"
 
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
@@ -41,7 +46,9 @@ class AllVarQ(FuzzQueue):
             if self.delay:
                 time.sleep(self.delay)
             self.send(
-                resfactory.create("fuzzres_from_allvar", self.options, var_name.content, payload)
+                resfactory.create(
+                    "fuzzres_from_allvar", self.options, var_name.content, payload
+                )
             )
 
         self.send_last(FuzzItem(FuzzType.ENDSEED))
@@ -53,7 +60,7 @@ class SeedQ(FuzzQueue):
         self.delay = options.get("delay")
 
     def get_name(self):
-        return 'SeedQ'
+        return "SeedQ"
 
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
@@ -69,7 +76,7 @@ class SeedQ(FuzzQueue):
             self.send_first(fuzz_baseline)
 
             # wait for BBB to be completed before generating more items
-            while(self.stats.processed() == 0 and not self.stats.cancelled):
+            while self.stats.processed() == 0 and not self.stats.cancelled:
                 time.sleep(0.0001)
 
     def restart(self, seed):
@@ -89,16 +96,22 @@ class SeedQ(FuzzQueue):
 
     def get_fuzz_res(self, dictio_item):
         if self.options["seed_payload"] and dictio_item[0].type == FuzzWordType.FUZZRES:
-            return resfactory.create("seed_from_options_and_dict", self.options, dictio_item)
+            return resfactory.create(
+                "seed_from_options_and_dict", self.options, dictio_item
+            )
         else:
-            return resfactory.create("fuzzres_from_options_and_dict", self.options, dictio_item)
+            return resfactory.create(
+                "fuzzres_from_options_and_dict", self.options, dictio_item
+            )
 
     def send_dictionary(self):
         # Empty dictionary?
         try:
             fuzzres = next(self.options["compiled_dictio"])
         except StopIteration:
-            raise FuzzExceptBadOptions("Empty dictionary! Please check payload or filter.")
+            raise FuzzExceptBadOptions(
+                "Empty dictionary! Please check payload or filter."
+            )
 
         # Enqueue requests
         try:
@@ -122,12 +135,12 @@ class SaveQ(FuzzQueue):
 
         self.output_fn = None
         try:
-            self.output_fn = gzip.open(options.get("save"), 'w+b')
+            self.output_fn = gzip.open(options.get("save"), "w+b")
         except IOError as e:
             raise FuzzExceptBadFile("Error opening results file!. %s" % str(e))
 
     def get_name(self):
-        return 'SaveQ'
+        return "SaveQ"
 
     def _cleanup(self):
         self.output_fn.close()
@@ -140,7 +153,9 @@ class SaveQ(FuzzQueue):
 class ConsolePrinterQ(FuzzQueue):
     def __init__(self, options):
         FuzzQueue.__init__(self, options)
-        self.printer = Facade().printers.get_plugin(self.options["console_printer"])(None)
+        self.printer = Facade().printers.get_plugin(self.options["console_printer"])(
+            None
+        )
 
     def mystart(self):
         self.printer.header(self.stats)
@@ -149,7 +164,7 @@ class ConsolePrinterQ(FuzzQueue):
         return item.item_type in [FuzzType.RESULT]
 
     def get_name(self):
-        return 'ConsolePrinterQ'
+        return "ConsolePrinterQ"
 
     def _cleanup(self):
         self.printer.footer(self.stats)
@@ -171,7 +186,7 @@ class CLIPrinterQ(FuzzQueue):
         return item.item_type in [FuzzType.RESULT, FuzzType.DISCARDED]
 
     def get_name(self):
-        return 'CLIPrinterQ'
+        return "CLIPrinterQ"
 
     def _cleanup(self):
         self.printer.footer(self.stats)
@@ -189,7 +204,7 @@ class PrinterQ(FuzzQueue):
         self.printer.header(self.stats)
 
     def get_name(self):
-        return 'PrinterQ'
+        return "PrinterQ"
 
     def _cleanup(self):
         self.printer.footer(self.stats)
@@ -205,7 +220,7 @@ class RoutingQ(FuzzQueue):
         self.routes = routes
 
     def get_name(self):
-        return 'RoutingQ'
+        return "RoutingQ"
 
     def items_to_process(self, item):
         return item.item_type in [FuzzType.SEED, FuzzType.BACKFEED]
@@ -224,7 +239,7 @@ class FilterQ(FuzzQueue):
         self.ffilter = ffilter
 
     def get_name(self):
-        return 'filter_thread'
+        return "filter_thread"
 
     def process(self, item):
         if item.is_baseline:
@@ -243,7 +258,7 @@ class SliceQ(FuzzQueue):
         self.ffilter = prefilter
 
     def get_name(self):
-        return 'slice_thread'
+        return "slice_thread"
 
     def process(self, item):
         if item.is_baseline or self.ffilter.is_visible(item):
@@ -258,13 +273,17 @@ class JobQ(FuzzRRQueue):
         lplugins = [x() for x in Facade().scripts.get_plugins(options.get("script"))]
 
         if not lplugins:
-            raise FuzzExceptBadOptions("No plugin selected, check the --script name or category introduced.")
+            raise FuzzExceptBadOptions(
+                "No plugin selected, check the --script name or category introduced."
+            )
 
-        concurrent = int(Facade().sett.get('general', 'concurrent_plugins'))
-        FuzzRRQueue.__init__(self, options, [JobMan(options, lplugins) for i in range(concurrent)])
+        concurrent = int(Facade().sett.get("general", "concurrent_plugins"))
+        FuzzRRQueue.__init__(
+            self, options, [JobMan(options, lplugins) for i in range(concurrent)]
+        )
 
     def get_name(self):
-        return 'JobQ'
+        return "JobQ"
 
     def process(self, item):
         self.send(item)
@@ -278,7 +297,7 @@ class JobMan(FuzzQueue):
         self.cache = options.cache
 
     def get_name(self):
-        return 'Jobman'
+        return "Jobman"
 
     # ------------------------------------------------
     # threading
@@ -286,7 +305,9 @@ class JobMan(FuzzQueue):
     def process(self, res):
         # process request through plugins
         if not res.exception:
-            if self.options['no_cache'] or self.cache.update_cache(res.history, "processed"):
+            if self.options["no_cache"] or self.cache.update_cache(
+                res.history, "processed"
+            ):
 
                 plugins_res_queue = Queue()
 
@@ -294,9 +315,18 @@ class JobMan(FuzzQueue):
                     try:
                         if not pl.validate(res):
                             continue
-                        th = Thread(target=pl.run, kwargs={"fuzzresult": res, "control_queue": self.__walking_threads, "results_queue": plugins_res_queue})
+                        th = Thread(
+                            target=pl.run,
+                            kwargs={
+                                "fuzzresult": res,
+                                "control_queue": self.__walking_threads,
+                                "results_queue": plugins_res_queue,
+                            },
+                        )
                     except Exception as e:
-                        raise FuzzExceptPluginLoadError("Error initialising plugin %s: %s " % (pl.name, str(e)))
+                        raise FuzzExceptPluginLoadError(
+                            "Error initialising plugin %s: %s " % (pl.name, str(e))
+                        )
                     self.__walking_threads.put(th)
                     th.start()
 
@@ -308,11 +338,16 @@ class JobMan(FuzzQueue):
                     item = plugins_res_queue.get()
 
                     if item._exception is not None:
-                        if Facade().sett.get("general", "cancel_on_plugin_except") == "1":
+                        if (
+                            Facade().sett.get("general", "cancel_on_plugin_except")
+                            == "1"
+                        ):
                             self._throw(item._exception)
                         res.plugins_res.append(item)
                     elif item._seed is not None:
-                        if self.options['no_cache'] or self.cache.update_cache(item._seed.history, "backfeed"):
+                        if self.options["no_cache"] or self.cache.update_cache(
+                            item._seed.history, "backfeed"
+                        ):
                             self.stats.backfeed.inc()
                             self.stats.pending_fuzz.inc()
                             self.send(item._seed)
@@ -325,7 +360,9 @@ class JobMan(FuzzQueue):
                         plugin_factory.create(
                             "plugin_from_finding",
                             "Backfeed",
-                            "Plugin %s enqueued %d more requests (rlevel=%d)" % (plugin_name, enq_num, res.rlevel))
+                            "Plugin %s enqueued %d more requests (rlevel=%d)"
+                            % (plugin_name, enq_num, res.rlevel),
+                        )
                     )
 
         # add result to results queue
@@ -340,7 +377,7 @@ class RecursiveQ(FuzzQueue):
         self.max_rlevel = options.get("rlevel")
 
     def get_name(self):
-        return 'RecursiveQ'
+        return "RecursiveQ"
 
     def process(self, fuzz_res):
         # check if recursion is needed
@@ -352,7 +389,7 @@ class RecursiveQ(FuzzQueue):
                     plugin_factory.create(
                         "plugin_from_finding",
                         "Recursion",
-                        "Enqueued response for recursion (level=%d)" % (seed.rlevel)
+                        "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                     )
                 )
                 self.send(seed)
@@ -367,7 +404,7 @@ class PassPayloadQ(FuzzQueue):
         self.pause = Event()
 
     def get_name(self):
-        return 'PassPayloadQ'
+        return "PassPayloadQ"
 
     def process(self, item):
         if item.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
@@ -383,7 +420,7 @@ class DryRunQ(FuzzQueue):
         self.pause = Event()
 
     def get_name(self):
-        return 'DryRunQ'
+        return "DryRunQ"
 
     def process(self, item):
         self.send(item)
@@ -406,11 +443,11 @@ class HttpQueue(FuzzQueue):
         self.poolid = self.http_pool.register()
 
         th2 = Thread(target=self.__read_http_results)
-        th2.setName('__read_http_results')
+        th2.setName("__read_http_results")
         th2.start()
 
     def get_name(self):
-        return 'HttpQueue'
+        return "HttpQueue"
 
     def _cleanup(self):
         self.http_pool.deregister()
@@ -437,7 +474,7 @@ class HttpReceiver(FuzzQueue):
         FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
 
     def get_name(self):
-        return 'HttpReceiver'
+        return "HttpReceiver"
 
     def process(self, res):
         if res.exception and not self.options.get("scanmode"):

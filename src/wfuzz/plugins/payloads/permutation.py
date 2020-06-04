@@ -14,9 +14,7 @@ class permutation(BasePayload):
     category = ["default"]
     priority = 99
 
-    parameters = (
-        ("ch", "", True, "Charset and len to permute in the form of abc-2."),
-    )
+    parameters = (("ch", "", True, "Charset and len to permute in the form of abc-2."),)
 
     default_parameter = "ch"
 
@@ -29,7 +27,7 @@ class permutation(BasePayload):
             self.charset = ran[0]
             self.width = int(ran[1])
         except ValueError:
-            raise FuzzExceptBadOptions("Bad range format (eg. \"0-ffa\")")
+            raise FuzzExceptBadOptions('Bad range format (eg. "0-ffa")')
 
         pset = []
         for x in self.charset:
@@ -38,7 +36,7 @@ class permutation(BasePayload):
         words = self.xcombinations(pset, self.width)
         self.lista = []
         for x in words:
-            self.lista.append(''.join(x))
+            self.lista.append("".join(x))
 
         self.__count = len(self.lista)
 

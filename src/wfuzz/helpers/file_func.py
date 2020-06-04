@@ -33,27 +33,27 @@ def find_file_in_paths(name, path):
 
 class FileDetOpener:
     typical_encodings = [
-        'UTF-8',
-        'ISO-8859-1',
-        'Windows-1251',
-        'Shift JIS',
-        'Windows-1252',
-        'GB2312',
-        'EUC-KR',
-        'EUC-JP',
-        'GBK',
-        'ISO-8859-2',
-        'Windows-1250',
-        'ISO-8859-15',
-        'Windows-1256',
-        'ISO-8859-9',
-        'Big5',
-        'Windows-1254',
+        "UTF-8",
+        "ISO-8859-1",
+        "Windows-1251",
+        "Shift JIS",
+        "Windows-1252",
+        "GB2312",
+        "EUC-KR",
+        "EUC-JP",
+        "GBK",
+        "ISO-8859-2",
+        "Windows-1250",
+        "ISO-8859-15",
+        "Windows-1256",
+        "ISO-8859-9",
+        "Big5",
+        "Windows-1254",
     ]
 
     def __init__(self, file_path, encoding=None):
         self.cache = []
-        self.file_des = open(file_path, mode='rb')
+        self.file_des = open(file_path, mode="rb")
         self.det_encoding = encoding
         self.encoding_forced = False
 
@@ -74,8 +74,10 @@ class FileDetOpener:
         while decoded_line is None:
 
             while self.det_encoding is None:
-                detect_encoding = self.detect_encoding().get('encoding', 'utf-8')
-                self.det_encoding = detect_encoding if detect_encoding is not None else 'utf-8'
+                detect_encoding = self.detect_encoding().get("encoding", "utf-8")
+                self.det_encoding = (
+                    detect_encoding if detect_encoding is not None else "utf-8"
+                )
 
             if line is None:
                 if self.cache:
@@ -92,7 +94,7 @@ class FileDetOpener:
                     self.det_encoding = last_error.pop()
                 elif last_error is None and not self.encoding_forced:
                     last_error = list(reversed(self.typical_encodings))
-                    last_error.append(chardet.detect(line).get('encoding'))
+                    last_error.append(chardet.detect(line).get("encoding"))
                 elif not last_error:
                     raise FuzzExceptInternalError("Unable to decode wordlist file!")
 
@@ -122,7 +124,7 @@ def open_file_detect_encoding(file_path):
         detector = UniversalDetector()
         detector.reset()
 
-        with open(file_path, mode='rb') as file_to_detect:
+        with open(file_path, mode="rb") as file_to_detect:
             for line in file_to_detect:
                 detector.feed(line)
                 if detector.done:
@@ -132,6 +134,8 @@ def open_file_detect_encoding(file_path):
         return detector.result
 
     if sys.version_info >= (3, 0):
-        return open(file_path, "r", encoding=detect_encoding(file_path).get('encoding', 'utf-8'))
+        return open(
+            file_path, "r", encoding=detect_encoding(file_path).get("encoding", "utf-8")
+        )
     else:
         return open(file_path, "r")

@@ -1,19 +1,19 @@
 from ..helpers.obj_factory import ObjectFactory
 
-from ..fuzzobjects import (
-    FuzzPlugin,
-    FuzzError
-)
+from ..fuzzobjects import FuzzPlugin, FuzzError
 from ..factories.fuzzresfactory import resfactory
 
 
 class PluginFactory(ObjectFactory):
     def __init__(self):
-        ObjectFactory.__init__(self, {
-            'plugin_from_recursion': PluginRecursiveBuilder(),
-            'plugin_from_error': PluginErrorBuilder(),
-            'plugin_from_finding': PluginFindingBuilder(),
-        })
+        ObjectFactory.__init__(
+            self,
+            {
+                "plugin_from_recursion": PluginRecursiveBuilder(),
+                "plugin_from_error": PluginErrorBuilder(),
+                "plugin_from_finding": PluginFindingBuilder(),
+            },
+        )
 
 
 class PluginRecursiveBuilder:

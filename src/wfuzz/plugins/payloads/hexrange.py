@@ -7,7 +7,11 @@ from wfuzz.fuzzobjects import FuzzWordType
 @moduleman_plugin
 class hexrange(BasePayload):
     name = "hexrange"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     description = ()
     summary = "Returns each hex number of the given hex range."
@@ -29,9 +33,11 @@ class hexrange(BasePayload):
             self.maximum = int(ran[1], 16)
             self.__count = self.maximum - self.minimum + 1
             self.current = self.minimum
-            self.lgth = max(len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x", "")))
+            self.lgth = max(
+                len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x", ""))
+            )
         except ValueError:
-            raise FuzzExceptBadOptions("Bad range format (eg. \"0-ffa\")")
+            raise FuzzExceptBadOptions('Bad range format (eg. "0-ffa")')
 
     def count(self):
         return self.__count

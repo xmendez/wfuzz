@@ -20,7 +20,12 @@ class guitab(BasePayload):
 
     parameters = (
         ("tab", "", True, "Name of a valid GUI tab."),
-        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+        (
+            "attr",
+            None,
+            False,
+            "Attribute of fuzzresult to return. If not specified the whole object is returned.",
+        ),
     )
 
     default_parameter = "tab"

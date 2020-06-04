@@ -5,9 +5,7 @@ except ImportError:
     from itertools import izip_longest as zip_longest
 
 from ..helpers.obj_factory import ObjectFactory
-from ..exception import (
-    FuzzExceptBadOptions,
-)
+from ..exception import FuzzExceptBadOptions
 from ..facade import Facade
 from ..dictionaries import (
     TupleIt,
@@ -20,12 +18,15 @@ from ..dictionaries import (
 
 class DictionaryFactory(ObjectFactory):
     def __init__(self):
-        ObjectFactory.__init__(self, {
-            'dictio_from_iterable': DictioFromIterableBuilder(),
-            'dictio_from_payload': DictioFromPayloadBuilder(),
-            'dictio_from_allvar': DictioFromAllVarBuilder(),
-            'dictio_from_options': DictioFromOptions(),
-        })
+        ObjectFactory.__init__(
+            self,
+            {
+                "dictio_from_iterable": DictioFromIterableBuilder(),
+                "dictio_from_payload": DictioFromPayloadBuilder(),
+                "dictio_from_allvar": DictioFromAllVarBuilder(),
+                "dictio_from_options": DictioFromOptions(),
+            },
+        )
 
 
 class BaseDictioBuilder:
@@ -35,7 +36,9 @@ class BaseDictioBuilder:
             raise FuzzExceptBadOptions("Empty dictionary! Check payload and filter")
 
         if len(selected_dic) == 1 and options["iterator"]:
-            raise FuzzExceptBadOptions("Several dictionaries must be used when specifying an iterator")
+            raise FuzzExceptBadOptions(
+                "Several dictionaries must be used when specifying an iterator"
+            )
 
     @staticmethod
     def get_dictio(options, selected_dic):
@@ -66,18 +69,26 @@ class DictioFromPayloadBuilder(BaseDictioBuilder):
 
         for payload in options["payloads"]:
             try:
-                name, params, slicestr = [x[0] for x in zip_longest(payload, (None, None, None))]
+                name, params, slicestr = [
+                    x[0] for x in zip_longest(payload, (None, None, None))
+                ]
             except ValueError:
-                raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
+                raise FuzzExceptBadOptions(
+                    "You must supply a list of payloads in the form of [(name, {params}), ... ]"
+                )
 
             if not params:
-                raise FuzzExceptBadOptions("You must supply a list of payloads in the form of [(name, {params}), ... ]")
+                raise FuzzExceptBadOptions(
+                    "You must supply a list of payloads in the form of [(name, {params}), ... ]"
+                )
 
             dictionary = Facade().payloads.get_plugin(name)(params)
             if "encoder" in params and params["encoder"] is not None:
                 dictionary = EncodeIt(dictionary, params["encoder"])
 
-            selected_dic.append(SliceIt(dictionary, slicestr) if slicestr else dictionary)
+            selected_dic.append(
+                SliceIt(dictionary, slicestr) if slicestr else dictionary
+            )
 
         self.validate(options, selected_dic)
 
@@ -89,7 +100,9 @@ class DictioFromAllVarBuilder(BaseDictioBuilder):
     def from_all_fuzz_request_gen(options, dictio_list):
         for payload in dictio_list:
             if len(payload) > 1:
-                raise FuzzExceptBadOptions("Only one payload is allowed when fuzzing all parameters!")
+                raise FuzzExceptBadOptions(
+                    "Only one payload is allowed when fuzzing all parameters!"
+                )
 
             for var_name in options["compiled_seed"].history.wf_allvars_set.keys():
                 yield (var_name, payload[0])
@@ -99,7 +112,7 @@ class DictioFromAllVarBuilder(BaseDictioBuilder):
 
         return AllVarDictio(
             self.from_all_fuzz_request_gen(options, dictio_list),
-            dictio_list.count() * len(options["compiled_seed"].history.wf_allvars_set)
+            dictio_list.count() * len(options["compiled_seed"].history.wf_allvars_set),
         )
 
 

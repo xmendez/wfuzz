@@ -1,20 +1,24 @@
 import sys
 from wfuzz import __version__ as version
 import os
+
 if os.name == "nt":
     import colorama
+
     colorama.init()
 
 
-examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+examples_banner = """Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 \twfuzz -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
+\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ"""
 
-exec_banner = '''********************************************************\r
+exec_banner = """********************************************************\r
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*\r
-********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
+********************************************************\r\n""".format(
+    version=version, align=" ", width1=29 - len(version)
+)
 
-help_banner = '''********************************************************
+help_banner = """********************************************************
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Version up to 1.4c coded by:                         *
@@ -23,27 +27,34 @@ help_banner = '''********************************************************
 *                                                      *
 * Version 1.4d to {version} coded by: {align: <{width2}}*
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n'''.format(version=version, width1=29 - len(version), align=' ', width2=26 - len(version))
+********************************************************\r\n""".format(
+    version=version, width1=29 - len(version), align=" ", width2=26 - len(version)
+)
 
-help_banner2 = '''********************************************************
+help_banner2 = """********************************************************
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Coded by:                                            *
 *                                                      *
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
+********************************************************\r\n""".format(
+    version=version, align=" ", width1=29 - len(version)
+)
 
-header_usage_wfpayload = '''Usage:\twfpayload [options] -z payload --zD params\r\n
-'''
+header_usage_wfpayload = """Usage:\twfpayload [options] -z payload --zD params\r\n
+"""
 
-header_usage = '''Usage:\twfuzz [options] -z payload,params <url>\r\n
+header_usage = """Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload.
 \tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
-'''
+"""
 
-brief_usage = '''%s\n\n%s\n\nType wfuzz -h for further information or --help for advanced usage.''' % (header_usage, examples_banner)
+brief_usage = (
+    """%s\n\n%s\n\nType wfuzz -h for further information or --help for advanced usage."""
+    % (header_usage, examples_banner)
+)
 
-usage = '''%s\n\nOptions:
+usage = """%s\n\nOptions:
 \t-h                        : This help
 \t--help                    : Advanced help
 \t--version                 : Wfuzz version details
@@ -78,9 +89,11 @@ usage = '''%s\n\nOptions:
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex             : Show/Hide responses with the specified regex within the content
-''' % (header_usage)
+""" % (
+    header_usage
+)
 
-verbose_usage = '''%s\n\nOptions:
+verbose_usage = """%s\n\nOptions:
 \t-h/--help                 : This help
 \t--help                    : Advanced help
 \t--filter-help             : Filter language specification
@@ -144,10 +157,12 @@ verbose_usage = '''%s\n\nOptions:
 \t--ss/hs regex             : Show/hide responses with the specified regex within the content
 \t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
 \t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
-''' % (header_usage)
+""" % (
+    header_usage
+)
 
 
-wfpayload_usage = '''%s\n\nOptions:
+wfpayload_usage = """%s\n\nOptions:
 \t-h/--help                 : This help
 \t--help                    : Advanced help
 \t--version                 : Wfuzz version details
@@ -179,7 +194,9 @@ wfpayload_usage = '''%s\n\nOptions:
 \t--ss/hs regex             : Show/hide responses with the specified regex within the content
 \t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
 \t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
-''' % (header_usage_wfpayload)
+""" % (
+    header_usage_wfpayload
+)
 
 
 class Term:

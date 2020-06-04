@@ -4,7 +4,7 @@ test:
 	tox --recreate
 flake8:
 	pip install flake8
-	flake8 --ignore=E501,E402,F401,W504 src tests
+	flake8 src tests
 publish:
 	pip install 'twine>=1.5.0'
 	python setup.py sdist

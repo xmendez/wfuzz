@@ -2,6 +2,7 @@ import pycurl
 
 # Python 2 and 3
 import sys
+
 if sys.version_info >= (3, 0):
     from urllib.parse import urlparse
 else:
@@ -30,7 +31,11 @@ class headers(object):
 
     @property
     def response(self):
-        return headers.header(self._req.response.getHeaders()) if self._req.response else headers.header()
+        return (
+            headers.header(self._req.response.getHeaders())
+            if self._req.response
+            else headers.header()
+        )
 
     @property
     def request(self):
@@ -40,7 +45,7 @@ class headers(object):
     def request(self, values_dict):
         self._req._headers.update(values_dict)
         if "Content-Type" in values_dict:
-            self._req.ContentType = values_dict['Content-Type']
+            self._req.ContentType = values_dict["Content-Type"]
 
     @property
     def all(self):
@@ -60,16 +65,20 @@ class cookies(object):
         if self._req.response:
             c = self._req.response.getCookie().split("; ")
             if c[0]:
-                return cookies.cookie({x[0]: x[2] for x in [x.partition("=") for x in c]})
+                return cookies.cookie(
+                    {x[0]: x[2] for x in [x.partition("=") for x in c]}
+                )
 
         return cookies.cookie({})
 
     @property
     def request(self):
-        if 'Cookie' in self._req._headers:
-            c = self._req._headers['Cookie'].split("; ")
+        if "Cookie" in self._req._headers:
+            c = self._req._headers["Cookie"].split("; ")
             if c[0]:
-                return cookies.cookie({x[0]: x[2] for x in [x.partition("=") for x in c]})
+                return cookies.cookie(
+                    {x[0]: x[2] for x in [x.partition("=") for x in c]}
+                )
 
         return cookies.cookie({})
 
@@ -110,7 +119,9 @@ class params(object):
     def post(self, pp):
         if isinstance(pp, dict) or isinstance(pp, DotDict):
             for key, value in pp.items():
-                self._req.setVariablePOST(key, str(value) if value is not None else value)
+                self._req.setVariablePOST(
+                    key, str(value) if value is not None else value
+                )
 
             self._req._non_parsed_post = self._req._variablesPOST.urlEncoded()
 
@@ -141,7 +152,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         self.wf_retries = 0
         self.wf_ip = None
 
-        self.headers.request = {"User-Agent": Facade().sett.get("connection", "user-agent")}
+        self.headers.request = {
+            "User-Agent": Facade().sett.get("connection", "user-agent")
+        }
 
     # methods for accessing HTTP requests information consistenly accross the codebase
 
@@ -210,11 +223,13 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     @url.setter
     def url(self, u):
         # urlparse goes wrong with IP:port without scheme (https://bugs.python.org/issue754016)
-        if not u.startswith("FUZ") and (urlparse(u).netloc == "" or urlparse(u).scheme == ""):
+        if not u.startswith("FUZ") and (
+            urlparse(u).netloc == "" or urlparse(u).scheme == ""
+        ):
             u = "http://" + u
 
         if urlparse(u).path == "":
-            u += '/'
+            u += "/"
 
         if Facade().sett.get("general", "encode_space") == "1":
             u = u.replace(" ", "%20")
@@ -286,7 +301,9 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             else:
                 raise FuzzExceptBadOptions("Unknown variable set: " + self.wf_allvars)
         except TypeError:
-            raise FuzzExceptBadOptions("It is not possible to use all fuzzing with duplicated parameters.")
+            raise FuzzExceptBadOptions(
+                "It is not possible to use all fuzzing with duplicated parameters."
+            )
 
     @property
     def wf_allvars(self):
@@ -294,8 +311,10 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @wf_allvars.setter
     def wf_allvars(self, bl):
-        if bl is not None and bl not in ['allvars', 'allpost', 'allheaders']:
-            raise FuzzExceptBadOptions("Incorrect all parameters brute forcing type specified, correct values are allvars, allpost or allheaders.")
+        if bl is not None and bl not in ["allvars", "allpost", "allheaders"]:
+            raise FuzzExceptBadOptions(
+                "Incorrect all parameters brute forcing type specified, correct values are allvars, allpost or allheaders."
+            )
 
         self._allvars = bl
 
@@ -316,12 +335,17 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         pycurl_c = Request.to_pycurl_object(c, self._request)
 
         if self.wf_ip:
-            pycurl_c.setopt(pycurl.CONNECT_TO, ["::{}:{}".format(self.wf_ip['ip'], self.wf_ip['port'])])
+            pycurl_c.setopt(
+                pycurl.CONNECT_TO,
+                ["::{}:{}".format(self.wf_ip["ip"], self.wf_ip["port"])],
+            )
 
         return pycurl_c
 
     def from_http_object(self, c, bh, bb):
-        raw_header = python2_3_convert_from_unicode(bh.decode("utf-8", errors='surrogateescape'))
+        raw_header = python2_3_convert_from_unicode(
+            bh.decode("utf-8", errors="surrogateescape")
+        )
         return self._request.response_from_conn_object(c, raw_header, bb)
 
     def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
@@ -329,12 +353,14 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
         # Parse request sets postdata = '' when there's POST request without data
         if self.method == "POST" and self.params.raw_post is None:
-            self.params.post = ''
+            self.params.post = ""
 
         if raw_response:
             rp = Response()
             if not isinstance(raw_response, str):
-                raw_response = python2_3_convert_from_unicode(raw_response.decode("utf-8", errors='surrogateescape'))
+                raw_response = python2_3_convert_from_unicode(
+                    raw_response.decode("utf-8", errors="surrogateescape")
+                )
             rp.parseResponse(raw_response, raw_content)
             self._request.response = rp
 
@@ -343,8 +369,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
     def to_cache_key(self):
         key = self._request.urlWithoutVariables
 
-        dicc = {'g{}'.format(key): True for key in self.params.get.keys()}
-        dicc.update({'p{}'.format(key): True for key in self.params.post.keys()})
+        dicc = {"g{}".format(key): True for key in self.params.get.keys()}
+        dicc.update({"p{}".format(key): True for key in self.params.post.keys()})
 
         # take URL parameters into consideration
         url_params = list(dicc.keys())
@@ -360,26 +386,26 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
             self.url = options["url"]
 
         # headers must be parsed first as they might affect how reqresp parases other params
-        self.headers.request = dict(options['headers'])
+        self.headers.request = dict(options["headers"])
 
-        if options['auth'][0] is not None:
-            self.auth = (options['auth'][0], options['auth'][1])
+        if options["auth"][0] is not None:
+            self.auth = (options["auth"][0], options["auth"][1])
 
-        if options['follow']:
-            self.follow = options['follow']
+        if options["follow"]:
+            self.follow = options["follow"]
 
-        if options['postdata'] is not None:
-            self.params.post = options['postdata']
+        if options["postdata"] is not None:
+            self.params.post = options["postdata"]
 
-        if options['connect_to_ip']:
-            self.wf_ip = options['connect_to_ip']
+        if options["connect_to_ip"]:
+            self.wf_ip = options["connect_to_ip"]
 
-        if options['method']:
-            self.method = options['method']
-            self.wf_fuzz_methods = options['method']
+        if options["method"]:
+            self.method = options["method"]
+            self.wf_fuzz_methods = options["method"]
 
-        if options['cookie']:
-            self.cookies.request = options['cookie']
+        if options["cookie"]:
+            self.cookies.request = options["cookie"]
 
-        if options['allvars']:
-            self.wf_allvars = options['allvars']
+        if options["allvars"]:
+            self.wf_allvars = options["allvars"]

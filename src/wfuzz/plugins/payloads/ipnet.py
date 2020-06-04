@@ -7,16 +7,14 @@ from wfuzz.fuzzobjects import FuzzWordType
 @moduleman_plugin
 class ipnet(BasePayload):
     name = "ipnet"
-    author = ("Xavi Mendez (@xmendez)", )
+    author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
     description = ("ie. 192.168.1.0/24", "Requires: netaddr module")
     summary = "Returns list of IP addresses of a network."
     category = ["default"]
     priority = 99
 
-    parameters = (
-        ("net", "", True, "Network range in the form ip/mask."),
-    )
+    parameters = (("net", "", True, "Network range in the form ip/mask."),)
 
     default_parameter = "net"
 
@@ -27,19 +25,27 @@ class ipnet(BasePayload):
             from netaddr import IPNetwork
             from netaddr.core import AddrFormatError
 
-            net = IPNetwork('%s' % self.params["net"])
+            net = IPNetwork("%s" % self.params["net"])
             self.f = net.iter_hosts()
             self.__count = net.size - 2
 
             if self.__count <= 0:
-                raise FuzzExceptPluginBadParams("There are not hosts in the specified network")
+                raise FuzzExceptPluginBadParams(
+                    "There are not hosts in the specified network"
+                )
 
         except ValueError:
-            raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
+            raise FuzzExceptPluginBadParams(
+                "The specified network has an incorrect format."
+            )
         except ImportError:
-            raise FuzzExceptBadInstall("ipnet plugin requires netaddr module. Please install it using pip.")
+            raise FuzzExceptBadInstall(
+                "ipnet plugin requires netaddr module. Please install it using pip."
+            )
         except AddrFormatError:
-            raise FuzzExceptPluginBadParams("The specified network has an incorrect format.")
+            raise FuzzExceptPluginBadParams(
+                "The specified network has an incorrect format."
+            )
 
     def get_type(self):
         return FuzzWordType.WORD

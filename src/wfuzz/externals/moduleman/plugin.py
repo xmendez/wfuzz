@@ -9,7 +9,7 @@ def moduleman_plugin(*args):
 
     def inner_decorator(cls):
         for method in method_args:
-            if (not (method in dir(cls))):
+            if not (method in dir(cls)):
                 raise Exception("Required method %s not implemented" % method)
         cls.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
 
