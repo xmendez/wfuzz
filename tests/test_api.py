@@ -50,6 +50,8 @@ class APITests(unittest.TestCase):
             'mysql_char': ('admin', 'CHAR(97,100,109,105,110)'),
             'mssql_char': ('admin', 'CHAR(97)+CHAR(100)+CHAR(109)+CHAR(105)+CHAR(110)'),
             'oracle_char': ('admin', 'chr(97)||chr(100)||chr(109)||chr(105)||chr(110)'),
+
+            'jsonencode': ('test"value\\x', 'test\\"value\\\\x'),
         }
 
         for key, values in list(encoders.items()):

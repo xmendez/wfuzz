@@ -21,6 +21,7 @@ import binascii
 import random
 import hashlib
 import html
+import json
 
 
 @moduleman_plugin("encode")
@@ -467,3 +468,21 @@ class oracle_char:
             x = x.strip("chr").strip(")").strip("(")
             new += chr(int(x))
         return new
+
+
+@moduleman_plugin("encode")
+class jsonencode:
+    name = "jsonencode"
+    author = ("Denis Andzakovic (@denandz)")
+    version = "0.1"
+    summary = "Serializes strings to JSON, escaping special characters"
+    category = ["json"]
+    priority = 99
+
+    def encode(self, string):
+        new = json.dumps(string)[1:-1]  # json.dumps wraps output in double quotes, strip 'em
+        return new
+
+    def decode(self, string):
+        new = '"' + string + '"'  # add the quotes back in....
+        return json.loads(new)
