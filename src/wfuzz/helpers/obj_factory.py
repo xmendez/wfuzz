@@ -1,4 +1,6 @@
 import re
+import abc
+
 from ..helpers.obj_dyn import (
     rgetattr,
     rsetattr,
@@ -37,6 +39,18 @@ class ObjectFactory:
         if not builder:
             raise ValueError(key)
         return builder(*args, **kwargs)
+
+
+class HttpRequestFactory(abc.ABC):
+    @staticmethod
+    @abc.abstractmethod
+    def to_http_object(options, to_http, from_req):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def from_http_object(options, from_http, raw_header, raw_body):
+        pass
 
 
 class SeedBuilderHelper:

@@ -7,6 +7,8 @@ import collections
 
 from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
+from .factories.reqresp_factory import ReqRespRequestFactory
+
 
 class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ("basic", "ntlm", "digest")
@@ -82,7 +84,9 @@ class HttpPool:
         return poolid
 
     def _prepare_curl_h(self, curl_h, fuzzres, poolid):
-        new_curl_h = fuzzres.history.to_http_object(curl_h)
+        new_curl_h = ReqRespRequestFactory.to_http_object(
+            self.options, fuzzres.history, curl_h
+        )
         new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
         new_curl_h.response_queue = (BytesIO(), BytesIO(), fuzzres, poolid)
@@ -162,8 +166,12 @@ class HttpPool:
         buff_body, buff_header, res, poolid = curl_h.response_queue
 
         try:
-            res.history.from_http_object(
-                curl_h, buff_header.getvalue(), buff_body.getvalue()
+            ReqRespRequestFactory.from_http_object(
+                self.options,
+                res.history,
+                curl_h,
+                buff_header.getvalue(),
+                buff_body.getvalue(),
             )
         except Exception as e:
             self.pool_map[poolid]["queue"].put(res.update(exception=e))

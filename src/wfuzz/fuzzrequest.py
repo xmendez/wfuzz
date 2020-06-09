@@ -331,23 +331,6 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     # methods wfuzz needs to perform HTTP requests (this might change in the future).
 
-    def to_http_object(self, c):
-        pycurl_c = Request.to_pycurl_object(c, self._request)
-
-        if self.wf_ip:
-            pycurl_c.setopt(
-                pycurl.CONNECT_TO,
-                ["::{}:{}".format(self.wf_ip["ip"], self.wf_ip["port"])],
-            )
-
-        return pycurl_c
-
-    def from_http_object(self, c, bh, bb):
-        raw_header = python2_3_convert_from_unicode(
-            bh.decode("utf-8", errors="surrogateescape")
-        )
-        return self._request.response_from_conn_object(c, raw_header, bb)
-
     def update_from_raw_http(self, raw, scheme, raw_response=None, raw_content=None):
         self._request.parseRequest(raw, scheme)
 
