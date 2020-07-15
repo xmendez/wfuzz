@@ -16,7 +16,7 @@ from wfuzz import __version__ as version
 from .output import table_print
 
 short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
-long_opts = ['efield=', 'no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev']
+long_opts = ['efield=', 'no-cache', 'ee=', 'zE=', 'zD=', 'field=', 'ip=', 'filter-help', 'AAA', 'AA', 'slice=', 'zP=', 'oF=', 'recipe=', 'dump-recipe=', 'req-delay=', 'conn-delay=', 'sc=', 'sh=', 'sl=', 'sw=', 'ss=', 'hc=', 'hh=', 'hl=', 'hw=', 'hs=', 'ntlm=', 'basic=', 'digest=', 'follow', 'script-help=', 'script=', 'script-args=', 'prefilter=', 'filter=', 'interact', 'help', 'version', 'dry-run', 'prev','clientcert=','clientcertkey=']
 
 
 class CLParser:
@@ -425,6 +425,8 @@ class CLParser:
             scanmode = False,
             delay = None,
             concurrent = 10,
+            clientcert = None,
+            clientcertkey = None
         )
         '''
 
@@ -460,6 +462,12 @@ class CLParser:
 
         if "-t" in optsd:
             conn_options["concurrent"] = int(optsd["-t"][0])
+
+        if "--clientcert" in optsd:
+            conn_options["clientcert"] = optsd['--clientcert'][0]
+
+        if "--clientcertkey" in optsd:
+            conn_options["clientcertkey"] = optsd['--clientcertkey'][0]
 
     def _parse_options(self, optsd, options):
         '''
