@@ -97,6 +97,9 @@ def main_filter():
             "filter=",
             "help",
             "version",
+            "script-help=",
+            "script=",
+            "script-args=",
         ]
         session_options = CLParser(
             sys.argv,

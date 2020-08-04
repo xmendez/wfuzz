@@ -179,6 +179,11 @@ wfpayload_usage = """%s\n\nOptions:
 \t--efield <expr>           : Show the specified language expression together with the current payload. Repeat option for various fields.
 \t--field <expr>            : Do not show the payload but only the specified language expression. Repeat option for various fields.
 \t
+\t--script=                 : Equivalent to --script=default
+\t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
+\t--script-help=<plugins>   : Show help about scripts.
+\t--script-args n1=v1,...   : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
+\t
 \t-z payload                : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
 \t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
 \t                            Encoders category can be used. ie. url
