@@ -22,7 +22,10 @@ class links(BasePlugin, DiscoveryPluginMixin):
     category = ["active", "discovery"]
     priority = 99
 
-    parameters = ()
+    parameters = (
+        ("add_path", True, False, "Add parsed paths as results."),
+        ("regex", None, False, "Regex of accepted domains."),
+    )
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -39,6 +42,12 @@ class links(BasePlugin, DiscoveryPluginMixin):
         self.regex = []
         for i in regex:
             self.regex.append(re.compile(i, re.MULTILINE | re.DOTALL))
+
+        self.add_path = self.kbase["links.add_path"]
+
+        self.domain_regex = None
+        if self.kbase["links.regex"][0]:
+            self.domain_regex = re.compile(self.kbase["links.regex"][0], re.MULTILINE | re.DOTALL)
 
     def validate(self, fuzzresult):
         return fuzzresult.code in [200]
@@ -57,14 +66,32 @@ class links(BasePlugin, DiscoveryPluginMixin):
                     not parsed_link.scheme
                     or parsed_link.scheme == "http"
                     or parsed_link.scheme == "https"
-                ) and (not parsed_link.netloc and parsed_link.path):
+                ) and self.from_domain(fuzzresult, parsed_link):
                     if i not in list_links:
                         list_links.append(i)
 
                         # dir path
-                        split_path = parsed_link.path.split("/")
-                        newpath = "/".join(split_path[:-1]) + "/"
-                        self.queue_url(urljoin(fuzzresult.url, newpath))
+                        if self.add_path:
+                            split_path = parsed_link.path.split("/")
+                            newpath = "/".join(split_path[:-1]) + "/"
+                            self.queue_url(urljoin(fuzzresult.url, newpath))
 
                         # file path
                         self.queue_url(urljoin(fuzzresult.url, i))
+
+    def from_domain(self, fuzzresult, parsed_link):
+        # relative path
+        if not parsed_link.netloc and parsed_link.path:
+            return True
+
+        # same domain
+        if parsed_link.netloc == self.base_fuzz_res.history.urlp.netloc:
+            return True
+
+        # regex domain
+        if self.domain_regex and self.domain_regex.search(parsed_link.netloc) is not None:
+            return True
+
+        if parsed_link.netloc not in self.kbase["links.new_domains"]:
+            self.kbase["links.new_domains"].append(parsed_link.netloc)
+            self.add_result("New domain not enqueued %s" % parsed_link.netloc)
