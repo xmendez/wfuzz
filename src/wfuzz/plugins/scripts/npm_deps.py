@@ -27,7 +27,7 @@ class npm_deps(BasePlugin):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-        if fuzzresult.code != 200:
+        if fuzzresult.history.urlparse.fext != ".js" or fuzzresult.code != 200:
             return False
 
         self.match = self.REGEX_DEP.search(fuzzresult.history.content)
