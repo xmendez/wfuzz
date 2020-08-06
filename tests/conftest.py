@@ -3,6 +3,7 @@ import pytest
 
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzobjects import FPayloadManager
 from wfuzz.filters.ppfilter import FuzzResFilter
 from wfuzz.facade import Facade
 
@@ -92,7 +93,10 @@ def example_full_fuzzres_content(request):
     fr = FuzzRequest()
     fr.update_from_raw_http(raw_req, "http", raw_resp, raw_content)
 
-    return FuzzResult(history=fr)
+    fuzzres = FuzzResult(history=fr)
+    fuzzres.payload_man = FPayloadManager()
+
+    return fuzzres
 
 
 @pytest.fixture

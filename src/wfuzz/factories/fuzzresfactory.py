@@ -105,6 +105,7 @@ class FuzzResRecursiveBuilder:
         fr = copy.deepcopy(seed)
         fr.history.url = str(url)
         fr.rlevel = seed.rlevel + 1
+        fr.rlevel_desc += seed.payload_man.description()
         fr.item_type = FuzzType.BACKFEED
         fr.is_baseline = False
 
