@@ -69,7 +69,8 @@ usage = """%s\n\nOptions:
 \t
 \t-t N                      : Specify the number of concurrent connections (10 default)
 \t-s N                      : Specify time delay between requests (0 default)
-\t-R depth                  : Recursive path discovery being depth the maximum recursion level.
+\t-R depth                  : Recursive path discovery being depth the maximum recursion level (0 default)
+\t-D depth                  : Maximum link depth level (4 default)
 \t-L, --follow              : Follow HTTP redirections
 \t
 \t-u url                    : Specify a URL for the request.
@@ -120,6 +121,7 @@ verbose_usage = """%s\n\nOptions:
 \t-t N                      : Specify the number of concurrent connections (10 default)
 \t-s N                      : Specify time delay between requests (0 default)
 \t-R depth                  : Recursive path discovery being depth the maximum recursion level.
+\t-D depth                  : Maximum link depth level.
 \t-L,--follow               : Follow HTTP redirections
 \t--ip host:port            : Specify an IP to connect to instead of the URL's host in the format ip:port
 \t-Z                        : Scan mode (Connection errors will be ignored).

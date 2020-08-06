@@ -49,6 +49,7 @@ import wfuzz
                 "req_delay": 90,
                 "retries": 3,
                 "rlevel": 0,
+                "dlevel": 4,
                 "save": "",
                 "sc": [],
                 "scanmode": False,

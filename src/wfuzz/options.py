@@ -93,6 +93,7 @@ class FuzzSession(UserDict):
             req_delay=int(Facade().sett.get("connection", "req_delay")),
             retries=int(Facade().sett.get("connection", "retries")),
             rlevel=0,
+            dlevel=4,
             scanmode=False,
             delay=None,
             concurrent=int(Facade().sett.get("connection", "concurrent")),

@@ -295,6 +295,7 @@ class JobMan(FuzzQueue):
         self.__walking_threads = Queue(20)
         self.selected_plugins = selected_plugins
         self.cache = options.cache
+        self.max_dlevel = options.get("dlevel")
 
     def get_name(self):
         return "Jobman"
@@ -348,8 +349,9 @@ class JobMan(FuzzQueue):
                     self._throw(item._exception)
                 res.plugins_res.append(item)
             elif item._seed is not None:
-                if self.options["no_cache"] or self.cache.update_cache(
-                    item._seed.history, "backfeed"
+                cache_hit = self.cache.update_cache(item._seed.history, "backfeed")
+                if (self.options["no_cache"] or cache_hit) and (
+                    self.max_dlevel == 0 or self.max_dlevel >= res.rlevel
                 ):
                     self.stats.backfeed.inc()
                     self.stats.pending_fuzz.inc()

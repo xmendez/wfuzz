@@ -17,7 +17,7 @@ from .common import verbose_usage
 from wfuzz import __version__ as version
 from .output import table_print
 
-short_opts = "hLAZX:vcb:e:R:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
+short_opts = "hLAZX:vcb:e:R:D:d:z:r:f:t:w:V:H:m:f:o:s:p:w:u:"
 long_opts = [
     "efield=",
     "no-cache",
@@ -543,18 +543,6 @@ class CLParser:
             options["allvars"] = str(optsd["-V"][0])
 
     def _parse_conn_options(self, optsd, conn_options):
-        """
-        conn_options = dict(
-            proxies = None,
-            conn_delay = 90,
-            req_delay = None,
-            rlevel = 0,
-            scanmode = False,
-            delay = None,
-            concurrent = 10,
-        )
-        """
-
         if "-p" in optsd:
             proxy = []
 
@@ -578,6 +566,9 @@ class CLParser:
 
         if "-R" in optsd:
             conn_options["rlevel"] = int(optsd["-R"][0])
+
+        if "-D" in optsd:
+            conn_options["dlevel"] = int(optsd["-D"][0])
 
         if "-Z" in optsd:
             conn_options["scanmode"] = True
