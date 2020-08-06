@@ -15,14 +15,8 @@ from queue import Queue
             b'<link rel="alternate" href="https://www.wfuzz.org/" hreflang="en-AE" />',
             ["https://www.wfuzz.org/"],
         ),
-        (
-            b'<link rel="dns-prefetch" href="https://www.wfuzz.io">\n',
-            [],
-        ),
-        (
-            b'<script src="//js.wfuzz.org/sttc/main.93d0d236.js"></script>',
-            [],
-        ),
+        (b'<link rel="dns-prefetch" href="https://www.wfuzz.io">\n', [],),
+        (b'<script src="//js.wfuzz.org/sttc/main.93d0d236.js"></script>', [],),
     ],
     indirect=["example_full_fuzzres_content"],
 )
@@ -40,7 +34,9 @@ def test_parsed_links(example_full_fuzzres_content, get_plugin, expected_links):
     while not links_plugin.results_queue.empty():
         results.append(links_plugin.results_queue.get())
 
-    assert [fzres._seed.history.url for fzres in results if fzres._seed] == expected_links
+    assert [
+        fzres._seed.history.url for fzres in results if fzres._seed
+    ] == expected_links
 
 
 @pytest.mark.parametrize(
@@ -72,4 +68,6 @@ def test_regex_option(example_full_fuzzres_content, get_plugin, expected_links):
     while not links_plugin.results_queue.empty():
         results.append(links_plugin.results_queue.get())
 
-    assert [fzres._seed.history.url for fzres in results if fzres._seed] == expected_links
+    assert [
+        fzres._seed.history.url for fzres in results if fzres._seed
+    ] == expected_links

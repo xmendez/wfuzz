@@ -20,8 +20,12 @@ class npm_deps(BasePlugin):
     parameters = ()
 
     REGEX_PATT = re.compile(r'"([^"]+)":"([^"]+)"', re.MULTILINE | re.DOTALL)
-    REGEX_DEP = re.compile(r'dependencies:\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    REGEX_DEV_DEP = re.compile(r'devdependencies:\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    REGEX_DEP = re.compile(
+        r"dependencies:\{(.*?)\}", re.MULTILINE | re.DOTALL | re.IGNORECASE
+    )
+    REGEX_DEV_DEP = re.compile(
+        r"devdependencies:\{(.*?)\}", re.MULTILINE | re.DOTALL | re.IGNORECASE
+    )
 
     def __init__(self):
         BasePlugin.__init__(self)

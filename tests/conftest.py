@@ -90,9 +90,7 @@ def example_full_fuzzres_content(request):
         "Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT\n",
     )
     fr = FuzzRequest()
-    fr.update_from_raw_http(
-        raw_req, "http", raw_resp, raw_content
-    )
+    fr.update_from_raw_http(raw_req, "http", raw_resp, raw_content)
 
     return FuzzResult(history=fr)
 
