@@ -385,14 +385,15 @@ class RecursiveQ(FuzzQueue):
             if self.cache.update_cache(fuzz_res.history, "recursion"):
                 self.stats.pending_seeds.inc()
                 seed = resfactory.create("seed_from_recursion", fuzz_res)
-                seed.plugins_res.append(
+                self.send(seed)
+
+                fuzz_res.plugins_res.append(
                     plugin_factory.create(
                         "plugin_from_finding",
                         "Recursion",
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                     )
                 )
-                self.send(seed)
 
         # send new result
         self.send(fuzz_res)
