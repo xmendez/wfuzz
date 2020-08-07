@@ -357,7 +357,7 @@ class FuzzResult(FuzzItem):
             return ret_str + "! " + str(self.exception)
 
         if self.rlevel > 1:
-            return self.rlevel_desc + ret_str
+            return self.rlevel_desc + " - " + ret_str
 
         return ret_str
 

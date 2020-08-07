@@ -91,6 +91,8 @@ class SeedRecursiveBuilder:
         new_seed = copy.deepcopy(seed)
         new_seed.history.url = seed.history.recursive_url + "FUZZ"
         new_seed.rlevel += 1
+        if new_seed.rlevel_desc:
+            new_seed.rlevel_desc += " - "
         new_seed.rlevel_desc += seed.payload_man.description()
         new_seed.item_type = FuzzType.SEED
         new_seed.payload_man = payman_factory.create(
@@ -105,6 +107,8 @@ class FuzzResRecursiveBuilder:
         fr = copy.deepcopy(seed)
         fr.history.url = str(url)
         fr.rlevel = seed.rlevel + 1
+        if fr.rlevel_desc:
+            fr.rlevel_desc += " - "
         fr.rlevel_desc += seed.payload_man.description()
         fr.item_type = FuzzType.BACKFEED
         fr.is_baseline = False
