@@ -58,7 +58,7 @@ class FuzzResFilter:
             r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
         ).setParseAction(self._compute_fuzz_symbol)
         res_symbol = Regex(
-            r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|h|w|c|(r|history)\.\w+(\w|_|-|\.)*)"
+            r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|w|c|(r|history)(\w|_|-|\.)*|h)"
         ).setParseAction(self._compute_res_symbol)
         bbb_symbol = Regex(
             r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
