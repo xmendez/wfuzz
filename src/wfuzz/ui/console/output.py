@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import math
+import string
 import operator
 from functools import reduce
 
@@ -97,7 +98,9 @@ def wrap_always_list(alltext, width):
             text[width * i : width * (i + 1)]
             for i in range(int(math.ceil(1.0 * len(text) / width)))
         ]:
-            text_list.append(subtext)
+            text_list.append(
+                "".join([char if char in string.printable else "." for char in subtext])
+            )
     return text_list
 
 
