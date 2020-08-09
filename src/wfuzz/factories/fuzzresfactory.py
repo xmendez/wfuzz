@@ -31,6 +31,7 @@ class FuzzResultDictioBuilder:
         res.update_from_options(options)
 
         SeedBuilderHelper.replace_markers(res.history, res.payload_man)
+        res.nres = next(FuzzResult.newid)
 
         return res
 
@@ -71,6 +72,7 @@ class FuzzResultAllVarBuilder:
         fuzzres.payload_man = payman_factory.create("empty_payloadman", payload)
         fuzzres.payload_man.update_from_dictio([payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
+        fuzzres.nres = next(FuzzResult.newid)
 
         return fuzzres
 
