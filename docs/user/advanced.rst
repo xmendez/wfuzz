@@ -743,11 +743,11 @@ If you do not want to perform any request, just find some specific HTTP request 
 
 For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
 
-    $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
+    $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken'"
 
 Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and therefore the above will find all the requests exposing the CSRF token in the URL.
 
-You can also select the field to show, for example::
+You can also select the fields to show, for example::
 
     $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
     artist=5
