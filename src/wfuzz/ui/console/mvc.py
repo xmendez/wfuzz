@@ -293,9 +293,6 @@ class View:
         self._print_header(rows, widths)
 
     def result(self, res):
-        if self.printed_lines > 0:
-            self.term.erase_lines(self.printed_lines + 1)
-
         if self.verbose:
             self._print_verbose(res)
         else:
@@ -320,13 +317,10 @@ class View:
 
             self.printed_lines = 0
 
-    def footer(self, summary):
         if self.printed_lines > 0:
             self.term.erase_lines(self.printed_lines + 1)
 
-        self.term.erase_lines(self.printed_lines + 2)
-
-        sys.stdout.write("\n\r")
+    def footer(self, summary):
         sys.stdout.write("\n\r")
 
         print(summary)

@@ -267,9 +267,8 @@ class Term:
         sys.stdout.write("\033[" + str(lines) + "A")
 
     def erase_lines(self, lines):
-        if lines <= 1:
+        for i in range(lines - 1):
             sys.stdout.write("\r" + Term.delete)
-        else:
-            for i in range(lines - 1):
-                sys.stdout.write("\r" + Term.delete)
-                sys.stdout.write(Term.oneup)
+            sys.stdout.write(Term.oneup)
+
+        sys.stdout.write("\r" + Term.delete)
