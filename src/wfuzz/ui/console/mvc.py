@@ -11,7 +11,7 @@ from wfuzz.fuzzobjects import FuzzWordType, FuzzType
 
 from .common import exec_banner, Term
 from .getch import _Getch
-from .output import getTerminalSize, wrap_always
+from .output import getTerminalSize, wrap_always_list
 
 usage = """\r\n
 Interactive keyboard commands:\r\n
@@ -162,7 +162,7 @@ class View:
         self.verbose = session_options["verbose"]
         self.previous = session_options["previous"]
         self.term = Term()
-        self.printed_lines = 1
+        self.printed_lines = 0
 
     def _print_verbose(self, res, print_nres=True):
         txt_colour = (
@@ -202,44 +202,33 @@ class View:
     def _print_header(self, rows, maxWidths):
         print("=" * (3 * len(maxWidths) + sum(maxWidths[:-1]) + 10))
         self._print_line(rows, maxWidths)
-        sys.stdout.write("\n\r")
         print("=" * (3 * len(maxWidths) + sum(maxWidths[:-1]) + 10))
         print("")
 
     def _print_line(self, rows, maxWidths):
         def wrap_row(rows, maxWidths):
             newRows = [
-                wrap_always(item[0], width).split("\n")
-                for item, width in zip(rows, maxWidths)
+                wrap_always_list(item[0], width) for item, width in zip(rows, maxWidths)
             ]
             return [[substr or "" for substr in item] for item in zip_longest(*newRows)]
 
+        def print_row(row, rows):
+            sys.stdout.write(
+                "   ".join(
+                    [
+                        colour + str.ljust(str(item), width) + Term.reset
+                        for (item, width, colour) in zip(
+                            row, maxWidths, [colour[1] for colour in rows]
+                        )
+                    ]
+                )
+            )
+
         new_rows = wrap_row(rows, maxWidths)
 
-        for row in new_rows[:-1]:
-            sys.stdout.write(
-                "   ".join(
-                    [
-                        colour + str.ljust(str(item), width) + Term.reset
-                        for (item, width, colour) in zip(
-                            row, maxWidths, [colour[1] for colour in rows]
-                        )
-                    ]
-                )
-            )
+        for row in new_rows:
+            print_row(row, rows)
             sys.stdout.write("\n\r")
-
-        for row in new_rows[-1:]:
-            sys.stdout.write(
-                "   ".join(
-                    [
-                        colour + str.ljust(str(item), width) + Term.reset
-                        for (item, width, colour) in zip(
-                            row, maxWidths, [colour[1] for colour in rows]
-                        )
-                    ]
-                )
-            )
 
         sys.stdout.flush()
         return len(new_rows)
@@ -304,7 +293,8 @@ class View:
         self._print_header(rows, widths)
 
     def result(self, res):
-        self.term.erase_lines(self.printed_lines)
+        if self.printed_lines > 0:
+            self.term.erase_lines(self.printed_lines + 1)
 
         if self.verbose:
             self._print_verbose(res)
@@ -318,27 +308,24 @@ class View:
                 and res.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES
             ):
                 prev_res = res.payload_man.get_payload_content(1)
-                sys.stdout.write("\n\r")
                 if self.verbose:
                     self._print_verbose(prev_res, print_nres=False)
                 else:
                     self._print(prev_res, print_nres=False)
 
             if res.plugins_res:
-                sys.stdout.write("\n\r")
-
-                for i in res.plugins_res[:-1]:
+                for i in res.plugins_res:
                     sys.stdout.write(" |_  %s\r" % i.issue)
                     sys.stdout.write("\n\r")
 
-                for i in res.plugins_res[-1:]:
-                    sys.stdout.write(" |_  %s\r" % i.issue)
-
-            for i in range(self.printed_lines):
-                sys.stdout.write("\n\r")
+            self.printed_lines = 0
 
     def footer(self, summary):
-        self.term.erase_lines(self.printed_lines + 1)
+        if self.printed_lines > 0:
+            self.term.erase_lines(self.printed_lines + 1)
+
+        self.term.erase_lines(self.printed_lines + 2)
+
         sys.stdout.write("\n\r")
         sys.stdout.write("\n\r")
 

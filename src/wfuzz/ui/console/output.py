@@ -90,6 +90,17 @@ def wrap_always(text, width):
     )
 
 
+def wrap_always_list(alltext, width):
+    text_list = []
+    for text in alltext.splitlines():
+        for subtext in [
+            text[width * i : width * (i + 1)]
+            for i in range(int(math.ceil(1.0 * len(text) / width)))
+        ]:
+            text_list.append(subtext)
+    return text_list
+
+
 def table_print(rows, width=80):
     print(
         indent(
