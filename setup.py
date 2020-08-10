@@ -12,11 +12,17 @@ version = re.search(
     re.M
 ).group(1)
 
+docs_requires = [
+    "Sphinx",
+]
 
 dev_requires = [
     'mock',
+    'coverage',
+    'codecov',
     'netaddr',
     'pip-tools',
+    'flake8==3.8.3',
 ]
 
 install_requires = [
@@ -30,8 +36,9 @@ install_requires = [
     'pytest',
 ]
 
+
 if sys.platform.startswith("win"):
-    install_requires += ["colorama"]
+    install_requires += ["colorama>=0.4.0"]
 
 
 setup(

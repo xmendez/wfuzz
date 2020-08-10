@@ -153,8 +153,10 @@ class HttpPool:
 
             if ptype == "SOCKS5":
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS5)
+                c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             elif ptype == "SOCKS4":
                 c.setopt(pycurl.PROXYTYPE, pycurl.PROXYTYPE_SOCKS4)
+                c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             elif ptype == "HTTP":
                 c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             else:
