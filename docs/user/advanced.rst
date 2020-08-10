@@ -490,7 +490,8 @@ FuzzRequest object's attribute (you need to use the r. prefix) such as:
 ============================ =============================================
 Name                         Description
 ============================ =============================================
-url                          HTTP request's value
+url                          HTTP request's url
+urlp                         HTTP request's parsed url (see section below).
 method                       HTTP request's verb
 scheme                       HTTP request's scheme
 host                         HTTP request's host
@@ -504,8 +505,8 @@ cookies.response.<<name>>    Specified HTTP response cookie
 headers.all                  All HTTP request and response headers
 headers.request              HTTP request headers
 headers.response             HTTP response headers
-headers.request.<<name>>     Specified HTTP request given header
-headers.response.<<name>>    Specified HTTP response given header
+headers.request.<<name>>     Specified HTTP request header case insensitive
+headers.response.<<name>>    Specified HTTP response header insensitive
 params.all                   All HTTP request GET and POST parameters
 params.get                   All HTTP request GET parameters
 params.post                  HTTP request POST parameters in returned as a dictionary
@@ -724,7 +725,10 @@ The above command will generate HTTP requests such as the following::
 
 You can filter the payload using the filter grammar as described before.
 
-The assignment operators can be used to modify previous requests easily, for example, let's add a quote to every parameter looking for SQL injection issues::
+Request mangling
+^^^^^^^^^
+
+The assignment operators can be used to modify previous requests, for example, let's add a quote to every string parameter prior of performing the HTTP request::
 
     $ wfuzz -z range,1-5 --oF /tmp/session http://testphp.vulnweb.com/artists.php?artist=FUZZ
     000003:  C=200    118 L      455 W         5326 Ch        "3"
@@ -736,25 +740,5 @@ The assignment operators can be used to modify previous requests easily, for exa
     |_  Error identified: Warning: mysql_fetch_array()
     ...
 
-wfpayload
-^^^^^^^^^
 
-If you do not want to perform any request, just find some specific HTTP request you can use the wfpayload executable.
-
-For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
-
-    $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken'"
-
-Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and therefore the above will find all the requests exposing the CSRF token in the URL.
-
-You can also select the fields to show, for example::
-
-    $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
-    artist=5
-    ...
-
-Or::
-
-    $ wfpayload -z wfuzzp --zD /tmp/session --efield r.params.get
-    000000006:   200        99 L     272 W    3868 Ch     "5 | artist=5"
-    ...
+The above command looks for simple SQL injection issues.

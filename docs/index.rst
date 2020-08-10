@@ -108,6 +108,7 @@ User Guide
    user/getting
    user/basicusage
    user/advanced
+   user/wfpayload
 
 Library Guide	
 ==================	
