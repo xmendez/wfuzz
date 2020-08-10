@@ -250,13 +250,13 @@ class FuzzResFilter:
             if exp_operator in ["=", "=="]:
                 return str(leftvalue) == str(rightvalue)
             elif exp_operator == "<=":
-                return leftvalue <= rightvalue
+                return int(leftvalue) <= int(rightvalue)
             elif exp_operator == ">=":
-                return leftvalue >= rightvalue
+                return int(leftvalue) >= int(rightvalue)
             elif exp_operator == "<":
-                return leftvalue < rightvalue
+                return int(leftvalue) < int(rightvalue)
             elif exp_operator == ">":
-                return leftvalue > rightvalue
+                return int(leftvalue) > int(rightvalue)
             elif exp_operator == "!=":
                 return leftvalue != rightvalue
             elif exp_operator == "=~":
