@@ -23,7 +23,7 @@ dev_requires = [
     'netaddr',
     'pip-tools',
     'flake8==3.8.3',
-    'black==19.10b0',
+    'black==19.10b0;python_version>"3.5"',
 ]
 
 install_requires = [
