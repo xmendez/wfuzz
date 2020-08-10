@@ -15,8 +15,11 @@ version = re.search(
 
 dev_requires = [
     'mock',
+    'coverage',
+    'codecov',
     'netaddr',
     'pip-tools',
+    'flake8==3.7.9',
 ]
 
 install_requires = [

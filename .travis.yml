@@ -11,12 +11,8 @@ python:
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
-  - pip install coverage 
-  - pip install mock
-  - pip install netaddr
-  - pip install flake8
-  - pip install codecov
-  - python setup.py install
+  - make install-dev
+  
 script:
   - flake8 --ignore=E501,E402,F401,W504 src tests
   - coverage run --append -m unittest discover -v -s tests/
