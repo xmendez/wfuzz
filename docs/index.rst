@@ -18,8 +18,7 @@ Wfuzz: The Web fuzzer
 .. image:: https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master
     :target: https://codecov.io/github/xmendez/wfuzz
 
-Wfuzz provides a framework to automate web applications security assessments.
-Wfuzz could help you to secure your web applications by finding and exploiting web application vulnerabilities.
+Wfuzz provides a framework to automate web applications security assessments and could help you to secure your web applications by finding and exploiting web application vulnerabilities.
 
 Wfuzz supports Python 3. The use of **Python 3** is preferred (and faster) over Python 2. 
 
