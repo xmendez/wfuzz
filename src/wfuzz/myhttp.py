@@ -9,6 +9,18 @@ from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
 from .factories.reqresp_factory import ReqRespRequestFactory
 
+# See https://curl.haxx.se/libcurl/c/libcurl-errors.html
+UNRECOVERABLE_PYCURL_EXCEPTIONS = [
+    28,  # Operation timeout. The specified time-out period was reached according to the conditions.
+    7,  # Failed to connect() to host or proxy.
+    6,  # Couldn't resolve host. The given remote host was not resolved.
+    5,  # Couldn't resolve proxy. The given proxy host could not be resolved.
+]
+
+# Other common pycurl exceptions:
+# Exception in perform (35, 'error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table')
+# Exception in perform (18, 'SSL read: error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table, errno 11')
+
 
 class HttpPool:
     HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ("basic", "ntlm", "digest")
@@ -183,19 +195,7 @@ class HttpPool:
             self.processed += 1
 
     def _process_curl_should_retry(self, res, errno, poolid):
-        # Usual suspects:
-
-        # Exception in perform (35, 'error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table')
-        # Exception in perform (18, 'SSL read: error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table, errno 11')
-        # Exception in perform (28, 'Connection time-out')
-        # Exception in perform (7, "couldn't connect to host")
-        # Exception in perform (6, "Couldn't resolve host 'www.xxx.com'")
-        # (28, 'Operation timed out after 20000 milliseconds with 0 bytes received')
-        # Exception in perform (28, 'SSL connection timeout')
-        # 5 Couldn't resolve proxy 'aaa'
-
-        # retry requests with recoverable errors
-        if errno not in [28, 7, 6, 5]:
+        if errno not in UNRECOVERABLE_PYCURL_EXCEPTIONS:
             res.history.wf_retries += 1
 
             if res.history.wf_retries < self.options.get("retries"):
