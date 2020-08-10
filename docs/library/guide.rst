@@ -1,5 +1,10 @@
-Library Options
+Python library
 ===============
+
+Wfuzz's Python library allows to automate tasks and integrate Wfuzz into new tools or scripts.
+
+Library Options
+---------------
 
 All options that are available within the Wfuzz command line interface are available as library options:
 
@@ -40,7 +45,7 @@ CLI Option               Library Option
 These options can be used in the main library interfaces: fuzz, payload or session indistinctly.
 
 Fuzzing a URL
-=============
+-------------
 
 Fuzzing a URL with wfuzz library is very simple. Firstly, import the wfuzz module::
 
@@ -61,7 +66,7 @@ Now, let's try to fuzz a web page to look for hidden content, such as directorie
 Now, we have a FuzzResult object called r. We can get all the information we need from this object.
 
 FuzzSession object
-==================
+------------------
 
 A FuzzSession object has all the methods of the main wfuzz API.
 
@@ -87,7 +92,7 @@ FuzzSession can also be used as context manager::
 
 
 Get payload
-===========
+-----------
 
 The get_payload function generates a Wfuzz payload from a Python iterable. It is a quick and flexible way of getting a payload programmatically without using Wfuzz payloads plugins.
 
@@ -123,7 +128,7 @@ The get_payloads method can be used when various payloads are needed::
     00019:  C=404      7 L        12 W          168 Ch        "0 - a"
 
 Get session
-===========
+-----------
 
 The get_session function generates a Wfuzz session object from the specified command line. It is a quick way of getting a payload programmatically from a string representing CLI options::
 
@@ -146,7 +151,7 @@ The get_session function generates a Wfuzz session object from the specified com
     00010:  C=404      7 L        12 W          168 Ch        "9"
 
 Interacting with the results
-============================
+----------------------------
 
 Once a Wfuzz result is available the grammar defined in the filter language can be used to work with the results' values. For example::
 
