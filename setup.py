@@ -12,6 +12,9 @@ version = re.search(
     re.M
 ).group(1)
 
+docs_requires = [
+    "Sphinx",
+]
 
 dev_requires = [
     'mock',
@@ -32,8 +35,9 @@ install_requires = [
     'chardet',
 ]
 
+
 if sys.platform.startswith("win"):
-    install_requires += ["colorama"]
+    install_requires += ["colorama>=0.4.0"]
 
 
 setup(

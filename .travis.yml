@@ -11,7 +11,8 @@ python:
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
-  - make install-dev
+ - make install-dev
+ - python setup.py install
   
 script:
   - flake8 --ignore=E501,E402,F401,W504 src tests
