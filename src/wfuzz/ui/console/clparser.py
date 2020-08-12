@@ -4,7 +4,7 @@ import getopt
 import warnings
 from collections import defaultdict
 
-from wfuzz.helpers.file_func import get_path
+from wfuzz.helpers.file_func import get_filter_help_file
 from wfuzz.helpers.obj_dyn import allowed_fields
 from wfuzz.filters.ppfilter import PYPARSING
 from wfuzz.facade import Facade
@@ -243,22 +243,14 @@ class CLParser:
             sys.exit(0)
 
         if "--filter-help" in optsd:
-            text_regex = re.compile(
-                "Filter Language\n---------------\n\n(.*?)Filtering results",
-                re.MULTILINE | re.DOTALL,
+            FILTER_HELP_REGEX_EXP = (
+                "Filter Language\n---------------\n\n(.*?)Filtering results"
             )
-            try:
-                print(
-                    text_regex.search(
-                        open(get_path("../docs/user/advanced.rst")).read()
-                    ).group(1)
-                )
-            except IOError:
-                print(
-                    text_regex.search(
-                        open(get_path("../../docs/user/advanced.rst")).read()
-                    ).group(1)
-                )
+            FILTER_HELP_REGEX = re.compile(
+                FILTER_HELP_REGEX_EXP, re.MULTILINE | re.DOTALL
+            )
+
+            print(FILTER_HELP_REGEX.search(get_filter_help_file()).group(1))
 
             sys.exit(0)
 

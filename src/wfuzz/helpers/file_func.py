@@ -1,10 +1,26 @@
 import os
 import sys
+import re
+import pkg_resources
 
 from chardet.universaldetector import UniversalDetector
 import chardet
 
 from ..exception import FuzzExceptInternalError
+
+
+def get_filter_help_file():
+    FILTER_HELP_FILE = "advanced.rst"
+    FILTER_HELP_DEV_FILE = "../../../docs/user/advanced.rst"
+
+    filter_help_text = None
+    try:
+        fname = pkg_resources.resource_filename("wfuzz", FILTER_HELP_FILE)
+        filter_help_text = open(fname).read()
+    except IOError:
+        filter_help_text = open(get_path(FILTER_HELP_DEV_FILE)).read()
+
+    return filter_help_text
 
 
 def get_home(check=False, directory=None):
