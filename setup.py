@@ -71,6 +71,7 @@ try:
         install_requires=install_requires,
         extras_require={
             'dev': dev_requires,
+            'docs': docs_requires,
         },
         python_requires=">=2.6",
         classifiers=(
