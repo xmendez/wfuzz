@@ -598,18 +598,18 @@ Results with plugin issues can be filter as well::
 
     $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "plugins~'nginx'"
 
-Filtering a payload
+Payload mangling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Slice
+Slicing a payload
 """""""
 
-The --slice command line parameter in conjunction with the described filter language allows you to filter a payload.
+The --slice command line parameter in conjunction with the described language allows you to filter a payload.
 The payload to filter, specified by the -z switch must precede --slice command line parameter.
 
-An example is shown below::
+The specified expression must return a boolean value, an example, using the unique operator is shown below::
 
-    $ wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
+    $ wfuzz-cli.py -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
@@ -630,8 +630,21 @@ An example is shown below::
     Filtered Requests: 0
     Requests/sec.: 62.85908
     
-It is worth noting that the type of payload dictates the available language symbols. For example, a dictionary payload such as the one in the example
+It is worth noting that, the type of payload dictates the available language symbols. For example, a dictionary payload such as in the example
 above does not have a full FuzzResult object context and therefore object fields cannot be used.
+
+Re-writing a payload
+"""""""
+
+The slice command parameter also allows to re-write a payload. Any value, other than a boolean, returned by the
+specified expression will be interpreted not to filter the source payload but to change its value.
+
+For example::
+
+    $ ./wfuzz -z list --zD one-two-three --slice "FUZZ|upper()" -u https://www.wfuzz.io/FUZZ
+    000000001:   404        11 L     72 W     1560 Ch     "ONE"
+    000000003:   404        11 L     72 W     1562 Ch     "THREE"
+    000000002:   404        11 L     72 W     1560 Ch     "TWO"
 
 Prefilter
 """""""""
@@ -640,6 +653,8 @@ The --prefilter command line parameter is similar to --slice but is not associat
 performed just before any HTTP request is done. 
 
 In this context you are filtering a FuzzResult object, which is the result of combining all the input payloads, that is has not been updated with the result of performing its associated HTTP request yet and therefore lacking some information.
+
+The --prefilter command cannot be used to re-write a payload. The assignment operators can be used to modify the FuzzResult object's fields but expressions other booleans will be ignored.
 
 Reutilising previous results
 --------------------------------------

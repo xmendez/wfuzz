@@ -1,4 +1,4 @@
-from .exception import FuzzExceptNoPluginError
+from .exception import FuzzExceptNoPluginError, FuzzExceptBadOptions
 from .facade import Facade
 from .filters.ppfilter import FuzzResFilterSlice
 from .fuzzobjects import FuzzWord, FuzzWordType
@@ -129,9 +129,21 @@ class SliceIt(BaseDictionary):
         return self.payload.get_type()
 
     def next_word(self):
+        # can be refactored using the walrus operator in python 3.8
         item = next(self.payload)
-        while not self.ffilter.is_visible(item.content):
+        filter_ret = self.ffilter.is_visible(item.content)
+
+        if not isinstance(filter_ret, bool) and item.type == FuzzWordType.FUZZRES:
+            raise FuzzExceptBadOptions(
+                "The payload type cannot be modified from FuzzResult to word."
+            )
+
+        while isinstance(filter_ret, bool) and not filter_ret:
             item = next(self.payload)
+            filter_ret = self.ffilter.is_visible(item.content)
+
+        if not isinstance(filter_ret, bool):
+            return FuzzWord(filter_ret, item.type)
 
         return item
 

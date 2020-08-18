@@ -244,6 +244,10 @@ class FuzzResFilter:
     def __compute_expr(self, tokens):
         leftvalue, exp_operator, rightvalue = tokens[0]
 
+        # a bit hacky but we don't care about fields in the right hand side of the expression
+        if len(self.stack) > 1:
+            self.stack.pop()
+
         field_to_set = self.stack.pop() if self.stack else None
 
         try:
