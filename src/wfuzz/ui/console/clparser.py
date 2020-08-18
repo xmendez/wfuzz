@@ -463,20 +463,6 @@ class CLParser:
             options["payloads"] = payloads_list
 
     def _parse_seed(self, url, optsd, options):
-        """
-        options = dict(
-            url = url,
-            method = None,
-            auth = (None, None),
-            follow = False,
-            head = False,
-            postdata = None,
-            headers = [(header, value)],
-            cookie = [],
-            allvars = None,
-        )
-        """
-
         if url:
             options["url"] = url
 
@@ -484,13 +470,13 @@ class CLParser:
             options["method"] = optsd["-X"][0]
 
         if "--basic" in optsd:
-            options["auth"] = ("basic", optsd["--basic"][0])
+            options["auth"] = {"method": "basic", "credentials": optsd["--basic"][0]}
 
         if "--digest" in optsd:
-            options["auth"] = ("digest", optsd["--digest"][0])
+            options["auth"] = {"method": "digest", "credentials": optsd["--digest"][0]}
 
         if "--ntlm" in optsd:
-            options["auth"] = ("ntlm", optsd["--ntlm"][0])
+            options["auth"] = {"method": "ntlm", "credentials": optsd["--ntlm"][0]}
 
         if "--follow" in optsd or "-L" in optsd:
             options["follow"] = True

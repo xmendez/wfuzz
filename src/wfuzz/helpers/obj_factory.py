@@ -57,12 +57,7 @@ class SeedBuilderHelper:
     FUZZ_MARKERS_REGEX = re.compile(
         r"(?P<full_marker>(?P<word>FUZ(?P<index>\d)*Z)(?P<nonfuzz_marker>(?:\[(?P<field>.*?)\])?(?P<full_bl>\{(?P<bl_value>.*?)\})?))"
     )
-    REQ_ATTR = [
-        "raw_request",
-        "scheme",
-        "method",
-        # "auth.credentials"
-    ]
+    REQ_ATTR = ["raw_request", "scheme", "method", "auth.credentials"]
 
     @staticmethod
     def _get_markers(text):
@@ -123,19 +118,22 @@ class SeedBuilderHelper:
         rawReq = str(freq)
         rawUrl = freq.redirect_url
         scheme = freq.scheme
-        auth_method, userpass = freq.auth
+        old_auth = freq.auth
 
         for payload in [
             payload for payload in fpm.get_payloads() if payload.marker is not None
         ]:
-            userpass = userpass.replace(payload.marker, str(payload.value))
+            if old_auth.method:
+                old_auth["credentials"] = old_auth["credentials"].replace(
+                    payload.marker, str(payload.value)
+                )
             rawUrl = rawUrl.replace(payload.marker, str(payload.value))
             rawReq = rawReq.replace(payload.marker, str(payload.value))
             scheme = scheme.replace(payload.marker, str(payload.value))
 
         freq.update_from_raw_http(rawReq, scheme)
         freq.url = rawUrl
-        if auth_method != "None":
-            freq.auth = (auth_method, userpass)
+        if old_auth.method:
+            freq.auth = old_auth
 
         return freq

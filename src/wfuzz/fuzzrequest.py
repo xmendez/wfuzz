@@ -18,8 +18,6 @@ from .mixins import FuzzRequestUrlMixing, FuzzRequestSoupMixing
 from .helpers.str_func import python2_3_convert_from_unicode
 from .helpers.obj_dic import DotDict
 
-auth_header = namedtuple("auth_header", "method credentials")
-
 
 class headers(object):
     class header(DotDict):
@@ -253,13 +251,16 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
 
     @property
     def auth(self):
-        m, up = self._request.getAuth()
-        return auth_header(m, up)
+        method, creds = self._request.getAuth()
+
+        return DotDict({"method": method, "credentials": creds})
 
     @auth.setter
-    def auth(self, ah):
-        method, credentials = ah
-        self._request.setAuth(method, credentials)
+    def auth(self, creds_dict):
+        self._request.setAuth(creds_dict["method"], creds_dict["credentials"])
+        method, creds = self._request.getAuth()
+
+        return DotDict({"method": method, "credentials": creds})
 
     @property
     def follow(self):
@@ -371,8 +372,8 @@ class FuzzRequest(FuzzRequestUrlMixing, FuzzRequestSoupMixing):
         # headers must be parsed first as they might affect how reqresp parases other params
         self.headers.request = dict(options["headers"])
 
-        if options["auth"][0] is not None:
-            self.auth = (options["auth"][0], options["auth"][1])
+        if options["auth"].get("method") is not None:
+            self.auth = options["auth"]
 
         if options["follow"]:
             self.follow = options["follow"]

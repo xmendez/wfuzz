@@ -99,7 +99,7 @@ class FuzzSession(UserDict):
             concurrent=int(Facade().sett.get("connection", "concurrent")),
             url="",
             method=None,
-            auth=(None, None),
+            auth={},
             follow=False,
             postdata=None,
             headers=[],

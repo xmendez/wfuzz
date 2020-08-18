@@ -1,6 +1,12 @@
 import pytest
 
+from wfuzz.fuzzobjects import FuzzWord, FuzzWordType
 from wfuzz.factories.fuzzfactory import SeedBuilderHelper
+from wfuzz.ui.console.clparser import CLParser
+from wfuzz.factories.fuzzresfactory import resfactory
+
+from wfuzz.helpers.obj_dyn import rgetattr
+import wfuzz.api
 
 
 @pytest.mark.parametrize(
@@ -100,3 +106,35 @@ from wfuzz.factories.fuzzfactory import SeedBuilderHelper
 )
 def test_get_marker_dict(full_fuzzreq, expected_result):
     assert SeedBuilderHelper().get_marker_dict(full_fuzzreq) == expected_result
+
+
+@pytest.mark.parametrize(
+    "session_string, dictio, expected_field, expected_result",
+    [
+        (
+            "wfuzz http://www.wfuzz.io/FUZZ",
+            [FuzzWord("sub1", FuzzWordType.WORD)],
+            "url",
+            "http://www.wfuzz.io/sub1",
+        ),
+        (
+            "wfuzz --basic FUZZ:FUZ2Z http://www.wfuzz.io/",
+            (FuzzWord("sub1", FuzzWordType.WORD), FuzzWord("sub2", FuzzWordType.WORD)),
+            "auth.credentials",
+            "sub1:sub2",
+        ),
+        (
+            "wfuzz --basic FUZZ:FUZ2Z http://www.wfuzz.io/",
+            (FuzzWord("sub1", FuzzWordType.WORD), FuzzWord("sub2", FuzzWordType.WORD)),
+            "auth.method",
+            "basic",
+        ),
+    ],
+)
+def test_replace_markers(session_string, dictio, expected_field, expected_result):
+    options = CLParser(session_string.split(" ")).parse_cl()
+    options.compile_seeds()
+
+    res = resfactory.create("fuzzres_from_options_and_dict", options, dictio)
+
+    assert rgetattr(res.history, expected_field) == expected_result

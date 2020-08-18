@@ -106,8 +106,8 @@ class FuzzRequestTest(unittest.TestCase):
         fr.url = "http://www.wfuzz.org/a"
         self.assertEqual(sorted(str(fr).split("\n")), sorted(raw_req.split("\n")))
 
-        fr.auth = ("basic", "admin:admin")
-        self.assertEqual(fr.auth, ("basic", "admin:admin"))
+        fr.auth = {"method": "basic", "credentials": "admin:admin"}
+        self.assertEqual(fr.auth, {"method": "basic", "credentials": "admin:admin"})
 
         fr.url = "FUZZ"
         self.assertEqual(fr.url, "FUZZ")

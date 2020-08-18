@@ -9,7 +9,7 @@ import wfuzz
             "-z range,0-4 http://127.0.0.1/FUZZ",
             {
                 "allvars": None,
-                "auth": (None, None),
+                "auth": {},
                 "colour": False,
                 "compiled_baseline": None,
                 "compiled_dictio": None,
