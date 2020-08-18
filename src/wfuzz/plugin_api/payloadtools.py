@@ -1,4 +1,8 @@
-from wfuzz.exception import FuzzExceptMissingAPIKey, FuzzExceptResourceParseError
+from wfuzz.exception import (
+    FuzzExceptMissingAPIKey,
+    FuzzExceptResourceParseError,
+    FuzzExceptPluginLoadError,
+)
 from wfuzz.facade import Facade
 from wfuzz.helpers.utils import MyCounter
 
@@ -18,9 +22,12 @@ from builtins import object
 from threading import Thread
 from queue import Queue
 
-import shodan
+IMPORTED_SHODAN = True
+try:
+    import shodan
+except ImportError:
+    IMPORTED_SHODAN = False
 
-# TODO: test cases
 m = {
     "matches": [
         {
@@ -252,6 +259,11 @@ class ShodanIter:
     SLOW_START = True
 
     def __init__(self, dork, page, limit):
+        if IMPORTED_SHODAN is False:
+            raise FuzzExceptPluginLoadError(
+                "shodan module not imported. Please, install shodan using pip"
+            )
+
         key = Facade().sett.get("plugins", "shodan_apikey")
         if not key:
             raise FuzzExceptMissingAPIKey(
