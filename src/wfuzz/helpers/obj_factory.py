@@ -128,10 +128,10 @@ class SeedBuilderHelper:
         for payload in [
             payload for payload in fpm.get_payloads() if payload.marker is not None
         ]:
-            userpass = userpass.replace(payload.marker, payload.value)
-            rawUrl = rawUrl.replace(payload.marker, payload.value)
-            rawReq = rawReq.replace(payload.marker, payload.value)
-            scheme = scheme.replace(payload.marker, payload.value)
+            userpass = userpass.replace(payload.marker, str(payload.value))
+            rawUrl = rawUrl.replace(payload.marker, str(payload.value))
+            rawReq = rawReq.replace(payload.marker, str(payload.value))
+            scheme = scheme.replace(payload.marker, str(payload.value))
 
         freq.update_from_raw_http(rawReq, scheme)
         freq.url = rawUrl
