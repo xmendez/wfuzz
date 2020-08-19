@@ -1,9 +1,9 @@
 from collections import namedtuple
 import wx.dataview as dv
 
-from wfuzz.filter import FuzzResFilter
+from wfuzz.filters.ppfilter import FuzzResFilter
 
-Row = namedtuple('Row', 'title colid width rtype field')
+Row = namedtuple("Row", "title colid width rtype field")
 
 
 class GUIModel(dv.PyDataViewIndexListModel):
@@ -17,7 +17,9 @@ class GUIModel(dv.PyDataViewIndexListModel):
             2: Row(title="Lines", colid=2, width=170, rtype="int", field="lines"),
             3: Row(title="Words", colid=3, width=170, rtype="int", field="words"),
             4: Row(title="Chars", colid=4, width=170, rtype="int", field="chars"),
-            5: Row(title="Payload", colid=5, width=170, rtype="string", field="description"),
+            5: Row(
+                title="Payload", colid=5, width=170, rtype="string", field="description"
+            ),
         }
 
     def GetColumnType(self, col):
@@ -57,7 +59,7 @@ class GUIModel(dv.PyDataViewIndexListModel):
             value1 = int(value1)
             value2 = int(value2)
 
-        return ((value1 > value2) - (value1 < value2))
+        return (value1 > value2) - (value1 < value2)
 
     def DeleteRows(self, rows):
         # make a copy since we'll be sorting(mutating) the list

@@ -1,20 +1,24 @@
 import sys
 from wfuzz import __version__ as version
 import os
+
 if os.name == "nt":
     import colorama
+
     colorama.init()
 
 
-examples_banner = '''Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+examples_banner = """Examples:\n\twfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
 \twfuzz -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
-\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ'''
+\twfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ"""
 
-exec_banner = '''********************************************************\r
+exec_banner = """********************************************************\r
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*\r
-********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
+********************************************************\r\n""".format(
+    version=version, align=" ", width1=29 - len(version)
+)
 
-help_banner = '''********************************************************
+help_banner = """********************************************************
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Version up to 1.4c coded by:                         *
@@ -23,24 +27,34 @@ help_banner = '''********************************************************
 *                                                      *
 * Version 1.4d to {version} coded by: {align: <{width2}}*
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n'''.format(version=version, width1=29 - len(version), align=' ', width2=26 - len(version))
+********************************************************\r\n""".format(
+    version=version, width1=29 - len(version), align=" ", width2=26 - len(version)
+)
 
-help_banner2 = '''********************************************************
+help_banner2 = """********************************************************
 * Wfuzz {version} - The Web Fuzzer {align: <{width1}}*
 *                                                      *
 * Coded by:                                            *
 *                                                      *
 * Xavier Mendez (xmendez@edge-security.com)            *
-********************************************************\r\n'''.format(version=version, align=' ', width1=29 - len(version))
+********************************************************\r\n""".format(
+    version=version, align=" ", width1=29 - len(version)
+)
 
-header_usage = '''Usage:\twfuzz [options] -z payload,params <url>\r\n
+header_usage_wfpayload = """Usage:\twfpayload [options] -z payload --zD params\r\n
+"""
+
+header_usage = """Usage:\twfuzz [options] -z payload,params <url>\r\n
 \tFUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload.
 \tFUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
-'''
+"""
 
-brief_usage = '''%s\n\n%s\n\nType wfuzz -h for further information or --help for advanced usage.''' % (header_usage, examples_banner)
+brief_usage = (
+    """%s\n\n%s\n\nType wfuzz -h for further information or --help for advanced usage."""
+    % (header_usage, examples_banner)
+)
 
-usage = '''%s\n\nOptions:
+usage = """%s\n\nOptions:
 \t-h                        : This help
 \t--help                    : Advanced help
 \t--version                 : Wfuzz version details
@@ -55,7 +69,8 @@ usage = '''%s\n\nOptions:
 \t
 \t-t N                      : Specify the number of concurrent connections (10 default)
 \t-s N                      : Specify time delay between requests (0 default)
-\t-R depth                  : Recursive path discovery being depth the maximum recursion level.
+\t-R depth                  : Recursive path discovery being depth the maximum recursion level (0 default)
+\t-D depth                  : Maximum link depth level (4 default)
 \t-L, --follow              : Follow HTTP redirections
 \t
 \t-u url                    : Specify a URL for the request.
@@ -75,9 +90,11 @@ usage = '''%s\n\nOptions:
 \t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex             : Show/Hide responses with the specified regex within the content
-''' % (header_usage)
+""" % (
+    header_usage
+)
 
-verbose_usage = '''%s\n\nOptions:
+verbose_usage = """%s\n\nOptions:
 \t-h/--help                 : This help
 \t--help                    : Advanced help
 \t--filter-help             : Filter language specification
@@ -95,8 +112,8 @@ verbose_usage = '''%s\n\nOptions:
 \t--interact                : (beta) If selected,all key presses are captured. This allows you to interact with the program.
 \t--dry-run                 : Print the results of applying the requests without actually making any HTTP request.
 \t--prev                    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
-\t--efield <expr>           : Show the specified language expression together with the current payload
-\t--field <expr>            : Do not show the payload but only the specified language expression
+\t--efield <expr>           : Show the specified language expression together with the current payload. Repeat for various fields.
+\t--field <expr>            : Do not show the payload but only the specified language expression. Repeat for various fields.
 \t
 \t-p addr                   : Use Proxy in format ip:port:type. Repeat option for using various proxies.
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
@@ -104,6 +121,7 @@ verbose_usage = '''%s\n\nOptions:
 \t-t N                      : Specify the number of concurrent connections (10 default)
 \t-s N                      : Specify time delay between requests (0 default)
 \t-R depth                  : Recursive path discovery being depth the maximum recursion level.
+\t-D depth                  : Maximum link depth level.
 \t-L,--follow               : Follow HTTP redirections
 \t--ip host:port            : Specify an IP to connect to instead of the URL's host in the format ip:port
 \t-Z                        : Scan mode (Connection errors will be ignored).
@@ -140,8 +158,52 @@ verbose_usage = '''%s\n\nOptions:
 \t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
 \t--ss/hs regex             : Show/hide responses with the specified regex within the content
 \t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
-\t--prefilter <filter>      : Filter items before fuzzing using the specified expression.
-''' % (header_usage)
+\t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
+""" % (
+    header_usage
+)
+
+
+wfpayload_usage = """%s\n\nOptions:
+\t-h/--help                 : This help
+\t--help                    : Advanced help
+\t--version                 : Wfuzz version details
+\t-e <type>                 : List of available encoders/payloads/iterators/printers/scripts
+\t
+\t--recipe <filename>       : Reads options from a recipe. Repeat for various recipes.
+\t--dump-recipe <filename>  : Prints current options as a recipe
+\t--oF <filename>           : Saves fuzz results to a file. These can be consumed later using the wfuzz payload.
+\t
+\t-c                        : Output with colors
+\t-v                        : Verbose information.
+\t-f filename,printer       : Store results in the output file using the specified printer (raw printer if omitted).
+\t-o printer                : Show results using the specified printer.
+\t--efield <expr>           : Show the specified language expression together with the current payload. Repeat option for various fields.
+\t--field <expr>            : Do not show the payload but only the specified language expression. Repeat option for various fields.
+\t
+\t--script=                 : Equivalent to --script=default
+\t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
+\t--script-help=<plugins>   : Show help about scripts.
+\t--script-args n1=v1,...   : Provide arguments to scripts. ie. --script-args grep.regex=\"<A href=\\\"(.*?)\\\">\"
+\t
+\t-z payload                : Specify a payload for each FUZZ keyword used in the form of name[,parameter][,encoder].
+\t                            A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
+\t                            Encoders category can be used. ie. url
+\t                            Use help as a payload to show payload plugin's details (you can filter using --slice)
+\t--zP <params>             : Arguments for the specified payload (it must be preceded by -z or -w).
+\t--zD <default>            : Default parameter for the specified payload (it must be preceded by -z or -w).
+\t--zE <encoder>            : Encoder for the specified payload (it must be preceded by -z or -w).
+\t--slice <filter>          : Filter payload\'s elements using the specified expression. It must be preceded by -z.
+\t-w wordlist               : Specify a wordlist file (alias for -z file,wordlist).
+\t
+\t--hc/hl/hw/hh N[,N]+      : Hide responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--sc/sl/sw/sh N[,N]+      : Show responses with the specified code/lines/words/chars (Use BBB for taking values from baseline)
+\t--ss/hs regex             : Show/hide responses with the specified regex within the content
+\t--filter <filter>         : Show/hide responses using the specified filter expression (Use BBB for taking values from baseline)
+\t--prefilter <filter>      : Filter items before fuzzing using the specified expression. Repeat for concatenating filters.
+""" % (
+    header_usage_wfpayload
+)
 
 
 class Term:
@@ -205,9 +267,8 @@ class Term:
         sys.stdout.write("\033[" + str(lines) + "A")
 
     def erase_lines(self, lines):
-        if lines <= 1:
+        for i in range(lines - 1):
             sys.stdout.write("\r" + Term.delete)
-        else:
-            for i in range(lines - 1):
-                sys.stdout.write("\r" + Term.delete)
-                sys.stdout.write(Term.oneup)
+            sys.stdout.write(Term.oneup)
+
+        sys.stdout.write("\r" + Term.delete)

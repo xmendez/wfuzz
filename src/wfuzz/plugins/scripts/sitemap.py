@@ -16,20 +16,24 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
     category = ["default", "active", "discovery"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-        return fuzzresult.history.urlparse.ffname == "sitemap.xml" and fuzzresult.code == 200
+        return (
+            fuzzresult.history.urlparse.ffname == "sitemap.xml"
+            and fuzzresult.code == 200
+        )
 
     def process(self, fuzzresult):
         try:
             dom = xml.dom.minidom.parseString(fuzzresult.history.content)
         except Exception:
-            raise FuzzExceptResourceParseError('Error while parsing %s.' % fuzzresult.url)
+            raise FuzzExceptResourceParseError(
+                "Error while parsing %s." % fuzzresult.url
+            )
 
         urlList = dom.getElementsByTagName("loc")
         for url in urlList:

@@ -1,21 +1,24 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptPluginBadParams
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
 class range(BasePayload):
     name = "range"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     description = ("ie. 0-10",)
     summary = "Returns each number of the given range."
     category = ["default"]
     priority = 99
 
-    parameters = (
-        ("range", "", True, "Range of numbers in the form 0-10."),
-    )
+    parameters = (("range", "", True, "Range of numbers in the form 0-10."),)
 
     default_parameter = "range"
 
@@ -30,9 +33,12 @@ class range(BasePayload):
             self.width = len(ran[0])
             self.current = self.minimum
         except ValueError:
-            raise FuzzExceptPluginBadParams("Bad range format (eg. \"23-56\")")
+            raise FuzzExceptPluginBadParams('Bad range format (eg. "23-56")')
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         if self.current > self.maximum:
             raise StopIteration
         else:

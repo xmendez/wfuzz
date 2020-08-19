@@ -490,7 +490,8 @@ FuzzRequest object's attribute (you need to use the r. prefix) such as:
 ============================ =============================================
 Name                         Description
 ============================ =============================================
-url                          HTTP request's value
+url                          HTTP request's url
+urlp                         HTTP request's parsed url (see section below).
 method                       HTTP request's verb
 scheme                       HTTP request's scheme
 host                         HTTP request's host
@@ -504,8 +505,8 @@ cookies.response.<<name>>    Specified HTTP response cookie
 headers.all                  All HTTP request and response headers
 headers.request              HTTP request headers
 headers.response             HTTP response headers
-headers.request.<<name>>     Specified HTTP request given header
-headers.response.<<name>>    Specified HTTP response given header
+headers.request.<<name>>     Specified HTTP request header case insensitive
+headers.response.<<name>>    Specified HTTP response header insensitive
 params.all                   All HTTP request GET and POST parameters
 params.get                   All HTTP request GET parameters
 params.post                  HTTP request POST parameters in returned as a dictionary
@@ -597,18 +598,18 @@ Results with plugin issues can be filter as well::
 
     $ wfuzz -z list --zD index -u http://testphp.vulnweb.com/FUZZ.php --script headers --filter "plugins~'nginx'"
 
-Filtering a payload
+Payload mangling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Slice
+Slicing a payload
 """""""
 
-The --slice command line parameter in conjunction with the described filter language allows you to filter a payload.
+The --slice command line parameter in conjunction with the described language allows you to filter a payload.
 The payload to filter, specified by the -z switch must precede --slice command line parameter.
 
-An example is shown below::
+The specified expression must return a boolean value, an example, using the unique operator is shown below::
 
-    $ wfuzz-cli.py -z list,one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
+    $ wfuzz-cli.py -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
@@ -629,8 +630,21 @@ An example is shown below::
     Filtered Requests: 0
     Requests/sec.: 62.85908
     
-It is worth noting that the type of payload dictates the available language symbols. For example, a dictionary payload such as the one in the example
+It is worth noting that, the type of payload dictates the available language symbols. For example, a dictionary payload such as in the example
 above does not have a full FuzzResult object context and therefore object fields cannot be used.
+
+Re-writing a payload
+"""""""
+
+The slice command parameter also allows to re-write a payload. Any value, other than a boolean, returned by the
+specified expression will be interpreted not to filter the source payload but to change its value.
+
+For example::
+
+    $ ./wfuzz -z list --zD one-two-three --slice "FUZZ|upper()" -u https://www.wfuzz.io/FUZZ
+    000000001:   404        11 L     72 W     1560 Ch     "ONE"
+    000000003:   404        11 L     72 W     1562 Ch     "THREE"
+    000000002:   404        11 L     72 W     1560 Ch     "TWO"
 
 Prefilter
 """""""""
@@ -639,6 +653,8 @@ The --prefilter command line parameter is similar to --slice but is not associat
 performed just before any HTTP request is done. 
 
 In this context you are filtering a FuzzResult object, which is the result of combining all the input payloads, that is has not been updated with the result of performing its associated HTTP request yet and therefore lacking some information.
+
+The --prefilter command cannot be used to re-write a payload. The assignment operators can be used to modify the FuzzResult object's fields but expressions other booleans will be ignored.
 
 Reutilising previous results
 --------------------------------------
@@ -724,7 +740,10 @@ The above command will generate HTTP requests such as the following::
 
 You can filter the payload using the filter grammar as described before.
 
-The assignment operators can be used to modify previous requests easily, for example, let's add a quote to every parameter looking for SQL injection issues::
+Request mangling
+^^^^^^^^^
+
+The assignment operators can be used to modify previous requests, for example, let's add a quote to every string parameter prior of performing the HTTP request::
 
     $ wfuzz -z range,1-5 --oF /tmp/session http://testphp.vulnweb.com/artists.php?artist=FUZZ
     000003:  C=200    118 L      455 W         5326 Ch        "3"
@@ -736,25 +755,5 @@ The assignment operators can be used to modify previous requests easily, for exa
     |_  Error identified: Warning: mysql_fetch_array()
     ...
 
-wfpayload
-^^^^^^^^^
 
-If you do not want to perform any request, just find some specific HTTP request you can use the wfpayload executable.
-
-For example, the following will return a unique list of HTTP requests including the authtoken parameter as a GET parameter::
-
-    $ wfpayload -z burplog,a_burp_log.log --slice "params.get~'authtoken' and url.pstrip|u()"
-
-Authtoken is the parameter used by BEA WebLogic Commerce Servers (TM) as a CSRF token, and therefore the above will find all the requests exposing the CSRF token in the URL.
-
-You can also select the field to show, for example::
-
-    $ wfpayload -z wfuzzp --zD /tmp/session --field r.params.get
-    artist=5
-    ...
-
-Or::
-
-    $ wfpayload -z wfuzzp --zD /tmp/session --efield r.params.get
-    000000006:   200        99 L     272 W    3868 Ch     "5 | artist=5"
-    ...
+The above command looks for simple SQL injection issues.

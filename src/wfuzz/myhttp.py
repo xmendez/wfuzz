@@ -7,9 +7,23 @@ import collections
 
 from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
+from .factories.reqresp_factory import ReqRespRequestFactory
+
+# See https://curl.haxx.se/libcurl/c/libcurl-errors.html
+UNRECOVERABLE_PYCURL_EXCEPTIONS = [
+    28,  # Operation timeout. The specified time-out period was reached according to the conditions.
+    7,  # Failed to connect() to host or proxy.
+    6,  # Couldn't resolve host. The given remote host was not resolved.
+    5,  # Couldn't resolve proxy. The given proxy host could not be resolved.
+]
+
+# Other common pycurl exceptions:
+# Exception in perform (35, 'error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table')
+# Exception in perform (18, 'SSL read: error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table, errno 11')
+
 
 class HttpPool:
-    HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
+    HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ("basic", "ntlm", "digest")
     newid = itertools.count(0)
 
     def __init__(self, options):
@@ -54,7 +68,7 @@ class HttpPool:
         with self.mutex_stats:
             dic = {
                 "http_processed": self.processed,
-                "http_registered": len(self._registered)
+                "http_registered": len(self._registered),
             }
         return dic
 
@@ -75,15 +89,19 @@ class HttpPool:
         self.pool_map[poolid]["proxy"] = None
 
         if self.options.get("proxies"):
-            self.pool_map[poolid]["proxy"] = self._get_next_proxy(self.options.get("proxies"))
+            self.pool_map[poolid]["proxy"] = self._get_next_proxy(
+                self.options.get("proxies")
+            )
 
         return poolid
 
     def _prepare_curl_h(self, curl_h, fuzzres, poolid):
-        new_curl_h = fuzzres.history.to_http_object(curl_h)
+        new_curl_h = ReqRespRequestFactory.to_http_object(
+            self.options, fuzzres.history, curl_h
+        )
         new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
-        new_curl_h.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
+        new_curl_h.response_queue = (BytesIO(), BytesIO(), fuzzres, poolid)
         new_curl_h.setopt(pycurl.WRITEFUNCTION, new_curl_h.response_queue[0].write)
         new_curl_h.setopt(pycurl.HEADERFUNCTION, new_curl_h.response_queue[1].write)
 
@@ -142,7 +160,9 @@ class HttpPool:
             elif ptype == "HTTP":
                 c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             else:
-                raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
+                raise FuzzExceptBadOptions(
+                    "Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5."
+                )
         else:
             c.setopt(pycurl.PROXY, "")
 
@@ -160,7 +180,13 @@ class HttpPool:
         buff_body, buff_header, res, poolid = curl_h.response_queue
 
         try:
-            res.history.from_http_object(curl_h, buff_header.getvalue(), buff_body.getvalue())
+            ReqRespRequestFactory.from_http_object(
+                self.options,
+                res.history,
+                curl_h,
+                buff_header.getvalue(),
+                buff_body.getvalue(),
+            )
         except Exception as e:
             self.pool_map[poolid]["queue"].put(res.update(exception=e))
         else:
@@ -171,19 +197,7 @@ class HttpPool:
             self.processed += 1
 
     def _process_curl_should_retry(self, res, errno, poolid):
-        # Usual suspects:
-
-        # Exception in perform (35, 'error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table')
-        # Exception in perform (18, 'SSL read: error:0B07C065:x509 certificate routines:X509_STORE_add_cert:cert already in hash table, errno 11')
-        # Exception in perform (28, 'Connection time-out')
-        # Exception in perform (7, "couldn't connect to host")
-        # Exception in perform (6, "Couldn't resolve host 'www.xxx.com'")
-        # (28, 'Operation timed out after 20000 milliseconds with 0 bytes received')
-        # Exception in perform (28, 'SSL connection timeout')
-        # 5 Couldn't resolve proxy 'aaa'
-
-        # retry requests with recoverable errors
-        if errno not in [28, 7, 6, 5]:
+        if errno not in UNRECOVERABLE_PYCURL_EXCEPTIONS:
             res.history.wf_retries += 1
 
             if res.history.wf_retries < self.options.get("retries"):
@@ -227,9 +241,7 @@ class HttpPool:
                 curl_h = self.curlh_freelist.pop()
                 fuzzres, poolid = self._request_list.popleft()
 
-                self.m.add_handle(
-                    self._prepare_curl_h(curl_h, fuzzres, poolid)
-                )
+                self.m.add_handle(self._prepare_curl_h(curl_h, fuzzres, poolid))
 
         self._stop_to_pools()
 

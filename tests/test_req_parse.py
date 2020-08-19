@@ -1,9 +1,9 @@
 import unittest
 
-from wfuzz.fuzzobjects import FuzzRequest
+from wfuzz.fuzzrequest import FuzzRequest
 
 
-http_post_request = '''POST /slipstream/view HTTP/1.1
+http_post_request = """POST /slipstream/view HTTP/1.1
 Host: www
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0
 Accept: */*
@@ -17,10 +17,10 @@ Connection: close
 
 
 
-a=1'''
+a=1"""
 
 
-http_get_request = '''GET /sttc/bpk-fonts/55b577a1.woff2 HTTP/1.1
+http_get_request = """GET /sttc/bpk-fonts/55b577a1.woff2 HTTP/1.1
 Host: js.skyscnr.com
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0
 Accept: application/font-woff2;q=1.0,application/font-woff;q=0.9,*/*;q=0.8
@@ -31,9 +31,9 @@ Connection: close
 Referer: https://js.skyscnr.com/sttc/oc-registry/components/base-stylesheet/0.1.33/build//static/css/main.e09b44e2.css
 
 
-'''
+"""
 
-http_response = '''HTTP/1.1 201 Created
+http_response = """HTTP/1.1 201 Created
 Content-Type: application/json
 Content-Length: 51
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0
@@ -44,9 +44,9 @@ Server: Unspecified
 Date: Mon, 30 Dec 2019 13:16:57 GMT
 Connection: close
 
-LINE_1'''
+LINE_1"""
 
-http_response_no_content = '''HTTP/1.1 201 Created
+http_response_no_content = """HTTP/1.1 201 Created
 Content-Type: application/json
 Content-Length: 51
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0
@@ -56,9 +56,9 @@ Pragma: no-cache
 Server: Unspecified
 Date: Mon, 30 Dec 2019 13:16:57 GMT
 Connection: close
-'''
+"""
 
-http_multi_request = '''POST /tr/ HTTP/1.1
+http_multi_request = """POST /tr/ HTTP/1.1
 Host: www.facebook.com
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0
 Accept: */*
@@ -80,9 +80,9 @@ Content-Disposition: form-data; name="rqm"
 SB
 -----------------------------18698393981150719881279620016--
 
-'''
+"""
 
-http_follow_response = '''HTTP/1.1 301 Moved Permanently
+http_follow_response = """HTTP/1.1 301 Moved Permanently
 Location: http://www.google.com/
 Content-Type: text/html; charset=UTF-8
 Date: Mon, 30 Dec 2019 20:26:23 GMT
@@ -108,7 +108,7 @@ Accept-Ranges: none
 Vary: Accept-Encoding
 Transfer-Encoding: chunked
 
-LINE_1'''
+LINE_1"""
 
 
 class ParseRequestTest(unittest.TestCase):
@@ -121,7 +121,9 @@ class ParseRequestTest(unittest.TestCase):
         fr.update_from_raw_http(http_multi_request, "https", http_response)
 
         fr2 = FuzzRequest()
-        fr2.update_from_raw_http(http_multi_request, "https", http_response_no_content, b"LINE_1")
+        fr2.update_from_raw_http(
+            http_multi_request, "https", http_response_no_content, b"LINE_1"
+        )
 
         # raw content takes precedence
         fr3 = FuzzRequest()
@@ -157,4 +159,4 @@ class ParseRequestTest(unittest.TestCase):
         fr.update_from_raw_http(http_post_request, "https", "\n\n\n")
 
         self.assertEqual(fr.method, "POST")
-        self.assertEqual(fr.params.post, {'a': '1'})
+        self.assertEqual(fr.params.post, {"a": "1"})

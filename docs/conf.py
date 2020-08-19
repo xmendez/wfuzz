@@ -93,7 +93,8 @@ html_theme_options = {
     'github_user': 'xmendez',
     'github_repo': 'wfuzz',
     'github_banner': True,
-    'show_related': False
+    'show_related': False,
+    'sidebar_collapse': True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -109,7 +110,11 @@ htmlhelp_basename = 'Wfuzzdoc'
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    '**':       ['sidebarlogo.html', 'globaltoc.html']
+    '**': [
+        'sidebarlogo.html',
+        'navigation.html',
+        'searchbox.html'
+    ]
 }
 
 # -- Options for LaTeX output ---------------------------------------------

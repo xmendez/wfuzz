@@ -1,27 +1,29 @@
 #!/usr/bin/env python
 import sys
+import warnings
 
 from .core import Fuzzer
 from .facade import Facade
 from .exception import FuzzException, FuzzExceptBadInstall
-
-from .ui.console.mvc import Controller, KeyPress, View
-from .ui.console.common import help_banner2
+from .ui.console.mvc import Controller, KeyPress
+from .ui.console.common import (
+    help_banner2,
+    wfpayload_usage,
+)
 from .ui.console.clparser import CLParser
 
-from .fuzzobjects import FuzzResult
+from .fuzzobjects import FuzzWordType
 
 
 def main():
     kb = None
     fz = None
-    printer = None
     session_options = None
 
     try:
         # parse command line
         session_options = CLParser(sys.argv).parse_cl().compile()
-        session_options["send_discarded"] = True
+        session_options["exec_mode"] = "cli"
 
         # Create fuzzer's engine
         fz = Fuzzer(session_options)
@@ -31,30 +33,28 @@ def main():
             try:
                 kb = KeyPress()
             except ImportError as e:
-                raise FuzzExceptBadInstall("Error importing necessary modules for interactive mode: %s" % str(e))
+                raise FuzzExceptBadInstall(
+                    "Error importing necessary modules for interactive mode: %s"
+                    % str(e)
+                )
             else:
                 Controller(fz, kb)
                 kb.start()
 
-        printer = View(session_options)
-        if session_options["console_printer"]:
-            printer = Facade().printers.get_plugin(session_options["console_printer"])(None)
-        printer.header(fz.genReq.stats)
-
         for res in fz:
-            printer.result(res)
-
-        printer.footer(fz.genReq.stats)
+            pass
     except FuzzException as e:
-        print("\nFatal exception: {}".format(str(e)))
+        warnings.warn("Fatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
-        print("\nFinishing pending requests...")
+        warnings.warn("Finishing pending requests...")
         if fz:
             fz.cancel_job()
     except NotImplementedError as e:
-        print("\nFatal exception: Error importing wfuzz extensions: {}".format(str(e)))
+        warnings.warn(
+            "Fatal exception: Error importing wfuzz extensions: {}".format(str(e))
+        )
     except Exception as e:
-        print("\nUnhandled exception: {}".format(str(e)))
+        warnings.warn("Unhandled exception: {}".format(str(e)))
     finally:
         if session_options:
             session_options.close()
@@ -66,83 +66,74 @@ def main():
 def main_filter():
     def usage():
         print(help_banner2)
-        print("""Usage:
-\n\twfpayload [Options]\n\n
-\nOptions:\n
-\t--help              : This help
-\t-v                  : Verbose output
-\t-z payload          : Specify a payload for each FUZZ keyword used in the form of type,parameters,encoder.
-\t		      A list of encoders can be used, ie. md5-sha1. Encoders can be chained, ie. md5@sha1.
-\t		      Encoders category can be used. ie. url
-\t--zD default	    : Default argument for the specified payload (it must be preceded by -z or -w).
-\t--zP <params>	    : Arguments for the specified payload (it must be preceded by -z or -w).
-\t--slice <filter>    : Filter payload\'s elements using the specified expression.
-\t-w wordlist         : Specify a wordlist file (alias for -z file,wordlist).
-\t-m iterator         : Specify an iterator for combining payloads (product by default)
-\t--field <expr>      : Do not show the payload but the specified language expression
-\t--efield <expr>     : Show the specified language expression together with the current payload
-""")
+        print(wfpayload_usage)
 
-    from .api import payload
-    from .exception import FuzzExceptBadOptions
-    import getopt
+    from .api import fuzz
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vhz:m:w:", ["field=", "help", "slice=", "zD=", "zP=", "efield="])
-    except getopt.GetoptError as err:
-        print((str(err)))
-        usage()
-        sys.exit(2)
+        short_opts = "hvce:z:f:w:o:"
+        long_opts = [
+            "efield=",
+            "ee=",
+            "zE=",
+            "zD=",
+            "field=",
+            "slice=",
+            "zP=",
+            "oF=",
+            "recipe=",
+            "dump-recipe=",
+            "sc=",
+            "sh=",
+            "sl=",
+            "sw=",
+            "ss=",
+            "hc=",
+            "hh=",
+            "hl=",
+            "hw=",
+            "hs=",
+            "prefilter=",
+            "filter=",
+            "help",
+            "version",
+            "script-help=",
+            "script=",
+            "script-args=",
+        ]
+        session_options = CLParser(
+            sys.argv,
+            short_opts,
+            long_opts,
+            help_banner2,
+            wfpayload_usage,
+            wfpayload_usage,
+            wfpayload_usage,
+        ).parse_cl()
+        session_options["transport"] = "payload"
+        session_options["url"] = "FUZZ"
 
-    if len(opts) == 0 or len(args) > 0:
-        usage()
-        sys.exit()
+        session_options.compile_dictio()
+        payload_type = session_options["compiled_dictio"].payloads()[0].get_type()
 
-    field = None
-    raw_output = False
+        if (
+            payload_type == FuzzWordType.FUZZRES
+            and session_options["show_field"] is not True
+        ):
+            session_options["exec_mode"] = "cli"
 
-    for o, value in opts:
-        if o in ("-h", "--help"):
-            usage()
-            sys.exit()
-        if o in ("--efield"):
-            field = value
-        if o in ("--field"):
-            field = value
-            raw_output = True
-
-    try:
-        session_options = CLParser(sys.argv).parse_cl()
-        printer = None
-
-        for res in payload(**session_options):
-            if len(res) > 1:
-                raise FuzzExceptBadOptions("wfpayload can only be used to generate one word dictionaries")
-            else:
-                r = res[0]
-
-            # TODO: all should be same object type and no need for isinstance
-            if isinstance(r, FuzzResult):
-                if raw_output:
-                    print(r.eval(field if field is not None else "url"))
-                else:
-                    if printer is None:
-                        printer = View(session_options)
-                        printer.header(None)
-
-                    if field:
-                        r._description = field
-                        r._show_field = False
-                    printer.result(r)
-            else:
-                print(r)
+        for res in fuzz(**session_options):
+            if payload_type == FuzzWordType.WORD:
+                print(res.description)
+            elif payload_type == FuzzWordType.FUZZRES and session_options["show_field"]:
+                print(res._field())
 
     except KeyboardInterrupt:
         pass
     except FuzzException as e:
-        print(("\nFatal exception: %s" % str(e)))
+        warnings.warn(("Fatal exception: %s" % str(e)))
     except Exception as e:
-        print(("\nUnhandled exception: %s" % str(e)))
+        warnings.warn(("Unhandled exception: %s" % str(e)))
 
 
 def main_encoder():
@@ -160,7 +151,7 @@ def main_encoder():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
     except getopt.GetoptError as err:
-        print((str(err)))
+        warnings.warn(str(err))
         usage()
         sys.exit(2)
 
@@ -179,12 +170,18 @@ def main_encoder():
                 sys.exit()
     except IndexError as e:
         usage()
-        print("\nFatal exception: Specify a string to encode or decode.{}\n".format(str(e)))
+        warnings.warn(
+            "\nFatal exception: Specify a string to encode or decode.{}\n".format(
+                str(e)
+            )
+        )
         sys.exit()
     except AttributeError as e:
-        print("\nEncoder plugin missing encode or decode functionality. {}".format(str(e)))
+        warnings.warn(
+            "\nEncoder plugin missing encode or decode functionality. {}".format(str(e))
+        )
     except FuzzException as e:
-        print(("\nFatal exception: %s" % str(e)))
+        warnings.warn(("\nFatal exception: %s" % str(e)))
 
 
 def main_gui():

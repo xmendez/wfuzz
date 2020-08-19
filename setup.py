@@ -1,3 +1,4 @@
+import os
 import sys
 import re
 from setuptools import setup, find_packages
@@ -22,17 +23,19 @@ dev_requires = [
     'codecov',
     'netaddr',
     'pip-tools',
-    'flake8==3.7.9',
+    'flake8==3.8.3',
+    'black==19.10b0;python_version>"3.5"',
 ]
 
 install_requires = [
     'pycurl',
-    'pyparsing<3;python_version<="3.4"',
-    'pyparsing>3*;python_version>="3.5"',
+    'pyparsing<2.4.2;python_version<="3.4"',
+    'pyparsing>2.4*;python_version>="3.5"',
     'future',
     'six',
     'configparser;python_version<"3.5"',
     'chardet',
+    'pytest',
 ]
 
 
@@ -40,46 +43,49 @@ if sys.platform.startswith("win"):
     install_requires += ["colorama>=0.4.0"]
 
 
-setup(
-    name="wfuzz",
-    include_package_data=True,
-    data_files=[('docs/user', ['docs/user/advanced.rst'])],
-    packages=find_packages(where='src'),
-    package_dir={'wfuzz': 'src/wfuzz'},
-    entry_points={
-        'console_scripts': [
-            'wfuzz = wfuzz.wfuzz:main',
-            'wfpayload = wfuzz.wfuzz:main_filter',
-            'wfencode = wfuzz.wfuzz:main_encoder',
-        ],
-        'gui_scripts': [
-            'wxfuzz = wfuzz.wfuzz:main_gui',
-        ]
-    },
-    version=version,
-    description="Wfuzz - The web fuzzer",
-    long_description=long_descr,
-    author="Xavi Mendez (@x4vi_mendez)",
-    author_email="xmendez@edge-security.com",
-    url="http://wfuzz.org",
-    license="GPLv2",
-    install_requires=install_requires,
-    extras_require={
-        'dev': dev_requires,
-    },
-    python_requires=">=2.6",
-    classifiers=(
-        'Development Status :: 4 - Beta',
-        'Natural Language :: English',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-    ),
-)
+try:
+    os.symlink('../../docs/user/advanced.rst', 'src/wfuzz/advanced.rst')
+    setup(
+        name="wfuzz",
+        packages=find_packages(where='src'),
+        package_dir={'wfuzz': 'src/wfuzz'},
+        include_package_data=True,
+        package_data={'wfuzz': ['*.rst']},
+        entry_points={
+            'console_scripts': [
+                'wfuzz = wfuzz.wfuzz:main',
+                'wfpayload = wfuzz.wfuzz:main_filter',
+                'wfencode = wfuzz.wfuzz:main_encoder',
+            ],
+            'gui_scripts': [
+                'wxfuzz = wfuzz.wfuzz:main_gui',
+            ]
+        },
+        version=version,
+        description="Wfuzz - The web fuzzer",
+        long_description=long_descr,
+        author="Xavi Mendez (@x4vi_mendez)",
+        author_email="xmendez@edge-security.com",
+        url="http://wfuzz.org",
+        license="GPLv2",
+        install_requires=install_requires,
+        extras_require={
+            'dev': dev_requires,
+            'docs': docs_requires,
+        },
+        python_requires=">=2.6",
+        classifiers=(
+            'Development Status :: 4 - Beta',
+            'Natural Language :: English',
+            'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+        ),
+    )
+finally:
+    os.unlink('src/wfuzz/advanced.rst')

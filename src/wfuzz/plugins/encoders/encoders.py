@@ -42,7 +42,11 @@ class none:
 @moduleman_plugin("encode")
 class urlencode:
     name = "urlencode"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replace special characters in string using the %xx escape. Letters, digits, and the characters '_.-' are never quoted."
     category = ["url_safe", "url"]
@@ -58,7 +62,11 @@ class urlencode:
 @moduleman_plugin("encode")
 class double_urlencode:
     name = "double urlencode"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Applies a double encode to special characters in string using the %25xx escape. Letters, digits, and the characters '_.-' are never quoted."
     category = ["url_safe", "url"]
@@ -74,23 +82,31 @@ class double_urlencode:
 @moduleman_plugin("encode")
 class base64:
     name = "base64"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Encodes the given string using base64"
     category = ["hashes"]
     priority = 99
 
     def encode(self, string):
-        return standard_b64encode(string.encode('utf-8')).decode('utf-8')
+        return standard_b64encode(string.encode("utf-8")).decode("utf-8")
 
     def decode(self, string):
-        return b64decode(string.encode('utf-8')).decode('utf-8')
+        return b64decode(string.encode("utf-8")).decode("utf-8")
 
 
 @moduleman_plugin("encode")
 class uri_triple_hex:
     name = "uri_triple_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Encodes ALL charachers using the %25%xx%xx escape."
     category = ["url"]
@@ -111,7 +127,11 @@ class uri_triple_hex:
 @moduleman_plugin("encode")
 class uri_double_hex:
     name = "uri_double_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Encodes ALL charachers using the %25xx escape."
     category = ["url"]
@@ -132,7 +152,11 @@ class uri_double_hex:
 @moduleman_plugin("encode")
 class uri_hex:
     name = "uri_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Encodes ALL charachers using the %xx escape."
     category = ["url"]
@@ -153,7 +177,11 @@ class uri_hex:
 @moduleman_plugin("encode")
 class random_upper:
     name = "random_upper"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces random characters in string with its capitals letters"
     category = ["default"]
@@ -174,7 +202,11 @@ class random_upper:
 @moduleman_plugin("encode")
 class second_nibble_hex:
     name = "second_nibble_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the %?%dd escape"
     category = ["url"]
@@ -195,7 +227,11 @@ class second_nibble_hex:
 @moduleman_plugin("encode")
 class first_nibble_hex:
     name = "first_nibble_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the %%dd? escape"
     category = ["url"]
@@ -216,7 +252,11 @@ class first_nibble_hex:
 @moduleman_plugin("encode")
 class doble_nibble_hex:
     name = "doble_nibble_hex"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the %%dd%dd escape"
     category = ["url"]
@@ -244,14 +284,18 @@ class doble_nibble_hex:
 class sha1:
     name = "sha1"
     summary = "Applies a sha1 hash to the given string"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     category = ["hashes"]
     priority = 99
 
     def encode(self, string):
         s = hashlib.sha1()
-        s.update(string.encode('utf-8'))
+        s.update(string.encode("utf-8"))
         res = s.hexdigest()
         return res
 
@@ -259,15 +303,19 @@ class sha1:
 @moduleman_plugin("encode")
 class md5:
     name = "md5"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Applies a md5 hash to the given string"
     category = ["hashes"]
     priority = 99
 
     def encode(self, string):
-        m = hashlib.new('md5')
-        m.update(string.encode('utf-8'))
+        m = hashlib.new("md5")
+        m.update(string.encode("utf-8"))
         res = m.hexdigest()
         return res
 
@@ -275,25 +323,33 @@ class md5:
 @moduleman_plugin("encode")
 class hexlify:
     name = "hexlify"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Every byte of data is converted into the corresponding 2-digit hex representation."
     category = ["default"]
     priority = 99
 
     def encode(self, string):
-        return binascii.hexlify(string.encode('utf-8')).decode('utf-8')
+        return binascii.hexlify(string.encode("utf-8")).decode("utf-8")
 
     def decode(self, string):
-        return binascii.unhexlify(string.encode('utf-8')).decode('utf-8')
+        return binascii.unhexlify(string.encode("utf-8")).decode("utf-8")
 
 
 @moduleman_plugin("encode")
 class html_escape:
     name = "html_escape"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
-    summary = "Convert the characters &<>\" in string to HTML-safe sequences."
+    summary = 'Convert the characters &<>" in string to HTML-safe sequences.'
     category = ["html"]
     priority = 99
 
@@ -304,7 +360,11 @@ class html_escape:
 @moduleman_plugin("encode")
 class html_decimal:
     name = "html_decimal"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the &#dd; escape"
     category = ["html"]
@@ -320,7 +380,11 @@ class html_decimal:
 @moduleman_plugin("encode")
 class html_hexadecimal:
     name = "html_hexadecimal"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the &#xx; escape"
     category = ["html"]
@@ -337,7 +401,11 @@ class html_hexadecimal:
 @moduleman_plugin("encode")
 class utf8_binary:
     name = "utf8_binary"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the \\uxx escape"
     category = ["url"]
@@ -354,7 +422,11 @@ class utf8_binary:
 @moduleman_plugin("encode")
 class utf8:
     name = "utf8"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the \\u00xx escape"
     category = ["url"]
@@ -374,7 +446,11 @@ class utf8:
 @moduleman_plugin("encode")
 class uri_unicode:
     name = "uri_unicode"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Replaces ALL characters in string using the %u00xx escape"
     category = ["url"]
@@ -394,7 +470,11 @@ class uri_unicode:
 @moduleman_plugin("encode")
 class mysql_char:
     name = "mysql_char"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Converts ALL characters to MySQL's char(xx)"
     category = ["db"]
@@ -420,7 +500,11 @@ class mysql_char:
 @moduleman_plugin("encode")
 class mssql_char:
     name = "mssql_char"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Converts ALL characters to MsSQL's char(xx)"
     category = ["db"]
@@ -446,7 +530,11 @@ class mssql_char:
 @moduleman_plugin("encode")
 class oracle_char:
     name = "oracle_char"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     summary = "Converts ALL characters to Oracle's chr(xx)"
     category = ["db"]

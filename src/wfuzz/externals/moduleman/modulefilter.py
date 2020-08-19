@@ -23,7 +23,17 @@
 
 PYPARSING = True
 try:
-    from pyparsing import Word, Group, oneOf, Optional, Suppress, ZeroOrMore, Literal, alphas, alphanums
+    from pyparsing import (
+        Word,
+        Group,
+        oneOf,
+        Optional,
+        Suppress,
+        ZeroOrMore,
+        Literal,
+        alphas,
+        alphanums,
+    )
 except ImportError:
     PYPARSING = False
 
@@ -41,9 +51,15 @@ class Filter(IFilter):
             neg_operator = "not"
             elementRef = category
             definition = elementRef + ZeroOrMore(operator + elementRef)
-            nestedformula = Group(Suppress(Optional(Literal("("))) + definition + Suppress(Optional(Literal(")"))))
+            nestedformula = Group(
+                Suppress(Optional(Literal("(")))
+                + definition
+                + Suppress(Optional(Literal(")")))
+            )
             neg_nestedformula = Optional(neg_operator) + nestedformula
-            self.finalformula = neg_nestedformula + ZeroOrMore(operator + neg_nestedformula)
+            self.finalformula = neg_nestedformula + ZeroOrMore(
+                operator + neg_nestedformula
+            )
 
             elementRef.setParseAction(self.__compute_element)
             neg_nestedformula.setParseAction(self.__compute_neg_formula)
@@ -51,7 +67,7 @@ class Filter(IFilter):
             self.finalformula.setParseAction(self.__myreduce)
 
     def __compute_neg_formula(self, tokens):
-        if len(tokens) > 1 and tokens[0] == 'not':
+        if len(tokens) > 1 and tokens[0] == "not":
             return not tokens[1]
         else:
             return tokens[0]
@@ -64,17 +80,17 @@ class Filter(IFilter):
             return self.plugin.name.startswith(item[:wildc_index])
         else:
             if isinstance(self.plugin.category, list):
-                return (item in self.plugin.category or self.plugin.name == item)
+                return item in self.plugin.category or self.plugin.name == item
             else:
-                return (self.plugin.category == item or self.plugin.name == item)
+                return self.plugin.category == item or self.plugin.name == item
 
     def __myreduce(self, elements):
         first = elements[0]
         for i in range(1, len(elements), 2):
             if elements[i] == "and":
-                first = (first and elements[i + 1])
+                first = first and elements[i + 1]
             elif elements[i] == "or" or elements[i] == ",":
-                first = (first or elements[i + 1])
+                first = first or elements[i + 1]
 
         return first
 
@@ -87,7 +103,12 @@ class Filter(IFilter):
         for item in filter_string.split(","):
             wildc_index = item.find("*")
             if wildc_index > 0:
-                ret.append((item in plugin.category or plugin.name.startswith(item[:wildc_index])))
+                ret.append(
+                    (
+                        item in plugin.category
+                        or plugin.name.startswith(item[:wildc_index])
+                    )
+                )
             else:
                 ret.append((item in plugin.category or plugin.name == item))
 

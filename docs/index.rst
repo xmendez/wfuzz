@@ -18,9 +18,10 @@ Wfuzz: The Web fuzzer
 .. image:: https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master
     :target: https://codecov.io/github/xmendez/wfuzz
 
-Wfuzz supports Python 3. The use of **Python 3** is preferred (and faster) over Python 2. 
+Wfuzz provides a framework to automate web applications security assessments and could help you to secure your web applications by finding and exploiting web application vulnerabilities.
 
-See Wfuzz in action:
+See Wfuzz in action
+-------------------
 
 * Wfuzz cli::
 
@@ -78,33 +79,46 @@ other tools included in the wfuzz framework.
     $ wfencode -e md5 test
     098f6bcd4621d373cade4e832627b4f6
 
-Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
+
+How it works
+------------
+
+Wfuzz it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
 
 A payload in Wfuzz is a source of data.
 
 This simple concept allows any input to be injected in any field of an HTTP request, allowing to perform complex web security attacks in different web application components such as: parameters, authentication, forms, directories/files, headers, etc.
 
-Wfuzz is more than a web content scanner:
+Wfuzz is more than a web brute forcer:
 
-- Wfuzz could help you to secure your web applications by finding and exploiting web application vulnerabilities. Wfuzz's web application vulnerability scanner is supported by plugins.
+- Wfuzz's web application vulnerability scanner is supported by plugins.
 - Wfuzz is a completely modular framework and makes it easy for even the newest of Python developers to contribute. Building plugins is simple and takes little more than a few minutes.
 - Wfuzz exposes a simple language interface to the previous HTTP requests/responses performed using Wfuzz or other tools, such as Burp. This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
-User Guide	
-==================	
+Installation Guide
+==================
 
 .. toctree::	
-   :maxdepth: 2	
+   :maxdepth: 4
 
-   user/installation	
-   user/getting	
-   user/basicusage	
-   user/advanced	
+   user/installation
+   user/breaking
+
+User Guide
+==================
+
+.. toctree::
+   :maxdepth: 4
+
+   user/getting
+   user/basicusage
+   user/advanced
+   user/wfpayload
 
 Library Guide	
 ==================	
 
 .. toctree::	
-   :maxdepth: 2	
+   :maxdepth: 4
 
    library/guide

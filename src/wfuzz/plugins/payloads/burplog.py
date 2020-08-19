@@ -1,19 +1,24 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.exception import FuzzExceptBadFile
-from wfuzz.fuzzobjects import FuzzResult, FuzzRequest
+from wfuzz.fuzzobjects import FuzzResult
+from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
-from wfuzz.utils import rgetattr
+from wfuzz.helpers.obj_dyn import rgetattr
+from wfuzz.fuzzobjects import FuzzWordType
 
 import re
 
 import sys
+
 if sys.version_info < (3, 0):
     from io import open
 
 CRLF = "\n"
-DELIMITER = "%s%s" % ('=' * 54, CRLF)
+DELIMITER = "%s%s" % ("=" * 54, CRLF)
 CRLF_DELIMITER = CRLF + DELIMITER
-HEADER = re.compile(r'(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?')
+HEADER = re.compile(
+    r"(\d{1,2}:\d{2}:\d{2} (AM|PM|))[ \t]+(\S+)([ \t]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|unknown host)\])?"
+)
 
 
 @moduleman_plugin
@@ -28,7 +33,12 @@ class burplog(BasePayload):
 
     parameters = (
         ("fn", "", True, "Filename of a valid Burp log file."),
-        ("attr", None, False, "Attribute of fuzzresult to return. If not specified the whole object is returned."),
+        (
+            "attr",
+            None,
+            False,
+            "Attribute of fuzzresult to return. If not specified the whole object is returned.",
+        ),
     )
 
     default_parameter = "fn"
@@ -40,13 +50,13 @@ class burplog(BasePayload):
         self.attr = self.params["attr"]
         self._it = self.parse_burp_log(self.params["fn"])
 
-    def __iter__(self):
-        return self
-
     def count(self):
         return self.__max
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.FUZZRES if not self.attr else FuzzWordType.WORD
+
+    def get_next(self):
         next_item = next(self._it)
 
         return next_item if not self.attr else rgetattr(next_item, self.attr)
@@ -55,9 +65,14 @@ class burplog(BasePayload):
         burp_file = None
 
         try:
-            burp_file = open(self.find_file(burp_log), 'r', encoding="utf-8", errors="surrogateescape")
+            burp_file = open(
+                self.find_file(burp_log),
+                "r",
+                encoding="utf-8",
+                errors="surrogateescape",
+            )
 
-            history = 'START'
+            history = "START"
 
             rl = burp_file.readline()
             while rl != "":
@@ -97,7 +112,9 @@ class burplog(BasePayload):
                 elif history == "DELIM4":
                     if rl == CRLF:
                         fr = FuzzRequest()
-                        fr.update_from_raw_http(raw_request, host[:host.find("://")], raw_response)
+                        fr.update_from_raw_http(
+                            raw_request, host[: host.find("://")], raw_response
+                        )
                         frr = FuzzResult(history=fr)
 
                         yield frr.update()

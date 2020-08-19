@@ -28,7 +28,7 @@ class FileLoader(IModuleLoader):
 
         self.filename = params["filename"]
         self.base_path = params["base_path"]
-        if self.base_path.endswith('/'):
+        if self.base_path.endswith("/"):
             self.base_path = self.base_path[:-1]
 
     def load(self, registrant):
@@ -40,8 +40,8 @@ class FileLoader(IModuleLoader):
         filepath, filename = os.path.split(filename)
 
         relative_path = os.path.relpath(filepath, self.base_path)
-        identifier = relative_path + '/' + objname
-        if identifier.startswith('./'):
+        identifier = relative_path + "/" + objname
+        if identifier.startswith("./"):
             identifier = identifier[2:]
 
         return identifier
@@ -50,7 +50,7 @@ class FileLoader(IModuleLoader):
         """
         Opens "filename", inspects it and calls the registrant
         """
-        self.__logger.debug('__load_py_from_file. START, file=%s' % (filename,))
+        self.__logger.debug("__load_py_from_file. START, file=%s" % (filename,))
 
         dirname, filename = os.path.split(filename)
         fn = os.path.splitext(filename)[0]
@@ -61,12 +61,16 @@ class FileLoader(IModuleLoader):
             exten_file, filename, description = imp.find_module(fn, [dirname])
             module = imp.load_module(fn, exten_file, filename, description)
         except ImportError as msg:
-            self.__logger.critical('__load_py_from_file. Filename: %s Exception, msg=%s' % (filename, msg))
+            self.__logger.critical(
+                "__load_py_from_file. Filename: %s Exception, msg=%s" % (filename, msg)
+            )
             # raise msg
             pass
         except SyntaxError as msg:
             # incorrect python syntax in file
-            self.__logger.critical('__load_py_from_file. Filename: %s Exception, msg=%s' % (filename, msg))
+            self.__logger.critical(
+                "__load_py_from_file. Filename: %s Exception, msg=%s" % (filename, msg)
+            )
             # raise msg
             pass
         finally:
@@ -78,13 +82,15 @@ class FileLoader(IModuleLoader):
 
         for objname in dir(module):
             obj = getattr(module, objname)
-            self.__logger.debug('__load_py_from_file. inspecting=%s' % (objname,))
+            self.__logger.debug("__load_py_from_file. inspecting=%s" % (objname,))
             if inspect.isclass(obj):
-                if '__PLUGIN_MODULEMAN_MARK' in dir(obj):
+                if "__PLUGIN_MODULEMAN_MARK" in dir(obj):
                     if self.module_registrant:
-                        self.module_registrant.register(self._build_id(filename, objname), obj)
+                        self.module_registrant.register(
+                            self._build_id(filename, objname), obj
+                        )
 
-        self.__logger.debug('__load_py_from_file. END, loaded file=%s' % (filename,))
+        self.__logger.debug("__load_py_from_file. END, loaded file=%s" % (filename,))
 
 
 class DirLoader(FileLoader):
@@ -100,7 +106,7 @@ class DirLoader(FileLoader):
 
         self.base_dir = params["base_dir"]
         self.base_path = params["base_path"]
-        if self.base_path.endswith('/'):
+        if self.base_path.endswith("/"):
             self.base_path = self.base_path[:-1]
 
     def load(self, registrant):
@@ -110,9 +116,11 @@ class DirLoader(FileLoader):
     def _build_id(self, filename, objname):
         filepath, filename = os.path.split(filename)
 
-        relative_path = os.path.relpath(filepath, os.path.join(self.base_path, self.base_dir))
-        identifier = relative_path + '/' + objname
-        if identifier.startswith('./'):
+        relative_path = os.path.relpath(
+            filepath, os.path.join(self.base_path, self.base_dir)
+        )
+        identifier = relative_path + "/" + objname
+        if identifier.startswith("./"):
             identifier = identifier[2:]
 
         return identifier
@@ -136,7 +144,7 @@ class DirLoader(FileLoader):
     def __walk_dir_tree(self, dirname):
         dir_list = []
 
-        self.__logger.debug('__walk_dir_tree. START dir=%s', dirname)
+        self.__logger.debug("__walk_dir_tree. START dir=%s", dirname)
 
         for f in os.listdir(dirname):
             current = os.path.join(dirname, f)

@@ -43,7 +43,13 @@ class ConsolePanel(wx.Panel):
         self.index = 0
 
         self.prompt = ">>"
-        self.textctrl = wx.TextCtrl(self, -1, '', style=wx.TE_PROCESS_ENTER | wx.TE_MULTILINE | wx.TE_RICH, size=(-1, 250))
+        self.textctrl = wx.TextCtrl(
+            self,
+            -1,
+            "",
+            style=wx.TE_PROCESS_ENTER | wx.TE_MULTILINE | wx.TE_RICH,
+            size=(-1, 250),
+        )
         self.textctrl.SetForegroundColour(wx.WHITE)
         self.textctrl.SetBackgroundColour(wx.BLACK)
 
@@ -73,7 +79,7 @@ class ConsolePanel(wx.Panel):
         if e.GetKeyCode() == 13:
             self.index = len(self.history) - 1
 
-            self.value = (self.textctrl.GetValue())
+            self.value = self.textctrl.GetValue()
             ln = self.get_last_line()
 
             ln = ln.strip()
@@ -82,6 +88,7 @@ class ConsolePanel(wx.Panel):
             self.index += 1
             if ln:
                 import shlex
+
                 cmd = shlex.split(ln)
                 # out en retvalue
                 retvalue = self._interp.onecmd(cmd)
@@ -118,9 +125,10 @@ class ConsolePanel(wx.Panel):
     def get_last_line(self):
         nl = self.textctrl.GetNumberOfLines()
         ln = self.textctrl.GetLineText(nl - 1)
-        ln = ln[len(self.prompt):]
+        ln = ln[len(self.prompt) :]
 
         return ln
+
 
 # ----------------------------------------------------------------------
 
@@ -131,7 +139,9 @@ class ListPanel(wx.Panel):
         self._interp = interpreter
         wx.Panel.__init__(self, parent, -1)
 
-        self.dvc = dv.DataViewCtrl(self, style=wx.BORDER_THEME | dv.DV_ROW_LINES | dv.DV_VERT_RULES)
+        self.dvc = dv.DataViewCtrl(
+            self, style=wx.BORDER_THEME | dv.DV_ROW_LINES | dv.DV_VERT_RULES
+        )
 
         self.model = model
         self.dvc.AssociateModel(self.model)
@@ -143,7 +153,9 @@ class ListPanel(wx.Panel):
             c.Sortable = True
             c.Reorderable = True
 
-        self.cp = cp = PCP.PyCollapsiblePane(self, label="Show console", agwStyle=wx.CP_GTK_EXPANDER)
+        self.cp = cp = PCP.PyCollapsiblePane(
+            self, label="Show console", agwStyle=wx.CP_GTK_EXPANDER
+        )
         self.MakePaneContent(cp.GetPane())
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -181,7 +193,9 @@ class HttpRawPanel(wx.Panel):
         # self.req_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY)
         self.req_txt = webview.WebView.New(self)
         # self.resp_txt = webview.WebView.New(self)
-        self.resp_txt = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.resp_txt = wx.TextCtrl(
+            self, -1, "", style=wx.TE_MULTILINE | wx.TE_READONLY
+        )
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -231,7 +245,9 @@ class MainNotebookPanel(wx.Panel):
         from pygments.lexers import get_lexer_by_name
         from pygments.formatters import HtmlFormatter
 
-        result = highlight(str(row.history), get_lexer_by_name("http"), HtmlFormatter(full=True))
+        result = highlight(
+            str(row.history), get_lexer_by_name("http"), HtmlFormatter(full=True)
+        )
         # result2 = highlight(str(row.history.raw_content), get_lexer_by_name("http"), HtmlFormatter(full=True))
 
         self.renderpanel.SetPage(row.history.content, row.url)
@@ -240,6 +256,7 @@ class MainNotebookPanel(wx.Panel):
         # self.rawpanel.resp_txt.SetPage(result2, "")
         self.rawpanel.resp_txt.SetValue(str(row.history.raw_content))
 
+
 # ----------------------------------------------------------------------
 
 
@@ -247,10 +264,15 @@ ID_About = wx.NewId()
 
 
 class WfuzzFrame(wx.Frame):
-    def __init__(self, parent, id=-1, title="Wfuzz", pos=wx.DefaultPosition,
-                 size=wx.DefaultSize,
-                 style=wx.DEFAULT_FRAME_STYLE | wx.SUNKEN_BORDER | wx.CLIP_CHILDREN
-                 ):
+    def __init__(
+        self,
+        parent,
+        id=-1,
+        title="Wfuzz",
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=wx.DEFAULT_FRAME_STYLE | wx.SUNKEN_BORDER | wx.CLIP_CHILDREN,
+    ):
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
 
     def start_gui(self, controller):
@@ -276,8 +298,17 @@ class WfuzzFrame(wx.Frame):
         self.SetMinSize(wx.Size(400, 300))
 
         # create some center panes
-        self._mgr.AddPane(MainNotebookPanel(self, self, controller._interp), wx.aui.AuiPaneInfo().Caption("Raw HTTP Content").Name("analysis_notebook").CenterPane())
-        self._mgr.AddPane(self.CreateNotebook(), wx.aui.AuiPaneInfo().Name("main_notebook").CenterPane())
+        self._mgr.AddPane(
+            MainNotebookPanel(self, self, controller._interp),
+            wx.aui.AuiPaneInfo()
+            .Caption("Raw HTTP Content")
+            .Name("analysis_notebook")
+            .CenterPane(),
+        )
+        self._mgr.AddPane(
+            self.CreateNotebook(),
+            wx.aui.AuiPaneInfo().Name("main_notebook").CenterPane(),
+        )
         self._mgr.Update()
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -306,12 +337,23 @@ class WfuzzFrame(wx.Frame):
         bookStyle = aui.AUI_NB_DEFAULT_STYLE
         # bookStyle &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB)
 
-        bookStyle = aui.AUI_NB_DEFAULT_STYLE | aui.AUI_NB_TAB_EXTERNAL_MOVE | wx.NO_BORDER
+        bookStyle = (
+            aui.AUI_NB_DEFAULT_STYLE | aui.AUI_NB_TAB_EXTERNAL_MOVE | wx.NO_BORDER
+        )
 
         client_size = self.GetClientSize()
-        nb = aui.AuiNotebook(self, -1, wx.Point(client_size.x, client_size.y), wx.Size(430, 200), agwStyle=bookStyle)
+        nb = aui.AuiNotebook(
+            self,
+            -1,
+            wx.Point(client_size.x, client_size.y),
+            wx.Size(430, 200),
+            agwStyle=bookStyle,
+        )
 
-        nb.AddPage(ListPanel(self, self, self.controller._model, self.controller._interp), "Main")
+        nb.AddPage(
+            ListPanel(self, self, self.controller._model, self.controller._interp),
+            "Main",
+        )
 
         return nb
 

@@ -1,5 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 import sys
 
@@ -14,8 +15,7 @@ class stdin(BasePayload):
     category = ["default"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     default_parameter = ""
 
@@ -26,10 +26,10 @@ class stdin(BasePayload):
     def count(self):
         return self.__count
 
-    def __iter__(self):
-        return self
+    def get_type(self):
+        return FuzzWordType.WORD
 
-    def __next__(self):
+    def get_next(self):
         line = next(sys.stdin).strip()
 
         return line
