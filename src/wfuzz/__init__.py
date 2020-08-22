@@ -30,9 +30,9 @@ warnings.formatwarning = warning_on_one_line
 try:
     import pycurl
 
-    if "openssl".lower() not in pycurl.version.lower():
+    if "ssl".lower() not in pycurl.version.lower():
         warnings.warn(
-            "Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information."
+            "Pycurl is not compiled against Open- or LibreSSL. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information."
         )
 
     if not hasattr(pycurl, "CONNECT_TO"):
