@@ -1,9 +1,9 @@
 __title__ = "wfuzz"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 __build__ = 0x023000
 __author__ = "Xavier Mendez"
 __license__ = "GPL 2.0"
-__copyright__ = "Copyright 2011-2018 Xavier Mendez"
+__copyright__ = "Copyright 2011-2020 Xavier Mendez"
 
 import logging
 import sys
