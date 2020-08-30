@@ -1,4 +1,4 @@
-from .helpers.file_func import get_home, get_path
+from .helpers.file_func import get_home, get_path, get_config_dir
 from .helpers.obj_factory import Singleton
 from . import __version__ as version
 from .externals.moduleman.registrant import MulRegistrant
@@ -17,7 +17,16 @@ BASELINE_CODE = -2
 
 class Settings(SettingsBase):
     def get_config_file(self):
-        return os.path.join(get_home(check=True), "wfuzz.ini")
+        config_file = "wfuzz.ini"
+
+        config = os.path.join(get_config_dir(check=False), config_file)
+        legacy_config = os.path.join(get_home(check=False), config_file)
+        
+        if os.path.exists(config):
+            return config
+        elif os.path.exists(legacy_config):
+            return legacy_config
+        return os.path.join(get_config_dir(check=True), config_file)
 
     def set_defaults(self):
         return dict(
