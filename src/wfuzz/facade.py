@@ -21,7 +21,7 @@ class Settings(SettingsBase):
 
         config = os.path.join(get_config_dir(check=False), config_file)
         legacy_config = os.path.join(get_home(check=False), config_file)
-        
+
         if os.path.exists(config):
             return config
         elif os.path.exists(legacy_config):

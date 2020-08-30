@@ -22,9 +22,11 @@ def get_filter_help_file():
 
     return filter_help_text
 
+
 def create_dir(dir_path):
     if not os.path.exists(dir_path):
-        os.makedirs(dir_path) 
+        os.makedirs(dir_path)
+
 
 def get_home(check=False, directory=None):
     path = os.path.join(os.path.expanduser("~"), ".wfuzz")
@@ -33,12 +35,16 @@ def get_home(check=False, directory=None):
 
     return os.path.join(path, directory) if directory else path
 
+
 def get_config_dir(check=False):
-    config_dir = os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser("~"), ".config")
+    config_dir = os.environ.get("XDG_CONFIG_HOME") or os.path.join(
+        os.path.expanduser("~"), ".config"
+    )
     wfuzz_config_dir = os.path.join(config_dir, "wfuzz")
     if check:
         create_dir(wfuzz_config_dir)
     return wfuzz_config_dir
+
 
 def get_path(directory=None):
     abspath = os.path.abspath(__file__)
