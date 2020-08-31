@@ -15,4 +15,4 @@ pycurl==7.43.0.5          # via wfuzz (setup.py)
 pyparsing==2.4.7          # via packaging
 pytest==5.4.2             # via wfuzz (setup.py)
 six==1.14.0               # via packaging, wfuzz (setup.py)
-wcwidth==0.1.9            # via pytest
+wcwidth==0.2.5            # via pytest
