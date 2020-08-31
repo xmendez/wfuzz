@@ -7,7 +7,7 @@
 attrs==19.3.0             # via pytest
 chardet==3.0.4            # via wfuzz (setup.py)
 future==0.18.2            # via wfuzz (setup.py)
-more-itertools==8.3.0     # via pytest
+more-itertools==8.5.0     # via pytest
 packaging==20.4           # via pytest
 pluggy==0.13.1            # via pytest
 py==1.8.1                 # via pytest
