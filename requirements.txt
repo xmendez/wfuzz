@@ -4,15 +4,16 @@
 #
 #    pip-compile --output-file=requirements.txt setup.py
 #
-attrs==19.3.0             # via pytest
+attrs==20.1.0             # via pytest
 chardet==3.0.4            # via wfuzz (setup.py)
 future==0.18.2            # via wfuzz (setup.py)
-more-itertools==8.3.0     # via pytest
+iniconfig==1.0.1          # via pytest
+more-itertools==8.5.0     # via pytest
 packaging==20.4           # via pytest
 pluggy==0.13.1            # via pytest
-py==1.8.1                 # via pytest
+py==1.9.0                 # via pytest
 pycurl==7.43.0.5          # via wfuzz (setup.py)
 pyparsing==2.4.7          # via packaging
-pytest==5.4.2             # via wfuzz (setup.py)
-six==1.14.0               # via packaging, wfuzz (setup.py)
-wcwidth==0.1.9            # via pytest
+pytest==6.0.1             # via wfuzz (setup.py)
+six==1.15.0               # via packaging, wfuzz (setup.py)
+toml==0.10.1              # via pytest
