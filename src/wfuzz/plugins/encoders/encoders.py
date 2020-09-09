@@ -299,6 +299,45 @@ class sha1:
         res = s.hexdigest()
         return res
 
+@moduleman_plugin("encode")
+class sha256:
+    name = "sha256"
+    summary = "Applies a sha256 hash to the given string"
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+        "Adapted to newer algorithm Dustin Evans (@dustinaevans)",
+    )
+    version = "0.1"
+    category = ["hashes"]
+    priority = 99
+
+    def encode(self, string):
+        s = hashlib.sha256()
+        s.update(string.encode("utf-8"))
+        res = s.hexdigest()
+        return res
+    
+@moduleman_plugin("encode")
+class sha512:
+    name = "sha512"
+    summary = "Applies a sha512 hash to the given string"
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+        "Adapted to newer algorithm Dustin Evans (@dustinaevans)",
+    )
+    version = "0.1"
+    category = ["hashes"]
+    priority = 99
+
+    def encode(self, string):
+        s = hashlib.sha512()
+        s.update(string.encode("utf-8"))
+        res = s.hexdigest()
+        return res
 
 @moduleman_plugin("encode")
 class md5:
