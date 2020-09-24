@@ -9,7 +9,7 @@ from .exception import FuzzExceptBadOptions, FuzzExceptNetError
 
 
 class HttpPool:
-    HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ('basic', 'ntlm', 'digest')
+    HTTPAUTH_BASIC, HTTPAUTH_NTLM, HTTPAUTH_DIGEST = ("basic", "ntlm", "digest")
     newid = itertools.count(0)
 
     def __init__(self, options):
@@ -54,7 +54,7 @@ class HttpPool:
         with self.mutex_stats:
             dic = {
                 "http_processed": self.processed,
-                "http_registered": len(self._registered)
+                "http_registered": len(self._registered),
             }
         return dic
 
@@ -75,7 +75,9 @@ class HttpPool:
         self.pool_map[poolid]["proxy"] = None
 
         if self.options.get("proxies"):
-            self.pool_map[poolid]["proxy"] = self._get_next_proxy(self.options.get("proxies"))
+            self.pool_map[poolid]["proxy"] = self._get_next_proxy(
+                self.options.get("proxies")
+            )
 
         return poolid
 
@@ -83,7 +85,7 @@ class HttpPool:
         new_curl_h = fuzzres.history.to_http_object(curl_h)
         new_curl_h = self._set_extra_options(new_curl_h, fuzzres, poolid)
 
-        new_curl_h.response_queue = ((BytesIO(), BytesIO(), fuzzres, poolid))
+        new_curl_h.response_queue = (BytesIO(), BytesIO(), fuzzres, poolid)
         new_curl_h.setopt(pycurl.WRITEFUNCTION, new_curl_h.response_queue[0].write)
         new_curl_h.setopt(pycurl.HEADERFUNCTION, new_curl_h.response_queue[1].write)
 
@@ -140,7 +142,9 @@ class HttpPool:
             elif ptype == "HTTP":
                 c.setopt(pycurl.PROXY, "%s:%s" % (ip, port))
             else:
-                raise FuzzExceptBadOptions("Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5.")
+                raise FuzzExceptBadOptions(
+                    "Bad proxy type specified, correct values are HTTP, SOCKS4 or SOCKS5."
+                )
         else:
             c.setopt(pycurl.PROXY, "")
 
@@ -166,7 +170,9 @@ class HttpPool:
         buff_body, buff_header, res, poolid = curl_h.response_queue
 
         try:
-            res.history.from_http_object(curl_h, buff_header.getvalue(), buff_body.getvalue())
+            res.history.from_http_object(
+                curl_h, buff_header.getvalue(), buff_body.getvalue()
+            )
         except Exception as e:
             self.pool_map[poolid]["queue"].put(res.update(exception=e))
         else:
@@ -233,9 +239,7 @@ class HttpPool:
                 curl_h = self.curlh_freelist.pop()
                 fuzzres, poolid = self._request_list.popleft()
 
-                self.m.add_handle(
-                    self._prepare_curl_h(curl_h, fuzzres, poolid)
-                )
+                self.m.add_handle(self._prepare_curl_h(curl_h, fuzzres, poolid))
 
         self._stop_to_pools()
 
