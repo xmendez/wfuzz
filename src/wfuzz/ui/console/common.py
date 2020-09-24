@@ -178,9 +178,11 @@ wfpayload_usage = """%s\n\nOptions:
 \t-v                        : Verbose information.
 \t-f filename,printer       : Store results in the output file using the specified printer (raw printer if omitted).
 \t-o printer                : Show results using the specified printer.
+\t--prev                    : Print the previous HTTP requests (only when using payloads generating fuzzresults)
 \t--efield <expr>           : Show the specified language expression together with the current payload. Repeat option for various fields.
 \t--field <expr>            : Do not show the payload but only the specified language expression. Repeat option for various fields.
 \t
+\t-A, --AA                  : Alias for --script=default,verbose -v -c
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
 \t--script-help=<plugins>   : Show help about scripts.

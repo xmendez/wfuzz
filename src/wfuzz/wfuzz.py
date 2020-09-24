@@ -71,7 +71,7 @@ def main_filter():
     from .api import fuzz
 
     try:
-        short_opts = "hvce:z:f:w:o:"
+        short_opts = "hvce:z:f:w:o:A"
         long_opts = [
             "efield=",
             "ee=",
@@ -100,6 +100,8 @@ def main_filter():
             "script-help=",
             "script=",
             "script-args=",
+            "prev",
+            "AA",
         ]
         session_options = CLParser(
             sys.argv,
