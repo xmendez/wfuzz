@@ -174,6 +174,18 @@ class HttpPool:
         if cdelay is not None:
             c.setopt(pycurl.CONNECTTIMEOUT, cdelay)
 
+        clientcert = self.options.get("clientcert")
+        if clientcert is not None:
+            c.setopt(pycurl.SSLCERT, clientcert)
+
+        clientcertkey = self.options.get("clientcertkey")
+        if clientcertkey is not None:
+            c.setopt(pycurl.SSLKEY, clientcertkey)
+
+        cacert = self.options.get("cacert")
+        if cacert is not None:
+            c.setopt(pycurl.CAINFO, cacert)
+
         return c
 
     def _process_curl_handle(self, curl_h):

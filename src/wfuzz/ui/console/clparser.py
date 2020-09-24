@@ -60,6 +60,9 @@ long_opts = [
     "version",
     "dry-run",
     "prev",
+    "clientcert=",
+    "clientcertkey=",
+    "cacert="
 ]
 REPEATABLE_OPTS = [
     "--efield",
@@ -556,6 +559,15 @@ class CLParser:
 
         if "-t" in optsd:
             conn_options["concurrent"] = int(optsd["-t"][0])
+
+        if "--clientcert" in optsd:
+            conn_options["clientcert"] = optsd["--clientcert"][0]
+
+        if "--clientcertkey" in optsd:
+            conn_options["clientcertkey"] = optsd["--clientcertkey"][0]
+
+        if "--cacert" in optsd:
+            conn_options["cacert"] = optsd["--cacert"][0]
 
     def _parse_options(self, optsd, options):
         if "--oF" in optsd:
