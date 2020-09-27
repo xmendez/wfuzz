@@ -3,10 +3,11 @@ from .exception import FuzzExceptBadInstall
 
 # python 2 and 3
 import sys
+
 if sys.version_info >= (3, 0):
-    from urllib.parse import urljoin
+    from urllib.parse import urljoin, urlparse
 else:
-    from urlparse import urljoin
+    from urlparse import urljoin, urlparse
 
 
 class FuzzRequestSoupMixing(object):
@@ -16,7 +17,7 @@ class FuzzRequestSoupMixing(object):
         except ImportError:
             raise FuzzExceptBadInstall("You need to install beautifulsoup4 first!")
 
-        soup = BeautifulSoup(self.content, 'html.parser')
+        soup = BeautifulSoup(self.content, "html.parser")
 
         return soup
 
@@ -37,30 +38,20 @@ class FuzzRequestUrlMixing(object):
 
     @property
     def is_path(self):
-        if self.code == 200 and self.url[-1] == '/':
+        if self.recursive_url and self.recursive_url[-1] == "/":
             return True
-        elif self.code >= 300 and self.code < 400:
-            if "Location" in self.headers.response and self.headers.response["Location"][-1] == '/':
-                return True
-        elif self.code == 401:
-            if self.url[-1] == '/':
-                return True
 
         return False
 
     @property
     def recursive_url(self):
-        if self.code >= 300 and self.code < 400 and "Location" in self.headers.response:
-            new_url = self.headers.response["Location"]
-            if not new_url[-1] == '/':
-                new_url += "/"
-            # taking into consideration redirections to /xxx/ without full URL
-            new_url = urljoin(self.url, new_url)
-        elif self.code == 401 or self.code == 200:
-            new_url = self.url
-            if not self.url[-1] == '/':
-                new_url = "/"
-        else:
-            raise Exception("Error generating recursive url")
+        if self.code >= 300 and self.code < 308 and "Location" in self.headers.response:
+            location_url = self.headers.response["Location"]
+            location_parsed_url = urlparse(location_url)
 
-        return new_url + "FUZZ"
+            if not location_parsed_url.scheme and not location_parsed_url.netloc:
+                return urljoin(self.url, location_url)
+        elif self.code in [200, 401] and self.url[-1] == "/":
+            return self.url
+
+        return None

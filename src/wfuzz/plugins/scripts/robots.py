@@ -22,23 +22,34 @@ class robots(BasePlugin, DiscoveryPluginMixin):
     category = ["default", "active", "discovery"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-        return fuzzresult.history.urlparse.ffname == "robots.txt" and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
+        return (
+            fuzzresult.history.urlparse.ffname == "robots.txt"
+            and fuzzresult.code == 200
+            and check_content_type(fuzzresult, "text")
+        )
 
     def process(self, fuzzresult):
         # Shamelessly (partially) copied from w3af's plugins/discovery/robotsReader.py
-        for line in fuzzresult.history.content.split('\n'):
+        for line in fuzzresult.history.content.split("\n"):
             line = line.strip()
 
-            if len(line) > 0 and line[0] != '#' and (line.upper().find('ALLOW') == 0 or line.upper().find('DISALLOW') == 0 or line.upper().find('SITEMAP') == 0):
+            if (
+                len(line) > 0
+                and line[0] != "#"
+                and (
+                    line.upper().find("ALLOW") == 0
+                    or line.upper().find("DISALLOW") == 0
+                    or line.upper().find("SITEMAP") == 0
+                )
+            ):
 
-                url = line[line.find(':') + 1:]
+                url = line[line.find(":") + 1 :]
                 url = url.strip(" *")
 
                 if url:

@@ -24,14 +24,17 @@ class cvs_extractor(BasePlugin, DiscoveryPluginMixin):
     description = ("Parses CVS/Entries file and enqueues found entries",)
     category = ["default", "active", "discovery"]
     priority = 99
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
 
     def validate(self, fuzzresult):
-        return fuzzresult.url.find("CVS/Entries") >= 0 and fuzzresult.code == 200 and check_content_type(fuzzresult, 'text')
+        return (
+            fuzzresult.url.find("CVS/Entries") >= 0
+            and fuzzresult.code == 200
+            and check_content_type(fuzzresult, "text")
+        )
 
     def process(self, fuzzresult):
         base_url = urljoin(fuzzresult.url, "..")
@@ -42,6 +45,6 @@ class cvs_extractor(BasePlugin, DiscoveryPluginMixin):
                 self.queue_url(urljoin(base_url, record[1]))
 
                 # Directory
-                if record[0] == 'D':
+                if record[0] == "D":
                     self.queue_url(urljoin(base_url, record[1]))
                     self.queue_url(urljoin(base_url, "%s/CVS/Entries" % (record[1])))

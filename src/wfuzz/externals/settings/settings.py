@@ -11,21 +11,24 @@ class SettingsBase:
     """
     Contains application settings. uses a ConfigParser
     """
+
     def __init__(self, save=False):
         self.cparser = ConfigParser()
 
         self.set_all(self.set_defaults())
-        self.filename = os.path.join(self._path_to_program_dir(), self.get_config_file())
+        self.filename = os.path.join(
+            self._path_to_program_dir(), self.get_config_file()
+        )
         self.cparser.read(self.filename)
 
     # Base members should implement
 
     def get_config_file(self):
-        '''Returns the name of the file where the config is saved.'''
+        """Returns the name of the file where the config is saved."""
         raise NotImplementedError
 
     def set_defaults(self):
-        '''
+        """
         Returns a dictionary with the default settings in the form of
         { \
                 Section: [ \
@@ -35,7 +38,7 @@ class SettingsBase:
                 ],
         ...
         }
-        '''
+        """
         raise NotImplementedError
 
     def has_option(self, section, setting):
@@ -78,7 +81,7 @@ class SettingsBase:
 
     def save(self):
         try:
-            with open(self.filename, 'w') as iniFile:
+            with open(self.filename, "w") as iniFile:
                 self.cparser.write(iniFile)
         except Exception:
             return False
@@ -94,6 +97,6 @@ class SettingsBase:
             path = os.path.dirname(path)
 
         if not path:
-            return '.'
+            return "."
 
         return path

@@ -1,5 +1,6 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 import os
 
@@ -19,7 +20,7 @@ class dirwalk(BasePayload):
         "Returns all the file paths found in the specified directory.",
         "Handy if you want to check a directory structure against a webserver,",
         "for example, because you have previously downloaded a specific version",
-        "of what is supposed to be on-line."
+        "of what is supposed to be on-line.",
     )
     summary = "Returns filename's recursively from a local directory."
     category = ["default"]
@@ -42,11 +43,11 @@ class dirwalk(BasePayload):
                 relative_path = os.path.relpath(os.path.join(root, f), directory)
                 yield quote(relative_path)
 
-    def __next__(self):
+    def get_next(self):
         return next(self.g)
+
+    def get_type(self):
+        return FuzzWordType.WORD
 
     def count(self):
         return -1
-
-    def __iter__(self):
-        return self

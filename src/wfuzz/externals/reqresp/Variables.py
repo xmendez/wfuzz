@@ -60,7 +60,12 @@ class VariablesSet:
         return dicc[0]
 
     def urlEncoded(self):
-        return "&".join(["=".join([i.name, i.value]) if i.value is not None else i.name for i in self.variables])
+        return "&".join(
+            [
+                "=".join([i.name, i.value]) if i.value is not None else i.name
+                for i in self.variables
+            ]
+        )
 
     def json_encoded(self):
         dicc = {i.name: i.value for i in self.variables}
@@ -78,8 +83,8 @@ class VariablesSet:
     def parseUrlEncoded(self, cad):
         dicc = []
 
-        if cad == '':
-            dicc.append(Variable('', None))
+        if cad == "":
+            dicc.append(Variable("", None))
 
         for i in cad.split("&"):
             if i:
@@ -109,7 +114,7 @@ class VariablesSet:
 
         while True:
             headers = []
-            if not tp.readUntil("name=\"([^\"]+)\""):
+            if not tp.readUntil('name="([^"]+)"'):
                 break
             var = tp[0][0]
             headers.append(tp.lastFull_line.strip())

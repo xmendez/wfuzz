@@ -11,8 +11,7 @@ class headers(BasePlugin):
     description = ("Looks for new server headers",)
     category = ["verbose", "passive"]
     priority = 99
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)

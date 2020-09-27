@@ -1,8 +1,12 @@
-from wfuzz.fuzzobjects import PluginResult, PluginRequest
-from wfuzz.exception import FuzzExceptBadFile, FuzzExceptBadOptions, FuzzExceptPluginError
+from wfuzz.fuzzobjects import FuzzWord
+from wfuzz.exception import (
+    FuzzExceptBadFile,
+    FuzzExceptBadOptions,
+    FuzzExceptPluginError,
+)
 from wfuzz.facade import Facade
-
-from wfuzz.utils import find_file_in_paths
+from wfuzz.factories.plugin_factory import plugin_factory
+from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
 import os
@@ -12,7 +16,7 @@ from builtins import object
 
 
 # Util methods for accessing search results
-class BasePlugin():
+class BasePlugin:
     def __init__(self):
         self.results_queue = None
         self.base_fuzz_res = None
@@ -22,7 +26,9 @@ class BasePlugin():
             param_name = "%s.%s" % (self.name, name)
 
             if required and param_name not in list(self.kbase.keys()):
-                raise FuzzExceptBadOptions("Plugins, missing parameter %s!" % (param_name,))
+                raise FuzzExceptBadOptions(
+                    "Plugins, missing parameter %s!" % (param_name,)
+                )
 
             if param_name not in list(self.kbase.keys()):
                 self.kbase[param_name] = default_value
@@ -33,37 +39,36 @@ class BasePlugin():
             self.base_fuzz_res = fuzzresult
             self.process(fuzzresult)
         except Exception as e:
-            plres = PluginResult()
-            plres.source = "$$exception$$"
-            plres.issue = "Exception within plugin %s: %s" % (self.name, str(e))
-            results_queue.put(plres)
+            results_queue.put(plugin_factory.create("plugin_from_error", self.name, e))
         finally:
             control_queue.get()
             control_queue.task_done()
             return
 
     def process(self, fuzzresult):
-        '''
+        """
         This is were the plugin processing is done. Any wfuzz plugin must implement this method, do its job with the fuzzresult received and:
         - queue_url: if it is a discovery plugin enqueing more HTTP request that at some point will generate more results
         - add_result: Add information about the obtained results after the processing with an accurate description
 
         A kbase (get_kbase, has_kbase, add_kbase) is shared between all plugins. this can be used to store and retrieve relevant "collaborative" information.
-        '''
+        """
         raise NotImplementedError
 
     def validate(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
     def add_result(self, issue):
-        plres = PluginResult()
-        plres.source = self.name
-        plres.issue = issue
-
-        self.results_queue.put(plres)
+        self.results_queue.put(
+            plugin_factory.create("plugin_from_finding", self.name, issue)
+        )
 
     def queue_url(self, url):
-        self.results_queue.put(PluginRequest.from_fuzzRes(self.base_fuzz_res, url, self.name))
+        self.results_queue.put(
+            plugin_factory.create(
+                "plugin_from_recursion", self.name, self.base_fuzz_res, url
+            )
+        )
 
 
 class BasePrinter:
@@ -71,7 +76,7 @@ class BasePrinter:
         self.f = None
         if output:
             try:
-                self.f = open(output, 'w')
+                self.f = open(output, "w")
             except IOError as e:
                 raise FuzzExceptBadFile("Error opening file. %s" % str(e))
         else:
@@ -101,25 +106,40 @@ class BasePayload(object):
                 raise FuzzExceptBadOptions("Too many plugin parameters specified")
 
         # Check for allowed parameters
-        if [k for k in list(self.params.keys()) if k not in [x[0] for x in self.parameters] and k not in ["encoder", "default"]]:
-            raise FuzzExceptBadOptions("Plugin %s, unknown parameter specified!" % (self.name))
+        if [
+            k
+            for k in list(self.params.keys())
+            if k not in [x[0] for x in self.parameters]
+            and k not in ["encoder", "default"]
+        ]:
+            raise FuzzExceptBadOptions(
+                "Plugin %s, unknown parameter specified!" % (self.name)
+            )
 
         # check mandatory params, assign default values
         for name, default_value, required, description in self.parameters:
             if required and name not in self.params:
-                raise FuzzExceptBadOptions("Plugin %s, missing parameter %s!" % (self.name, name))
+                raise FuzzExceptBadOptions(
+                    "Plugin %s, missing parameter %s!" % (self.name, name)
+                )
 
             if name not in self.params:
                 self.params[name] = default_value
 
+    def get_type(self):
+        raise FuzzExceptPluginError("Method get_type not implemented")
+
+    def get_next(self):
+        raise FuzzExceptPluginError("Method get_next not implemented")
+
     def __next__(self):
-        raise FuzzExceptPluginError("Method next not implemented")
+        return FuzzWord(self.get_next(), self.get_type())
 
     def count(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
     def __iter__(self):
-        raise FuzzExceptPluginError("Method iter not implemented")
+        return self
 
     def close(self):
         pass
@@ -128,7 +148,7 @@ class BasePayload(object):
         if os.path.exists(name):
             return name
 
-        for pa in Facade().sett.get('general', 'lookup_dirs').split(","):
+        for pa in Facade().sett.get("general", "lookup_dirs").split(","):
             fn = find_file_in_paths(name, pa)
 
             if fn is not None:

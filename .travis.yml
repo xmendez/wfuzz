@@ -3,24 +3,22 @@ language: python
 services:
   - docker
 python:
-  - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 before_install:
   - docker-compose -f tests/server_dir/docker-compose.yml up -d
 install:
-  - pip install coverage 
-  - pip install mock
-  - pip install netaddr
-  - pip install flake8
-  - pip install codecov
-  - python setup.py install
+ - make install-dev
+ - python setup.py install
+  
 script:
-  - flake8 --ignore=E501,E402,F401,W504 src tests
+  - flake8 src tests
   - coverage run --append -m unittest discover -v -s tests/
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $TRAVIS_BRANCH == 'master' ]]; then codecov; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != '3.4' && $TRAVIS_PYTHON_VERSION != '3.5' ]]; then black --check src tests; fi
 deploy:
   provider: pypi
   user: x4vi_mendez

@@ -1,4 +1,7 @@
-import collections
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 
 
 def moduleman_plugin(*args):
@@ -6,13 +9,13 @@ def moduleman_plugin(*args):
 
     def inner_decorator(cls):
         for method in method_args:
-            if (not (method in dir(cls))):
+            if not (method in dir(cls)):
                 raise Exception("Required method %s not implemented" % method)
         cls.__PLUGIN_MODULEMAN_MARK = "Plugin mark"
 
         return cls
 
-    if not isinstance(args[0], collections.Callable):
+    if not isinstance(args[0], Callable):
         method_args += args
         return inner_decorator
 

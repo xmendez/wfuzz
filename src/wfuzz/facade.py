@@ -1,4 +1,5 @@
-from . import utils
+from .helpers.file_func import get_home, get_path, get_config_dir
+from .helpers.obj_factory import Singleton
 from . import __version__ as version
 from .externals.moduleman.registrant import MulRegistrant
 from .externals.moduleman.loader import DirLoader
@@ -16,28 +17,39 @@ BASELINE_CODE = -2
 
 class Settings(SettingsBase):
     def get_config_file(self):
-        return os.path.join(utils.get_home(check=True), "wfuzz.ini")
+        config_file = "wfuzz.ini"
+
+        config = os.path.join(get_config_dir(check=False), config_file)
+        legacy_config = os.path.join(get_home(check=False), config_file)
+
+        if os.path.exists(config):
+            return config
+        elif os.path.exists(legacy_config):
+            return legacy_config
+        return os.path.join(get_config_dir(check=True), config_file)
 
     def set_defaults(self):
         return dict(
-            plugins=[
-                ("bing_apikey", ''),
-                ("shodan_apikey", '')
+            plugins=[("bing_apikey", ""), ("shodan_apikey", "")],
+            kbase=[
+                (
+                    "discovery.blacklist",
+                    ".svg-.css-.js-.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico",
+                )
             ],
-            kbase=[("discovery.blacklist", '.svg-.css-.js-.jpg-.gif-.png-.jpeg-.mov-.avi-.flv-.ico')],
             connection=[
-                ("concurrent", '10'),
-                ("conn_delay", '90'),
-                ("req_delay", '90'),
-                ("retries", '3'),
-                ("User-Agent", "Wfuzz/%s" % version)
+                ("concurrent", "10"),
+                ("conn_delay", "90"),
+                ("req_delay", "90"),
+                ("retries", "3"),
+                ("User-Agent", "Wfuzz/%s" % version),
             ],
             general=[
-                ("default_printer", 'raw'),
+                ("default_printer", "raw"),
                 ("cancel_on_plugin_except", "0"),
-                ("concurrent_plugins", '3'),
-                ("lookup_dirs", '.'),
-                ("encode_space", '1')
+                ("concurrent_plugins", "3"),
+                ("lookup_dirs", "."),
+                ("encode_space", "1"),
             ],
         )
 
@@ -47,19 +59,17 @@ class MyRegistrant(MulRegistrant):
         try:
             return MulRegistrant.get_plugin(self, identifier)
         except KeyError as e:
-            raise FuzzExceptNoPluginError("Requested plugin %s. Error: %s" % (identifier, str(e)))
+            raise FuzzExceptNoPluginError(
+                "Requested plugin %s. Error: %s" % (identifier, str(e))
+            )
 
 
 # python2 and 3: class Facade(metaclass=utils.Singleton):
-class Facade(with_metaclass(utils.Singleton, object)):
+class Facade(with_metaclass(Singleton, object)):
     def __init__(self):
 
         self.__plugins = dict(
-            printers=None,
-            scripts=None,
-            encoders=None,
-            iterators=None,
-            payloads=None,
+            printers=None, scripts=None, encoders=None, iterators=None, payloads=None,
         )
 
         self.sett = Settings()
@@ -71,8 +81,12 @@ class Facade(with_metaclass(utils.Singleton, object)):
 
             if not self.__plugins[cat]:
                 loader_list = []
-                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": utils.get_path("plugins")}))
-                loader_list.append(DirLoader(**{"base_dir": cat, "base_path": utils.get_home()}))
+                loader_list.append(
+                    DirLoader(**{"base_dir": cat, "base_path": get_path("../plugins")})
+                )
+                loader_list.append(
+                    DirLoader(**{"base_dir": cat, "base_path": get_home()})
+                )
                 self.__plugins[cat] = MyRegistrant(loader_list)
 
             return self.__plugins[cat]

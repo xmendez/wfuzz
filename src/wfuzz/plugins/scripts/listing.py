@@ -14,8 +14,7 @@ class listing(BasePlugin):
     category = ["default", "passive"]
     priority = 99
 
-    parameters = (
-    )
+    parameters = ()
 
     def __init__(self):
         BasePlugin.__init__(self)
@@ -31,8 +30,12 @@ class listing(BasePlugin):
         dir_indexing_regexes.append("<TITLE>Folder Listing.")
         dir_indexing_regexes.append('<table summary="Directory Listing" ')
         dir_indexing_regexes.append("- Browsing directory ")
-        dir_indexing_regexes.append('">\\[To Parent Directory\\]</a><br><br>')  # IIS 6.0 and 7.0
-        dir_indexing_regexes.append('<A HREF=".*?">.*?</A><br></pre><hr></body></html>')  # IIS 5.0
+        dir_indexing_regexes.append(
+            '">\\[To Parent Directory\\]</a><br><br>'
+        )  # IIS 6.0 and 7.0
+        dir_indexing_regexes.append(
+            '<A HREF=".*?">.*?</A><br></pre><hr></body></html>'
+        )  # IIS 5.0
 
         self.regex = []
         for i in dir_indexing_regexes:

@@ -1,12 +1,17 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.exception import FuzzExceptBadOptions
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
 class hexrange(BasePayload):
     name = "hexrange"
-    author = ("Carlos del Ojo", "Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Carlos del Ojo",
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
     description = ()
     summary = "Returns each hex number of the given hex range."
@@ -28,17 +33,19 @@ class hexrange(BasePayload):
             self.maximum = int(ran[1], 16)
             self.__count = self.maximum - self.minimum + 1
             self.current = self.minimum
-            self.lgth = max(len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x", "")))
+            self.lgth = max(
+                len(ran[0]), len(ran[1]), len(hex(self.maximum).replace("0x", ""))
+            )
         except ValueError:
-            raise FuzzExceptBadOptions("Bad range format (eg. \"0-ffa\")")
-
-    def __iter__(self):
-        return self
+            raise FuzzExceptBadOptions('Bad range format (eg. "0-ffa")')
 
     def count(self):
         return self.__count
 
-    def __next__(self):
+    def get_type(self):
+        return FuzzWordType.WORD
+
+    def get_next(self):
         if self.current > self.maximum:
             raise StopIteration
 

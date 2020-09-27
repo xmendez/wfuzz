@@ -1,20 +1,22 @@
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePayload
+from wfuzz.fuzzobjects import FuzzWordType
 
 
 @moduleman_plugin
 class names(BasePayload):
     name = "names"
-    author = ("Christian Martorella", "Adapted to newer versions Xavi Mendez (@xmendez)")
+    author = (
+        "Christian Martorella",
+        "Adapted to newer versions Xavi Mendez (@xmendez)",
+    )
     version = "0.1"
-    description = ("ie. jon-smith", )
+    description = ("ie. jon-smith",)
     summary = "Returns possible usernames by mixing the given words, separated by -, using known typical constructions."
     category = ["default"]
     priority = 99
 
-    parameters = (
-        ("name", "", True, "Name and surname in the form of name-surname."),
-    )
+    parameters = (("name", "", True, "Name and surname in the form of name-surname."),)
 
     default_parameter = "name"
 
@@ -77,10 +79,10 @@ class names(BasePayload):
     def count(self):
         return self.__count
 
-    def __iter__(self):
-        return self
+    def get_type(self):
+        return FuzzWordType.WORD
 
-    def __next__(self):
+    def get_next(self):
         if self.creatednames:
             payl = self.creatednames.pop()
             return payl

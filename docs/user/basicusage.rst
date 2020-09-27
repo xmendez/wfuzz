@@ -252,9 +252,9 @@ For example, to show results in JSON format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
-When using the default output you can also select an additional FuzzResult's field to show together with the payload description::
+When using the default output you can also select additional FuzzResult's fields to show, using --efield, together with the payload description::
 
-    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --field r
+    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --efield r
     ...
     000000001:   200        99 L     272 W    3868 Ch   0 | GET /artists.php?artist=0 HTTP/1.1
                                                         Content-Type: application/x-www-form-urlencoded
@@ -262,5 +262,21 @@ When using the default output you can also select an additional FuzzResult's fie
                                                         Host: testphp.vulnweb.com
     ...
 
+The above is useful, for example, to debug what exact HTTP request Wfuzz sent to the remote Web server.
 
-The above is useful, for example, to debug what exact HTTP request Wfuzz sent to the remote Web server. Check the filter language section in the advance usage document for the available fields.
+To completely replace the default payload output you can use --field instead::
+
+    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --field url
+    ...
+    000000001:   200        104 L    364 W    4735 Ch     "http://testphp.vulnweb.com/artists.php?artist=0"
+    ...
+
+--efield and --field can be repeated to show several fields::
+
+
+    $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --efield url --efield h
+    ...
+    000000001:   200        104 L    364 W    4735 Ch     "0 | http://testphp.vulnweb.com/artists.php?artist=0 | 4735"                                                                                        
+    ...
+
+--efield and --field are in fact filter expressions. Check the filter language section in the advance usage document for the available fields and operators.

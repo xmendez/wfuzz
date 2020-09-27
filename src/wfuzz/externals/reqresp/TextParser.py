@@ -39,10 +39,10 @@ class TextParser(object):
             raise StopIteration
 
     def setSource(self, t, *args):
-        '''Se especifica el tipo de entrada. Puede ser fichero o entrada estandard
+        """Se especifica el tipo de entrada. Puede ser fichero o entrada estandard
 
         Ejemplos: setSource("file","/tmp/file")
-                    setSource("stdin")\n'''
+                    setSource("stdin")\n"""
 
         if t == "file":
             self.type = t
@@ -70,9 +70,9 @@ class TextParser(object):
         "Lee lineas hasta que el patron (pattern) conincide en alguna linea"
 
         while True:
-            if (self.readLine() == 0):
+            if self.readLine() == 0:
                 return False
-            if (self.search(pattern, caseSens) is True):
+            if self.search(pattern, caseSens) is True:
                 break
 
         return True
@@ -91,8 +91,8 @@ class TextParser(object):
                 self.matches[j] = tuple([self.matches[j]])
             j += 1
 
-#               DEBUG PARA MATCHING
-        if (debug == 1):
+        #               DEBUG PARA MATCHING
+        if debug == 1:
             print(("[", self.lastline, "-", pattern, "]"))
             print((len(self.matches)))
             print((self.matches))
@@ -111,7 +111,7 @@ class TextParser(object):
         "Salta las lines que se indiquen en el parametro"
 
         for i in range(lines):
-            if (self.readLine() == 0):
+            if self.readLine() == 0:
                 return False
 
         return True
@@ -130,22 +130,22 @@ class TextParser(object):
             if self.oldindex >= 0:
                 self.newindex = self.string.find("\n", self.oldindex, len(self.string))
                 if self.newindex == -1:
-                    self.lastFull_line = self.string[self.oldindex:len(self.string)]
+                    self.lastFull_line = self.string[self.oldindex : len(self.string)]
                 else:
-                    self.lastFull_line = self.string[self.oldindex:self.newindex + 1]
+                    self.lastFull_line = self.string[self.oldindex : self.newindex + 1]
 
                 self.oldindex = self.newindex + 1
             else:
-                self.lastFull_line = ''
+                self.lastFull_line = ""
 
         bytes_read = len(self.lastFull_line)
 
         s = self.lastFull_line
         self.lastline = s
 
-        if s[-2:] == '\r\n':
+        if s[-2:] == "\r\n":
             self.lastline = s[:-2]
-        elif s[-1:] == '\r' or s[-1:] == '\n':
+        elif s[-1:] == "\r" or s[-1:] == "\n":
             self.lastline = s[:-1]
 
         return bytes_read

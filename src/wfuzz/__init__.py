@@ -1,36 +1,55 @@
-__title__ = 'wfuzz'
-__version__ = "2.4.5"
+__title__ = "wfuzz"
+__version__ = "3.0.1"
 __build__ = 0x023000
-__author__ = 'Xavier Mendez'
-__license__ = 'GPL 2.0'
-__copyright__ = 'Copyright 2011-2018 Xavier Mendez'
+__author__ = "Xavier Mendez"
+__license__ = "GPL 2.0"
+__copyright__ = "Copyright 2011-2020 Xavier Mendez"
+
+import logging
+import sys
+
+import warnings
+
 
 # define a logging Handler
-import logging
-
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
 console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
+logging.getLogger("").addHandler(console)
 
-# Check for pycurl dependency
-import sys
+
+# define warnings format
+def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
+    return " %s:%s: %s:%s\n" % (filename, lineno, category.__name__, message)
+
+
+warnings.formatwarning = warning_on_one_line
+
 
 try:
     import pycurl
 
     if "openssl".lower() not in pycurl.version.lower():
-        print("\nWarning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.\n")
+        warnings.warn(
+            "Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information."
+        )
 
     if not hasattr(pycurl, "CONNECT_TO"):
-        print("\nWarning: Pycurl and/or libcurl version is old. CONNECT_TO option is missing. Wfuzz --ip option will not be available.\n")
+        warnings.warn(
+            "Pycurl and/or libcurl version is old. CONNECT_TO option is missing. Wfuzz --ip option will not be available."
+        )
 
     if not hasattr(pycurl, "PATH_AS_IS"):
-        print("\nWarning: Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'.\n")
+        warnings.warn(
+            "Pycurl and/or libcurl version is old. PATH_AS_IS option is missing. Wfuzz might not correctly fuzz URLS with '..'."
+        )
 
-except ImportError as e:
-    print("\nFatal exception: {}. Wfuzz needs pycurl to run. Pycurl could be installed using the following command:\n\npip install pycurl".format(str(e)))
+except ImportError:
+    warnings.warn(
+        "fuzz needs pycurl to run. Pycurl could be installed using the following command: $ pip install pycurl"
+    )
+
     sys.exit(1)
 
 from .options import FuzzSession

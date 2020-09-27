@@ -2,9 +2,9 @@ from .options import FuzzSession
 from .facade import Facade
 from .ui.console.clparser import CLParser
 
-'''
+"""
 Wfuzz API
-'''
+"""
 
 
 def fuzz(**kwargs):
