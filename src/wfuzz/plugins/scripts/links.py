@@ -31,7 +31,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
         BasePlugin.__init__(self)
 
         regex = [
-            r'href="((?!mailto:|tel:|#|javascript:).*?)"',
+            r'ref="((?!mailto:|tel:|#|javascript:).*?)"',
             r'src="((?!javascript:).*?)"',
             r'action="((?!javascript:).*?)"',
             # http://en.wikipedia.org/wiki/Meta_refresh
@@ -55,6 +55,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
             self.domain_regex = re.compile(
                 self.kbase["links.regex"][0], re.MULTILINE | re.DOTALL
             )
+        self.list_links = set()
 
     def validate(self, fuzzresult):
         self.list_links = set()
