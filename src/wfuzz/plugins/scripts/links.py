@@ -40,8 +40,13 @@ class links(BasePlugin, DiscoveryPluginMixin):
         ]
 
         self.regex = []
-        for i in regex:
-            self.regex.append(re.compile(i, re.MULTILINE | re.DOTALL))
+        for regex_str in regex:
+            self.regex.append(re.compile(regex_str, re.MULTILINE | re.DOTALL))
+
+        self.regex_header = [
+            ('Link', re.compile(r'<(.*)>;')),
+            ('Location', re.compile(r'(.*)')),
+        ]
 
         self.add_path = self.kbase["links.add_path"]
 
@@ -52,29 +57,36 @@ class links(BasePlugin, DiscoveryPluginMixin):
             )
 
     def validate(self, fuzzresult):
-        return fuzzresult.code in [200]
+        self.list_links = set()
+        return fuzzresult.code in [200, 301, 302, 303, 307, 308]
 
     def process(self, fuzzresult):
-        list_links = set()
         # <a href="www.owasp.org/index.php/OWASP_EU_Summit_2008">O
         # ParseResult(scheme='', netloc='', path='www.owasp.org/index.php/OWASP_EU_Summit_2008', params='', query='', fragment='')
 
+        for header, regex in self.regex_header:
+            if header in fuzzresult.history.headers.response:
+                for link_url in regex.findall(fuzzresult.history.headers.response[header]):
+                    if link_url:
+                        self.process_link(fuzzresult, link_url)
+
         for regex in self.regex:
             for link_url in regex.findall(fuzzresult.history.content):
-                if not link_url:
-                    continue
+                if link_url:
+                    self.process_link(fuzzresult, link_url)
 
-                parsed_link = parse_url(link_url)
+    def process_link(self, fuzzresult, link_url):
+        parsed_link = parse_url(link_url)
 
-                if (
-                    not parsed_link.scheme
-                    or parsed_link.scheme == "http"
-                    or parsed_link.scheme == "https"
-                ) and self.from_domain(fuzzresult, parsed_link):
-                    cache_key = parsed_link.cache_key(self.base_fuzz_res.history.urlp)
-                    if cache_key not in list_links:
-                        list_links.add(cache_key)
-                        self.enqueue_link(fuzzresult, link_url, parsed_link)
+        if (
+            not parsed_link.scheme
+            or parsed_link.scheme == "http"
+            or parsed_link.scheme == "https"
+        ) and self.from_domain(fuzzresult, parsed_link):
+            cache_key = parsed_link.cache_key(self.base_fuzz_res.history.urlp)
+            if cache_key not in self.list_links:
+                self.list_links.add(cache_key)
+                self.enqueue_link(fuzzresult, link_url, parsed_link)
 
     def enqueue_link(self, fuzzresult, link_url, parsed_link):
         # dir path
