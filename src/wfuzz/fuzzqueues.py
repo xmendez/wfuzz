@@ -7,7 +7,8 @@ from collections import defaultdict
 
 from .factories.fuzzresfactory import resfactory
 from .factories.plugin_factory import plugin_factory
-from .fuzzobjects import FuzzType, FuzzItem
+from .factories.payman import payman_factory
+from .fuzzobjects import FuzzType, FuzzItem, FuzzWord, FuzzWordType
 from .myqueues import FuzzQueue
 from .exception import (
     FuzzExceptInternalError,
@@ -17,7 +18,6 @@ from .exception import (
 )
 from .myqueues import FuzzRRQueue
 from .facade import Facade
-from .fuzzobjects import FuzzWordType
 from .ui.console.mvc import View
 
 
@@ -413,7 +413,9 @@ class PassPayloadQ(FuzzQueue):
         if item.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
             item = item.payload_man.get_payload_content(1)
             item.update_from_options(self.options)
-
+            item.payload_man = payman_factory.create(
+                "empty_payloadman", FuzzWord(item.url, FuzzWordType.WORD)
+            )
         self.send(item)
 
 
