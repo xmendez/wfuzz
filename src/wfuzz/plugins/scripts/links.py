@@ -31,9 +31,9 @@ class links(BasePlugin, DiscoveryPluginMixin):
         BasePlugin.__init__(self)
 
         regex = [
-            r'ref="((?!mailto:|tel:|#|javascript:).*?)"',
-            r'src="((?!javascript:).*?)"',
-            r'action="((?!javascript:).*?)"',
+            r'\b(?:(?<!data-)href)="((?!mailto:|tel:|#|javascript:).*?)"',
+            r'\bsrc="((?!javascript:).*?)"',
+            r'\baction="((?!javascript:).*?)"',
             # http://en.wikipedia.org/wiki/Meta_refresh
             r'<meta.*content="\d+;url=(.*?)">',
             r'getJSON\("(.*?)"',
@@ -44,8 +44,8 @@ class links(BasePlugin, DiscoveryPluginMixin):
             self.regex.append(re.compile(regex_str, re.MULTILINE | re.DOTALL))
 
         self.regex_header = [
-            ('Link', re.compile(r'<(.*)>;')),
-            ('Location', re.compile(r'(.*)')),
+            ("Link", re.compile(r"<(.*)>;")),
+            ("Location", re.compile(r"(.*)")),
         ]
 
         self.add_path = self.kbase["links.add_path"]
@@ -67,7 +67,9 @@ class links(BasePlugin, DiscoveryPluginMixin):
 
         for header, regex in self.regex_header:
             if header in fuzzresult.history.headers.response:
-                for link_url in regex.findall(fuzzresult.history.headers.response[header]):
+                for link_url in regex.findall(
+                    fuzzresult.history.headers.response[header]
+                ):
                     if link_url:
                         self.process_link(fuzzresult, link_url)
 
