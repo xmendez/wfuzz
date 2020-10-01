@@ -348,7 +348,7 @@ class JobMan(FuzzQueue):
                 if Facade().sett.get("general", "cancel_on_plugin_except") == "1":
                     self._throw(item._exception)
                 res.plugins_res.append(item)
-            elif item._seed is not None:
+            elif item._seed is not None and self.options["transport"] == "http":
                 cache_hit = self.cache.update_cache(item._seed.history, "backfeed")
                 if (self.options["no_cache"] or cache_hit) and (
                     self.max_dlevel == 0 or self.max_dlevel >= res.rlevel
@@ -357,7 +357,7 @@ class JobMan(FuzzQueue):
                     self.stats.pending_fuzz.inc()
                     self.send(item._seed)
                     enq_item[item.source] += 1
-            else:
+            elif item.issue:
                 res.plugins_res.append(item)
 
         for plugin_name, enq_num in enq_item.items():
