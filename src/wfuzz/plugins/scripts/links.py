@@ -12,6 +12,11 @@ from wfuzz.plugin_api.urlutils import parse_url
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 
+KBASE_PARAM_PATH = "links.add_path"
+KBASE_PARAM_DOMAIN_REGEX = "links.regex"
+KBASE_NEW_DOMAIN = "links.new_domains"
+
+
 @moduleman_plugin
 class links(BasePlugin, DiscoveryPluginMixin):
     name = "links"
@@ -48,12 +53,12 @@ class links(BasePlugin, DiscoveryPluginMixin):
             ("Location", re.compile(r"(.*)")),
         ]
 
-        self.add_path = self.kbase["links.add_path"]
+        self.add_path = self.kbase[KBASE_PARAM_PATH]
 
         self.domain_regex = None
-        if self.kbase["links.regex"][0]:
+        if self.kbase[KBASE_PARAM_DOMAIN_REGEX][0]:
             self.domain_regex = re.compile(
-                self.kbase["links.regex"][0], re.MULTILINE | re.DOTALL
+                self.kbase[KBASE_PARAM_DOMAIN_REGEX][0], re.MULTILINE | re.DOTALL
             )
         self.list_links = set()
 
@@ -119,9 +124,9 @@ class links(BasePlugin, DiscoveryPluginMixin):
 
         if (
             parsed_link.netloc
-            and parsed_link.netloc not in self.kbase["links.new_domains"]
+            and parsed_link.netloc not in self.kbase[KBASE_NEW_DOMAIN]
         ):
-            self.kbase["links.new_domains"].append(parsed_link.netloc)
+            self.kbase[KBASE_NEW_DOMAIN].append(parsed_link.netloc)
             self.add_result(
                 "New domain found, link not enqueued %s" % parsed_link.netloc
             )
