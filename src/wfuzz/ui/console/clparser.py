@@ -612,7 +612,7 @@ class CLParser:
             options["script"] = "default,verbose"
 
         if "--AAA" in optsd:
-            options["script"] = "default,discovery,verbose"
+            options["script"] = "default,verbose,discovery"
 
         if "--script" in optsd:
             options["script"] = (

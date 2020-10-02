@@ -128,7 +128,7 @@ verbose_usage = """%s\n\nOptions:
 \t--req-delay N             : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
 \t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
 \t
-\t-A, --AA, --AAA           : Alias for --script=default,verbose,discovery -v -c
+\t-A, --AA, --AAA           : Alias for -v -c and --script=default,verbose,discover respectively
 \t--no-cache                : Disable plugins cache. Every request will be scanned.
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
@@ -182,7 +182,7 @@ wfpayload_usage = """%s\n\nOptions:
 \t--efield <expr>           : Show the specified language expression together with the current payload. Repeat option for various fields.
 \t--field <expr>            : Do not show the payload but only the specified language expression. Repeat option for various fields.
 \t
-\t-A, --AA                  : Alias for --script=default,verbose -v -c
+\t-A, --AA, --AAA           : Alias for -v -c and --script=default,verbose,discover respectively
 \t--script=                 : Equivalent to --script=default
 \t--script=<plugins>        : Runs script's scan. <plugins> is a comma separated list of plugin-files or plugin-categories
 \t--script-help=<plugins>   : Show help about scripts.
