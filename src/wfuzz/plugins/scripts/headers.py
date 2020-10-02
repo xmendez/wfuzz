@@ -2,14 +2,17 @@ from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 
+KBASE_KEY = "http.headers.servers"
+
+
 @moduleman_plugin
 class headers(BasePlugin):
     name = "headers"
     author = ("Xavi Mendez (@xmendez)",)
     version = "0.1"
-    summary = "Looks for server headers"
+    summary = "Looks for new headers associated to HTTP servers in HTTP responses"
     description = ("Looks for new server headers",)
-    category = ["verbose", "passive"]
+    category = ["info", "passive", "default"]
     priority = 99
     parameters = ()
 
@@ -20,27 +23,19 @@ class headers(BasePlugin):
         return True
 
     def process(self, fuzzresult):
-        serverh = ""
-        poweredby = ""
 
-        if "Server" in fuzzresult.history.headers.response:
-            serverh = fuzzresult.history.headers.response["Server"]
+        watch_headers = [
+            "Server",
+            "X-Powered-By"
+        ]
 
-        if "X-Powered-By" in fuzzresult.history.headers.response:
-            poweredby = fuzzresult.history.headers.response["X-Powered-By"]
+        for header in watch_headers:
+            header_value = None
+            if header in fuzzresult.history.headers.response:
+                header_value = fuzzresult.history.headers.response[header]
 
-        if serverh != "":
-            if "server" not in self.kbase:
-                self.kbase["server"] = serverh
-                self.add_result("Server header first set - " + serverh)
-            elif serverh not in self.kbase["server"]:
-                self.kbase["server"] = serverh
-                self.add_result("New Server header - " + serverh)
+            if header_value is not None:
+                if header_value.lower() not in self.kbase[KBASE_KEY] or KBASE_KEY not in self.kbase:
+                    self.add_result("New server header. {}: {}".format(header, header_value))
 
-        if poweredby != "":
-            if "poweredby" not in self.kbase:
-                self.kbase["poweredby"] = poweredby
-                self.add_result("Powered-by header first set - " + poweredby)
-            elif poweredby not in self.kbase["poweredby"]:
-                self.kbase["poweredby"] = poweredby
-                self.add_result("New X-Powered-By header - " + poweredby)
+                    self.kbase[KBASE_KEY].append(header_value.lower())
