@@ -13,7 +13,7 @@ class sitemap(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses sitemap.xml file"
     description = ("Parses sitemap.xml file",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = ()

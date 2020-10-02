@@ -19,7 +19,7 @@ class robots(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses robots.txt looking for new content."
     description = ("Parses robots.txt looking for new content.",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = ()

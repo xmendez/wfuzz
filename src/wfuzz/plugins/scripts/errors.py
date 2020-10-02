@@ -11,7 +11,7 @@ class errors(BasePlugin):
     version = "0.1"
     summary = "Looks for error messages"
     description = ("Looks for common error messages",)
-    category = ["default", "passive"]
+    category = ["default", "passive", "info"]
     priority = 99
 
     parameters = ()

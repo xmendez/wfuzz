@@ -20,7 +20,7 @@ class wcdb_extractor(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses subversion's wc.db file."
     description = ("Parses subversion's wc.db file.",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = ()

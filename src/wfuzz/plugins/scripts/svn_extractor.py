@@ -16,7 +16,7 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses .svn/entries file."
     description = ("Parses CVS/Entries file and enqueues found entries",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = ()
