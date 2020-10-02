@@ -14,7 +14,7 @@ class npm_deps(BasePlugin):
     description = (
         "Extracts npm packages by using regex pattern from the HTTP response and prints it",
     )
-    category = ["info", "verbose"]
+    category = ["info"]
     priority = 99
 
     parameters = ()
