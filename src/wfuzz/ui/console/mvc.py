@@ -155,8 +155,8 @@ class Controller:
 
 
 class View:
-    widths = [10, 8, 6, 6, 9, getTerminalSize()[0] - 65]
-    verbose_widths = [10, 10, 8, 6, 6, 9, 30, 30, getTerminalSize()[0] - 145]
+    widths = [10, 8, 6, 8, 9, getTerminalSize()[0] - 65]
+    verbose_widths = [10, 10, 8, 8, 6, 9, 30, 30, getTerminalSize()[0] - 145]
 
     def __init__(self, session_options):
         self.colour = session_options["colour"]
