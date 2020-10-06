@@ -34,6 +34,7 @@ class unheaders(BasePlugin):
             r"^Client-.*$",
             r"^Connection$",
             r"^Content-.*$",
+            r"^Cross-Origin-Resource-Policy$",
             r"^Date$",
             r"^Etag$",
             r"^Expires$",
