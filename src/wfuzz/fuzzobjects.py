@@ -13,6 +13,7 @@ from .facade import ERROR_CODE
 from .helpers.str_func import python2_3_convert_to_unicode
 from .helpers.obj_dyn import rgetattr
 from .helpers.utils import MyCounter
+from .helpers.obj_dic import DotDict
 
 
 FuzzWord = namedtuple("FuzzWord", ["content", "type"])
@@ -299,12 +300,18 @@ class FuzzResult(FuzzItem):
 
     @property
     def plugins(self):
-        dic = defaultdict(list)
+        dic = defaultdict(lambda: defaultdict(list))
 
         for pl in self.plugins_res:
-            dic[pl.source].append(pl.issue)
+            dic[pl.source][pl.itype].append(pl.data)
 
-        return dic
+        ret = DotDict()
+        for key, first in dic.items():
+            ret[key] = DotDict()
+            for seckey, second in first.items():
+                ret[key][seckey] = second
+
+        return ret
 
     def update(self, exception=None):
         self.item_type = FuzzType.RESULT
@@ -365,7 +372,10 @@ class FuzzResult(FuzzItem):
         return self.FUZZRESULT_SHARED_FILTER.is_visible(self, expr)
 
     def _field(self):
-        return " | ".join([str(self.eval(field)) for field in self._fields])
+        list_eval = [self.eval(field) for field in self._fields]
+        return " | ".join(
+            ["\n".join(el) if isinstance(el, list) else str(el) for el in list_eval]
+        )
 
     # parameters in common with fuzzrequest
     @property

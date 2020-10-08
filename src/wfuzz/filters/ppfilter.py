@@ -58,7 +58,7 @@ class FuzzResFilter:
             r"FUZ(?P<index>\d)*Z(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
         ).setParseAction(self._compute_fuzz_symbol)
         res_symbol = Regex(
-            r"(description|nres|code|chars|lines|words|md5|content|timer|url|plugins|l|w|c|(r|history)(\w|_|-|\.)*|h)"
+            r"(description|nres|code|chars|lines|words|md5|content|timer|url|l|w|c|(r|history|plugins)(\w|_|-|\.)*|h)"
         ).setParseAction(self._compute_res_symbol)
         bbb_symbol = Regex(
             r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
@@ -132,6 +132,8 @@ class FuzzResFilter:
                     location, fuzz_val, operator_match.groupdict()
                 )
 
+        if isinstance(fuzz_val, list):
+            return [fuzz_val]
         return fuzz_val
 
     def _get_payload_value(self, p_index):
@@ -146,7 +148,7 @@ class FuzzResFilter:
         self.stack.append(field)
 
         try:
-            return rgetattr(fuzz_val, field)
+            ret = rgetattr(fuzz_val, field)
         except IndexError:
             raise FuzzExceptIncorrectFilter(
                 "Non existent FUZZ payload! Use a correct index."
@@ -157,6 +159,10 @@ class FuzzResFilter:
                     field, str(e)
                 )
             )
+
+        if isinstance(ret, list):
+            return [ret]
+        return ret
 
     def __compute_bbb_symbol(self, tokens):
         if self.baseline is None:
@@ -274,17 +280,7 @@ class FuzzResFilter:
                 elif isinstance(leftvalue, list):
                     ret = value_in_any_list_item(rightvalue, leftvalue)
                 elif isinstance(leftvalue, dict) or isinstance(leftvalue, DotDict):
-                    return (
-                        len(
-                            {
-                                k: v
-                                for (k, v) in leftvalue.items()
-                                if rightvalue.lower() in k.lower()
-                                or value_in_any_list_item(rightvalue, v)
-                            }
-                        )
-                        > 0
-                    )
+                    ret = rightvalue.lower() in str(leftvalue)
                 else:
                     raise FuzzExceptBadOptions(
                         "Invalid operand type {}".format(rightvalue)
@@ -322,6 +318,9 @@ class FuzzResFilter:
                 first = first or elements[i + 1]
 
         self.stack = []
+
+        if isinstance(first, list):
+            return [first]
         return first
 
     def __compute_not_operator(self, tokens):
@@ -330,6 +329,8 @@ class FuzzResFilter:
         if operator == "not":
             return not value
 
+        if isinstance(value, list):
+            return [value]
         return value
 
     def __compute_formula(self, tokens):
