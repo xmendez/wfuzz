@@ -39,9 +39,9 @@ class headers(BasePlugin):
                     or KBASE_KEY not in self.kbase
                 ):
                     self.add_result(
-                        "New server response header. {}: {}".format(
-                            header, header_value
-                        )
+                        "header",
+                        "New server response header",
+                        "{}: {}".format(header, header_value),
                     )
 
                     self.kbase[KBASE_KEY].append(header_value.lower())

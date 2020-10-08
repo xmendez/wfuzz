@@ -57,7 +57,7 @@ class svn_extractor(BasePlugin, DiscoveryPluginMixin):
         file_list, dir_list, author_list = self.readsvn(fuzzresult.history.content)
 
         if author_list:
-            self.add_result("SVN authors: %s" % ", ".join(author_list))
+            self.add_result("authors", "SVN authors", ", ".join(author_list))
 
         for f in file_list:
             u = urljoin(base_url.replace("/.svn/", "/"), f)

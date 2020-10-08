@@ -85,10 +85,12 @@ class unheaders(BasePlugin):
                     or KBASE_KEY_UNCOMMON not in self.kbase
                 ):
                     self.add_result(
-                        "New uncommon reponse header. {}: {}".format(
+                        "header",
+                        "New uncommon reponse header",
+                        "{}: {}".format(
                             header_value,
                             fuzzresult.history.headers.response[header_value],
-                        )
+                        ),
                     )
 
                     self.kbase[KBASE_KEY_UNCOMMON].append(header_value.lower())

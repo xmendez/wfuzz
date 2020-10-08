@@ -41,4 +41,4 @@ class screenshot(BasePlugin):
                 "--out=%s" % filename,
             ]
         )
-        self.add_result("Screnshot taken, output at %s" % filename)
+        self.add_result("file", "Screnshot taken", filename)

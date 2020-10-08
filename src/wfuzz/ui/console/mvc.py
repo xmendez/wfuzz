@@ -325,6 +325,9 @@ class View:
 
             if res.plugins_res:
                 for i in res.plugins_res:
+                    sys.stdout.write(
+                        " |_  {} {}\r".format(i.issue, i.data if i.data else "")
+                    )
                     sys.stdout.write(" |_  %s\r" % i.issue)
                     sys.stdout.write("\n\r")
 

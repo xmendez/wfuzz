@@ -30,4 +30,4 @@ class title(BasePlugin):
             or title not in self.kbase["title"]
         ):
             self.kbase["title"] = title
-            self.add_result("Page title: %s" % title)
+            self.add_result("title", "Page title", title)

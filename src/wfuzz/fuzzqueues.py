@@ -364,9 +364,11 @@ class JobMan(FuzzQueue):
             res.plugins_res.append(
                 plugin_factory.create(
                     "plugin_from_finding",
-                    "Backfeed",
+                    "output",
+                    "msg",
                     "Plugin %s enqueued %d more requests (rlevel=%d)"
                     % (plugin_name, enq_num, res.rlevel),
+                    None,
                 )
             )
 
@@ -392,8 +394,10 @@ class RecursiveQ(FuzzQueue):
                 fuzz_res.plugins_res.append(
                     plugin_factory.create(
                         "plugin_from_finding",
-                        "Recursion",
+                        "output",
+                        "msg",
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
+                        None,
                     )
                 )
 

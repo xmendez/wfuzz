@@ -401,5 +401,7 @@ class FuzzPlugin(FuzzItem):
         FuzzItem.__init__(self, FuzzType.PLUGIN)
         self.source = ""
         self.issue = ""
+        self.itype = ""
+        self.data = ""
         self._exception = None
         self._seed = None

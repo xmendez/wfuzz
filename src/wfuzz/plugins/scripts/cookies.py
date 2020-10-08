@@ -2,6 +2,9 @@ from wfuzz.plugin_api.base import BasePlugin
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 
+KBASE_NEW_COOKIE = "cookies.cookie"
+
+
 @moduleman_plugin
 class cookies(BasePlugin):
     name = "cookies"
@@ -28,8 +31,10 @@ class cookies(BasePlugin):
 
                 if (
                     name != ""
-                    and "cookie" not in self.kbase
-                    or name not in self.kbase["cookie"]
+                    and KBASE_NEW_COOKIE not in self.kbase
+                    or name not in self.kbase[KBASE_NEW_COOKIE]
                 ):
-                    self.kbase["cookie"] = name
-                    self.add_result("Cookie first set - %s=%s" % (name, value))
+                    self.kbase[KBASE_NEW_COOKIE] = name
+                    self.add_result(
+                        "cookie", "Cookie first set", "%s=%s" % (name, value)
+                    )

@@ -111,4 +111,4 @@ class errors(BasePlugin):
     def process(self, fuzzresult):
         for regex in self.error_regex:
             for regex_match in regex.findall(fuzzresult.history.content):
-                self.add_result("Error identified: {}".format(regex_match))
+                self.add_result("errors", "Error identified", regex_match)

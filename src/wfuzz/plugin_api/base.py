@@ -58,9 +58,9 @@ class BasePlugin:
     def validate(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
-    def add_result(self, issue):
+    def add_result(self, itype, issue, data):
         self.results_queue.put(
-            plugin_factory.create("plugin_from_finding", self.name, issue)
+            plugin_factory.create("plugin_from_finding", self.name, itype, issue, data)
         )
 
     def queue_url(self, url):

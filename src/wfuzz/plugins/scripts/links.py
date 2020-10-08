@@ -128,5 +128,5 @@ class links(BasePlugin, DiscoveryPluginMixin):
         ):
             self.kbase[KBASE_NEW_DOMAIN].append(parsed_link.netloc)
             self.add_result(
-                "New domain found, link not enqueued %s" % parsed_link.netloc
+                "domain", "New domain found, link not enqueued", parsed_link.netloc
             )

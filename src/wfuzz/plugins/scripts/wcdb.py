@@ -65,10 +65,10 @@ class wcdb_extractor(BasePlugin, DiscoveryPluginMixin):
         author_list, list_items = self.readwc(fuzzresult.history.content)
 
         if author_list:
-            self.add_result("SVN authors: %s" % ", ".join(author_list))
+            self.add_result("authors", "SVN authors", ", ".join(author_list))
 
         if list_items:
             for f, pristine in list_items:
                 u = urljoin(fuzzresult.url.replace("/.svn/wc.db", "/"), f)
                 if self.queue_url(u):
-                    self.add_result("SVN %s source code in %s" % (f, pristine))
+                    self.add_result("source", "SVN source code", f)
