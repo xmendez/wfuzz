@@ -9,7 +9,7 @@ class cookies(BasePlugin):
     version = "0.1"
     summary = "Looks for new cookies"
     description = ("Looks for new cookies",)
-    category = ["info", "passive" , "default"]
+    category = ["info", "passive", "default"]
     priority = 99
 
     parameters = ()

@@ -25,7 +25,6 @@ class unheaders(BasePlugin):
             r"^Server$",
             r"^X-Powered-By$",
             r"^Via$",
-
             r"^Access-Control.*$",
             r"^Accept-.*$",
             r"^age$",
@@ -67,7 +66,9 @@ class unheaders(BasePlugin):
             r"^X-XSS-Protection$",
         ]
 
-        self.common_headers_regex = re.compile("({})".format("|".join(common_headers_regex)), re.IGNORECASE)
+        self.common_headers_regex = re.compile(
+            "({})".format("|".join(common_headers_regex)), re.IGNORECASE
+        )
 
     def validate(self, fuzzresult):
         return True
@@ -79,7 +80,15 @@ class unheaders(BasePlugin):
                 header_value = header
 
             if header_value is not None:
-                if header_value.lower() not in self.kbase[KBASE_KEY_UNCOMMON] or KBASE_KEY_UNCOMMON not in self.kbase:
-                    self.add_result("New uncommon reponse header. {}: {}".format(header_value, fuzzresult.history.headers.response[header_value]))
+                if (
+                    header_value.lower() not in self.kbase[KBASE_KEY_UNCOMMON]
+                    or KBASE_KEY_UNCOMMON not in self.kbase
+                ):
+                    self.add_result(
+                        "New uncommon reponse header. {}: {}".format(
+                            header_value,
+                            fuzzresult.history.headers.response[header_value],
+                        )
+                    )
 
                     self.kbase[KBASE_KEY_UNCOMMON].append(header_value.lower())
