@@ -368,7 +368,7 @@ class JobMan(FuzzQueue):
                         "plugin_from_finding",
                         FuzzPlugin.OUTPUT_CAT,
                         "msg",
-                        "Plugin {}: {} new {}(s) added.".format(
+                        "Plugin {}: {} new {}(s) found.".format(
                             plugin_name, enq_num, domain
                         ),
                         None,
