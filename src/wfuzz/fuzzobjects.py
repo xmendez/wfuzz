@@ -369,10 +369,10 @@ class FuzzResult(FuzzItem):
     def eval(self, expr):
         return self.FUZZRESULT_SHARED_FILTER.is_visible(self, expr)
 
-    def _field(self):
+    def _field(self, separator=', '):
         list_eval = [self.eval(field) for field in self._fields]
         return " | ".join(
-            ["\n".join(el) if isinstance(el, list) else str(el) for el in list_eval]
+            [separator.join(el) if isinstance(el, list) else str(el) for el in list_eval]
         )
 
     # parameters in common with fuzzrequest
