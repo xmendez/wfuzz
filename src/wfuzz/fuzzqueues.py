@@ -8,7 +8,7 @@ from collections import defaultdict
 from .factories.fuzzresfactory import resfactory
 from .factories.plugin_factory import plugin_factory
 from .factories.payman import payman_factory
-from .fuzzobjects import FuzzType, FuzzItem, FuzzWord, FuzzWordType
+from .fuzzobjects import FuzzPlugin, FuzzType, FuzzItem, FuzzWord, FuzzWordType
 from .myqueues import FuzzQueue
 from .exception import (
     FuzzExceptInternalError,
@@ -366,7 +366,7 @@ class JobMan(FuzzQueue):
                 res.plugins_res.append(
                     plugin_factory.create(
                         "plugin_from_finding",
-                        "output",
+                        FuzzPlugin.OUTPUT_CAT,
                         "msg",
                         "Plugin {}: {} new {}(s) added.".format(
                             plugin_name, enq_num, domain
@@ -398,7 +398,7 @@ class RecursiveQ(FuzzQueue):
                 fuzz_res.plugins_res.append(
                     plugin_factory.create(
                         "plugin_from_finding",
-                        "output",
+                        FuzzPlugin.OUTPUT_CAT,
                         "msg",
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                         None,

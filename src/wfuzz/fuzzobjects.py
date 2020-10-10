@@ -302,6 +302,8 @@ class FuzzResult(FuzzItem):
         dic = defaultdict(lambda: defaultdict(list))
 
         for pl in self.plugins_res:
+            if pl.source == FuzzPlugin.OUTPUT_CAT:
+                continue
             dic[pl.source][pl.itype].append(pl.data)
 
         ret = DotDict()
@@ -408,6 +410,8 @@ class FuzzResult(FuzzItem):
 
 
 class FuzzPlugin(FuzzItem):
+    OUTPUT_CAT = "output"
+
     def __init__(self):
         FuzzItem.__init__(self, FuzzType.PLUGIN)
         self.source = ""
