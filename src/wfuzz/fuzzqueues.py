@@ -367,7 +367,7 @@ class JobMan(FuzzQueue):
                     plugin_factory.create(
                         "plugin_from_finding",
                         FuzzPlugin.OUTPUT_CAT,
-                        "msg",
+                        FuzzPlugin.SUMMARY_TYPE,
                         "Plugin {}: {} new {}(s) found.".format(
                             plugin_name, enq_num, domain
                         ),
@@ -399,7 +399,7 @@ class RecursiveQ(FuzzQueue):
                     plugin_factory.create(
                         "plugin_from_finding",
                         FuzzPlugin.OUTPUT_CAT,
-                        "msg",
+                        FuzzPlugin.SUMMARY_TYPE,
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                         None,
                         False,

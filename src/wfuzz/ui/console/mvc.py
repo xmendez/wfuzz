@@ -8,7 +8,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
-from wfuzz.fuzzobjects import FuzzWordType, FuzzType
+from wfuzz.fuzzobjects import FuzzWordType, FuzzType, FuzzPlugin
 
 from .common import exec_banner, Term
 from .getch import _Getch
@@ -325,7 +325,9 @@ class View:
 
             if res.plugins_res:
                 for plugin_res in res.plugins_res:
-                    if plugin_res._verbose and not self.verbose:
+                    if (plugin_res._verbose and not self.verbose) or (
+                        plugin_res.itype == FuzzPlugin.SUMMARY_TYPE and self.verbose
+                    ):
                         continue
 
                     sys.stdout.write(

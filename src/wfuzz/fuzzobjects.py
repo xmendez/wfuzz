@@ -411,6 +411,7 @@ class FuzzResult(FuzzItem):
 
 class FuzzPlugin(FuzzItem):
     OUTPUT_CAT = "output"
+    SUMMARY_TYPE = "summary"
 
     def __init__(self):
         FuzzItem.__init__(self, FuzzType.PLUGIN)
