@@ -324,11 +324,16 @@ class View:
                     self._print(prev_res, print_nres=False)
 
             if res.plugins_res:
-                for i in res.plugins_res:
+                for plugin_res in res.plugins_res:
+                    if plugin_res._verbose and not self.verbose:
+                        continue
+
                     sys.stdout.write(
-                        " |_  {} {}\r".format(i.issue, i.data if i.data else "")
+                        " |_  {} {}\r".format(
+                            plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                        )
                     )
-                    sys.stdout.write(" |_  %s\r" % i.issue)
+                    sys.stdout.write(" |_  %s\r" % plugin_res.issue)
                     sys.stdout.write("\n\r")
 
             self.printed_lines = 0

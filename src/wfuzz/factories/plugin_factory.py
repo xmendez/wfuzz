@@ -38,7 +38,7 @@ class PluginErrorBuilder:
 
 
 class PluginFindingBuilder:
-    def __call__(self, name, itype, message, data):
+    def __call__(self, name, itype, message, data, verbose):
         plugin = FuzzPlugin()
         plugin.source = name
         plugin.issue = message
@@ -46,6 +46,7 @@ class PluginFindingBuilder:
         plugin.data = data
         plugin._exception = None
         plugin._seed = None
+        plugin._verbose = verbose
 
         return plugin
 

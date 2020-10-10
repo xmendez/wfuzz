@@ -60,7 +60,16 @@ class BasePlugin:
 
     def add_result(self, itype, issue, data):
         self.results_queue.put(
-            plugin_factory.create("plugin_from_finding", self.name, itype, issue, data)
+            plugin_factory.create(
+                "plugin_from_finding", self.name, itype, issue, data, False
+            )
+        )
+
+    def add_verbose_result(self, itype, issue, data):
+        self.results_queue.put(
+            plugin_factory.create(
+                "plugin_from_finding", self.name, itype, issue, data, True
+            )
         )
 
     def queue_url(self, url):

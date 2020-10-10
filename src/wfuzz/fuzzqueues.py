@@ -339,7 +339,7 @@ class JobMan(FuzzQueue):
         self.send(res)
 
     def process_results(self, res, plugins_res_queue):
-        enq_item = defaultdict(int)
+        enq_item = defaultdict(lambda: defaultdict(int))
 
         while not plugins_res_queue.empty():
             item = plugins_res_queue.get()
@@ -356,21 +356,25 @@ class JobMan(FuzzQueue):
                     self.stats.backfeed.inc()
                     self.stats.pending_fuzz.inc()
                     self.send(item._seed)
-                    enq_item[item.source] += 1
+                    enq_item[item.source]["request"] += 1
             elif item.issue:
+                enq_item[item.source][item.itype] += 1
                 res.plugins_res.append(item)
 
-        for plugin_name, enq_num in enq_item.items():
-            res.plugins_res.append(
-                plugin_factory.create(
-                    "plugin_from_finding",
-                    "output",
-                    "msg",
-                    "Plugin %s enqueued %d more requests (rlevel=%d)"
-                    % (plugin_name, enq_num, res.rlevel),
-                    None,
+        for plugin_name, plugin_type in enq_item.items():
+            for domain, enq_num in plugin_type.items():
+                res.plugins_res.append(
+                    plugin_factory.create(
+                        "plugin_from_finding",
+                        "output",
+                        "msg",
+                        "Plugin {}: {} new {}(s) added.".format(
+                            plugin_name, enq_num, domain
+                        ),
+                        None,
+                        False,
+                    )
                 )
-            )
 
 
 class RecursiveQ(FuzzQueue):
@@ -398,6 +402,7 @@ class RecursiveQ(FuzzQueue):
                         "msg",
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                         None,
+                        False,
                     )
                 )
 
