@@ -13,7 +13,8 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 
 KBASE_PARAM_PATH = "links.add_path"
-KBASE_PARAM_DOMAIN_REGEX = "links.regex"
+KBASE_PARAM_DOMAIN_REGEX = "links.domain"
+KBASE_PARAM_REGEX = "links.regex"
 KBASE_NEW_DOMAIN = "links.new_domains"
 
 
@@ -28,8 +29,24 @@ class links(BasePlugin, DiscoveryPluginMixin):
     priority = 99
 
     parameters = (
-        ("add_path", False, False, "Add parsed paths as results."),
-        ("regex", None, False, "Regex of accepted domains."),
+        (
+            "add_path",
+            False,
+            False,
+            "Re-enqueue found paths. ie. /path/link.html link includes also path/",
+        ),
+        (
+            "domain",
+            None,
+            False,
+            "Regex of accepted domains tested against url.netloc. This is useful for restricting crawling certain domains.",
+        ),
+        (
+            "regex",
+            None,
+            False,
+            "Regex of accepted links tested against the full url. If domain is not set and regex is, domain defaults to .*. This is useful for restricting crawling certain file types.",
+        ),
     )
 
     def __init__(self):
@@ -58,8 +75,18 @@ class links(BasePlugin, DiscoveryPluginMixin):
         self.domain_regex = None
         if self.kbase[KBASE_PARAM_DOMAIN_REGEX][0]:
             self.domain_regex = re.compile(
-                self.kbase[KBASE_PARAM_DOMAIN_REGEX][0], re.MULTILINE | re.DOTALL
+                self.kbase[KBASE_PARAM_DOMAIN_REGEX][0], re.IGNORECASE
             )
+
+        self.regex_param = None
+        if self.kbase[KBASE_PARAM_REGEX][0]:
+            self.regex_param = re.compile(
+                self.kbase[KBASE_PARAM_REGEX][0], re.IGNORECASE
+            )
+
+        if self.regex_param and self.domain_regex is None:
+            self.domain_regex = re.compile(".*", re.IGNORECASE)
+
         self.list_links = set()
 
     def validate(self, fuzzresult):
@@ -104,15 +131,17 @@ class links(BasePlugin, DiscoveryPluginMixin):
             self.queue_url(urljoin(fuzzresult.url, newpath))
 
         # file path
-        self.queue_url(urljoin(fuzzresult.url, link_url))
+        new_link = urljoin(fuzzresult.url, link_url)
+
+        if not self.regex_param or (
+            self.regex_param and self.regex_param.search(new_link) is not None
+        ):
+            self.queue_url(new_link)
+            self.add_verbose_result("link", "New link found", new_link)
 
     def from_domain(self, fuzzresult, parsed_link):
         # relative path
         if not parsed_link.netloc and parsed_link.path:
-            return True
-
-        # same domain
-        if parsed_link.netloc == self.base_fuzz_res.history.urlp.netloc:
             return True
 
         # regex domain
@@ -122,11 +151,15 @@ class links(BasePlugin, DiscoveryPluginMixin):
         ):
             return True
 
+        # same domain
+        if parsed_link.netloc == self.base_fuzz_res.history.urlp.netloc:
+            return True
+
         if (
             parsed_link.netloc
             and parsed_link.netloc not in self.kbase[KBASE_NEW_DOMAIN]
         ):
             self.kbase[KBASE_NEW_DOMAIN].append(parsed_link.netloc)
-            self.add_result(
-                "domain", "New domain found, link not enqueued", parsed_link.netloc
+            self.add_verbose_result(
+                "domain", "New domain found (link not enqueued)", parsed_link.netloc
             )
