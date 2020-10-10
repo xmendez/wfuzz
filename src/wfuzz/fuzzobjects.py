@@ -178,15 +178,16 @@ class FuzzPayload:
             else str(rgetattr(self.content, self.field))
         )
 
-    def description(self, default):
+    def description(self):
         if self.is_baseline:
             return self.content
 
         if self.marker is None:
             return ""
 
+        # return default value
         if self.field is None and isinstance(self.content, FuzzResult):
-            return rgetattr(self.content, default)
+            return self.content.url
         elif self.field is not None and isinstance(self.content, FuzzResult):
             return str(rgetattr(self.content, self.field))
 
@@ -253,9 +254,7 @@ class FPayloadManager:
                 yield elem
 
     def description(self):
-        payl_descriptions = [
-            payload.description("url") for payload in self.get_payloads()
-        ]
+        payl_descriptions = [payload.description() for payload in self.get_payloads()]
         ret_str = " - ".join([p_des for p_des in payl_descriptions if p_des])
 
         return ret_str
