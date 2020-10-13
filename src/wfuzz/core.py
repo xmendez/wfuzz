@@ -59,7 +59,9 @@ class Fuzzer(object):
         if options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options))
 
-        if (options.get("script") or options.get("rlevel") > 0) and options.get("transport") == "http":
+        if (options.get("script") or options.get("rlevel") > 0) and options.get(
+            "transport"
+        ) == "http":
             rq = RoutingQ(
                 options,
                 {
