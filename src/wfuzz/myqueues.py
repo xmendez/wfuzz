@@ -60,8 +60,11 @@ class FuzzQueue(MyPriorityQueue, Thread):
     def get_name(self):
         raise NotImplementedError
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT]
+    def process_discarded(self):
+        return False
+
+    def items_to_process(self):
+        return [FuzzType.RESULT]
 
     # Override this method if needed. This will be called just before cancelling the job.
     def cancel(self):
@@ -91,13 +94,8 @@ class FuzzQueue(MyPriorityQueue, Thread):
         self.queue_out.put(item)
 
     def discard(self, item):
-        if item.item_type == FuzzType.RESULT:
-            item.item_type = FuzzType.DISCARDED
-            self.send(item)
-        else:
-            raise FuzzExceptInternalError(
-                FuzzException.FATAL, "Only results can be discarded"
-            )
+        item.discarded = True
+        self.send(item)
 
     def join(self):
         MyPriorityQueue.join(self)
@@ -143,7 +141,9 @@ class FuzzQueue(MyPriorityQueue, Thread):
                     self.task_done()
                     continue
 
-                if self.items_to_process(item):
+                if (
+                    not item.discarded or (item.discarded and self.process_discarded())
+                ) and item.item_type in self.items_to_process():
                     self.process(item)
                 else:
                     self.send(item)
@@ -160,8 +160,6 @@ class LastFuzzQueue(FuzzQueue):
     def __init__(self, options, queue_out=None, limit=0):
         FuzzQueue.__init__(self, options, queue_out, limit)
 
-        self.items_to_send = [FuzzType.RESULT]
-
     def get_name(self):
         return "LastFuzzQueue"
 
@@ -170,10 +168,6 @@ class LastFuzzQueue(FuzzQueue):
 
     def _cleanup(self):
         pass
-
-    def send(self, item):
-        if item.item_type in self.items_to_send:
-            self.queue_out.put(item)
 
     def _throw(self, e):
         self.queue_out.put_first(FuzzError(e))
@@ -199,14 +193,15 @@ class LastFuzzQueue(FuzzQueue):
                     cancelling = True
                     continue
 
-                self.send(item)
+                if item.item_type == FuzzType.RESULT and not item.discarded:
+                    self.send(item)
 
                 if item.item_type == FuzzType.ENDSEED:
                     self.stats.pending_seeds.dec()
-                elif item.item_type in [FuzzType.RESULT, FuzzType.DISCARDED]:
+                elif item.item_type == FuzzType.RESULT:
                     self.stats.processed.inc()
                     self.stats.pending_fuzz.dec()
-                    if item.item_type == FuzzType.DISCARDED:
+                    if item.discarded:
                         self.stats.filtered.inc()
 
                 if self.stats.pending_fuzz() == 0 and self.stats.pending_seeds() == 0:

@@ -27,6 +27,7 @@ class FuzzResultDictioBuilder:
     def __call__(self, options, dictio_item):
         res = copy.deepcopy(options["compiled_seed"])
         res.item_type = FuzzType.RESULT
+        res.discarded = False
         res.payload_man.update_from_dictio(dictio_item)
         res.update_from_options(options)
 
@@ -69,6 +70,7 @@ class FuzzResultAllVarBuilder:
     def __call__(self, options, var_name, payload):
         fuzzres = copy.deepcopy(options["compiled_seed"])
         fuzzres.item_type = FuzzType.RESULT
+        fuzzres.discarded = False
         fuzzres.payload_man = payman_factory.create("empty_payloadman", payload)
         fuzzres.payload_man.update_from_dictio([payload])
         fuzzres.history.wf_allvars_set = {var_name: payload.content}
@@ -97,6 +99,7 @@ class SeedRecursiveBuilder:
             new_seed.rlevel_desc += " - "
         new_seed.rlevel_desc += seed.payload_man.description()
         new_seed.item_type = FuzzType.SEED
+        new_seed.discarded = False
         new_seed.payload_man = payman_factory.create(
             "payloadman_from_request", new_seed.history
         )
@@ -113,6 +116,7 @@ class FuzzResRecursiveBuilder:
             fr.rlevel_desc += " - "
         fr.rlevel_desc += seed.payload_man.description()
         fr.item_type = FuzzType.BACKFEED
+        fr.discarded = False
         fr.is_baseline = False
 
         fr.payload_man = payman_factory.create(

@@ -33,8 +33,8 @@ class AllVarQ(FuzzQueue):
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.STARTSEED]
+    def items_to_process(self):
+        return [FuzzType.STARTSEED]
 
     def process(self, item):
         self.stats.pending_seeds.inc()
@@ -65,8 +65,8 @@ class SeedQ(FuzzQueue):
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.STARTSEED, FuzzType.SEED]
+    def items_to_process(self):
+        return [FuzzType.STARTSEED, FuzzType.SEED]
 
     def send_baseline(self):
         fuzz_baseline = self.options["compiled_baseline"]
@@ -160,9 +160,6 @@ class ConsolePrinterQ(FuzzQueue):
     def mystart(self):
         self.printer.header(self.stats)
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT]
-
     def get_name(self):
         return "ConsolePrinterQ"
 
@@ -182,8 +179,8 @@ class CLIPrinterQ(FuzzQueue):
     def mystart(self):
         self.printer.header(self.stats)
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT, FuzzType.DISCARDED]
+    def process_discarded(self):
+        return True
 
     def get_name(self):
         return "CLIPrinterQ"
@@ -222,8 +219,8 @@ class RoutingQ(FuzzQueue):
     def get_name(self):
         return "RoutingQ"
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.SEED, FuzzType.BACKFEED]
+    def items_to_process(self):
+        return [FuzzType.SEED, FuzzType.BACKFEED]
 
     def process(self, item):
         if item.item_type in self.routes:
@@ -467,8 +464,8 @@ class HttpQueue(FuzzQueue):
         self.http_pool.deregister()
         self.exit_job = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT, FuzzType.BACKFEED]
+    def items_to_process(self):
+        return [FuzzType.RESULT, FuzzType.BACKFEED]
 
     def process(self, obj):
         self.pause.wait()

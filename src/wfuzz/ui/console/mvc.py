@@ -303,7 +303,7 @@ class View:
         else:
             self._print(res)
 
-        if res.item_type == FuzzType.RESULT:
+        if not res.discarded:
             if (
                 self.previous
                 and res.payload_man

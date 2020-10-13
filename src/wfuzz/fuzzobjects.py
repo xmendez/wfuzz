@@ -24,17 +24,7 @@ class FuzzWordType(Enum):
 
 
 class FuzzType(Enum):
-    (
-        SEED,
-        BACKFEED,
-        RESULT,
-        ERROR,
-        STARTSEED,
-        ENDSEED,
-        CANCEL,
-        DISCARDED,
-        PLUGIN,
-    ) = range(9)
+    (SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, PLUGIN,) = range(8)
 
 
 class FuzzItem(object):
@@ -43,6 +33,8 @@ class FuzzItem(object):
     def __init__(self, item_type):
         self.item_id = next(FuzzItem.newid)
         self.item_type = item_type
+        self.rlevel = 1
+        self.discarded = False
 
     def __str__(self):
         return "FuzzItem, type: {}".format(self.item_type.name)
@@ -279,7 +271,6 @@ class FuzzResult(FuzzItem):
 
         self.exception = exception
         self.is_baseline = False
-        self.rlevel = 1
         self.rlevel_desc = ""
         self.nres = next(FuzzResult.newid) if track_id else 0
 
