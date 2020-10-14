@@ -114,7 +114,7 @@ class Controller:
 
     def show_debug_stats(self):
         print("\n=============== Paused ==================")
-        stats = self.stats.get_stats()
+        stats = self.fuzzer.stats()
         for k, v in list(stats.items()):
             print("%s: %s" % (k, v))
         print("\n=========================================")
