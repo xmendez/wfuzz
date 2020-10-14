@@ -96,7 +96,7 @@ class FuzzStats:
             "pending": self.pending_fuzz(),
             "filtered": self.filtered(),
             "pending_seeds": self.pending_seeds(),
-            "totaltime": self.totaltime,
+            "totaltime": time.time() - self.__starttime,
         }
 
     def mark_start(self):
