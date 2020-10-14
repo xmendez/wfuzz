@@ -92,11 +92,11 @@ class FuzzStats:
             "url": self.url,
             "total": self.total_req,
             "backfed": self.backfeed(),
-            "Processed": self.processed(),
-            "Pending": self.pending_fuzz(),
+            "processed": self.processed(),
+            "pending": self.pending_fuzz(),
             "filtered": self.filtered(),
-            "Pending_seeds": self.pending_seeds(),
-            "totaltime": self._totaltime,
+            "pending_seeds": self.pending_seeds(),
+            "totaltime": self.totaltime,
         }
 
     def mark_start(self):

@@ -120,7 +120,7 @@ class Fuzzer(object):
     def stats(self):
         return dict(
             list(self.qmanager.get_stats().items())
-            + list(self.qmanager["transport_queue"].job_stats().items())
+            + list(self.qmanager["transport_queue"].http_pool.job_stats().items())
             + list(self.options.stats.get_stats().items())
         )
 

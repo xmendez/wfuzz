@@ -68,7 +68,7 @@ class HttpPool:
         with self.mutex_stats:
             dic = {
                 "http_processed": self.processed,
-                "http_registered": len(self._registered),
+                "http_registered": self._registered,
             }
         return dic
 
