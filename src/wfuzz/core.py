@@ -35,7 +35,7 @@ class Fuzzer(object):
         self.results_queue = MyPriorityQueue()
 
         if options["allvars"]:
-            self.qmanager.add("allvars_queue", AllVarQ(options))
+            self.qmanager.add("seed_queue", AllVarQ(options))
         else:
             self.qmanager.add("seed_queue", SeedQ(options))
 
