@@ -30,6 +30,7 @@ class Fuzzer(object):
         # genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N
         # -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
 
+        self.options = options
         self.qmanager = QueueManager(options)
         self.results_queue = MyPriorityQueue()
 

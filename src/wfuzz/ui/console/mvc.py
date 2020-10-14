@@ -92,8 +92,8 @@ class Controller:
     # dynamic keyboard bindings
     def on_exit(self, **event):
         self.fuzzer.cancel_job()
-        self.fuzzer.genReq.stats.mark_end()
         self.view.cancel_job()
+        self.fuzzer.options.close()
 
     def on_help(self, **event):
         print(usage)
