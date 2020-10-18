@@ -61,7 +61,7 @@ class urlencode:
 
 @moduleman_plugin("encode")
 class double_urlencode:
-    name = "double urlencode"
+    name = "double_urlencode"
     author = (
         "Carlos del Ojo",
         "Christian Martorella",
