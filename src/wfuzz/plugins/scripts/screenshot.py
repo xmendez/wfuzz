@@ -7,6 +7,7 @@ import pipes
 import os
 import re
 
+
 @moduleman_plugin
 class screenshot(BasePlugin):
     name = "screenshot"
@@ -32,7 +33,11 @@ class screenshot(BasePlugin):
         temp_name = next(tempfile._get_candidate_names())
         defult_tmp_dir = tempfile._get_default_tempdir()
 
-        filename = os.path.join(defult_tmp_dir, (temp_name+'_'+re.sub('[^a-zA-Z0-9_\-]','_',fuzzresult.url))[:200] + ".jpg")
+        filename = os.path.join(
+            defult_tmp_dir,
+            (temp_name + "_" + re.sub("[^a-zA-Z0-9_\-]", "_", fuzzresult.url))[:200]
+            + ".jpg",
+        )
 
         subprocess.call(
             [
@@ -40,7 +45,7 @@ class screenshot(BasePlugin):
                 "--url=%s" % pipes.quote(fuzzresult.url),
                 "--out=%s" % filename,
                 "--insecure",
-                "--print-backgrounds=on"
+                "--print-backgrounds=on",
             ]
         )
         self.add_result("Screnshot taken, output at %s" % filename)
