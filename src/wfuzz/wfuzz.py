@@ -15,6 +15,25 @@ from .ui.console.clparser import CLParser
 from .fuzzobjects import FuzzWordType
 
 
+PROFILING = False
+
+
+def print_profiling(profiling_list, profiling_header):
+    avg = [float(sum(col)) / len(col) for col in list(zip(*profiling_list))]
+    maxx = [max(col) for col in list(zip(*profiling_list))]
+
+    print(
+        ", ".join(
+            ["{}={}".format(pair[0], pair[1]) for pair in zip(profiling_header, avg)]
+        )
+    )
+    print(
+        ", ".join(
+            ["{}={}".format(pair[0], pair[1]) for pair in zip(profiling_header, maxx)]
+        )
+    )
+
+
 def main():
     kb = None
     fz = None
@@ -41,8 +60,19 @@ def main():
                 Controller(fz, kb)
                 kb.start()
 
+        if PROFILING:
+            profiling_header = list(fz.qmanager._queues.keys())
+            profiling_list = []
+
         for res in fz:
-            pass
+            if PROFILING:
+                profiling = list(fz.qmanager.get_stats().items())
+                profiling_list.append([pair[1] for pair in profiling])
+            else:
+                pass
+
+        if PROFILING:
+            print_profiling(profiling_list, profiling_header)
     except FuzzException as e:
         warnings.warn("Fatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
