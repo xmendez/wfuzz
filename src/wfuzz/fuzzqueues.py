@@ -482,7 +482,7 @@ class HttpQueue(FuzzQueue):
 
 class HttpReceiver(FuzzQueue):
     def __init__(self, options):
-        FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
+        FuzzQueue.__init__(self, options)
 
     def get_name(self):
         return "HttpReceiver"
