@@ -35,7 +35,7 @@ class screenshot(BasePlugin):
 
         filename = os.path.join(
             defult_tmp_dir,
-            (temp_name + "_" + re.sub("[^a-zA-Z0-9_\-]", "_", fuzzresult.url))[:200]
+            (temp_name + "_" + re.sub(r"[^a-zA-Z0-9_-]", "_", fuzzresult.url))[:200]
             + ".jpg",
         )
 
