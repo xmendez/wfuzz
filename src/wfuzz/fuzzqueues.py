@@ -419,9 +419,10 @@ class PassPayloadQ(FuzzQueue):
         if item.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
             item = item.payload_man.get_payload_content(1)
             item.update_from_options(self.options)
-            item.payload_man = payman_factory.create(
-                "empty_payloadman", FuzzWord(item.url, FuzzWordType.WORD)
-            )
+            if not item.payload_man:
+                item.payload_man = payman_factory.create(
+                    "empty_payloadman", FuzzWord(item.url, FuzzWordType.WORD)
+                )
         self.send(item)
 
 
