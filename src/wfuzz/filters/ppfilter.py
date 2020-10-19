@@ -280,7 +280,7 @@ class FuzzResFilter:
                 elif isinstance(leftvalue, list):
                     ret = value_in_any_list_item(rightvalue, leftvalue)
                 elif isinstance(leftvalue, dict) or isinstance(leftvalue, DotDict):
-                    ret = rightvalue.lower() in str(leftvalue)
+                    ret = rightvalue.lower() in str(leftvalue).lower()
                 else:
                     raise FuzzExceptBadOptions(
                         "Invalid operand type {}".format(rightvalue)
