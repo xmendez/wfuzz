@@ -158,7 +158,9 @@ def main_filter():
             if payload_type == FuzzWordType.WORD:
                 print(res.description)
             elif payload_type == FuzzWordType.FUZZRES and session_options["show_field"]:
-                print(res._field("\n"))
+                field_to_print = res._field("\n")
+                if field_to_print:
+                    print(field_to_print)
 
     except KeyboardInterrupt:
         pass
