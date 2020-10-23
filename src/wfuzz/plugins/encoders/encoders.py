@@ -305,10 +305,7 @@ class sha256:
     name = "sha256"
     summary = "Applies a sha256 hash to the given string"
     author = (
-        "Carlos del Ojo",
-        "Christian Martorella",
-        "Adapted to newer versions Xavi Mendez (@xmendez)",
-        "Adapted to newer algorithm Dustin Evans (@dustinaevans)",
+        "Dustin Evans (@dustinaevans)",
     )
     version = "0.1"
     category = ["hashes"]
@@ -326,10 +323,7 @@ class sha512:
     name = "sha512"
     summary = "Applies a sha512 hash to the given string"
     author = (
-        "Carlos del Ojo",
-        "Christian Martorella",
-        "Adapted to newer versions Xavi Mendez (@xmendez)",
-        "Adapted to newer algorithm Dustin Evans (@dustinaevans)",
+        "Dustin Evans (@dustinaevans)",
     )
     version = "0.1"
     category = ["hashes"]
