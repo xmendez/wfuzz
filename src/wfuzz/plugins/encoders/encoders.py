@@ -299,6 +299,7 @@ class sha1:
         res = s.hexdigest()
         return res
 
+
 @moduleman_plugin("encode")
 class sha256:
     name = "sha256"
@@ -318,7 +319,8 @@ class sha256:
         s.update(string.encode("utf-8"))
         res = s.hexdigest()
         return res
-    
+
+
 @moduleman_plugin("encode")
 class sha512:
     name = "sha512"
@@ -338,6 +340,7 @@ class sha512:
         s.update(string.encode("utf-8"))
         res = s.hexdigest()
         return res
+
 
 @moduleman_plugin("encode")
 class md5:
