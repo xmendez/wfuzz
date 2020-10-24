@@ -31,5 +31,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wfuzz:${{ github.event.release.tag_name }}
+            ghcr.io/${{ github.repository_owner }}/wfuzz:test
             ghcr.io/${{ github.repository_owner }}/wfuzz:latest
