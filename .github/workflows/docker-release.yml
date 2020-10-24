@@ -1,7 +1,8 @@
 name: docker-release
 
 on:
-  push
+  release:
+    types: [published]
 
 jobs:
   docker:
@@ -31,4 +32,4 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wfuzz/wfuzz:test
+            ghcr.io/${{ github.repository_owner }}/wfuzz:${{ github.event.release.tag_name }}
