@@ -1,12 +1,11 @@
 name: docker-release
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
+  release:
+    types: [published]
 
 jobs:
   docker:
@@ -36,4 +35,4 @@ jobs:
           file: Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wfuzz:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/wfuzz:${{ github.event.release.tag_name }}
