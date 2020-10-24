@@ -304,9 +304,7 @@ class sha1:
 class sha256:
     name = "sha256"
     summary = "Applies a sha256 hash to the given string"
-    author = (
-        "Dustin Evans (@dustinaevans)",
-    )
+    author = ("Dustin Evans (@dustinaevans)",)
     version = "0.1"
     category = ["hashes"]
     priority = 99
@@ -322,9 +320,7 @@ class sha256:
 class sha512:
     name = "sha512"
     summary = "Applies a sha512 hash to the given string"
-    author = (
-        "Dustin Evans (@dustinaevans)",
-    )
+    author = ("Dustin Evans (@dustinaevans)",)
     version = "0.1"
     category = ["hashes"]
     priority = 99
