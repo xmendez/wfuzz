@@ -331,7 +331,8 @@ class FuzzResult(FuzzItem):
             self.description,
         )
         for plugin in self.plugins_res:
-            res += "\n  |_ %s" % plugin.issue
+            if plugin.itype == FuzzPlugin.SUMMARY_TYPE:
+                res += "\n  |_ %s" % plugin.issue
 
         return res
 
