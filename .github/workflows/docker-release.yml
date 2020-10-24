@@ -30,4 +30,5 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: xmendez/wfuzz:test
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/wfuzz/wfuzz:test
