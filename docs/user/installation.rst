@@ -8,6 +8,14 @@ To install WFuzz using `pip <https://pip.pypa.io>`_ ::
 
     $ pip install wfuzz
 
+
+Use the wfuzz docker image
+------------------
+
+You can pull wfuzz docker image from github registry by executing::
+
+    $ docker pull ghcr.io/xmendez/wfuzz
+
 Get the Source Code
 -------------------
 

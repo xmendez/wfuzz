@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import pipes
 import os
+import re
 
 
 @moduleman_plugin
@@ -32,13 +33,19 @@ class screenshot(BasePlugin):
         temp_name = next(tempfile._get_candidate_names())
         defult_tmp_dir = tempfile._get_default_tempdir()
 
-        filename = os.path.join(defult_tmp_dir, temp_name + ".png")
+        filename = os.path.join(
+            defult_tmp_dir,
+            (temp_name + "_" + re.sub(r"[^a-zA-Z0-9_-]", "_", fuzzresult.url))[:200]
+            + ".jpg",
+        )
 
         subprocess.call(
             [
                 "cutycapt",
                 "--url=%s" % pipes.quote(fuzzresult.url),
                 "--out=%s" % filename,
+                "--insecure",
+                "--print-backgrounds=on",
             ]
         )
         self.add_result("file", "Screnshot taken", filename)

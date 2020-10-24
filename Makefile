@@ -31,4 +31,12 @@ install-dev:
 
 freeze:
 	pip-compile --output-file requirements.txt setup.py
-
+help:
+	@echo "make help              Show this help message"
+	@echo "make test              Run local tests with tox"
+	@echo "make flake8            Run the code linter(s) and print any warnings"
+	@echo "make publish           Publish pip lib to pypi"
+	@echo "make publish-dev       Publish pip lib to pypi test"
+	@echo "make docs              Create html docs"
+	@echo "make install           Install requirements"
+	@echo "make install-dev       Install dev requirements"
