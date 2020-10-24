@@ -79,6 +79,33 @@ other tools included in the wfuzz framework.
     $ wfencode -e md5 test
     098f6bcd4621d373cade4e832627b4f6
 
+* You can also run wfuzz from the official docker image::
+
+    $ docker run -v $(pwd)/wordlist:/wordlist/ -it ghcr.io/xmendez/wfuzz wfuzz
+    ********************************************************
+    * Wfuzz 3.0.3 - The Web Fuzzer                         *
+    *                                                      *
+    * Version up to 1.4c coded by:                         *
+    * Christian Martorella (cmartorella@edge-security.com) *
+    * Carlos del ojo (deepbit@gmail.com)                   *
+    *                                                      *
+    * Version 1.4d to 3.0.3 coded by:                      *
+    * Xavier Mendez (xmendez@edge-security.com)            *
+    ********************************************************
+
+    Usage:  wfuzz [options] -z payload,params <url>
+
+            FUZZ, ..., FUZnZ  wherever you put these keywords wfuzz will replace them with the values of the specified payload.
+            FUZZ{baseline_value} FUZZ will be replaced by baseline_value. It will be the first request performed and could be used as a base for filtering.
+
+
+    Examples:
+            wfuzz -c -z file,users.txt -z file,pass.txt --sc 200 http://www.site.com/log.asp?user=FUZZ&pass=FUZ2Z
+            wfuzz -c -z range,1-10 --hc=BBB http://www.site.com/FUZZ{something not there}
+            wfuzz --script=robots -z list,robots.txt http://www.webscantest.com/FUZZ
+
+    Type wfuzz -h for further information or --help for advanced usage.
+
 
 How it works
 ------------
