@@ -33,6 +33,13 @@ To install WFuzz, simply use pip:
 ```
 pip install wfuzz
 ```
+
+To run Wfuzz from a docker image, run:
+
+```
+$ docker run -v $(pwd)/wordlist:/wordlist/ -it ghcr.io/xmendez/wfuzz wfuzz
+```
+
 ## Documentation
 
 Documentation is available at http://wfuzz.readthedocs.io
