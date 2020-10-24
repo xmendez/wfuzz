@@ -31,4 +31,4 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wfuzz:v3.0.3-beta
+            ghcr.io/${{ github.repository_owner }}/wfuzz:v3.1.0-beta
