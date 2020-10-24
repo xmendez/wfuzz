@@ -64,6 +64,7 @@ try:
         version=version,
         description="Wfuzz - The web fuzzer",
         long_description=long_descr,
+        long_description_content_type='text/markdown',
         author="Xavi Mendez (@x4vi_mendez)",
         author_email="xmendez@edge-security.com",
         url="http://wfuzz.org",
