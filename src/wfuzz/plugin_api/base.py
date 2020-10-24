@@ -10,6 +10,7 @@ from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
 import os
+from distutils import util
 
 # python 2 and 3: iterator
 from builtins import object
@@ -78,6 +79,9 @@ class BasePlugin:
                 "plugin_from_recursion", self.name, self.base_fuzz_res, url
             )
         )
+
+    def _bool(self, value):
+        return bool(util.strtobool(value))
 
 
 class BasePrinter:

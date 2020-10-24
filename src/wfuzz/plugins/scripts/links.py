@@ -13,6 +13,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 
 KBASE_PARAM_PATH = "links.add_path"
+KBASE_PARAM_ENQUEUE = "links.enqueue"
 KBASE_PARAM_DOMAIN_REGEX = "links.domain"
 KBASE_PARAM_REGEX = "links.regex"
 KBASE_NEW_DOMAIN = "links.new_domains"
@@ -30,10 +31,16 @@ class links(BasePlugin, DiscoveryPluginMixin):
 
     parameters = (
         (
+            "enqueue",
+            "True",
+            False,
+            "If True, enqueue found links.",
+        ),
+        (
             "add_path",
+            "False",
             False,
-            False,
-            "Re-enqueue found paths. ie. /path/link.html link includes also path/",
+            "if True, re-enqueue found paths. ie. /path/link.html link enqueues also /path/",
         ),
         (
             "domain",
@@ -70,7 +77,8 @@ class links(BasePlugin, DiscoveryPluginMixin):
             ("Location", re.compile(r"(.*)")),
         ]
 
-        self.add_path = self.kbase[KBASE_PARAM_PATH]
+        self.add_path = self._bool(self.kbase[KBASE_PARAM_PATH][0])
+        self.enqueue_links = self._bool(self.kbase[KBASE_PARAM_ENQUEUE][0])
 
         self.domain_regex = None
         if self.kbase[KBASE_PARAM_DOMAIN_REGEX][0]:
@@ -136,7 +144,8 @@ class links(BasePlugin, DiscoveryPluginMixin):
         if not self.regex_param or (
             self.regex_param and self.regex_param.search(new_link) is not None
         ):
-            self.queue_url(new_link)
+            if self.enqueue_links:
+                self.queue_url(new_link)
             self.add_verbose_result("link", "New link found", new_link)
 
     def from_domain(self, fuzzresult, parsed_link):
