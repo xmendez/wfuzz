@@ -30,12 +30,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
     priority = 99
 
     parameters = (
-        (
-            "enqueue",
-            "True",
-            False,
-            "If True, enqueue found links.",
-        ),
+        ("enqueue", "True", False, "If True, enqueue found links.",),
         (
             "add_path",
             "False",

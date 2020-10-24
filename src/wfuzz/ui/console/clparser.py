@@ -130,12 +130,16 @@ class CLParser:
                 print("   %s" % desc_lines)
             print("Parameters:")
             for name, default_value, mandatory, description in plugin.parameters:
-                print("   {} {}{}: {}".format(
-                    "+" if mandatory else "-",
-                    name,
-                    " (= %s)" % str(default_value) if default_value is not None else "",
-                    description,
-                ))
+                print(
+                    "   {} {}{}: {}".format(
+                        "+" if mandatory else "-",
+                        name,
+                        " (= %s)" % str(default_value)
+                        if default_value is not None
+                        else "",
+                        description,
+                    )
+                )
             print("\n")
 
         sys.exit(0)
