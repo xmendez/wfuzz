@@ -21,10 +21,11 @@ dev_requires = [
     'mock',
     'coverage',
     'codecov',
-    'netaddr',
+    'netaddr',  # tests/api/test_payload.py uses ipranges payload
     'pip-tools',
     'flake8==3.8.3',
     'black==19.10b0;python_version>"3.5"',
+    'pytest',
 ]
 
 install_requires = [
@@ -35,7 +36,6 @@ install_requires = [
     'six',
     'configparser;python_version<"3.5"',
     'chardet',
-    'pytest',
 ]
 
 
@@ -64,6 +64,7 @@ try:
         version=version,
         description="Wfuzz - The web fuzzer",
         long_description=long_descr,
+        long_description_content_type='text/markdown',
         author="Xavi Mendez (@x4vi_mendez)",
         author_email="xmendez@edge-security.com",
         url="http://wfuzz.org",

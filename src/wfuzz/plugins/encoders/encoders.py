@@ -61,7 +61,7 @@ class urlencode:
 
 @moduleman_plugin("encode")
 class double_urlencode:
-    name = "double urlencode"
+    name = "double_urlencode"
     author = (
         "Carlos del Ojo",
         "Christian Martorella",
@@ -295,6 +295,38 @@ class sha1:
 
     def encode(self, string):
         s = hashlib.sha1()
+        s.update(string.encode("utf-8"))
+        res = s.hexdigest()
+        return res
+
+
+@moduleman_plugin("encode")
+class sha256:
+    name = "sha256"
+    summary = "Applies a sha256 hash to the given string"
+    author = ("Dustin Evans (@dustinaevans)",)
+    version = "0.1"
+    category = ["hashes"]
+    priority = 99
+
+    def encode(self, string):
+        s = hashlib.sha256()
+        s.update(string.encode("utf-8"))
+        res = s.hexdigest()
+        return res
+
+
+@moduleman_plugin("encode")
+class sha512:
+    name = "sha512"
+    summary = "Applies a sha512 hash to the given string"
+    author = ("Dustin Evans (@dustinaevans)",)
+    version = "0.1"
+    category = ["hashes"]
+    priority = 99
+
+    def encode(self, string):
+        s = hashlib.sha512()
         s.update(string.encode("utf-8"))
         res = s.hexdigest()
         return res
