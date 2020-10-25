@@ -58,9 +58,9 @@ class links(BasePlugin, DiscoveryPluginMixin):
             r'\b(?:(?<!data-)href)="((?!mailto:|tel:|#|javascript:).*?)"',
             r'\bsrc="((?!javascript:).*?)"',
             r'\baction="((?!javascript:).*?)"',
-            # http://en.wikipedia.org/wiki/Meta_refresh
-            r'<meta.*content="\d+;url=(.*?)">',
+            r'<meta.*content="\d+;url=(.*?)">',  # http://en.wikipedia.org/wiki/Meta_refresh
             r'getJSON\("(.*?)"',
+            r"[^/][`'\"]([\/][a-zA-Z0-9_.-]+)+(?!(?:[,;\s]))",  # based on https://github.com/nahamsec/JSParser/blob/master/handler.py#L93
         ]
 
         self.regex = []
