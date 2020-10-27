@@ -5,6 +5,7 @@ from xml.dom import minidom
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
+from wfuzz.exception import FuzzExceptPluginBadParams
 
 
 @moduleman_plugin
@@ -340,6 +341,31 @@ class raw(BasePrinter):
                 summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
             )[:8]
         )
+
+
+@moduleman_plugin
+class field(BasePrinter):
+    name = "field"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Raw output format only showing the specified field expression. No header or footer."
+    category = ["default"]
+    priority = 99
+
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
+
+    def header(self, summary):
+        pass
+
+    def result(self, res):
+        if res._fields:
+            print(res._field("\n"))
+        else:
+            raise FuzzExceptPluginBadParams("You need to supply  valid --field or --efield expression for unsing this printer.")
+
+    def footer(self, summary):
+        pass
 
 
 @moduleman_plugin
