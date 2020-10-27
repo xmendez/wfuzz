@@ -285,8 +285,13 @@ class raw(BasePrinter):
             )
         )
 
-        for i in res.plugins_res:
-            self.f.write("  |_ %s\n" % i.issue)
+        for plugin_res in res.plugins_res:
+            if plugin_res._verbose:
+                self.f.write(
+                    " |_  {} {}\n".format(
+                        plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                    )
+                )
 
     def _print(self, res):
         if res.exception:
@@ -299,8 +304,13 @@ class raw(BasePrinter):
             % (res.lines, res.words, res.chars, res.description)
         )
 
-        for i in res.plugins_res:
-            self.f.write("  |_ %s\n" % i.issue)
+        for plugin_res in res.plugins_res:
+            if not plugin_res._verbose:
+                self.f.write(
+                    " |_  {} {}\n".format(
+                        plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                    )
+                )
 
     def result(self, res):
         if self.verbose:
