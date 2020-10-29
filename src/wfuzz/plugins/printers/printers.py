@@ -362,7 +362,9 @@ class field(BasePrinter):
         if res._fields:
             print(res._field("\n"))
         else:
-            raise FuzzExceptPluginBadParams("You need to supply  valid --field or --efield expression for unsing this printer.")
+            raise FuzzExceptPluginBadParams(
+                "You need to supply  valid --field or --efield expression for unsing this printer."
+            )
 
     def footer(self, summary):
         pass
