@@ -353,7 +353,7 @@ class JobMan(FuzzQueue):
                     self.stats.backfeed.inc()
                     self.stats.pending_fuzz.inc()
                     self.send(item._seed)
-                    enq_item[item.source]["request"] += 1
+                    enq_item[item.source]["request enqueued"] += 1
             elif item.issue:
                 enq_item[item.source][item.itype] += 1
                 res.plugins_res.append(item)
