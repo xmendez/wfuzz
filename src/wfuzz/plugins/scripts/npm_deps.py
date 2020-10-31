@@ -42,8 +42,8 @@ class npm_deps(BasePlugin):
     def process(self, fuzzresult):
         if self.match_dev:
             for name, version in self.REGEX_PATT.findall(self.match_dev.group(1)):
-                self.add_verbose_result("dependency", "npm dependency", name)
+                self.add_result("dependency", "npm dependency", name)
 
         if self.match:
             for name, version in self.REGEX_PATT.findall(self.match.group(1)):
-                self.add_verbose_result("dev_dependency", "npm dev dependency", name)
+                self.add_result("dev_dependency", "npm dev dependency", name)

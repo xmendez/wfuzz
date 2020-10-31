@@ -287,7 +287,7 @@ class raw(BasePrinter):
         )
 
         for plugin_res in res.plugins_res:
-            if plugin_res._verbose:
+            if plugin_res.is_visible(self.verbose):
                 self.f.write(
                     " |_  {} {}\n".format(
                         plugin_res.issue, plugin_res.data if plugin_res.data else ""
@@ -306,7 +306,7 @@ class raw(BasePrinter):
         )
 
         for plugin_res in res.plugins_res:
-            if not plugin_res._verbose:
+            if plugin_res.is_visible(self.verbose):
                 self.f.write(
                     " |_  {} {}\n".format(
                         plugin_res.issue, plugin_res.data if plugin_res.data else ""

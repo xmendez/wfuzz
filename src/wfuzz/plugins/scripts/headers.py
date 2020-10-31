@@ -129,7 +129,7 @@ class headers(BasePlugin):
                 header_value.lower() not in self.kbase[KBASE_KEY_REQ_UNCOMMON]
                 or KBASE_KEY_REQ_UNCOMMON not in self.kbase
             ):
-                self.add_verbose_result(
+                self.add_result(
                     "reqheader",
                     "New uncommon HTTP request header",
                     "{}: {}".format(header_value, value),
@@ -147,7 +147,7 @@ class headers(BasePlugin):
                 header_value.lower() not in self.kbase[KBASE_KEY_RESP_UNCOMMON]
                 or KBASE_KEY_RESP_UNCOMMON not in self.kbase
             ):
-                self.add_verbose_result(
+                self.add_result(
                     "header",
                     "New uncommon HTTP response header",
                     "{}: {}".format(
@@ -163,7 +163,7 @@ class headers(BasePlugin):
                 value.lower() not in self.kbase[KBASE_KEY]
                 or KBASE_KEY not in self.kbase
             ):
-                self.add_verbose_result(
+                self.add_result(
                     "server",
                     "New server HTTP response header",
                     "{}: {}".format(header, value),

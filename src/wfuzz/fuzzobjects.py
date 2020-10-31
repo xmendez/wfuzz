@@ -293,7 +293,7 @@ class FuzzResult(FuzzItem):
         dic = defaultdict(lambda: defaultdict(list))
 
         for pl in self.plugins_res:
-            if pl.source == FuzzPlugin.OUTPUT_CAT:
+            if pl.source == FuzzPlugin.OUTPUT_SOURCE:
                 continue
             dic[pl.source][pl.itype].append(pl.data)
 
@@ -331,7 +331,7 @@ class FuzzResult(FuzzItem):
             self.description,
         )
         for plugin in self.plugins_res:
-            if plugin.itype == FuzzPlugin.SUMMARY_TYPE:
+            if plugin.itype == FuzzPlugin.SUMMARY_ITYPE:
                 res += "\n  |_ %s" % plugin.issue
 
         return res
@@ -402,8 +402,10 @@ class FuzzResult(FuzzItem):
 
 
 class FuzzPlugin(FuzzItem):
-    OUTPUT_CAT = "output"
-    SUMMARY_TYPE = "summary"
+    OUTPUT_SOURCE = "output"
+    SUMMARY_ITYPE = "summary"
+    NONE, INFO, LOW, MEDIUM, HIGH, CRITICAL = range(6)
+    MIN_VERBOSE = INFO
 
     def __init__(self):
         FuzzItem.__init__(self, FuzzType.PLUGIN)
@@ -413,4 +415,13 @@ class FuzzPlugin(FuzzItem):
         self.data = ""
         self._exception = None
         self._seed = None
-        self._verbose = False
+        self.severity = self.INFO
+
+    def is_visible(self, verbose):
+        if verbose and self.itype == self.SUMMARY_ITYPE:
+            return False
+
+        if not verbose and self.severity >= self.MIN_VERBOSE:
+            return False
+
+        return True

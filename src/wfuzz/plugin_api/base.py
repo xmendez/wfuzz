@@ -1,4 +1,4 @@
-from wfuzz.fuzzobjects import FuzzWord
+from wfuzz.fuzzobjects import FuzzWord, FuzzPlugin
 from wfuzz.exception import (
     FuzzExceptBadFile,
     FuzzExceptBadOptions,
@@ -59,17 +59,10 @@ class BasePlugin:
     def validate(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
-    def add_result(self, itype, issue, data):
+    def add_result(self, itype, issue, data, severity=FuzzPlugin.INFO):
         self.results_queue.put(
             plugin_factory.create(
-                "plugin_from_finding", self.name, itype, issue, data, False
-            )
-        )
-
-    def add_verbose_result(self, itype, issue, data):
-        self.results_queue.put(
-            plugin_factory.create(
-                "plugin_from_finding", self.name, itype, issue, data, True
+                "plugin_from_finding", self.name, itype, issue, data, severity
             )
         )
 

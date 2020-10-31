@@ -141,7 +141,7 @@ class links(BasePlugin, DiscoveryPluginMixin):
         ):
             if self.enqueue_links:
                 self.queue_url(new_link)
-            self.add_verbose_result("link", "New link found", new_link)
+            self.add_result("link", "New link found", new_link)
 
     def from_domain(self, fuzzresult, parsed_link):
         # relative path
@@ -164,6 +164,6 @@ class links(BasePlugin, DiscoveryPluginMixin):
             and parsed_link.netloc not in self.kbase[KBASE_NEW_DOMAIN]
         ):
             self.kbase[KBASE_NEW_DOMAIN].append(parsed_link.netloc)
-            self.add_verbose_result(
+            self.add_result(
                 "domain", "New domain found (link not enqueued)", parsed_link.netloc
             )

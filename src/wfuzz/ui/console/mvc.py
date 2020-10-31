@@ -322,9 +322,7 @@ class View:
 
             if res.plugins_res:
                 for plugin_res in res.plugins_res:
-                    if (plugin_res._verbose and not self.verbose) or (
-                        plugin_res.itype == FuzzPlugin.SUMMARY_TYPE and self.verbose
-                    ):
+                    if not plugin_res.is_visible(self.verbose):
                         continue
 
                     sys.stdout.write(
