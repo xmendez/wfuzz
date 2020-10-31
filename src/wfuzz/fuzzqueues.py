@@ -365,7 +365,7 @@ class JobMan(FuzzQueue):
                         "plugin_from_summary",
                         "Plugin {}: {} new {}(s) found.".format(
                             plugin_name, enq_num, domain
-                        )
+                        ),
                     )
                 )
 
@@ -391,7 +391,7 @@ class RecursiveQ(FuzzQueue):
                 fuzz_res.plugins_res.append(
                     plugin_factory.create(
                         "plugin_from_summary",
-                        "Enqueued response for recursion (level=%d)" % (seed.rlevel)
+                        "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                     )
                 )
 
