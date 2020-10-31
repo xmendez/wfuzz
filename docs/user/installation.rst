@@ -91,6 +91,16 @@ If you get errors such as::
     
 Run brew update && brew upgrade
 
+If you get an error such as::
+
+    ImportError: pycurl: libcurl link-time ssl backends (secure-transport, openssl) do not include compile-time ssl backend (none/other)
+
+That might indicate that pycurl was reinstalled and not linked to the SSL correctly. Uninstall pycurl as follows::
+
+    $ pip uninstall pycurl
+
+and re-install pycurl starting from step 4 above.
+
 Pycurl on Windows
 -----------------
 
