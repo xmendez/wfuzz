@@ -24,7 +24,7 @@ class BasePlugin:
 
         # check mandatory params, assign default values
         for name, default_value, required, description in self.parameters:
-            param_name = "%s.%s" % (self.name, name)
+            param_name = f"{self.name}.{name}"
 
             if required and param_name not in list(self.kbase.keys()):
                 raise FuzzExceptBadOptions(
