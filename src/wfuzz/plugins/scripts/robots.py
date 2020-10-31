@@ -53,4 +53,6 @@ class robots(BasePlugin, DiscoveryPluginMixin):
                 url = url.strip(" *")
 
                 if url:
-                    self.queue_url(urljoin(fuzzresult.url, url))
+                    new_link = urljoin(fuzzresult.url, url)
+                    self.queue_url(new_link)
+                    self.add_result("link", "New link found", new_link)
