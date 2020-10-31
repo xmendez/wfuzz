@@ -360,7 +360,9 @@ class field(BasePrinter):
 
     def result(self, res):
         if res._fields:
-            print(res._field("\n"))
+            to_print = res._field("\n")
+            if to_print:
+                print(to_print)
         else:
             raise FuzzExceptPluginBadParams(
                 "You need to supply  valid --field or --efield expression for unsing this printer."
