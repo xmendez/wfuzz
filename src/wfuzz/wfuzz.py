@@ -216,6 +216,8 @@ def main_encoder():
         )
     except FuzzException as e:
         warnings.warn(("\nFatal exception: %s" % str(e)))
+    except Exception as e:
+        warnings.warn(("Unhandled exception: %s" % str(e)))
 
 
 def main_gui():
