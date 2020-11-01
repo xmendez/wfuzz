@@ -482,7 +482,7 @@ lines        l              Wfuzz's result HTTP response lines
 words        w              Wfuzz's result HTTP response words
 md5                         Wfuzz's result HTTP response md5 hash
 history      r              Wfuzz's result associated FuzzRequest object
-plugins                     Wfuzz's results associated plugins result in the form of {'plugin id': ['result']}
+plugins                     Wfuzz's plugins scan results 
 ============ ============== =============================================
 
 FuzzRequest object's attribute (you need to use the r. prefix) such as:
@@ -739,6 +739,12 @@ The above command will generate HTTP requests such as the following::
     Connection: close
 
 You can filter the payload using the filter grammar as described before.
+
+Reutilising previous results
+--------------------------------------
+
+Plugins results contain a treasure trove of data. Wfuzz payloads and object introspection (explained in the filter grammar section) exposes a Python object interface to plugins results.
+This allows you to perform semi-automatic tests based on plugins results or compile a set of results to be used in another tool.
 
 Request mangling
 ^^^^^^^^^
