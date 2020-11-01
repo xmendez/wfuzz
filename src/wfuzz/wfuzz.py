@@ -177,28 +177,39 @@ def main_encoder():
         print("\n\twfencode --help This help")
         print("\twfencode -d decoder_name string_to_decode")
         print("\twfencode -e encoder_name string_to_encode")
+        print("\twfencode -e encoder_name -i <<stdin>>")
         print()
 
     from .api import encode, decode
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hie:d:", ["help"])
     except getopt.GetoptError as err:
         warnings.warn(str(err))
         usage()
         sys.exit(2)
 
-    if len(args) == 0:
+    arg_keys = [i for i, j in opts]
+
+    if len(args) == 0 and "-i" not in arg_keys:
         usage()
         sys.exit()
 
     try:
         for o, value in opts:
             if o == "-e":
-                print((encode(value, args[0])))
+                if "-i" in arg_keys:
+                    for std in sys.stdin:
+                        print(encode(value, std.strip()))
+                else:
+                    print(encode(value, args[0]))
             elif o == "-d":
-                print((decode(value, args[0])))
+                if "-i" in arg_keys:
+                    for std in sys.stdin:
+                        print(decode(value, std.strip()))
+                else:
+                    print(decode(value, args[0]))
             elif o in ("-h", "--help"):
                 usage()
                 sys.exit()
