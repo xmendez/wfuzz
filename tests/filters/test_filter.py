@@ -46,3 +46,22 @@ def test_filter_ret_values_no_response(
         filter_obj.is_visible(example_full_fuzzres_no_response, filter_string)
         == expected_result
     )
+
+
+@pytest.mark.parametrize(
+    "filter_string, expected_result",
+    [
+        ("r.cookies.response.nAMe|upper()", "NICHOLAS"),
+        ("r.cookies.response.name|upper()", "NICHOLAS"),
+        ("r.cookies.response.name|lower()", "nicholas"),
+        ("r.cookies.response.name|startswith('N')", True),
+        ("r.cookies.response.name|replace('N','n')", "nicholas"),
+        ("'%2e%2e'|unquote()", ".."),
+        ("'%2e%2f'|decode('urlencode')", "./"),
+        ("'%%'|encode('urlencode')", "%25%25"),
+    ],
+)
+def test_filter_operators(
+    filter_obj, example_full_fuzzres, filter_string, expected_result
+):
+    assert filter_obj.is_visible(example_full_fuzzres, filter_string) == expected_result
