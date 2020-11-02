@@ -5,6 +5,7 @@ from ..helpers.obj_dyn import (
 )
 from ..helpers.str_func import value_in_any_list_item
 from ..helpers.obj_dic import DotDict
+from ..helpers.utils import diff
 
 import re
 import collections
@@ -64,9 +65,17 @@ class FuzzResFilter:
             r"BBB(?:\[(?P<field>(\w|_|-|\.)+)\])?", asMatch=True
         ).setParseAction(self.__compute_bbb_symbol)
 
+        diff_call = Group(
+            Suppress(Literal("|"))
+            + Literal("diff")
+            + Suppress(Literal("("))
+            + (fuzz_symbol | res_symbol | bbb_symbol | int_values | quoted_str_value)
+            + Suppress(")")
+        )
+
         fuzz_statement = Group(
             (fuzz_symbol | res_symbol | bbb_symbol | int_values | quoted_str_value)
-            + Optional(operator_call, None)
+            + Optional(diff_call | operator_call, None)
         ).setParseAction(self.__compute_res_value)
 
         operator = oneOf("and or")
@@ -127,10 +136,13 @@ class FuzzResFilter:
         if token_tuple:
             location, operator_match = token_tuple
 
-            if operator_match and operator_match.groupdict()["operator"]:
-                fuzz_val = self._get_operator_value(
-                    location, fuzz_val, operator_match.groupdict()
-                )
+            if location == "diff":
+                return diff(operator_match, fuzz_val)
+            else:
+                if operator_match and operator_match.groupdict()["operator"]:
+                    fuzz_val = self._get_operator_value(
+                        location, fuzz_val, operator_match.groupdict()
+                    )
 
         if isinstance(fuzz_val, list):
             return [fuzz_val]

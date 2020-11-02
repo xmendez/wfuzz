@@ -1,7 +1,6 @@
 import sys
 from collections import defaultdict
 import threading
-import difflib
 
 try:
     from itertools import zip_longest
@@ -162,7 +161,7 @@ class View:
         self.term = Term()
         self.printed_lines = 0
 
-    def _print_verbose(self, res, print_nres=True, extra_description=None):
+    def _print_verbose(self, res, print_nres=True):
         txt_colour = (
             Term.noColour if not res.is_baseline or not self.colour else Term.fgCyan
         )
@@ -179,10 +178,6 @@ class View:
         if "Server" in res.history.headers.response:
             server = res.history.headers.response["Server"]
 
-        description = res.description
-        if extra_description:
-            description = "{} | diff:\n{}".format(res.description, extra_description)
-
         rows = [
             ("%09d:" % res.nres if print_nres else " |_", txt_colour),
             ("%.3fs" % res.timer, txt_colour),
@@ -195,7 +190,7 @@ class View:
             ("%d Ch" % res.chars, txt_colour),
             (server, txt_colour),
             (location, txt_colour),
-            ('"%s"' % description, txt_colour),
+            ('"%s"' % res.description, txt_colour),
         ]
 
         self.term.set_colour(txt_colour)
@@ -308,15 +303,7 @@ class View:
             ):
                 prev_res = res.payload_man.get_payload_content(1)
                 if self.verbose:
-                    delta = difflib.unified_diff(
-                        prev_res.history.raw_content.splitlines(True),
-                        res.history.raw_content.splitlines(True),
-                        fromfile="prev",
-                        tofile="current",
-                    )
-                    self._print_verbose(
-                        prev_res, print_nres=False, extra_description="".join(delta)
-                    )
+                    self._print_verbose(prev_res, print_nres=False)
                 else:
                     self._print(prev_res, print_nres=False)
 
