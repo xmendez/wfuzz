@@ -51,6 +51,10 @@ def test_filter_ret_values_no_response(
 @pytest.mark.parametrize(
     "filter_string, expected_result",
     [
+        (
+            "r.cookies.response.name|diff('test')",
+            "--- prev\n\n+++ current\n\n@@ -1 +1 @@\n\n-test\n+Nicholas",
+        ),
         ("r.cookies.response.nAMe|upper()", "NICHOLAS"),
         ("r.cookies.response.name|upper()", "NICHOLAS"),
         ("r.cookies.response.name|lower()", "nicholas"),
