@@ -81,7 +81,7 @@ def burplog_file(request):
                 "HTTP/1.1 200 OK\n"
                 "Server: nginx/1.17.9\n"
                 "\n"
-                "<?xml version=\"1.0\"?>\n"
+                '<?xml version="1.0"?>\n'
                 "<updates>\n"
                 "</updates>   \n"
                 "======================================================\n"
@@ -104,7 +104,7 @@ def burplog_file(request):
                 "HTTP/1.1 200 OK\n"
                 "Server: nginx/1.17.9\n"
                 "\n"
-                "<?xml version=\"1.0\"?>\n"
+                '<?xml version="1.0"?>\n'
                 "<updates>\n"
                 "</updates>\n"
                 "\n"
@@ -128,7 +128,7 @@ def burplog_file(request):
                 "HTTP/1.1 200 OK\n"
                 "Server: nginx/1.17.9\n"
                 "\n"
-                "<?xml version=\"1.0\"?>\n"
+                '<?xml version="1.0"?>\n'
                 "<updates>\n"
                 "</updates>\n"
                 "======================================================\n"
@@ -153,7 +153,7 @@ def burplog_file(request):
                 "Date: Mon, 19 Jan 1970 15:36:40 GMT\n"
                 "Last-Modified: Wed, 11 May 2011 10:27:48 GMT\n"
                 "Connection: close\n"
-                "ETag: \"4dca64a4-156a\"\n"
+                'ETag: "4dca64a4-156a"\n'
                 "\n"
                 "\n"
                 "======================================================\n"
@@ -161,7 +161,7 @@ def burplog_file(request):
                 "\n"
                 "\n"
             ),
-            '',
+            "",
         ),
     ],
     indirect=["burplog_file"],
@@ -225,7 +225,7 @@ def test_burplog_content(burplog_file, expected_content):
                 "Alt-Svc: clear\n"
                 "Connection: close\n"
                 "\n"
-                "<?xml version=\"1.0\"?>\n"
+                '<?xml version="1.0"?>\n'
                 "<updates>\n"
                 "</updates>\n"
                 "======================================================\n"
@@ -244,21 +244,20 @@ def test_burplog_content(burplog_file, expected_content):
                 "Connection": "close",
             },
             {
-                'Server': 'nginx/1.17.9',
-                'Date': 'Sun, 01 Nov 2020 21:35:08 GMT',
-                'Content-Type': 'text/xml; charset=utf-8',
-                'Content-Length': '42',
-                'Strict-Transport-Security': 'max-age=31536000;',
-                'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
-                'X-Proxy-Cache-Status': 'EXPIRED',
-                'Via': '1.1 google',
-                'Age': '47',
-                'Cache-Control': 'public, max-age=90',
-                'Alt-Svc': 'clear',
-                'Connection': 'close',
-            }
-
+                "Server": "nginx/1.17.9",
+                "Date": "Sun, 01 Nov 2020 21:35:08 GMT",
+                "Content-Type": "text/xml; charset=utf-8",
+                "Content-Length": "42",
+                "Strict-Transport-Security": "max-age=31536000;",
+                "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+                "X-Proxy-Cache-Status": "EXPIRED",
+                "Via": "1.1 google",
+                "Age": "47",
+                "Cache-Control": "public, max-age=90",
+                "Alt-Svc": "clear",
+                "Connection": "close",
+            },
         ),
     ],
     indirect=["burplog_file"],
