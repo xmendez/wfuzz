@@ -16,4 +16,4 @@ pycurl==7.43.0.6          # via wfuzz (setup.py)
 pyparsing==2.4.7          # via packaging
 pytest==6.0.1             # via wfuzz (setup.py)
 six==1.15.0               # via packaging, wfuzz (setup.py)
-toml==0.10.1              # via pytest
+toml==0.10.2              # via pytest
