@@ -113,7 +113,7 @@ class burplog(BasePayload):
                     if rl == CRLF:
                         fr = FuzzRequest()
                         fr.update_from_raw_http(
-                            raw_request, host[: host.find("://")], raw_response
+                            raw_request, host[: host.find("://")], raw_response.rstrip()
                         )
                         frr = FuzzResult(history=fr)
 
