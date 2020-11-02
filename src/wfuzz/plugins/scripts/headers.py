@@ -164,9 +164,7 @@ class headers(BasePlugin):
                 or KBASE_KEY not in self.kbase
             ):
                 self.add_result(
-                    "server",
-                    "New server HTTP response header",
-                    "{}".format(value),
+                    "server", "New server HTTP response header", "{}".format(value),
                 )
 
                 self.kbase[KBASE_KEY].append(value.lower())
