@@ -118,7 +118,7 @@ savedsession_tests = [
     ),
     # set values
     (
-        "test_desc_concat_number",
+        "test_desc_concat_number_slice",
         "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL),
         "-z wfuzzp,$$PREVFILE$$ --slice r.c:=302 FUZZ[url]FUZZ[c]",
         ["http://localhost:9000/1 - 302"],
