@@ -1,7 +1,9 @@
 .PHONY: docs
-test:
+tox:
 	pip install tox
 	tox --recreate
+test:
+	pytest -v -s tests/
 flake8:
 	black --check src tests
 	flake8 src tests
