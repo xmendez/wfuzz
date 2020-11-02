@@ -633,6 +633,37 @@ The specified expression must return a boolean value, an example, using the uniq
 It is worth noting that, the type of payload dictates the available language symbols. For example, a dictionary payload such as in the example
 above does not have a full FuzzResult object context and therefore object fields cannot be used.
 
+When slicing a FuzzResult payload, you are accessing the FuzzResult directly, therefore given a previous session such as::
+
+    $ wfuzz -z range --zD 0-0 -u http://www.google.com/FUZZ --oF /tmp/test1
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "0"                                                                                                                                                 
+    ...
+
+this can be used to filter the payload::
+
+    $ wfpayload -z wfuzzp --zD /tmp/test1 --slice "c=404"
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "0"                                                                                                                                                 
+    ...
+
+    $ wfpayload -z wfuzzp --zD /tmp/test1 --slice "c!=404"
+    ...
+    wfuzz.py:168: UserWarning:Fatal exception: Empty dictionary! Please check payload or filter.
+    ...
+
+In fact, in this situation, FUZZ refers to the previous result (if any)::
+
+    $ wfuzz -z wfuzzp --zD /tmp/test1 -u FUZZ --oF /tmp/test2
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "http://www.google.com/0"                                                                                                                           
+    ...
+
+    $ wfpayload -z wfuzzp --zD /tmp/test2 --efield r.headers.response.date --efield FUZZ[r.headers.response.date]
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "http://www.google.com/0 | Mon, 02 Nov 2020 19:29:03 GMT | Mon, 02 Nov 2020 19:27:27 GMT"                                                           
+    ...
+
 Re-writing a payload
 """""""
 
