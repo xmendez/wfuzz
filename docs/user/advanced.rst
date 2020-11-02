@@ -609,7 +609,7 @@ The payload to filter, specified by the -z switch must precede --slice command l
 
 The specified expression must return a boolean value, an example, using the unique operator is shown below::
 
-    $ wfuzz-cli.py -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
+    $ wfuzz -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
