@@ -150,13 +150,13 @@ def burplog_file(request):
                 "======================================================\n"
                 "HTTP/1.1 200 OK\n"
                 "\n"
-                "HTTP\",\" 333D Visionplugin\n"
+                'HTTP"," 333D Visionplugin\n'
                 "======================================================\n"
                 "\n"
                 "\n"
                 "\n"
             ),
-            "HTTP\",\" 333D Visionplugin",
+            'HTTP"," 333D Visionplugin',
         ),
         (
             (
