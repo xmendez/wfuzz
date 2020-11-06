@@ -112,8 +112,9 @@ class burplog(BasePayload):
                 elif history == "DELIM4":
                     if rl == CRLF:
                         fr = FuzzRequest()
+                        # last read line contains an extra CRLF
                         fr.update_from_raw_http(
-                            raw_request, host[: host.find("://")], raw_response
+                            raw_request, host[: host.find("://")], raw_response[:-1]
                         )
                         frr = FuzzResult(history=fr)
 

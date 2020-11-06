@@ -8,8 +8,6 @@ from .exception import FuzzExceptNoPluginError, FuzzExceptPluginLoadError
 
 import os
 
-# python2 and 3: metaclass
-from future.utils import with_metaclass
 
 ERROR_CODE = -1
 BASELINE_CODE = -2
@@ -64,8 +62,7 @@ class MyRegistrant(MulRegistrant):
             )
 
 
-# python2 and 3: class Facade(metaclass=utils.Singleton):
-class Facade(with_metaclass(Singleton, object)):
+class Facade(metaclass=Singleton):
     def __init__(self):
 
         self.__plugins = dict(

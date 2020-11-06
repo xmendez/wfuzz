@@ -19,7 +19,7 @@ class robots(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses robots.txt looking for new content."
     description = ("Parses robots.txt looking for new content.",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
 
     parameters = ()
@@ -53,4 +53,6 @@ class robots(BasePlugin, DiscoveryPluginMixin):
                 url = url.strip(" *")
 
                 if url:
-                    self.queue_url(urljoin(fuzzresult.url, url))
+                    new_link = urljoin(fuzzresult.url, url)
+                    self.queue_url(new_link)
+                    self.add_result("link", "New link found", new_link)

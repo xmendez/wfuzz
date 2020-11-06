@@ -13,6 +13,7 @@ from .facade import ERROR_CODE
 from .helpers.str_func import python2_3_convert_to_unicode
 from .helpers.obj_dyn import rgetattr
 from .helpers.utils import MyCounter
+from .helpers.obj_dic import DotDict
 
 
 FuzzWord = namedtuple("FuzzWord", ["content", "type"])
@@ -23,17 +24,7 @@ class FuzzWordType(Enum):
 
 
 class FuzzType(Enum):
-    (
-        SEED,
-        BACKFEED,
-        RESULT,
-        ERROR,
-        STARTSEED,
-        ENDSEED,
-        CANCEL,
-        DISCARDED,
-        PLUGIN,
-    ) = range(9)
+    (SEED, BACKFEED, RESULT, ERROR, STARTSEED, ENDSEED, CANCEL, PLUGIN,) = range(8)
 
 
 class FuzzItem(object):
@@ -42,6 +33,8 @@ class FuzzItem(object):
     def __init__(self, item_type):
         self.item_id = next(FuzzItem.newid)
         self.item_type = item_type
+        self.rlevel = 1
+        self.discarded = False
 
     def __str__(self):
         return "FuzzItem, type: {}".format(self.item_type.name)
@@ -99,11 +92,11 @@ class FuzzStats:
             "url": self.url,
             "total": self.total_req,
             "backfed": self.backfeed(),
-            "Processed": self.processed(),
-            "Pending": self.pending_fuzz(),
+            "processed": self.processed(),
+            "pending": self.pending_fuzz(),
             "filtered": self.filtered(),
-            "Pending_seeds": self.pending_seeds(),
-            "totaltime": self._totaltime,
+            "pending_seeds": self.pending_seeds(),
+            "totaltime": time.time() - self.__starttime,
         }
 
     def mark_start(self):
@@ -177,15 +170,16 @@ class FuzzPayload:
             else str(rgetattr(self.content, self.field))
         )
 
-    def description(self, default):
+    def description(self):
         if self.is_baseline:
             return self.content
 
         if self.marker is None:
             return ""
 
+        # return default value
         if self.field is None and isinstance(self.content, FuzzResult):
-            return rgetattr(self.content, default)
+            return self.content.url
         elif self.field is not None and isinstance(self.content, FuzzResult):
             return str(rgetattr(self.content, self.field))
 
@@ -252,9 +246,7 @@ class FPayloadManager:
                 yield elem
 
     def description(self):
-        payl_descriptions = [
-            payload.description("url") for payload in self.get_payloads()
-        ]
+        payl_descriptions = [payload.description() for payload in self.get_payloads()]
         ret_str = " - ".join([p_des for p_des in payl_descriptions if p_des])
 
         return ret_str
@@ -279,7 +271,6 @@ class FuzzResult(FuzzItem):
 
         self.exception = exception
         self.is_baseline = False
-        self.rlevel = 1
         self.rlevel_desc = ""
         self.nres = next(FuzzResult.newid) if track_id else 0
 
@@ -299,12 +290,20 @@ class FuzzResult(FuzzItem):
 
     @property
     def plugins(self):
-        dic = defaultdict(list)
+        dic = defaultdict(lambda: defaultdict(list))
 
         for pl in self.plugins_res:
-            dic[pl.source].append(pl.issue)
+            if pl.source == FuzzPlugin.OUTPUT_SOURCE:
+                continue
+            dic[pl.source][pl.itype].append(pl.data)
 
-        return dic
+        ret = DotDict()
+        for key, first in dic.items():
+            ret[key] = DotDict()
+            for seckey, second in first.items():
+                ret[key][seckey] = second
+
+        return ret
 
     def update(self, exception=None):
         self.item_type = FuzzType.RESULT
@@ -332,16 +331,19 @@ class FuzzResult(FuzzItem):
             self.description,
         )
         for plugin in self.plugins_res:
-            res += "\n  |_ %s" % plugin.issue
+            if plugin.itype == FuzzPlugin.SUMMARY_ITYPE:
+                res += "\n  |_ %s" % plugin.issue
 
         return res
 
     @property
     def description(self):
-        res_description = (
-            self.payload_man.description() if self.payload_man else self.url
-        )
-        ret_str = ""
+        res_description = self.payload_man.description() if self.payload_man else None
+
+        if not res_description:
+            res_description = self.url
+
+        ret_str = None
 
         if self._show_field is True:
             ret_str = self._field()
@@ -349,9 +351,6 @@ class FuzzResult(FuzzItem):
             ret_str = "{} | {}".format(res_description, self._field())
         else:
             ret_str = res_description
-
-        if not ret_str:
-            ret_str = self.url
 
         if self.exception:
             return ret_str + "! " + str(self.exception)
@@ -364,8 +363,14 @@ class FuzzResult(FuzzItem):
     def eval(self, expr):
         return self.FUZZRESULT_SHARED_FILTER.is_visible(self, expr)
 
-    def _field(self):
-        return " | ".join([str(self.eval(field)) for field in self._fields])
+    def _field(self, separator=", "):
+        list_eval = [self.eval(field) for field in self._fields]
+        return " | ".join(
+            [
+                separator.join(el) if isinstance(el, list) else str(el)
+                for el in list_eval
+            ]
+        )
 
     # parameters in common with fuzzrequest
     @property
@@ -397,9 +402,26 @@ class FuzzResult(FuzzItem):
 
 
 class FuzzPlugin(FuzzItem):
+    OUTPUT_SOURCE = "output"
+    SUMMARY_ITYPE = "summary"
+    NONE, INFO, LOW, MEDIUM, HIGH, CRITICAL = range(6)
+    MIN_VERBOSE = INFO
+
     def __init__(self):
         FuzzItem.__init__(self, FuzzType.PLUGIN)
         self.source = ""
         self.issue = ""
+        self.itype = ""
+        self.data = ""
         self._exception = None
         self._seed = None
+        self.severity = self.INFO
+
+    def is_visible(self, verbose):
+        if verbose and self.itype == self.SUMMARY_ITYPE:
+            return False
+
+        if not verbose and self.severity >= self.MIN_VERBOSE:
+            return False
+
+        return True

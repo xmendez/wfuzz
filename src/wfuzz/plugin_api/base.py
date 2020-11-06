@@ -1,4 +1,4 @@
-from wfuzz.fuzzobjects import FuzzWord
+from wfuzz.fuzzobjects import FuzzWord, FuzzPlugin
 from wfuzz.exception import (
     FuzzExceptBadFile,
     FuzzExceptBadOptions,
@@ -10,6 +10,7 @@ from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
 import os
+from distutils import util
 
 # python 2 and 3: iterator
 from builtins import object
@@ -23,7 +24,7 @@ class BasePlugin:
 
         # check mandatory params, assign default values
         for name, default_value, required, description in self.parameters:
-            param_name = "%s.%s" % (self.name, name)
+            param_name = "{}.{}".format(self.name, name)
 
             if required and param_name not in list(self.kbase.keys()):
                 raise FuzzExceptBadOptions(
@@ -58,9 +59,11 @@ class BasePlugin:
     def validate(self):
         raise FuzzExceptPluginError("Method count not implemented")
 
-    def add_result(self, issue):
+    def add_result(self, itype, issue, data, severity=FuzzPlugin.INFO):
         self.results_queue.put(
-            plugin_factory.create("plugin_from_finding", self.name, issue)
+            plugin_factory.create(
+                "plugin_from_finding", self.name, itype, issue, data, severity
+            )
         )
 
     def queue_url(self, url):
@@ -69,6 +72,9 @@ class BasePlugin:
                 "plugin_from_recursion", self.name, self.base_fuzz_res, url
             )
         )
+
+    def _bool(self, value):
+        return bool(util.strtobool(value))
 
 
 class BasePrinter:

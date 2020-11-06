@@ -386,6 +386,12 @@ class FuzzSession(UserDict):
             self.http_pool = HttpPool(self)
             self.http_pool.register()
 
+        if self.data["colour"]:
+            Facade().printers.kbase["colour"] = True
+
+        if self.data["verbose"]:
+            Facade().printers.kbase["verbose"] = True
+
         return self
 
     def close(self):

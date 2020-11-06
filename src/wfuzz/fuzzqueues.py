@@ -7,7 +7,8 @@ from collections import defaultdict
 
 from .factories.fuzzresfactory import resfactory
 from .factories.plugin_factory import plugin_factory
-from .fuzzobjects import FuzzType, FuzzItem
+from .factories.payman import payman_factory
+from .fuzzobjects import FuzzType, FuzzItem, FuzzWord, FuzzWordType
 from .myqueues import FuzzQueue
 from .exception import (
     FuzzExceptInternalError,
@@ -17,7 +18,6 @@ from .exception import (
 )
 from .myqueues import FuzzRRQueue
 from .facade import Facade
-from .fuzzobjects import FuzzWordType
 from .ui.console.mvc import View
 
 
@@ -33,8 +33,8 @@ class AllVarQ(FuzzQueue):
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.STARTSEED]
+    def items_to_process(self):
+        return [FuzzType.STARTSEED]
 
     def process(self, item):
         self.stats.pending_seeds.inc()
@@ -65,8 +65,8 @@ class SeedQ(FuzzQueue):
     def cancel(self):
         self.options["compiled_stats"].cancelled = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.STARTSEED, FuzzType.SEED]
+    def items_to_process(self):
+        return [FuzzType.STARTSEED, FuzzType.SEED]
 
     def send_baseline(self):
         fuzz_baseline = self.options["compiled_baseline"]
@@ -160,9 +160,6 @@ class ConsolePrinterQ(FuzzQueue):
     def mystart(self):
         self.printer.header(self.stats)
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT]
-
     def get_name(self):
         return "ConsolePrinterQ"
 
@@ -182,8 +179,8 @@ class CLIPrinterQ(FuzzQueue):
     def mystart(self):
         self.printer.header(self.stats)
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT, FuzzType.DISCARDED]
+    def process_discarded(self):
+        return True
 
     def get_name(self):
         return "CLIPrinterQ"
@@ -222,8 +219,8 @@ class RoutingQ(FuzzQueue):
     def get_name(self):
         return "RoutingQ"
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.SEED, FuzzType.BACKFEED]
+    def items_to_process(self):
+        return [FuzzType.SEED, FuzzType.BACKFEED]
 
     def process(self, item):
         if item.item_type in self.routes:
@@ -339,7 +336,7 @@ class JobMan(FuzzQueue):
         self.send(res)
 
     def process_results(self, res, plugins_res_queue):
-        enq_item = defaultdict(int)
+        enq_item = defaultdict(lambda: defaultdict(int))
 
         while not plugins_res_queue.empty():
             item = plugins_res_queue.get()
@@ -348,7 +345,7 @@ class JobMan(FuzzQueue):
                 if Facade().sett.get("general", "cancel_on_plugin_except") == "1":
                     self._throw(item._exception)
                 res.plugins_res.append(item)
-            elif item._seed is not None:
+            elif item._seed is not None and self.options["transport"] == "http":
                 cache_hit = self.cache.update_cache(item._seed.history, "backfeed")
                 if (self.options["no_cache"] or cache_hit) and (
                     self.max_dlevel == 0 or self.max_dlevel >= res.rlevel
@@ -356,19 +353,21 @@ class JobMan(FuzzQueue):
                     self.stats.backfeed.inc()
                     self.stats.pending_fuzz.inc()
                     self.send(item._seed)
-                    enq_item[item.source] += 1
-            else:
+                    enq_item[item.source]["request enqueued"] += 1
+            elif item.issue:
+                enq_item[item.source][item.itype] += 1
                 res.plugins_res.append(item)
 
-        for plugin_name, enq_num in enq_item.items():
-            res.plugins_res.append(
-                plugin_factory.create(
-                    "plugin_from_finding",
-                    "Backfeed",
-                    "Plugin %s enqueued %d more requests (rlevel=%d)"
-                    % (plugin_name, enq_num, res.rlevel),
+        for plugin_name, plugin_type in enq_item.items():
+            for domain, enq_num in plugin_type.items():
+                res.plugins_res.append(
+                    plugin_factory.create(
+                        "plugin_from_summary",
+                        "Plugin {}: {} new {}(s) found.".format(
+                            plugin_name, enq_num, domain
+                        ),
+                    )
                 )
-            )
 
 
 class RecursiveQ(FuzzQueue):
@@ -391,8 +390,7 @@ class RecursiveQ(FuzzQueue):
 
                 fuzz_res.plugins_res.append(
                     plugin_factory.create(
-                        "plugin_from_finding",
-                        "Recursion",
+                        "plugin_from_summary",
                         "Enqueued response for recursion (level=%d)" % (seed.rlevel),
                     )
                 )
@@ -413,7 +411,10 @@ class PassPayloadQ(FuzzQueue):
         if item.payload_man.get_payload_type(1) == FuzzWordType.FUZZRES:
             item = item.payload_man.get_payload_content(1)
             item.update_from_options(self.options)
-
+            if not item.payload_man:
+                item.payload_man = payman_factory.create(
+                    "empty_payloadman", FuzzWord(item.url, FuzzWordType.WORD)
+                )
         self.send(item)
 
 
@@ -456,8 +457,8 @@ class HttpQueue(FuzzQueue):
         self.http_pool.deregister()
         self.exit_job = True
 
-    def items_to_process(self, item):
-        return item.item_type in [FuzzType.RESULT, FuzzType.BACKFEED]
+    def items_to_process(self):
+        return [FuzzType.RESULT, FuzzType.BACKFEED]
 
     def process(self, obj):
         self.pause.wait()
@@ -474,7 +475,7 @@ class HttpQueue(FuzzQueue):
 
 class HttpReceiver(FuzzQueue):
     def __init__(self, options):
-        FuzzQueue.__init__(self, options, limit=options.get("concurrent") * 5)
+        FuzzQueue.__init__(self, options)
 
     def get_name(self):
         return "HttpReceiver"

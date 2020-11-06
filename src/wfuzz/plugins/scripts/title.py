@@ -9,7 +9,7 @@ class title(BasePlugin):
     version = "0.1"
     summary = "Parses HTML page title"
     description = ("Parses HTML page title",)
-    category = ["verbose", "passive"]
+    category = ["info", "passive"]
     priority = 99
 
     parameters = ()
@@ -30,4 +30,4 @@ class title(BasePlugin):
             or title not in self.kbase["title"]
         ):
             self.kbase["title"] = title
-            self.add_result("Page title: %s" % title)
+            self.add_result("title", "Page title", title)

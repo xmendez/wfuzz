@@ -12,6 +12,7 @@ class PluginFactory(ObjectFactory):
                 "plugin_from_recursion": PluginRecursiveBuilder(),
                 "plugin_from_error": PluginErrorBuilder(),
                 "plugin_from_finding": PluginFindingBuilder(),
+                "plugin_from_summary": PluginFindingSummaryBuilder(),
             },
         )
 
@@ -38,12 +39,29 @@ class PluginErrorBuilder:
 
 
 class PluginFindingBuilder:
-    def __call__(self, name, message):
+    def __call__(self, name, itype, message, data, severity):
         plugin = FuzzPlugin()
         plugin.source = name
         plugin.issue = message
+        plugin.itype = itype
+        plugin.data = data
         plugin._exception = None
         plugin._seed = None
+        plugin.severity = severity
+
+        return plugin
+
+
+class PluginFindingSummaryBuilder:
+    def __call__(self, message):
+        plugin = FuzzPlugin()
+        plugin.source = FuzzPlugin.OUTPUT_SOURCE
+        plugin.itype = FuzzPlugin.SUMMARY_ITYPE
+        plugin.severity = FuzzPlugin.NONE
+        plugin._exception = None
+        plugin.data = None
+        plugin._seed = None
+        plugin.issue = message
 
         return plugin
 

@@ -11,7 +11,7 @@ class errors(BasePlugin):
     version = "0.1"
     summary = "Looks for error messages"
     description = ("Looks for common error messages",)
-    category = ["default", "passive"]
+    category = ["default", "passive", "info"]
     priority = 99
 
     parameters = ()
@@ -111,4 +111,4 @@ class errors(BasePlugin):
     def process(self, fuzzresult):
         for regex in self.error_regex:
             for regex_match in regex.findall(fuzzresult.history.content):
-                self.add_result("Error identified: {}".format(regex_match))
+                self.add_result("errors", "Error identified", regex_match)

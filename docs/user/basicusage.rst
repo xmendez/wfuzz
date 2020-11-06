@@ -252,7 +252,7 @@ For example, to show results in JSON format use the following command::
 
     $ wfuzz -o json -w wordlist/general/common.txt http://testphp.vulnweb.com/FUZZ
 
-When using the default output you can also select additional FuzzResult's fields to show, using --efield, together with the payload description::
+When using the default or raw output you can also select additional FuzzResult's fields to show, using --efield, together with the payload description::
 
     $ wfuzz -z range --zD 0-1 -u http://testphp.vulnweb.com/artists.php?artist=FUZZ --efield r
     ...
@@ -262,7 +262,7 @@ When using the default output you can also select additional FuzzResult's fields
                                                         Host: testphp.vulnweb.com
     ...
 
-The above is useful, for example, to debug what exact HTTP request Wfuzz sent to the remote Web server.
+The above command is useful, for example, to debug what exact HTTP request Wfuzz sent to the remote Web server.
 
 To completely replace the default payload output you can use --field instead::
 
@@ -278,5 +278,15 @@ To completely replace the default payload output you can use --field instead::
     ...
     000000001:   200        104 L    364 W    4735 Ch     "0 | http://testphp.vulnweb.com/artists.php?artist=0 | 4735"                                                                                        
     ...
+
+The field printer can be used with a --efield or --field expression to list only the specified filter expressions without a header or footer::
+
+
+    $ wfuzz -z list --zD https://www.airbnb.com/ --script=links --script-args=links.regex=.*js$,links.enqueue=False -u FUZZ -o field --field plugins.links.link | head -n3
+    https://a0.muscache.com/airbnb/static/packages/4e8d-d5c346ee.js
+    https://a0.muscache.com/airbnb/static/packages/7afc-ac814a17.js
+    https://a0.muscache.com/airbnb/static/packages/7642-dcf4f8dc.js
+
+The above command is useful, for example, to pipe wfuzz into other tools or perform console scripts.
 
 --efield and --field are in fact filter expressions. Check the filter language section in the advance usage document for the available fields and operators.

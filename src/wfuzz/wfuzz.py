@@ -15,6 +15,25 @@ from .ui.console.clparser import CLParser
 from .fuzzobjects import FuzzWordType
 
 
+PROFILING = False
+
+
+def print_profiling(profiling_list, profiling_header):
+    avg = [float(sum(col)) / len(col) for col in list(zip(*profiling_list))]
+    maxx = [max(col) for col in list(zip(*profiling_list))]
+
+    print(
+        ", ".join(
+            ["{}={}".format(pair[0], pair[1]) for pair in zip(profiling_header, avg)]
+        )
+    )
+    print(
+        ", ".join(
+            ["{}={}".format(pair[0], pair[1]) for pair in zip(profiling_header, maxx)]
+        )
+    )
+
+
 def main():
     kb = None
     fz = None
@@ -41,8 +60,19 @@ def main():
                 Controller(fz, kb)
                 kb.start()
 
+        if PROFILING:
+            profiling_header = list(fz.qmanager._queues.keys())
+            profiling_list = []
+
         for res in fz:
-            pass
+            if PROFILING:
+                profiling = list(fz.qmanager.get_stats().items())
+                profiling_list.append([pair[1] for pair in profiling])
+            else:
+                pass
+
+        if PROFILING:
+            print_profiling(profiling_list, profiling_header)
     except FuzzException as e:
         warnings.warn("Fatal exception: {}".format(str(e)))
     except KeyboardInterrupt:
@@ -71,7 +101,7 @@ def main_filter():
     from .api import fuzz
 
     try:
-        short_opts = "hvce:z:f:w:o:"
+        short_opts = "hvce:z:f:w:o:A"
         long_opts = [
             "efield=",
             "ee=",
@@ -100,6 +130,8 @@ def main_filter():
             "script-help=",
             "script=",
             "script-args=",
+            "prev",
+            "AA",
         ]
         session_options = CLParser(
             sys.argv,
@@ -126,7 +158,9 @@ def main_filter():
             if payload_type == FuzzWordType.WORD:
                 print(res.description)
             elif payload_type == FuzzWordType.FUZZRES and session_options["show_field"]:
-                print(res._field())
+                field_to_print = res._field("\n")
+                if field_to_print:
+                    print(field_to_print)
 
     except KeyboardInterrupt:
         pass
@@ -143,28 +177,39 @@ def main_encoder():
         print("\n\twfencode --help This help")
         print("\twfencode -d decoder_name string_to_decode")
         print("\twfencode -e encoder_name string_to_encode")
+        print("\twfencode -e encoder_name -i <<stdin>>")
         print()
 
     from .api import encode, decode
     import getopt
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "he:d:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hie:d:", ["help"])
     except getopt.GetoptError as err:
         warnings.warn(str(err))
         usage()
         sys.exit(2)
 
-    if len(args) == 0:
+    arg_keys = [i for i, j in opts]
+
+    if len(args) == 0 and "-i" not in arg_keys:
         usage()
         sys.exit()
 
     try:
         for o, value in opts:
             if o == "-e":
-                print((encode(value, args[0])))
+                if "-i" in arg_keys:
+                    for std in sys.stdin:
+                        print(encode(value, std.strip()))
+                else:
+                    print(encode(value, args[0]))
             elif o == "-d":
-                print((decode(value, args[0])))
+                if "-i" in arg_keys:
+                    for std in sys.stdin:
+                        print(decode(value, std.strip()))
+                else:
+                    print(decode(value, args[0]))
             elif o in ("-h", "--help"):
                 usage()
                 sys.exit()
@@ -182,6 +227,8 @@ def main_encoder():
         )
     except FuzzException as e:
         warnings.warn(("\nFatal exception: %s" % str(e)))
+    except Exception as e:
+        warnings.warn(("Unhandled exception: %s" % str(e)))
 
 
 def main_gui():

@@ -146,7 +146,7 @@ class Response:
         tp = TextParser()
         tp.setSource("string", rawheader)
 
-        tp.readUntil(r"(HTTP\S*) ([0-9]+)")
+        tp.readUntil(r"(HTTP/[0-9.]+) ([0-9]+)")
         while True:
             while True:
                 try:
@@ -162,7 +162,7 @@ class Response:
                 if self.code != "100":
                     break
                 else:
-                    tp.readUntil(r"(HTTP\S*) ([0-9]+)")
+                    tp.readUntil(r"(HTTP/[0-9.]+) ([0-9]+)")
 
             self.code = int(self.code)
 
@@ -176,7 +176,7 @@ class Response:
             # curl sometimes sends two headers when using follow, 302 and the final header
             # also when using proxies
             tp.readLine()
-            if not tp.search(r"(HTTP\S*) ([0-9]+)"):
+            if not tp.search(r"(HTTP/[0-9.]+) ([0-9]+)"):
                 break
             else:
                 self._headers = []

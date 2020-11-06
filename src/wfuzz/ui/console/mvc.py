@@ -7,7 +7,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
-from wfuzz.fuzzobjects import FuzzWordType, FuzzType
+from wfuzz.fuzzobjects import FuzzWordType, FuzzType, FuzzPlugin
 
 from .common import exec_banner, Term
 from .getch import _Getch
@@ -82,6 +82,7 @@ class Controller:
         self.fuzzer = fuzzer
         self.view = view
         self.__paused = False
+        self.stats = fuzzer.options.get("compiled_stats")
 
         self.view.dispatcher.subscribe(self.on_help, "?")
         self.view.dispatcher.subscribe(self.on_pause, "p")
@@ -91,8 +92,8 @@ class Controller:
     # dynamic keyboard bindings
     def on_exit(self, **event):
         self.fuzzer.cancel_job()
-        self.fuzzer.genReq.stats.mark_end()
         self.view.cancel_job()
+        self.fuzzer.options.close()
 
     def on_help(self, **event):
         print(usage)
@@ -101,61 +102,57 @@ class Controller:
         self.__paused = not self.__paused
         if self.__paused:
             self.fuzzer.pause_job()
-
-            if self._debug:
-                print("\n=============== Paused ==================")
-                stats = self.fuzzer.stats()
-                for k, v in list(stats.items()):
-                    print("%s: %s" % (k, v))
-                print("\n=========================================")
         else:
             self.fuzzer.resume_job()
 
     def on_stats(self, **event):
         if self._debug:
-            print("\n=============== Paused ==================")
-            stats = self.fuzzer.stats()
-            for k, v in list(stats.items()):
-                print("%s: %s" % (k, v))
-            print("\n=========================================")
+            self.show_debug_stats()
         else:
-            pending = (
-                self.fuzzer.genReq.stats.total_req
-                - self.fuzzer.genReq.stats.processed()
-            )
-            summary = self.fuzzer.genReq.stats
-            summary.mark_end()
-            print("\nTotal requests: %s\r" % str(summary.total_req))
-            print("Pending requests: %s\r" % str(pending))
+            self.show_stats()
 
-            if summary.backfeed() > 0:
-                print(
-                    "Processed Requests: %s (%d + %d)\r"
-                    % (
-                        str(summary.processed())[:8],
-                        (summary.processed() - summary.backfeed()),
-                        summary.backfeed(),
-                    )
+    def show_debug_stats(self):
+        print("\n=============== Paused ==================")
+        stats = self.fuzzer.stats()
+        for k, v in list(stats.items()):
+            print("%s: %s" % (k, v))
+        print("\n=========================================")
+
+    def show_stats(self):
+        pending = self.stats.total_req - self.stats.processed()
+        summary = self.stats
+        summary.mark_end()
+        print("\nTotal requests: %s\r" % str(summary.total_req))
+        print("Pending requests: %s\r" % str(pending))
+
+        if summary.backfeed() > 0:
+            print(
+                "Processed Requests: %s (%d + %d)\r"
+                % (
+                    str(summary.processed())[:8],
+                    (summary.processed() - summary.backfeed()),
+                    summary.backfeed(),
                 )
-            else:
-                print("Processed Requests: %s\r" % (str(summary.processed())[:8]))
-            print("Filtered Requests: %s\r" % (str(summary.filtered())[:8]))
-            req_sec = (
-                summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
             )
-            print("Total time: %s\r" % str(summary.totaltime)[:8])
-            if req_sec > 0:
-                print("Requests/sec.: %s\r" % str(req_sec)[:8])
-                eta = pending / req_sec
-                if eta > 60:
-                    print("ET left min.: %s\r\n" % str(eta / 60)[:8])
-                else:
-                    print("ET left sec.: %s\r\n" % str(eta)[:8])
+        else:
+            print("Processed Requests: %s\r" % (str(summary.processed())[:8]))
+        print("Filtered Requests: %s\r" % (str(summary.filtered())[:8]))
+        req_sec = (
+            summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
+        )
+        print("Total time: %s\r" % str(summary.totaltime)[:8])
+        if req_sec > 0:
+            print("Requests/sec.: %s\r" % str(req_sec)[:8])
+            eta = pending / req_sec
+            if eta > 60:
+                print("ET left min.: %s\r\n" % str(eta / 60)[:8])
+            else:
+                print("ET left sec.: %s\r\n" % str(eta)[:8])
 
 
 class View:
-    widths = [10, 8, 6, 6, 9, getTerminalSize()[0] - 65]
-    verbose_widths = [10, 10, 8, 6, 6, 9, 30, 30, getTerminalSize()[0] - 145]
+    widths = [10, 8, 6, 8, 9, getTerminalSize()[0] - 65]
+    verbose_widths = [10, 10, 8, 8, 6, 9, 30, 30, getTerminalSize()[0] - 145]
 
     def __init__(self, session_options):
         self.colour = session_options["colour"]
@@ -298,7 +295,7 @@ class View:
         else:
             self._print(res)
 
-        if res.item_type == FuzzType.RESULT:
+        if not res.discarded:
             if (
                 self.previous
                 and res.payload_man
@@ -311,8 +308,16 @@ class View:
                     self._print(prev_res, print_nres=False)
 
             if res.plugins_res:
-                for i in res.plugins_res:
-                    sys.stdout.write(" |_  %s\r" % i.issue)
+                for plugin_res in res.plugins_res:
+                    if not plugin_res.is_visible(self.verbose):
+                        continue
+
+                    sys.stdout.write(
+                        " |_  {} {}\r".format(
+                            plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                        )
+                    )
+                    sys.stdout.write(" |_  %s\r" % plugin_res.issue)
                     sys.stdout.write("\n\r")
 
             self.printed_lines = 0

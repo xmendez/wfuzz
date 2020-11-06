@@ -14,7 +14,7 @@ class npm_deps(BasePlugin):
     description = (
         "Extracts npm packages by using regex pattern from the HTTP response and prints it",
     )
-    category = ["default"]
+    category = ["info"]
     priority = 99
 
     parameters = ()
@@ -42,8 +42,8 @@ class npm_deps(BasePlugin):
     def process(self, fuzzresult):
         if self.match_dev:
             for name, version in self.REGEX_PATT.findall(self.match_dev.group(1)):
-                self.add_result(name)
+                self.add_result("dependency", "npm dependency", name)
 
         if self.match:
             for name, version in self.REGEX_PATT.findall(self.match.group(1)):
-                self.add_result(name)
+                self.add_result("dev_dependency", "npm dev dependency", name)

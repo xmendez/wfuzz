@@ -48,4 +48,4 @@ class screenshot(BasePlugin):
                 "--print-backgrounds=on",
             ]
         )
-        self.add_result("Screnshot taken, output at %s" % filename)
+        self.add_result("file", "Screnshot taken", filename)

@@ -26,7 +26,7 @@ You can either clone the public repository::
 
     $ git clone git://github.com/xmendez/wfuzz.git
 
-Or download last `release <https://github.com/xmendez/wfuzz/releases/latest>_`.
+Or download last `release <https://github.com/xmendez/wfuzz/releases/latest>`_.
 
 Once you have a copy of the source, you can embed it in your own Python
 package, or install it into your site-packages easily::
@@ -90,6 +90,16 @@ If you get errors such as::
     Reason: image not found. Wfuzz needs pycurl to run. Pycurl could be installed using the following command:
     
 Run brew update && brew upgrade
+
+If you get an error such as::
+
+    ImportError: pycurl: libcurl link-time ssl backends (secure-transport, openssl) do not include compile-time ssl backend (none/other)
+
+That might indicate that pycurl was reinstalled and not linked to the SSL correctly. Uninstall pycurl as follows::
+
+    $ pip uninstall pycurl
+
+and re-install pycurl starting from step 4 above.
 
 Pycurl on Windows
 -----------------

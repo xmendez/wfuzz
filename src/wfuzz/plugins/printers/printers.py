@@ -5,6 +5,7 @@ from xml.dom import minidom
 
 from wfuzz.externals.moduleman.plugin import moduleman_plugin
 from wfuzz.plugin_api.base import BasePrinter
+from wfuzz.exception import FuzzExceptPluginBadParams
 
 
 @moduleman_plugin
@@ -285,8 +286,13 @@ class raw(BasePrinter):
             )
         )
 
-        for i in res.plugins_res:
-            self.f.write("  |_ %s\n" % i.issue)
+        for plugin_res in res.plugins_res:
+            if plugin_res.is_visible(self.verbose):
+                self.f.write(
+                    " |_  {} {}\n".format(
+                        plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                    )
+                )
 
     def _print(self, res):
         if res.exception:
@@ -299,8 +305,13 @@ class raw(BasePrinter):
             % (res.lines, res.words, res.chars, res.description)
         )
 
-        for i in res.plugins_res:
-            self.f.write("  |_ %s\n" % i.issue)
+        for plugin_res in res.plugins_res:
+            if plugin_res.is_visible(self.verbose):
+                self.f.write(
+                    " |_  {} {}\n".format(
+                        plugin_res.issue, plugin_res.data if plugin_res.data else ""
+                    )
+                )
 
     def result(self, res):
         if self.verbose:
@@ -330,6 +341,35 @@ class raw(BasePrinter):
                 summary.processed() / summary.totaltime if summary.totaltime > 0 else 0
             )[:8]
         )
+
+
+@moduleman_plugin
+class field(BasePrinter):
+    name = "field"
+    author = ("Xavi Mendez (@xmendez)",)
+    version = "0.1"
+    summary = "Raw output format only showing the specified field expression. No header or footer."
+    category = ["default"]
+    priority = 99
+
+    def __init__(self, output):
+        BasePrinter.__init__(self, output)
+
+    def header(self, summary):
+        pass
+
+    def result(self, res):
+        if res._fields:
+            to_print = res._field("\n")
+            if to_print:
+                print(to_print)
+        else:
+            raise FuzzExceptPluginBadParams(
+                "You need to supply  valid --field or --efield expression for unsing this printer."
+            )
+
+    def footer(self, summary):
+        pass
 
 
 @moduleman_plugin

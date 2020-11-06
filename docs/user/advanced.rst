@@ -466,6 +466,7 @@ value|replace('what', 'with')    value|r('what', 'with') Returns value replacing
 value|unique()                   value|u()               Returns True if a value is unique.
 value|startswith('value')        value|sw('value')       Returns true if the value string starts with param
 value|gregex('expression')       value|gre('exp')        Returns first regex group that matches in value
+value|diff(expression)                                   Returns diff comparison between value and expression
 ================================ ======================= =============================================
 
 * When a FuzzResult is available, you could perform runtime introspection of the objects using the following symbols
@@ -482,7 +483,7 @@ lines        l              Wfuzz's result HTTP response lines
 words        w              Wfuzz's result HTTP response words
 md5                         Wfuzz's result HTTP response md5 hash
 history      r              Wfuzz's result associated FuzzRequest object
-plugins                     Wfuzz's results associated plugins result in the form of {'plugin id': ['result']}
+plugins                     Wfuzz's plugins scan results 
 ============ ============== =============================================
 
 FuzzRequest object's attribute (you need to use the r. prefix) such as:
@@ -609,7 +610,7 @@ The payload to filter, specified by the -z switch must precede --slice command l
 
 The specified expression must return a boolean value, an example, using the unique operator is shown below::
 
-    $ wfuzz-cli.py -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
+    $ wfuzz -z list --zD one-two-one-one --slice "FUZZ|u()" http://localhost:9000/FUZZ
 
     ********************************************************
     * Wfuzz 2.2 - The Web Fuzzer                           *
@@ -632,6 +633,37 @@ The specified expression must return a boolean value, an example, using the uniq
     
 It is worth noting that, the type of payload dictates the available language symbols. For example, a dictionary payload such as in the example
 above does not have a full FuzzResult object context and therefore object fields cannot be used.
+
+When slicing a FuzzResult payload, you are accessing the FuzzResult directly, therefore given a previous session such as::
+
+    $ wfuzz -z range --zD 0-0 -u http://www.google.com/FUZZ --oF /tmp/test1
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "0"                                                                                                                                                 
+    ...
+
+this can be used to filter the payload::
+
+    $ wfpayload -z wfuzzp --zD /tmp/test1 --slice "c=404"
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "0"                                                                                                                                                 
+    ...
+
+    $ wfpayload -z wfuzzp --zD /tmp/test1 --slice "c!=404"
+    ...
+    wfuzz.py:168: UserWarning:Fatal exception: Empty dictionary! Please check payload or filter.
+    ...
+
+In fact, in this situation, FUZZ refers to the previous result (if any)::
+
+    $ wfuzz -z wfuzzp --zD /tmp/test1 -u FUZZ --oF /tmp/test2
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "http://www.google.com/0"                                                                                                                           
+    ...
+
+    $ wfpayload -z wfuzzp --zD /tmp/test2 --efield r.headers.response.date --efield FUZZ[r.headers.response.date]
+    ...
+    000000001:   404        11 L     72 W       1558 Ch     "http://www.google.com/0 | Mon, 02 Nov 2020 19:29:03 GMT | Mon, 02 Nov 2020 19:27:27 GMT"                                                           
+    ...
 
 Re-writing a payload
 """""""
@@ -739,6 +771,12 @@ The above command will generate HTTP requests such as the following::
     Connection: close
 
 You can filter the payload using the filter grammar as described before.
+
+Reutilising previous results
+--------------------------------------
+
+Plugins results contain a treasure trove of data. Wfuzz payloads and object introspection (explained in the filter grammar section) exposes a Python object interface to plugins results.
+This allows you to perform semi-automatic tests based on plugins results or compile a set of results to be used in another tool.
 
 Request mangling
 ^^^^^^^^^

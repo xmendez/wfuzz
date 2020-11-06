@@ -1,4 +1,5 @@
 from threading import Lock
+import difflib
 
 
 class MyCounter:
@@ -20,3 +21,15 @@ class MyCounter:
     def __call__(self):
         with self._mutex:
             return self._count
+
+
+def diff(param1, param2):
+    delta = difflib.unified_diff(
+        str(param1).splitlines(False),
+        str(param2).splitlines(False),
+        fromfile="prev",
+        tofile="current",
+        n=0,
+    )
+
+    return "\n".join(delta)

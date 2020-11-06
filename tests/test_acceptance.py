@@ -118,7 +118,7 @@ savedsession_tests = [
     ),
     # set values
     (
-        "test_desc_concat_number",
+        "test_desc_concat_number_slice",
         "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL),
         "-z wfuzzp,$$PREVFILE$$ --slice r.c:=302 FUZZ[url]FUZZ[c]",
         ["http://localhost:9000/1 - 302"],
@@ -178,7 +178,7 @@ savedsession_tests = [
     (
         "test_desc_assign_fuzz_symbol_op",
         "-z range,1-1 {}/FUZZ".format(HTTPBIN_URL),
-        "-z wfuzzp,$$PREVFILE$$ --slice FUZZ[r.url]:=FUZZ[r.url]|replace('1','2') FUZZ[url]",
+        "-z wfuzzp,$$PREVFILE$$ --slice r.url:=r.url|replace('1','2') FUZZ[url]",
         ["http://localhost:9000/2"],
         None,
     ),

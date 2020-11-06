@@ -1,6 +1,6 @@
 from .exception import FuzzExceptNoPluginError, FuzzExceptBadOptions
 from .facade import Facade
-from .filters.ppfilter import FuzzResFilterSlice
+from .filters.ppfilter import FuzzResFilterSlice, FuzzResFilter
 from .fuzzobjects import FuzzWord, FuzzWordType
 
 
@@ -119,7 +119,8 @@ class WrapperIt(BaseDictionary):
 
 class SliceIt(BaseDictionary):
     def __init__(self, payload, slicestr):
-        self.ffilter = FuzzResFilterSlice(filter_string=slicestr)
+        self.ffilter = FuzzResFilter(filter_string=slicestr)
+        self.ffilter_slice = FuzzResFilterSlice(filter_string=slicestr)
         self.payload = payload
 
     def count(self):
@@ -128,10 +129,18 @@ class SliceIt(BaseDictionary):
     def get_type(self):
         return self.payload.get_type()
 
+    def _get_filtered_value(self, item):
+        if item.type == FuzzWordType.FUZZRES:
+            filter_ret = self.ffilter.is_visible(item.content)
+        else:
+            filter_ret = self.ffilter_slice.is_visible(item.content)
+
+        return filter_ret
+
     def next_word(self):
         # can be refactored using the walrus operator in python 3.8
         item = next(self.payload)
-        filter_ret = self.ffilter.is_visible(item.content)
+        filter_ret = self._get_filtered_value(item)
 
         if not isinstance(filter_ret, bool) and item.type == FuzzWordType.FUZZRES:
             raise FuzzExceptBadOptions(
@@ -140,7 +149,7 @@ class SliceIt(BaseDictionary):
 
         while isinstance(filter_ret, bool) and not filter_ret:
             item = next(self.payload)
-            filter_ret = self.ffilter.is_visible(item.content)
+            filter_ret = self._get_filtered_value(item)
 
         if not isinstance(filter_ret, bool):
             return FuzzWord(filter_ret, item.type)

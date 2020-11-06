@@ -1,4 +1,5 @@
 from collections.abc import MutableMapping
+from itertools import chain
 
 
 class CaseInsensitiveDict(MutableMapping):
@@ -65,3 +66,11 @@ class DotDict(CaseInsensitiveDict):
             return super(DotDict, self).__getitem__(key)
         except KeyError:
             return DotDict({})
+
+    def __str__(self):
+        return "\n".join(
+            [
+                "{}{} {}".format(k, "->" if isinstance(v, DotDict) else ":", v)
+                for k, v in self.items()
+            ]
+        )

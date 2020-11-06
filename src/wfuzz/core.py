@@ -30,11 +30,12 @@ class Fuzzer(object):
         # genReq ---> seed_queue -> [slice_queue] -> http_queue/dryrun -> [round_robin -> plugins_queue] * N
         # -> [recursive_queue -> routing_queue] -> [filter_queue] -> [save_queue] -> [printer_queue] ---> results
 
+        self.options = options
         self.qmanager = QueueManager(options)
         self.results_queue = MyPriorityQueue()
 
         if options["allvars"]:
-            self.qmanager.add("allvars_queue", AllVarQ(options))
+            self.qmanager.add("seed_queue", AllVarQ(options))
         else:
             self.qmanager.add("seed_queue", SeedQ(options))
 
@@ -56,8 +57,12 @@ class Fuzzer(object):
         if options.get("script"):
             self.qmanager.add("plugins_queue", JobQ(options))
 
-        if options.get("script") or options.get("rlevel") > 0:
+        if options.get("rlevel") > 0:
             self.qmanager.add("recursive_queue", RecursiveQ(options))
+
+        if (options.get("script") or options.get("rlevel") > 0) and options.get(
+            "transport"
+        ) == "http":
             rq = RoutingQ(
                 options,
                 {
@@ -115,7 +120,7 @@ class Fuzzer(object):
     def stats(self):
         return dict(
             list(self.qmanager.get_stats().items())
-            + list(self.qmanager["transport_queue"].job_stats().items())
+            + list(self.qmanager["transport_queue"].http_pool.job_stats().items())
             + list(self.options.stats.get_stats().items())
         )
 

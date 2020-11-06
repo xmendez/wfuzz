@@ -22,7 +22,7 @@ class cvs_extractor(BasePlugin, DiscoveryPluginMixin):
     version = "0.1"
     summary = "Parses CVS/Entries file."
     description = ("Parses CVS/Entries file and enqueues found entries",)
-    category = ["default", "active", "discovery"]
+    category = ["active", "discovery"]
     priority = 99
     parameters = ()
 
