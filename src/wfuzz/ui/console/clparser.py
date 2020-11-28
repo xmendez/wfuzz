@@ -346,7 +346,7 @@ class CLParser:
 
         if "-s" in list(optsd.keys()) and "-t" in list(optsd.keys()):
             warnings.warn(
-                "When using delayed requests concurrent requests are limited to 1, therefore the -s switch will be ignored."
+                "When using delayed requests concurrent requests are limited to 1, therefore the -t switch will be ignored."
             )
 
     def _parse_filters(self, optsd, filter_params):
