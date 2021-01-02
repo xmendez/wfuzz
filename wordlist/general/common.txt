@@ -1,3 +1,6 @@
+.git
+.gitignore
+.well-known
 @
 00
 01
