@@ -10,7 +10,7 @@ iniconfig==1.0.1          # via pytest
 more-itertools==8.5.0     # via pytest
 packaging==20.4           # via pytest
 pluggy==0.13.1            # via pytest
-py==1.9.0                 # via pytest
+py==1.10.0                 # via pytest
 pycurl==7.43.0.6          # via wfuzz (setup.py)
 pyparsing==2.4.7          # via packaging
 pytest==6.0.1             # via wfuzz (setup.py)
