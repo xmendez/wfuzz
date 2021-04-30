@@ -35,6 +35,7 @@ install_requires = [
     'six',
     'configparser;python_version<"3.5"',
     'chardet',
+    'setuptools',
 ]
 
 
