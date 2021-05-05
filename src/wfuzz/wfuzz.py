@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import warnings
 
@@ -17,7 +18,7 @@ from .fuzzobjects import FuzzWordType
 
 PROFILING = False
 
-
+# create def print_profiling(profiling_list, profiling_header):
 def print_profiling(profiling_list, profiling_header):
     avg = [float(sum(col)) / len(col) for col in list(zip(*profiling_list))]
     maxx = [max(col) for col in list(zip(*profiling_list))]
@@ -33,7 +34,7 @@ def print_profiling(profiling_list, profiling_header):
         )
     )
 
-
+# create def main():
 def main():
     kb = None
     fz = None
@@ -92,7 +93,7 @@ def main():
             kb.cancel_job()
         Facade().sett.save()
 
-
+# create def main_filter():
 def main_filter():
     def usage():
         print(help_banner2)
@@ -169,7 +170,7 @@ def main_filter():
     except Exception as e:
         warnings.warn(("Unhandled exception: %s" % str(e)))
 
-
+# create def main_encoder():
 def main_encoder():
     def usage():
         print(help_banner2)
@@ -230,7 +231,7 @@ def main_encoder():
     except Exception as e:
         warnings.warn(("Unhandled exception: %s" % str(e)))
 
-
+# create def main_gui():
 def main_gui():
     import wx
     from .ui.gui.guicontrols import WfuzzFrame
