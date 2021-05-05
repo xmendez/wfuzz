@@ -1,3 +1,8 @@
+# options.py
+
+import os
+import sys
+
 from .exception import (
     FuzzExceptBadRecipe,
     FuzzExceptBadOptions,
