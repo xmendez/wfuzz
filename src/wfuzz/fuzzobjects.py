@@ -421,7 +421,7 @@ class FuzzPlugin(FuzzItem):
         if verbose and self.itype == self.SUMMARY_ITYPE:
             return False
 
-        if not verbose and self.severity >= self.MIN_VERBOSE:
+        if not verbose and self.severity < self.MIN_VERBOSE:
             return False
 
         return True
