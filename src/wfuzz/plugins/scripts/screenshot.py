@@ -39,7 +39,7 @@ class screenshot(BasePlugin):
             + ".jpg",
         )
 
-        subprocess.call(
+        subprocess.check_call(
             [
                 "cutycapt",
                 "--url=%s" % pipes.quote(fuzzresult.url),
