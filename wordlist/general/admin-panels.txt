@@ -86,6 +86,8 @@ controlpanel.html
 controlpanel.php
 cp.html
 cp.php
+guest.html
+guest.php
 home.html
 home.php
 instadmin/
