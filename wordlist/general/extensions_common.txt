@@ -6,6 +6,7 @@
 .cfm
 .cgi
 .com
+.css
 .dll
 .exe
 .htm
