@@ -2,9 +2,14 @@
 123456
 1234567
 12345678
+123456789
+1234567890
+0987654321
 123asdf
+access
 Admin
 admin
+Administrator
 administrator
 asdf123
 backup
@@ -23,6 +28,7 @@ ftp
 gateway
 guest
 lotus
+matrix
 money
 notes
 office
