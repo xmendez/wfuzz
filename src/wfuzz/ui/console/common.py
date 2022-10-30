@@ -68,7 +68,7 @@ usage = """%s\n\nOptions:
 \t                            Where type could be SOCKS4,SOCKS5 or HTTP if omitted.
 \t
 \t-t N                      : Specify the number of concurrent connections (10 default)
-\t-s N                      : Specify time delay between requests (0 default)
+\t-s N                      : Specify time delay between requests (0 second default)
 \t-R depth                  : Recursive path discovery being depth the maximum recursion level (0 default)
 \t-D depth                  : Maximum link depth level (4 default)
 \t-L, --follow              : Follow HTTP redirections
