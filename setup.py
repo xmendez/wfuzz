@@ -31,7 +31,7 @@ dev_requires = [
 install_requires = [
     'pycurl',
     'pyparsing<2.4.2;python_version<="3.4"',
-    'pyparsing>=2.4*;python_version>="3.5"',
+    'pyparsing>=2.4.2;python_version>="3.5"',
     'six',
     'configparser;python_version<"3.5"',
     'chardet',
