@@ -6,7 +6,6 @@
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/pyversions/wfuzz.svg"></a>
 <a href="https://codecov.io/github/xmendez/wfuzz"><img src="https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master"></a>
 
-
 # Wfuzz - The Web Fuzzer
 
 Wfuzz has been created to facilitate the task in web applications assessments and it is based on a simple concept: it replaces any reference to the FUZZ keyword by the value of a given payload.
@@ -23,27 +22,26 @@ Wfuzz is more than a web content scanner:
 
 * Wfuzz exposes a simple language interface to the previous HTTP requests/responses performed using Wfuzz or other tools, such as Burp. This allows you to perform manual and semi-automatic tests with full context and understanding of your actions, without relying on a web application scanner underlying implementation.
 
-
 It was created to facilitate the task in web applications assessments, it's a tool by pentesters for pentesters ;)
 
-## Installation 
+## Installation
 
 To install WFuzz, simply use pip:
 
-```
+```bash
 pip install wfuzz
 ```
 
 To run Wfuzz from a docker image, run:
 
-```
-$ docker run -v $(pwd)/wordlist:/wordlist/ -it ghcr.io/xmendez/wfuzz wfuzz
+```bash
+docker run -v $(pwd)/wordlist:/wordlist/ -it ghcr.io/xmendez/wfuzz wfuzz
 ```
 
 ## Documentation
 
-Documentation is available at http://wfuzz.readthedocs.io
+Documentation is available at <http://wfuzz.readthedocs.io>
 
-## Download 
+## Download
 
-Check github releases. Latest is available at https://github.com/xmendez/wfuzz/releases/latest
+Check github releases. Latest is available at <https://github.com/xmendez/wfuzz/releases/latest>

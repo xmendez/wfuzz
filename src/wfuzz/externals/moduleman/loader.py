@@ -1,7 +1,16 @@
 import inspect
 import logging
-import imp
 import os.path
+
+try:
+    from imp import find_module
+except ImportError:
+    from importlib.util import find_spec as find_module
+try:
+    from imp import load_module
+except ImportError:
+    from importlib.util import module_from_spec as load_module
+# import imp
 
 
 class IModuleLoader:
@@ -58,8 +67,8 @@ class FileLoader(IModuleLoader):
         module = None
 
         try:
-            exten_file, filename, description = imp.find_module(fn, [dirname])
-            module = imp.load_module(fn, exten_file, filename, description)
+            exten_file, filename, description = find_module(fn, [dirname])
+            module = load_module(fn, exten_file, filename, description)
         except ImportError as msg:
             self.__logger.critical(
                 "__load_py_from_file. Filename: %s Exception, msg=%s" % (filename, msg)
