@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import pkg_resources
+# Use importlib.resources (Python 3.7+) or importlib_resources for older Python 3.
 
 from chardet.universaldetector import UniversalDetector
 import chardet
@@ -102,7 +103,6 @@ class FileDetOpener:
         last_error = None
 
         while decoded_line is None:
-
             while self.det_encoding is None:
                 detect_encoding = self.detect_encoding().get("encoding", "utf-8")
                 self.det_encoding = (
