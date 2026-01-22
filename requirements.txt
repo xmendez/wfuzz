@@ -5,7 +5,7 @@
 #    pip-compile --output-file=requirements.txt setup.py
 #
 attrs==20.1.0             # via pytest
-chardet==3.0.4            # via wfuzz (setup.py)
+chardet==5.1.0            # via wfuzz (setup.py)
 iniconfig==1.0.1          # via pytest
 more-itertools==8.5.0     # via pytest
 packaging==20.4           # via pytest
