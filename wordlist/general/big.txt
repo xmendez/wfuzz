@@ -1740,6 +1740,7 @@ memphis
 menu
 meow
 mercedes
+mercure
 mercury
 merlin
 message
@@ -2396,7 +2397,7 @@ scuba1
 sean
 search
 seattle
-secció
+secciÃ³
 seccio
 seccion
 secret
