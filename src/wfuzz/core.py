@@ -1,3 +1,8 @@
+# core.py
+
+import os 
+import sys
+
 from .fuzzobjects import FuzzType
 
 from .myqueues import MyPriorityQueue, QueueManager
