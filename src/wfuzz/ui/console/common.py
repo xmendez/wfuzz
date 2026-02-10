@@ -127,6 +127,9 @@ verbose_usage = """%s\n\nOptions:
 \t-Z                        : Scan mode (Connection errors will be ignored).
 \t--req-delay N             : Sets the maximum time in seconds the request is allowed to take (CURLOPT_TIMEOUT). Default 90.
 \t--conn-delay N            : Sets the maximum time in seconds the connection phase to the server to take (CURLOPT_CONNECTTIMEOUT). Default 90.
+\t--clientcert <filename>   : Sets the certificate file path to use a client certificate for mutual TLS authentication
+\t--clientcertkey <filename>: Sets the key file path for a mutual TLS authentication scenario
+\t--cacert <filename>       : Sets the cacert file path to verify host's server certificate
 \t
 \t-A, --AA, --AAA           : Alias for -v -c and --script=default,verbose,discover respectively
 \t--no-cache                : Disable plugins cache. Every request will be scanned.
