@@ -7,14 +7,14 @@ from wfuzz.fuzzobjects import FuzzWordType
 @moduleman_plugin
 class permutation(BasePayload):
     name = "permutation"
-    author = ("Xavi Mendez (@xmendez)",)
-    version = "0.1"
+    author = ("Xavi Mendez (@xmendez)", "@n0kovo@infosec.exchange")
+    version = "0.2"
     description = ()
     summary = "Returns permutations of the given charset and length."
     category = ["default"]
     priority = 99
 
-    parameters = (("ch", "", True, "Charset and len to permute in the form of abc-2."),)
+    parameters = (("ch", "", True, "Charset and min/max len to permute, in the form of abc-1-8."),)
 
     default_parameter = "ch"
 
@@ -25,15 +25,16 @@ class permutation(BasePayload):
         try:
             ran = self.params["ch"].split("-")
             self.charset = ran[0]
-            self.width = int(ran[1])
+            self.min_length = int(ran[1])
+            self.max_length = int(ran[2])
         except ValueError:
-            raise FuzzExceptBadOptions('Bad range format (eg. "0-ffa")')
+            raise FuzzExceptBadOptions('Bad range format (eg. "1-4-ffa")')
 
         pset = []
         for x in self.charset:
             pset.append(x)
 
-        words = self.xcombinations(pset, self.width)
+        words = self.xcombinations(pset, self.min_length, self.max_length)
         self.lista = []
         for x in words:
             self.lista.append("".join(x))
@@ -53,10 +54,23 @@ class permutation(BasePayload):
         else:
             raise StopIteration
 
-    def xcombinations(self, items, n):
-        if n == 0:
-            yield []
-        else:
-            for i in range(len(items)):
-                for cc in self.xcombinations(items[:i] + items[i:], n - 1):
-                    yield [items[i]] + cc
+    def xcombinations(self, charset, min_length, max_length):
+        def product(pool, repeat):
+            n = len(pool)
+            indices = [0] * repeat
+            current_perm = [pool[0]] * repeat
+            while True:
+                yield ''.join(current_perm)
+                for i in reversed(range(repeat)):
+                    indices[i] += 1
+                    if indices[i] < n:
+                        current_perm[i] = pool[indices[i]]
+                        break
+                    indices[i] = 0
+                    current_perm[i] = pool[0]
+                else:
+                    return
+
+        for length in range(min_length, max_length + 1):
+            for perm in product(charset, length):
+                yield perm
