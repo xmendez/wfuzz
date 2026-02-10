@@ -206,6 +206,7 @@ antiguo
 anvils
 anything
 apache
+api
 aplicacion
 apollo
 apollo13
@@ -869,6 +870,8 @@ doctor
 document
 documentacio
 documentacion
+documentation
+dokumentation
 documento
 documentos
 documents
@@ -1052,6 +1055,7 @@ fidelity
 field
 file
 files
+find
 finestra
 finite
 fiona
@@ -1318,6 +1322,7 @@ htdocs
 htm
 html
 htmls
+hub
 hunter
 hutchins
 hydrogen
@@ -1879,6 +1884,7 @@ new
 newcourt
 newpass
 news
+newsletter
 newton
 newuser
 newyork
@@ -1910,6 +1916,7 @@ notused
 nou
 novetats
 noxious
+npm
 nss
 nuclear
 nucleo
@@ -2210,12 +2217,15 @@ python
 q1w2e3
 quality
 quebec
+queue
 query
 quest
 qwaszx
 qwert
 qwerty
 qwerty12
+re
+rr
 rabbit
 racerx
 rachel
@@ -2270,6 +2280,8 @@ renee
 repaso
 reports
 republic
+require
+requires
 requisite
 research
 reseller
@@ -2372,6 +2384,8 @@ save
 saved
 saxon
 sbdc
+scan
+scanner
 scamper
 scarlet
 scarlett
@@ -2396,7 +2410,7 @@ scuba1
 sean
 search
 seattle
-secció
+secciÃ³
 seccio
 seccion
 secret
@@ -2474,6 +2488,7 @@ shtml
 shuttle
 sierra
 signature
+signup
 silver
 simba
 simon
@@ -2606,6 +2621,7 @@ stuart
 student
 stupid
 stuttgart
+styles
 stylesheet
 stylesheets
 subir
@@ -2863,6 +2879,8 @@ velvet
 ventana
 venus
 ver
+verify
+verification
 vermont
 veronica
 vertigo
