@@ -4,7 +4,7 @@ from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.helpers.obj_dyn import rgetattr
-import xml.etree.cElementTree as ET
+import defusedxml.etree.cElementTree as ET
 from base64 import b64decode
 
 
