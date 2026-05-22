@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-import pkg_resources
+import pkgutil
 
 from chardet.universaldetector import UniversalDetector
 import chardet
@@ -13,14 +13,18 @@ def get_filter_help_file():
     FILTER_HELP_FILE = "advanced.rst"
     FILTER_HELP_DEV_FILE = "../../../docs/user/advanced.rst"
 
-    filter_help_text = None
     try:
-        fname = pkg_resources.resource_filename("wfuzz", FILTER_HELP_FILE)
-        filter_help_text = open(fname).read()
-    except IOError:
-        filter_help_text = open(get_path(FILTER_HELP_DEV_FILE)).read()
+        filter_help_text = pkgutil.get_data("wfuzz", FILTER_HELP_FILE)
+    except (IOError, OSError):
+        filter_help_text = None
 
-    return filter_help_text
+    if filter_help_text is not None:
+        if not isinstance(filter_help_text, str):
+            filter_help_text = filter_help_text.decode("utf-8")
+        return filter_help_text
+
+    with open(get_path(FILTER_HELP_DEV_FILE)) as filter_help:
+        return filter_help.read()
 
 
 def create_dir(dir_path):
