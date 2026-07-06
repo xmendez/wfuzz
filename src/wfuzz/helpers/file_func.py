@@ -16,9 +16,11 @@ def get_filter_help_file():
     filter_help_text = None
     try:
         fname = pkg_resources.resource_filename("wfuzz", FILTER_HELP_FILE)
-        filter_help_text = open(fname).read()
+        with open(fname, 'r', encoding='utf-8') as f:
+            filter_help_text = f.read()
     except IOError:
-        filter_help_text = open(get_path(FILTER_HELP_DEV_FILE)).read()
+        with open(get_path(FILTER_HELP_DEV_FILE), 'r', encoding='utf-8') as f:
+            filter_help_text = f.read()
 
     return filter_help_text
 

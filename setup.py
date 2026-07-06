@@ -7,9 +7,11 @@ with open("README.md", "rb") as f:
     long_descr = f.read().decode("utf-8")
 
 
+with open('src/wfuzz/__init__.py', 'r', encoding='utf-8') as f:
+    init_content = f.read()
 version = re.search(
     r'^__version__\s*=\s*"(.*)"',
-    open('src/wfuzz/__init__.py').read(),
+    init_content,
     re.M
 ).group(1)
 
