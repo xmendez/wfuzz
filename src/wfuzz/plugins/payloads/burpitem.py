@@ -4,7 +4,7 @@ from wfuzz.fuzzobjects import FuzzResult, FuzzWordType
 from wfuzz.fuzzrequest import FuzzRequest
 from wfuzz.plugin_api.base import BasePayload
 from wfuzz.helpers.obj_dyn import rgetattr
-import xml.etree.cElementTree as ET
+import defusedxml.ElementTree as defused_ET
 from base64 import b64decode
 
 
@@ -52,7 +52,9 @@ class burpitem(BasePayload):
 
     def _gen_burpitem(self, output_fn):
         try:
-            tree = ET.parse(self.find_file(output_fn))
+            # Usiamo defusedxml per prevenire attacchi XXE e DDoS (Billion Laughs)
+            import defusedxml.ElementTree as defused_ET
+            tree = defused_ET.parse(self.find_file(output_fn))
             for item in tree.getroot().iter("item"):
                 fr = FuzzRequest()
                 fr.update_from_raw_http(

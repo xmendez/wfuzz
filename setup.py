@@ -89,3 +89,4 @@ try:
     )
 finally:
     os.unlink('src/wfuzz/advanced.rst')
+defusedxml
