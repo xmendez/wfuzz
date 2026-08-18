@@ -1,3 +1,17 @@
+> ⚠️ **Fork mantenuto da [@maksimtech](https://github.com/maksimtech)**
+> 
+> Questa versione supporta **Python 3.13+** e **Alpine 3.21**.
+> Il progetto originale [xmendez/wfuzz](https://github.com/xmendez/wfuzz) 
+> non è più attivamente mantenuto.
+>
+> **Modifiche rispetto all'originale:**
+> - `imp` → `importlib.util` (rimosso in Python 3.12)
+> - `cgi` → `email.message` (rimosso in Python 3.13)
+> - `pkg_resources` → `importlib.resources`
+> - `six` rimosso — codice Python 3 nativo
+> - Dockerfile aggiornato a `python:3.13-alpine3.21`
+> - Dipendenze legacy pulite da `setup.py`
+
 <img src="https://github.com/xmendez/wfuzz/blob/master/docs/_static/logo/wfuzz_letters.svg" width="500">
 
 [![Build Status](https://travis-ci.org/xmendez/wfuzz.svg?branch=master)](https://travis-ci.org/xmendez/wfuzz)
@@ -5,6 +19,7 @@
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/dm/wfuzz"></a>
 <a href="https://pypi.python.org/pypi/wfuzz"><img src="https://img.shields.io/pypi/pyversions/wfuzz.svg"></a>
 <a href="https://codecov.io/github/xmendez/wfuzz"><img src="https://codecov.io/github/xmendez/wfuzz/coverage.svg?branch=master"></a>
+<a href="https://app.codspeed.io/maksimtech/wfuzz?utm_source=badge"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed"/></a>
 
 
 # Wfuzz - The Web Fuzzer

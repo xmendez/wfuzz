@@ -1,6 +1,6 @@
 import re
 import sys
-import six
+
 
 
 from .obj_dic import DotDict
@@ -85,7 +85,7 @@ def convert_to_unicode(text):
         }
     elif isinstance(text, list):
         return [convert_to_unicode(element) for element in text]
-    elif isinstance(text, six.string_types):
+    elif isinstance(text, str):
         return text.encode("utf-8", errors="ignore")
     else:
         return text

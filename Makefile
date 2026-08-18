@@ -4,6 +4,8 @@ tox:
 	tox --recreate
 test:
 	pytest -v -s tests/
+bench:
+	pytest benchmarks/ --codspeed
 flake8:
 	black --check src tests
 	flake8 src tests
@@ -36,6 +38,7 @@ freeze:
 help:
 	@echo "make help              Show this help message"
 	@echo "make test              Run local tests with tox"
+	@echo "make bench             Run the CodSpeed benchmarks"
 	@echo "make flake8            Run the code linter(s) and print any warnings"
 	@echo "make publish           Publish pip lib to pypi"
 	@echo "make publish-dev       Publish pip lib to pypi test"

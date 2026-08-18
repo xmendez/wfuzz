@@ -7,7 +7,7 @@ import operator
 from functools import reduce
 
 # Python 2 and 3: zip_longest
-from six import StringIO
+from io import StringIO
 
 try:
     from itertools import zip_longest

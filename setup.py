@@ -30,10 +30,7 @@ dev_requires = [
 
 install_requires = [
     'pycurl',
-    'pyparsing<2.4.2;python_version<="3.4"',
-    'pyparsing>=2.4.2;python_version>="3.5"',
-    'six',
-    'configparser;python_version<"3.5"',
+    'pyparsing>=2.4.2',
     'chardet',
 ]
 
@@ -79,12 +76,11 @@ try:
             'Natural Language :: English',
             'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.4',
-            'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: 3.8',
+'Programming Language :: Python :: 3.9',
+'Programming Language :: Python :: 3.10',
+'Programming Language :: Python :: 3.11',
+'Programming Language :: Python :: 3.12',
+'Programming Language :: Python :: 3.13',
         ),
     )
 finally:

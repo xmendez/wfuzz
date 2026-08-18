@@ -1,0 +1,49 @@
+name: CodSpeed
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  # `workflow_dispatch` allows CodSpeed to trigger backtest
+  # performance analysis in order to generate initial data.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # for OpenID Connect authentication with CodSpeed
+
+jobs:
+  benchmarks:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install libcurl headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # setuptools is required at runtime: wfuzz still imports distutils,
+          # which is no longer part of the standard library on Python 3.12+.
+          pip install setuptools
+          # netaddr is needed by the ipnet/iprange payloads.
+          pip install netaddr
+          pip install pytest pytest-codspeed
+          pip install -e .
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@v5
+        with:
+          mode: simulation
+          run: pytest benchmarks/ --codspeed
