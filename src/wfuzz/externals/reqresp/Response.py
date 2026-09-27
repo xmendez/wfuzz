@@ -1,5 +1,5 @@
 import re
-import cgi
+from email.message import Message
 
 from io import BytesIO
 import gzip
@@ -22,7 +22,12 @@ def get_encoding_from_headers(headers):
     if not content_type:
         return None
 
-    content_type, params = cgi.parse_header(content_type)
+    message = Message()
+    message["Content-Type"] = content_type
+
+    content_type = message.get_content_type()
+    params = message.get_params() or []
+    params = dict(params[1:])
 
     if "charset" in params:
         return params["charset"].strip("'\"")

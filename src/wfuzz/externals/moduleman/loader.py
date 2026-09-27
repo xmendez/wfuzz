@@ -1,6 +1,6 @@
 import inspect
 import logging
-import imp
+import importlib.util
 import os.path
 
 
@@ -52,32 +52,24 @@ class FileLoader(IModuleLoader):
         """
         self.__logger.debug("__load_py_from_file. START, file=%s" % (filename,))
 
-        dirname, filename = os.path.split(filename)
-        fn = os.path.splitext(filename)[0]
-        exten_file = None
-        module = None
+        module_name = os.path.splitext(os.path.basename(filename))[0]
 
         try:
-            exten_file, filename, description = imp.find_module(fn, [dirname])
-            module = imp.load_module(fn, exten_file, filename, description)
+            spec = importlib.util.spec_from_file_location(module_name, filename)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+            else:
+                raise ImportError(f"Could not load spec for {filename}")
         except ImportError as msg:
             self.__logger.critical(
                 "__load_py_from_file. Filename: %s Exception, msg=%s" % (filename, msg)
             )
-            # raise msg
-            pass
+            return
         except SyntaxError as msg:
-            # incorrect python syntax in file
             self.__logger.critical(
                 "__load_py_from_file. Filename: %s Exception, msg=%s" % (filename, msg)
             )
-            # raise msg
-            pass
-        finally:
-            if exten_file:
-                exten_file.close()
-
-        if module is None:
             return
 
         for objname in dir(module):

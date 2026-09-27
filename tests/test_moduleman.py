@@ -61,17 +61,17 @@ class ModuleFilterTests(unittest.TestCase):
         with mock.patch("os.listdir") as mocked_listdir:
             with mock.patch("os.path.isdir") as mocked_isdir:
                 with mock.patch("os.path.isfile") as mocked_isfile:
-                    with mock.patch("imp.find_module") as mocked_find_module:
-                        with mock.patch("imp.load_module") as mocked_load_module:
+                    with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.spec_from_file_location") as mocked_spec_from_file_location:
+                        with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.module_from_spec") as mocked_module_from_spec:
                             mocked_listdir.return_value = ["alpha", "project.py"]
                             mocked_isdir.side_effect = [True, False]
                             mocked_isfile.return_value = True
-                            mocked_find_module.return_value = (
-                                None,
-                                "/any/alpha/project.py",
-                                (".py", "U", 1),
-                            )
-                            mocked_load_module.return_value = sys.modules[__name__]
+
+                            mocked_spec = mock.Mock()
+                            mocked_spec.loader = mock.Mock()
+
+                            mocked_spec_from_file_location.return_value = mocked_spec
+                            mocked_module_from_spec.return_value = sys.modules[__name__]
 
                             br = BRegistrant(
                                 DirLoader(**{"base_dir": "beta", "base_path": "any"})
@@ -116,14 +116,13 @@ class ModuleFilterTests(unittest.TestCase):
                             )
 
     def test_load_file(self):
-        with mock.patch("imp.find_module") as mocked_find_module:
-            with mock.patch("imp.load_module") as mocked_load_module:
-                mocked_find_module.return_value = (
-                    None,
-                    "any/project.py",
-                    (".py", "U", 1),
-                )
-                mocked_load_module.return_value = sys.modules[__name__]
+        with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.spec_from_file_location") as mocked_spec_from_file_location:
+            with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.module_from_spec") as mocked_module_from_spec:
+                mocked_spec = mock.Mock()
+                mocked_spec.loader = mock.Mock()
+
+                mocked_spec_from_file_location.return_value = mocked_spec
+                mocked_module_from_spec.return_value = sys.modules[__name__]
 
                 br = BRegistrant(
                     FileLoader(**{"filename": "project1.py", "base_path": "any"})
@@ -142,14 +141,13 @@ class ModuleFilterTests(unittest.TestCase):
                 self.assertTrue("Multiple plugins found" in str(context.exception))
 
     def test_simple_filter(self):
-        with mock.patch("imp.find_module") as mocked_find_module:
-            with mock.patch("imp.load_module") as mocked_load_module:
-                mocked_find_module.return_value = (
-                    None,
-                    "/any/project.py",
-                    (".py", "U", 1),
-                )
-                mocked_load_module.return_value = sys.modules[__name__]
+        with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.spec_from_file_location") as mocked_spec_from_file_location:
+            with mock.patch("wfuzz.externals.moduleman.loader.importlib.util.module_from_spec") as mocked_module_from_spec:
+                mocked_spec = mock.Mock()
+                mocked_spec.loader = mock.Mock()
+
+                mocked_spec_from_file_location.return_value = mocked_spec
+                mocked_module_from_spec.return_value = sys.modules[__name__]
 
                 br = BRegistrant(
                     FileLoader(**{"filename": "project1.py", "base_path": "any"})
