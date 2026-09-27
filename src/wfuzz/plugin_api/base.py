@@ -10,11 +10,20 @@ from wfuzz.helpers.file_func import find_file_in_paths
 
 import sys
 import os
-from distutils import util
 
 # python 2 and 3: iterator
 from builtins import object
 
+def str_to_bool(value):
+    value = value.lower()
+
+    if value in ("y", "yes", "t", "true", "on", "1"):
+        return True
+
+    if value in ("n", "no", "f", "false", "off", "0"):
+        return False
+
+    raise ValueError("invalid truth value %r" % value)
 
 # Util methods for accessing search results
 class BasePlugin:
@@ -74,8 +83,7 @@ class BasePlugin:
         )
 
     def _bool(self, value):
-        return bool(util.strtobool(value))
-
+        return str_to_bool(value)
 
 class BasePrinter:
     def __init__(self, output):

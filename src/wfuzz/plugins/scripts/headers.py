@@ -7,7 +7,7 @@ KBASE_KEY = "http.servers"
 KBASE_KEY_RESP_UNCOMMON = "http.response.headers.uncommon"
 KBASE_KEY_REQ_UNCOMMON = "http.request.headers.uncommon"
 
-SERVER_HEADERS = ["server", "x-powered-by" "via"]
+SERVER_HEADERS = ["server", "x-powered-by", "via"]
 
 COMMON_RESPONSE_HEADERS_REGEX_LIST = [
     r"^Server$",
@@ -126,8 +126,8 @@ class headers(BasePlugin):
 
         if header_value is not None:
             if (
-                header_value.lower() not in self.kbase[KBASE_KEY_REQ_UNCOMMON]
-                or KBASE_KEY_REQ_UNCOMMON not in self.kbase
+                KBASE_KEY_REQ_UNCOMMON not in self.kbase
+                or header_value.lower() not in self.kbase[KBASE_KEY_REQ_UNCOMMON]
             ):
                 self.add_result(
                     "reqheader",
@@ -144,8 +144,8 @@ class headers(BasePlugin):
 
         if header_value is not None:
             if (
-                header_value.lower() not in self.kbase[KBASE_KEY_RESP_UNCOMMON]
-                or KBASE_KEY_RESP_UNCOMMON not in self.kbase
+                KBASE_KEY_RESP_UNCOMMON not in self.kbase
+                or header_value.lower() not in self.kbase[KBASE_KEY_RESP_UNCOMMON]
             ):
                 self.add_result(
                     "header",
@@ -160,8 +160,8 @@ class headers(BasePlugin):
     def check_server_header(self, fuzzresult, header, value):
         if header.lower() in SERVER_HEADERS:
             if (
-                value.lower() not in self.kbase[KBASE_KEY]
-                or KBASE_KEY not in self.kbase
+                KBASE_KEY not in self.kbase
+                or value.lower() not in self.kbase[KBASE_KEY]
             ):
                 self.add_result(
                     "server", "New server HTTP response header", "{}".format(value),

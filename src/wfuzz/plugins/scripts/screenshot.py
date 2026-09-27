@@ -3,7 +3,7 @@ from wfuzz.externals.moduleman.plugin import moduleman_plugin
 
 import subprocess
 import tempfile
-import pipes
+from shlex import quote
 import os
 import re
 
@@ -42,7 +42,7 @@ class screenshot(BasePlugin):
         subprocess.call(
             [
                 "cutycapt",
-                "--url=%s" % pipes.quote(fuzzresult.url),
+                "--url=%s" % quote(fuzzresult.url),
                 "--out=%s" % filename,
                 "--insecure",
                 "--print-backgrounds=on",

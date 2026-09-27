@@ -1,7 +1,6 @@
 import os
 import sys
-import re
-import pkg_resources
+from importlib.resources import files
 
 from chardet.universaldetector import UniversalDetector
 import chardet
@@ -15,7 +14,7 @@ def get_filter_help_file():
 
     filter_help_text = None
     try:
-        fname = pkg_resources.resource_filename("wfuzz", FILTER_HELP_FILE)
+        fname = str(files("wfuzz").joinpath(FILTER_HELP_FILE))
         filter_help_text = open(fname).read()
     except IOError:
         filter_help_text = open(get_path(FILTER_HELP_DEV_FILE)).read()
