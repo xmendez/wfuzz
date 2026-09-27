@@ -135,7 +135,6 @@ def getTerminalSize():
     ):
         tuple_xy = _getTerminalSize_linux()
     if tuple_xy is None:
-        print("default")
         tuple_xy = (80, 25)  # default value
 
     return tuple_xy
