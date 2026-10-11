@@ -23,12 +23,18 @@ class CaseInsensitiveDict(MutableMapping):
         return self.store[key]
 
     def get(self, k, default=None):
-        key = self.proxy[k.lower()]
-        return self.store[key] if key in self.store else default
+        try:
+            key = self.proxy[k.lower()]
+        except KeyError:
+            return default
+        return self.store[key]
 
     def __setitem__(self, k, v):
+        lower_key = k.lower()
+        if lower_key in self.proxy and self.proxy[lower_key] != k:
+            del self.store[self.proxy[lower_key]]
         self.store[k] = v
-        self.proxy[k.lower()] = k
+        self.proxy[lower_key] = k
 
     def __iter__(self):
         return iter(self.store)
